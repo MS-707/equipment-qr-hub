@@ -18,6 +18,7 @@ export interface EquipmentItem {
   name: string
   category: EquipmentCategory
   oemManual: string
+  manualUrl: string
   pmDaily: string
   pmWeekly: string
   pmMonthly: string
