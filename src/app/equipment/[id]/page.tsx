@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { getAllEquipment, getEquipmentById } from '@/lib/equipment'
 import EquipmentProfile from '@/components/EquipmentProfile'
@@ -32,5 +33,9 @@ export default function EquipmentPage({ params }: EquipmentPageProps) {
     notFound()
   }
 
-  return <EquipmentProfile equipment={equipment} />
+  return (
+    <Suspense>
+      <EquipmentProfile equipment={equipment} />
+    </Suspense>
+  )
 }
