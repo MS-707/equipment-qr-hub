@@ -16,12 +16,17 @@ interface TabNavProps {
 
 export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   return (
-    <div className="flex w-full border-b border-mytra-border">
+    <div role="tablist" aria-label="Equipment information" className="flex w-full border-b border-mytra-border">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (
           <button
             key={tab.id}
+            role="tab"
+            id={`tab-${tab.id}`}
+            aria-selected={isActive}
+            aria-controls={`tabpanel-${tab.id}`}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium
                         transition-colors duration-150 border-b-2

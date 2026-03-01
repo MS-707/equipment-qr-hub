@@ -18,20 +18,6 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
 
   return (
     <div className="space-y-6">
-      {/* Key PM Summary */}
-      {equipment.keyPmSummary.trim() !== '' && (
-        <div>
-          <h3 className="text-sm font-semibold text-white mb-3">
-            Key PM Tasks Summary
-          </h3>
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-            <p className="text-gray-300 text-sm leading-relaxed">
-              {equipment.keyPmSummary}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Maintenance Dates */}
       <div>
         <h3 className="text-sm font-semibold text-white mb-3">
@@ -39,7 +25,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-            <p className="text-xs text-gray-500 mb-1">Last PM Date</p>
+            <p className="text-xs text-gray-400 mb-1">Last PM Date</p>
             <p
               className={`text-sm font-medium ${
                 equipment.lastPmDate ? 'text-white' : 'text-gray-600'
@@ -49,7 +35,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
             </p>
           </div>
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-            <p className="text-xs text-gray-500 mb-1">Next PM Due</p>
+            <p className="text-xs text-gray-400 mb-1">Next PM Due</p>
             <p
               className={`text-sm font-medium ${
                 equipment.nextPmDue ? 'text-white' : 'text-gray-600'
@@ -66,6 +52,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
         <div>
           <button
             onClick={() => setShowRegulatory(!showRegulatory)}
+            aria-expanded={showRegulatory}
             className="flex items-center gap-2 text-sm font-semibold text-gray-400
                        hover:text-white transition-colors w-full"
           >
@@ -81,7 +68,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
             <div className="mt-3 space-y-4">
               {calOshaSections.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">
+                  <p className="text-xs font-medium text-gray-400 mb-2">
                     Applicable Cal/OSHA Sections
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -100,7 +87,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
 
               {equipment.calOshaTrainingReq.trim() !== '' && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">
+                  <p className="text-xs font-medium text-gray-400 mb-2">
                     Regulatory Training Requirements
                   </p>
                   <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
