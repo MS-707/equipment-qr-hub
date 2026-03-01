@@ -14,7 +14,7 @@ export function getEquipmentByCategory(category: EquipmentCategory): EquipmentIt
 }
 
 export function getCategories(): EquipmentCategory[] {
-  return [...new Set(equipmentData.map(e => e.category))]
+  return Array.from(new Set(equipmentData.map(e => e.category)))
 }
 
 export function searchEquipment(query: string): EquipmentItem[] {
