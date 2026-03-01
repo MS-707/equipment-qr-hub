@@ -57,9 +57,6 @@ export default function Home() {
             {allEquipment.length} items
           </span>
         </div>
-        <p className="text-gray-400 mt-1 text-sm sm:text-base">
-          Scan. Inspect. Comply.
-        </p>
       </header>
 
       {/* ── Search ──────────────────────────────────── */}
