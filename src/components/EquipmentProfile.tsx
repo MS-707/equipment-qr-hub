@@ -55,7 +55,6 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           <h1 className="text-2xl font-bold text-white leading-tight">
             {equipment.name}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Item #{equipment.itemNumber}</p>
         </div>
 
         {/* Tab Navigation */}

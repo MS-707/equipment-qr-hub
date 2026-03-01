@@ -30,11 +30,6 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
       <p className="text-white font-semibold text-sm leading-snug">
         {equipment.name}
       </p>
-
-      {/* Item number */}
-      <p className="text-gray-500 text-xs mt-1">
-        Item #{equipment.itemNumber}
-      </p>
     </Link>
   )
 }
