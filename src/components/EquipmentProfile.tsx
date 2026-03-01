@@ -14,13 +14,13 @@ interface EquipmentProfileProps {
 }
 
 const TABS = [
-  { id: 'pm-schedule', label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
   { id: 'training', label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
+  { id: 'pm-schedule', label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
   { id: 'compliance', label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
 ]
 
 export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
-  const [activeTab, setActiveTab] = useState('pm-schedule')
+  const [activeTab, setActiveTab] = useState('training')
   const categoryColor = CATEGORY_COLORS[equipment.category]
 
   return (
@@ -29,8 +29,8 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-gray-500 hover:text-white
-                     text-sm transition-colors duration-150 mb-6"
+          className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white
+                     text-sm transition-colors duration-150 mb-6 py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Directory
@@ -61,9 +61,14 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         <TabNav tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Tab Content */}
-        <div className="mt-5">
-          {activeTab === 'pm-schedule' && <PMSchedule equipment={equipment} />}
+        <div
+          role="tabpanel"
+          id={`tabpanel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+          className="mt-5"
+        >
           {activeTab === 'training' && <TrainingInfo equipment={equipment} />}
+          {activeTab === 'pm-schedule' && <PMSchedule equipment={equipment} />}
           {activeTab === 'compliance' && <ComplianceInfo equipment={equipment} />}
         </div>
       </div>

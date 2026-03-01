@@ -35,11 +35,13 @@ export default function NavHeader() {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-1.5 text-sm transition ${
-                  isActive
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className={`flex items-center gap-1.5 text-sm transition rounded
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
+                  ${
+                    isActive
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 <Icon size={16} />
                 {label}

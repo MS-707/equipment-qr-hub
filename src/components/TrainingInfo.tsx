@@ -105,7 +105,7 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
                 className="w-full bg-white rounded-lg"
                 style={{ height: '70vh', minHeight: '400px' }}
                 title={`${equipment.name} Equipment Manual`}
-                sandbox="allow-same-origin"
+                sandbox="allow-same-origin allow-scripts"
               />
               <p className="text-gray-600 text-xs text-center py-2 bg-mytra-card">
                 PDF not loading? Use the Download PDF button above to open directly.
@@ -185,8 +185,11 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
         <div className="bg-mytra-card border border-dashed border-mytra-border rounded-lg p-6
                         flex flex-col items-center justify-center gap-2 text-center">
           <Users className="w-6 h-6 text-gray-600" />
-          <p className="text-gray-500 text-sm">
-            Connect to Notion to view authorized operators and training records.
+          <p className="text-gray-400 text-sm">
+            Authorized operator list managed by EHS.
+          </p>
+          <p className="text-gray-500 text-xs">
+            Contact your EHS coordinator for access or training questions.
           </p>
         </div>
       </div>

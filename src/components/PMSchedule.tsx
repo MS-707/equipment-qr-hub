@@ -28,8 +28,8 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
     (f) => (equipment[f.key] as string).trim() !== ''
   )
 
-  const [openIndex, setOpenIndex] = useState<number | null>(
-    firstNonEmptyIndex >= 0 ? firstNonEmptyIndex : null
+  const [openIndices, setOpenIndices] = useState<Set<number>>(
+    new Set(firstNonEmptyIndex >= 0 ? [firstNonEmptyIndex] : [])
   )
 
   function parseTasks(raw: string): string[] {
@@ -40,7 +40,15 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
   }
 
   function toggleAccordion(idx: number) {
-    setOpenIndex(openIndex === idx ? null : idx)
+    setOpenIndices((prev) => {
+      const next = new Set(prev)
+      if (next.has(idx)) {
+        next.delete(idx)
+      } else {
+        next.add(idx)
+      }
+      return next
+    })
   }
 
   // Filter to only frequencies with content
@@ -66,7 +74,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
       <div className="space-y-2">
         {activeFrequencies.map((freq) => {
           const tasks = parseTasks(freq.value)
-          const isOpen = openIndex === freq.originalIndex
+          const isOpen = openIndices.has(freq.originalIndex)
 
           return (
             <div
@@ -75,21 +83,23 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
             >
               <button
                 onClick={() => toggleAccordion(freq.originalIndex)}
+                aria-expanded={isOpen}
                 className="w-full flex items-center justify-between px-4 py-3
-                           hover:bg-mytra-card-hover transition-colors duration-150"
+                           hover:bg-mytra-card-hover active:bg-mytra-border
+                           transition-colors duration-150"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-white font-medium text-sm">
                     {freq.label}
                   </span>
-                  <span className="text-xs text-gray-500 bg-mytra-bg px-2 py-0.5 rounded-full">
+                  <span className="text-xs text-gray-400 bg-mytra-bg px-2 py-0.5 rounded-full">
                     {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
                   </span>
                 </div>
                 {isOpen ? (
-                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                  <ChevronUp className="w-4 h-4 text-gray-400" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
                 )}
               </button>
 
@@ -114,7 +124,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
       </div>
 
       {activeFrequencies.length === 0 && (
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           No PM schedule data available for this equipment.
         </p>
       )}

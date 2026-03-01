@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Search, X, ChevronDown, ChevronRight } from 'lucide-react'
 import {
   getAllEquipment,
   getCategories,
@@ -15,6 +15,19 @@ type FilterCategory = EquipmentCategory | 'all'
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all')
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+
+  const toggleCategory = useCallback((category: string) => {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(category)) {
+        next.delete(category)
+      } else {
+        next.add(category)
+      }
+      return next
+    })
+  }, [])
 
   const allEquipment = useMemo(() => getAllEquipment(), [])
   const categories = useMemo(() => getCategories(), [])
@@ -70,11 +83,22 @@ export default function Home() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search equipment..."
-          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-10 pr-4
+          aria-label="Search equipment"
+          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-10 pr-10
                      text-sm text-white placeholder:text-gray-500
                      focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
                      transition-colors"
         />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white
+                       transition-colors p-0.5"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* ── Category Filter Pills ───────────────────── */}
@@ -82,7 +106,8 @@ export default function Home() {
         {/* "All" pill */}
         <button
           onClick={() => setSelectedCategory('all')}
-          className={`flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors
+          aria-pressed={selectedCategory === 'all'}
+          className={`flex-shrink-0 text-sm font-medium px-4 py-2 rounded-full transition-colors
             ${
               selectedCategory === 'all'
                 ? 'bg-mytra-purple text-white'
@@ -100,7 +125,8 @@ export default function Home() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors border"
+              aria-pressed={isSelected}
+              className="flex-shrink-0 text-sm font-medium px-4 py-2 rounded-full transition-colors border"
               style={
                 isSelected
                   ? {
@@ -140,29 +166,39 @@ export default function Home() {
         </div>
       ) : (
         /* Grouped by category — "All" selected */
-        <div className="space-y-8">
+        <div className="space-y-6">
           {Object.entries(groupedEquipment).map(([category, items]) => {
             const color = CATEGORY_COLORS[category as EquipmentCategory]
+            const isCollapsed = collapsedCategories.has(category)
             return (
               <section key={category}>
-                {/* Category header with colored left border */}
-                <div
-                  className="flex items-center gap-2 mb-3 pl-3 border-l-[3px]"
+                <button
+                  onClick={() => toggleCategory(category)}
+                  aria-expanded={!isCollapsed}
+                  className="flex items-center gap-2 mb-3 pl-3 border-l-[3px] w-full text-left
+                             group cursor-pointer"
                   style={{ borderColor: color }}
                 >
+                  {isCollapsed ? (
+                    <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+                  )}
                   <h2 className="text-sm font-semibold text-white">
                     {category}
                   </h2>
                   <span className="text-xs text-gray-500">
                     {items!.length}
                   </span>
-                </div>
+                </button>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {items!.map((item) => (
-                    <EquipmentCard key={item.itemNumber} equipment={item} />
-                  ))}
-                </div>
+                {!isCollapsed && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {items!.map((item) => (
+                      <EquipmentCard key={item.itemNumber} equipment={item} />
+                    ))}
+                  </div>
+                )}
               </section>
             )
           })}
