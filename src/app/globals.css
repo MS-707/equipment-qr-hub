@@ -7,9 +7,37 @@ body {
   color: #FFFFFF;
 }
 
+/* Hide scrollbar on horizontal pill rows */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @media print {
   body {
     background-color: #FFFFFF;
     color: #000000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  .print-label {
+    border: 1px dashed #cccccc;
+    padding: 12px;
+    background: white;
+    color: black;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }
