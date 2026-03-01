@@ -167,7 +167,9 @@ export default function Home() {
       ) : (
         /* Grouped by category — "All" selected */
         <div className="space-y-6">
-          {Object.entries(groupedEquipment).map(([category, items]) => {
+          {Object.entries(groupedEquipment)
+            .sort((a, b) => b[1]!.length - a[1]!.length)
+            .map(([category, items]) => {
             const color = CATEGORY_COLORS[category as EquipmentCategory]
             const isCollapsed = collapsedCategories.has(category)
             return (

@@ -14,7 +14,14 @@ export function getEquipmentByCategory(category: EquipmentCategory): EquipmentIt
 }
 
 export function getCategories(): EquipmentCategory[] {
-  return Array.from(new Set(equipmentData.map(e => e.category)))
+  // Sort by item count descending (largest categories first)
+  const counts = new Map<EquipmentCategory, number>()
+  for (const e of equipmentData) {
+    counts.set(e.category, (counts.get(e.category) || 0) + 1)
+  }
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat]) => cat)
 }
 
 export function searchEquipment(query: string): EquipmentItem[] {
