@@ -98,7 +98,7 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
             )}
           </div>
 
-          {/* Embedded PDF Viewer */}
+          {/* Embedded PDF Viewer (via Google Docs Viewer to bypass X-Frame-Options) */}
           {showViewer && isPdf && (
             <div className="mt-3 rounded-lg overflow-hidden border border-mytra-border relative">
               {pdfLoading && (
@@ -108,11 +108,10 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
                 </div>
               )}
               <iframe
-                src={equipment.manualUrl}
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(equipment.manualUrl)}&embedded=true`}
                 className="w-full bg-white rounded-lg"
                 style={{ height: '70vh', minHeight: '400px' }}
                 title={`${equipment.name} Equipment Manual`}
-                sandbox="allow-same-origin allow-scripts"
                 onLoad={() => setPdfLoading(false)}
               />
               <p className="text-gray-500 text-xs text-center py-2 bg-mytra-card">
