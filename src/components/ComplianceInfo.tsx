@@ -15,7 +15,7 @@ function isDirectPdf(url: string): boolean {
     lower.includes('.pdf/') ||
     lower.includes('cdn2.ridgid.com/resources/media') ||
     lower.includes('/catalog/pdfImages/') ||
-    lower.includes('content.jettools.com/assets/manuals') ||
+    lower.includes('jpw-assets') ||
     lower.includes('manuals.genielift.com') ||
     lower.includes('manuals.harborfreight.com') ||
     lower.includes('.ashx')
@@ -24,6 +24,7 @@ function isDirectPdf(url: string): boolean {
 
 export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
   const [showViewer, setShowViewer] = useState(false)
+  const [showRegulatory, setShowRegulatory] = useState(false)
 
   const calOshaSections = equipment.calOshaSections
     .split(';')
@@ -108,29 +109,67 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
                 className="w-full bg-white rounded-lg"
                 style={{ height: '70vh', minHeight: '400px' }}
                 title={`${equipment.name} OEM Manual`}
+                sandbox="allow-same-origin"
               />
+              <p className="text-gray-600 text-xs text-center py-2 bg-mytra-card">
+                PDF not loading? Use the Download PDF button above to open directly.
+              </p>
             </div>
           )}
         </div>
       )}
 
-      {/* Cal/OSHA Sections */}
-      {calOshaSections.length > 0 && (
+      {/* Regulatory Details (collapsible) */}
+      {(calOshaSections.length > 0 || equipment.calOshaTrainingReq.trim() !== '') && (
         <div>
-          <h3 className="text-sm font-semibold text-white mb-3">
-            Applicable Cal/OSHA Sections
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {calOshaSections.map((section, i) => (
-              <span
-                key={i}
-                className="inline-block bg-mytra-card border border-mytra-border
-                           rounded-full px-3 py-1 text-xs text-gray-300"
-              >
-                {section}
-              </span>
-            ))}
-          </div>
+          <button
+            onClick={() => setShowRegulatory(!showRegulatory)}
+            className="flex items-center gap-2 text-sm font-semibold text-gray-400
+                       hover:text-white transition-colors w-full"
+          >
+            {showRegulatory ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+            Regulatory Details
+          </button>
+
+          {showRegulatory && (
+            <div className="mt-3 space-y-4">
+              {calOshaSections.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-2">
+                    Applicable Cal/OSHA Sections
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {calOshaSections.map((section, i) => (
+                      <span
+                        key={i}
+                        className="inline-block bg-mytra-card border border-mytra-border
+                                   rounded-full px-3 py-1 text-xs text-gray-300"
+                      >
+                        {section}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {equipment.calOshaTrainingReq.trim() !== '' && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-2">
+                    Regulatory Training Requirements
+                  </p>
+                  <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {equipment.calOshaTrainingReq}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

@@ -2,7 +2,7 @@ import { equipmentData } from '@/data/equipment'
 import { EquipmentItem, EquipmentCategory } from '@/lib/types'
 
 export function getAllEquipment(): EquipmentItem[] {
-  return equipmentData
+  return [...equipmentData].sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export function getEquipmentById(itemNumber: number): EquipmentItem | undefined {
@@ -10,7 +10,7 @@ export function getEquipmentById(itemNumber: number): EquipmentItem | undefined 
 }
 
 export function getEquipmentByCategory(category: EquipmentCategory): EquipmentItem[] {
-  return equipmentData.filter(e => e.category === category)
+  return equipmentData.filter(e => e.category === category).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export function getCategories(): EquipmentCategory[] {
@@ -23,5 +23,5 @@ export function searchEquipment(query: string): EquipmentItem[] {
     e.name.toLowerCase().includes(q) ||
     e.category.toLowerCase().includes(q) ||
     e.oemManual.toLowerCase().includes(q)
-  )
+  ).sort((a, b) => a.name.localeCompare(b.name))
 }
