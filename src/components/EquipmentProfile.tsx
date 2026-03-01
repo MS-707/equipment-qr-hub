@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Calendar, GraduationCap, ShieldCheck } from 'lucide-react'
 import { EquipmentItem, CATEGORY_COLORS } from '@/lib/types'
 import TabNav from '@/components/TabNav'
@@ -13,15 +14,41 @@ interface EquipmentProfileProps {
   equipment: EquipmentItem
 }
 
+const TAB_IDS = ['training', 'pm-schedule', 'compliance'] as const
+type TabId = (typeof TAB_IDS)[number]
+
 const TABS = [
-  { id: 'training', label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
-  { id: 'pm-schedule', label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
-  { id: 'compliance', label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
+  { id: 'training' as TabId, label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
+  { id: 'pm-schedule' as TabId, label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
+  { id: 'compliance' as TabId, label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
 ]
 
+function isValidTab(value: string | null): value is TabId {
+  return TAB_IDS.includes(value as TabId)
+}
+
 export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
-  const [activeTab, setActiveTab] = useState('training')
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab = isValidTab(tabParam) ? tabParam : 'training'
+
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab)
   const categoryColor = CATEGORY_COLORS[equipment.category]
+
+  // Sync tab state if URL param changes (e.g. browser back/forward)
+  useEffect(() => {
+    if (isValidTab(tabParam) && tabParam !== activeTab) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam, activeTab])
+
+  function handleTabChange(id: string) {
+    const tabId = id as TabId
+    setActiveTab(tabId)
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', tabId)
+    window.history.replaceState(null, '', url.toString())
+  }
 
   return (
     <main className="min-h-screen bg-mytra-bg">
@@ -58,7 +85,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         </div>
 
         {/* Tab Navigation */}
-        <TabNav tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabNav tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* Tab Content */}
         <div

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, BookOpen, Download, ExternalLink, FileText, ChevronDown, ChevronUp } from 'lucide-react'
+import { Users, BookOpen, Download, ExternalLink, FileText, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { EquipmentItem, PRIORITY_COLORS } from '@/lib/types'
 import { getTrainingProgramsForEquipment } from '@/lib/training'
 
@@ -25,6 +25,7 @@ function isDirectPdf(url: string): boolean {
 
 export default function TrainingInfo({ equipment }: TrainingInfoProps) {
   const [showViewer, setShowViewer] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(true)
   const programs = getTrainingProgramsForEquipment(equipment.itemNumber)
 
   const hasManualUrl = equipment.manualUrl.trim() !== ''
@@ -61,7 +62,7 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
                       Download PDF
                     </a>
                     <button
-                      onClick={() => setShowViewer(!showViewer)}
+                      onClick={() => { setShowViewer(!showViewer); setPdfLoading(true) }}
                       className="inline-flex items-center gap-1.5 bg-mytra-card-hover hover:bg-mytra-border
                                  text-gray-300 text-xs font-medium px-3 py-1.5 rounded-lg
                                  border border-mytra-border transition-colors"
@@ -99,15 +100,22 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
 
           {/* Embedded PDF Viewer */}
           {showViewer && isPdf && (
-            <div className="mt-3 rounded-lg overflow-hidden border border-mytra-border">
+            <div className="mt-3 rounded-lg overflow-hidden border border-mytra-border relative">
+              {pdfLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-mytra-card z-10">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400 mb-2" />
+                  <p className="text-gray-400 text-xs">Loading manual...</p>
+                </div>
+              )}
               <iframe
                 src={equipment.manualUrl}
                 className="w-full bg-white rounded-lg"
                 style={{ height: '70vh', minHeight: '400px' }}
                 title={`${equipment.name} Equipment Manual`}
                 sandbox="allow-same-origin allow-scripts"
+                onLoad={() => setPdfLoading(false)}
               />
-              <p className="text-gray-600 text-xs text-center py-2 bg-mytra-card">
+              <p className="text-gray-500 text-xs text-center py-2 bg-mytra-card">
                 PDF not loading? Use the Download PDF button above to open directly.
               </p>
             </div>
