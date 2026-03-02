@@ -15,8 +15,21 @@ interface TabNavProps {
 }
 
 export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
+  function handleKeyDown(e: React.KeyboardEvent) {
+    const tabIds = tabs.map((t) => t.id)
+    const currentIndex = tabIds.indexOf(activeTab)
+    let nextIndex: number | null = null
+    if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabIds.length
+    if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabIds.length) % tabIds.length
+    if (nextIndex !== null) {
+      e.preventDefault()
+      onTabChange(tabIds[nextIndex])
+      document.getElementById(`tab-${tabIds[nextIndex]}`)?.focus()
+    }
+  }
+
   return (
-    <div role="tablist" aria-label="Equipment information" className="flex w-full border-b border-mytra-border">
+    <div role="tablist" aria-label="Equipment information" className="flex w-full border-b border-mytra-border" onKeyDown={handleKeyDown}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (

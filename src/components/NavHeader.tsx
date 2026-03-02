@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutGrid, QrCode, ClipboardList } from 'lucide-react'
-import { getOpenCount } from '@/lib/work-orders'
+import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
 
 export default function NavHeader() {
   const pathname = usePathname()
@@ -13,16 +13,16 @@ export default function NavHeader() {
   useEffect(() => {
     setOpenCount(getOpenCount())
 
-    // Listen for storage changes (work order CRUD triggers re-count)
+    // Listen for same-tab CRUD via pub/sub
+    const unsubscribe = onWorkOrderChange(() => setOpenCount(getOpenCount()))
+    // Listen for cross-tab storage changes
     function handleStorage() {
       setOpenCount(getOpenCount())
     }
     window.addEventListener('storage', handleStorage)
-    // Also poll lightly for same-tab updates
-    const interval = setInterval(() => setOpenCount(getOpenCount()), 2000)
     return () => {
+      unsubscribe()
       window.removeEventListener('storage', handleStorage)
-      clearInterval(interval)
     }
   }, [])
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Plus, X, CalendarDays } from 'lucide-react'
 import { PmType } from '@/lib/types'
 import { createWorkOrder } from '@/lib/work-orders'
@@ -24,6 +24,11 @@ export default function CreateWorkOrderButton({
   const [dueDate, setDueDate] = useState('')
   const [assignedTo, setAssignedTo] = useState('')
   const [justCreated, setJustCreated] = useState(false)
+  const createdTimerRef = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    return () => { clearTimeout(createdTimerRef.current) }
+  }, [])
 
   function handleCreate() {
     createWorkOrder({
@@ -37,7 +42,7 @@ export default function CreateWorkOrderButton({
     setDueDate('')
     setAssignedTo('')
     setJustCreated(true)
-    setTimeout(() => setJustCreated(false), 2000)
+    createdTimerRef.current = setTimeout(() => setJustCreated(false), 2000)
     onCreated?.()
   }
 

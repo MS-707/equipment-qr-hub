@@ -31,9 +31,31 @@ function writeAll(orders: WorkOrder[]): void {
 function nextNumber(): string {
   if (typeof window === 'undefined') return 'WO-0000-0001'
   const year = new Date().getFullYear()
-  const count = parseInt(localStorage.getItem(COUNTER_KEY) || '0', 10) + 1
-  localStorage.setItem(COUNTER_KEY, String(count))
-  return `WO-${year}-${String(count).padStart(4, '0')}`
+  let stored: { year: number; count: number } = { year, count: 0 }
+  try {
+    const raw = localStorage.getItem(COUNTER_KEY)
+    if (raw) stored = JSON.parse(raw)
+  } catch { /* start fresh */ }
+  // Reset counter when the year rolls over
+  if (stored.year !== year) {
+    stored = { year, count: 0 }
+  }
+  stored.count += 1
+  localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
+  return `WO-${year}-${String(stored.count).padStart(4, '0')}`
+}
+
+// ── Change notification (pub/sub) ────────────────────────
+
+const listeners = new Set<() => void>()
+
+export function onWorkOrderChange(fn: () => void): () => void {
+  listeners.add(fn)
+  return () => { listeners.delete(fn) }
+}
+
+function notify() {
+  listeners.forEach((fn) => fn())
 }
 
 // ── Public API ───────────────────────────────────────────
@@ -101,6 +123,7 @@ export function createWorkOrder(
   const all = readAll()
   all.push(wo)
   writeAll(all)
+  notify()
   return wo
 }
 
@@ -123,6 +146,7 @@ export function updateWorkOrder(
 
   all[idx] = { ...all[idx], ...updates }
   writeAll(all)
+  notify()
   return all[idx]
 }
 
@@ -131,6 +155,7 @@ export function deleteWorkOrder(id: string): boolean {
   const filtered = all.filter((wo) => wo.id !== id)
   if (filtered.length === all.length) return false
   writeAll(filtered)
+  notify()
   return true
 }
 
@@ -152,7 +177,7 @@ export function exportToCsv(orders: WorkOrder[]): string {
       wo.id, wo.equipmentId, wo.pmType,
       `"${wo.tasks.replace(/"/g, '""')}"`,
       wo.status, wo.dueDate || '', wo.completedDate || '',
-      wo.assignedTo || '',
+      `"${(wo.assignedTo || '').replace(/"/g, '""')}"`,
       `"${wo.completionNotes.replace(/"/g, '""')}"`,
       wo.linearIssueId || '', wo.gmailDraftId || '', wo.createdAt,
     ].join(',')

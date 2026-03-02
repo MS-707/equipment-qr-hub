@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ChevronDown,
@@ -34,8 +34,16 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   const [isExpanded, setIsExpanded] = useState(false)
   const [notes, setNotes] = useState(workOrder.completionNotes)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
-  const equipment = getEquipmentById(workOrder.equipmentId)
+  useEffect(() => {
+    return () => { clearTimeout(deleteTimerRef.current) }
+  }, [])
+
+  const equipment = useMemo(
+    () => getEquipmentById(workOrder.equipmentId),
+    [workOrder.equipmentId]
+  )
   const overdue = isOverdue(workOrder)
   const pmColor = PM_TYPE_COLORS[workOrder.pmType]
 
@@ -54,7 +62,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   function handleDelete() {
     if (!confirmDelete) {
       setConfirmDelete(true)
-      setTimeout(() => setConfirmDelete(false), 3000)
+      deleteTimerRef.current = setTimeout(() => setConfirmDelete(false), 3000)
       return
     }
     deleteWorkOrder(workOrder.id)
@@ -212,12 +220,11 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                          hover:text-white hover:bg-mytra-card-hover transition-colors"
               title="Send to Linear (requires Linear integration)"
               onClick={() => {
-                // Dispatch to Linear — will be wired to MCP
                 const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
                 const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
-                // Store in clipboard as fallback
                 navigator.clipboard.writeText(`${title}\n\n${desc}`)
-                alert('Work order details copied to clipboard.\nUse Linear to create the issue.')
+                  .then(() => alert('Work order details copied to clipboard.\nUse Linear to create the issue.'))
+                  .catch(() => alert('Could not copy to clipboard. Please copy manually.'))
               }}
             >
               <ExternalLink className="w-3 h-3" />

@@ -116,3 +116,10 @@ export const STATUS_COLORS: Record<WorkOrderStatus, string> = {
   'In Progress': '#3B82F6',
   'Complete': '#22C55E',
 }
+
+export const EQUIPMENT_STATUS_COLORS: Record<EquipmentStatus, string> = {
+  'Active': '#22C55E',
+  'Out of Service': '#EF4444',
+  'Retired': '#6B7280',
+  'Pending Repair': '#F97316',
+}
