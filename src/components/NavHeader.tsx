@@ -1,15 +1,35 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, QrCode } from 'lucide-react'
+import { LayoutGrid, QrCode, ClipboardList } from 'lucide-react'
+import { getOpenCount } from '@/lib/work-orders'
 
 export default function NavHeader() {
   const pathname = usePathname()
+  const [openCount, setOpenCount] = useState(0)
+
+  useEffect(() => {
+    setOpenCount(getOpenCount())
+
+    // Listen for storage changes (work order CRUD triggers re-count)
+    function handleStorage() {
+      setOpenCount(getOpenCount())
+    }
+    window.addEventListener('storage', handleStorage)
+    // Also poll lightly for same-tab updates
+    const interval = setInterval(() => setOpenCount(getOpenCount()), 2000)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      clearInterval(interval)
+    }
+  }, [])
 
   const navLinks = [
-    { href: '/', label: 'Directory', icon: LayoutGrid },
-    { href: '/admin/labels', label: 'QR Labels', icon: QrCode },
+    { href: '/', label: 'Directory', icon: LayoutGrid, badge: 0 },
+    { href: '/work-orders', label: 'Work Orders', icon: ClipboardList, badge: openCount },
+    { href: '/admin/labels', label: 'QR Labels', icon: QrCode, badge: 0 },
   ]
 
   return (
@@ -25,7 +45,7 @@ export default function NavHeader() {
 
         {/* Right: Nav Links */}
         <nav className="flex items-center gap-5">
-          {navLinks.map(({ href, label, icon: Icon }) => {
+          {navLinks.map(({ href, label, icon: Icon, badge }) => {
             const isActive =
               href === '/'
                 ? pathname === '/'
@@ -44,7 +64,14 @@ export default function NavHeader() {
                   }`}
               >
                 <Icon size={16} />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
+                {badge > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
+                                   px-1 text-[10px] font-bold rounded-full
+                                   bg-mytra-purple text-white">
+                    {badge}
+                  </span>
+                )}
               </Link>
             )
           })}

@@ -2,20 +2,22 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { EquipmentItem } from '@/lib/types'
+import { EquipmentItem, PmType } from '@/lib/types'
+import CreateWorkOrderButton from '@/components/CreateWorkOrderButton'
 
 interface FrequencyConfig {
   key: keyof EquipmentItem
   label: string
+  pmType: PmType
 }
 
 const PM_FREQUENCIES: FrequencyConfig[] = [
-  { key: 'pmDaily', label: 'Daily PM' },
-  { key: 'pmWeekly', label: 'Weekly PM' },
-  { key: 'pmMonthly', label: 'Monthly PM' },
-  { key: 'pmQuarterly', label: 'Quarterly PM' },
-  { key: 'pmSemiAnnual', label: 'Semi-Annual PM' },
-  { key: 'pmAnnual', label: 'Annual PM' },
+  { key: 'pmDaily', label: 'Daily PM', pmType: 'Daily' },
+  { key: 'pmWeekly', label: 'Weekly PM', pmType: 'Weekly' },
+  { key: 'pmMonthly', label: 'Monthly PM', pmType: 'Monthly' },
+  { key: 'pmQuarterly', label: 'Quarterly PM', pmType: 'Quarterly' },
+  { key: 'pmSemiAnnual', label: 'Semi-Annual PM', pmType: 'Semi-Annual' },
+  { key: 'pmAnnual', label: 'Annual PM', pmType: 'Annual' },
 ]
 
 interface PMScheduleProps {
@@ -116,6 +118,13 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                       </li>
                     ))}
                   </ul>
+
+                  <CreateWorkOrderButton
+                    equipmentId={equipment.itemNumber}
+                    equipmentName={equipment.name}
+                    pmType={freq.pmType}
+                    tasks={freq.value}
+                  />
                 </div>
               )}
             </div>
