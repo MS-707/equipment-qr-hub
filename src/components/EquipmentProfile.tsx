@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, Calendar, GraduationCap, ShieldCheck } from 'lucide-react'
-import { EquipmentItem, CATEGORY_COLORS } from '@/lib/types'
+import { ArrowLeft, Calendar, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
+import { EquipmentItem, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
 import TabNav from '@/components/TabNav'
 import PMSchedule from '@/components/PMSchedule'
 import TrainingInfo from '@/components/TrainingInfo'
@@ -78,6 +78,12 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400">
               {equipment.status}
             </span>
+            {requiresMachineGuarding(equipment) && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+                <Shield className="w-3 h-3" />
+                Machine Guarding Required
+              </span>
+            )}
           </div>
           <h1 className="text-2xl font-bold text-white leading-tight">
             {equipment.name}

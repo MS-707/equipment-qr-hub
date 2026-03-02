@@ -93,6 +93,15 @@ export interface WorkOrder {
   createdAt: string
 }
 
+/**
+ * Returns true if the equipment requires machine guarding per Cal/OSHA.
+ * Checks for T8 CCR 3556-3558 (general machine guarding) and
+ * T8 CCR 3577-3583 (abrasive wheel guarding).
+ */
+export function requiresMachineGuarding(item: EquipmentItem): boolean {
+  return item.calOshaSections.includes('3556') || item.calOshaSections.includes('3577')
+}
+
 export const PM_TYPE_COLORS: Record<PmType, string> = {
   'Daily': '#22C55E',
   'Weekly': '#3B82F6',
