@@ -79,7 +79,7 @@ export default function WorkOrderBoard() {
     a.href = url
     a.download = `work-orders-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
@@ -93,6 +93,7 @@ export default function WorkOrderBoard() {
           onChange={(e) =>
             setFilterEquipment(e.target.value === 'all' ? 'all' : Number(e.target.value))
           }
+          aria-label="Filter by equipment"
           className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
                      text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple
                      max-w-[200px]"
@@ -110,6 +111,7 @@ export default function WorkOrderBoard() {
           onChange={(e) =>
             setFilterPmType(e.target.value === 'all' ? 'all' : (e.target.value as PmType))
           }
+          aria-label="Filter by PM type"
           className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
                      text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple"
         >
