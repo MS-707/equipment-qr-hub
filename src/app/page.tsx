@@ -102,12 +102,12 @@ export default function Home() {
       </div>
 
       {/* ── Category Filter Pills ───────────────────── */}
-      <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex flex-wrap gap-2 pb-4 mb-6">
         {/* "All" pill */}
         <button
           onClick={() => setSelectedCategory('all')}
           aria-pressed={selectedCategory === 'all'}
-          className={`flex-shrink-0 text-sm font-medium px-4 py-2 rounded-full transition-colors
+          className={`text-sm font-medium px-4 py-1.5 rounded-full transition-colors
             ${
               selectedCategory === 'all'
                 ? 'bg-mytra-purple text-white'
@@ -115,18 +115,20 @@ export default function Home() {
             }`}
         >
           All
+          <span className="ml-1.5 text-xs opacity-60">{allEquipment.length}</span>
         </button>
 
         {categories.map((cat) => {
           const color = CATEGORY_COLORS[cat]
           const isSelected = selectedCategory === cat
+          const count = allEquipment.filter((e) => e.category === cat).length
 
           return (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               aria-pressed={isSelected}
-              className="flex-shrink-0 text-sm font-medium px-4 py-2 rounded-full transition-colors border"
+              className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors border"
               style={
                 isSelected
                   ? {
@@ -142,6 +144,7 @@ export default function Home() {
               }
             >
               {cat}
+              <span className="ml-1.5 text-xs opacity-50">{count}</span>
             </button>
           )
         })}
@@ -177,19 +180,25 @@ export default function Home() {
                 <button
                   onClick={() => toggleCategory(category)}
                   aria-expanded={!isCollapsed}
-                  className="flex items-center gap-2 mb-3 pl-3 border-l-[3px] w-full text-left
+                  className="flex items-center gap-2.5 mb-3 pl-3 border-l-[3px] w-full text-left
                              group cursor-pointer"
                   style={{ borderColor: color }}
                 >
                   {isCollapsed ? (
-                    <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+                    <ChevronDown className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
                   )}
                   <h2 className="text-sm font-semibold text-white">
                     {category}
                   </h2>
-                  <span className="text-xs text-gray-500">
+                  <span
+                    className="text-[11px] font-medium px-1.5 py-0.5 rounded"
+                    style={{
+                      backgroundColor: `${color}15`,
+                      color: color,
+                    }}
+                  >
                     {items!.length}
                   </span>
                 </button>
@@ -197,7 +206,7 @@ export default function Home() {
                 {!isCollapsed && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {items!.map((item) => (
-                      <EquipmentCard key={item.itemNumber} equipment={item} />
+                      <EquipmentCard key={item.itemNumber} equipment={item} showCategory={false} />
                     ))}
                   </div>
                 )}
