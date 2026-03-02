@@ -71,3 +71,39 @@ export const PRIORITY_COLORS: Record<PriorityLevel, string> = {
   'MEDIUM': '#EAB308',
   'LOW': '#6B7280',
 }
+
+// PM Work Orders
+
+export type PmType = 'Daily' | 'Weekly' | 'Monthly' | 'Quarterly' | 'Semi-Annual' | 'Annual'
+
+export type WorkOrderStatus = 'Not Started' | 'In Progress' | 'Complete'
+
+export interface WorkOrder {
+  id: string
+  equipmentId: number
+  pmType: PmType
+  tasks: string
+  status: WorkOrderStatus
+  dueDate: string | null
+  completedDate: string | null
+  assignedTo: string | null
+  completionNotes: string
+  linearIssueId: string | null
+  gmailDraftId: string | null
+  createdAt: string
+}
+
+export const PM_TYPE_COLORS: Record<PmType, string> = {
+  'Daily': '#22C55E',
+  'Weekly': '#3B82F6',
+  'Monthly': '#8B5CF6',
+  'Quarterly': '#F97316',
+  'Semi-Annual': '#EAB308',
+  'Annual': '#EF4444',
+}
+
+export const STATUS_COLORS: Record<WorkOrderStatus, string> = {
+  'Not Started': '#6B7280',
+  'In Progress': '#3B82F6',
+  'Complete': '#22C55E',
+}
