@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Printer, ArrowLeft } from 'lucide-react'
 import { getAllEquipment, getCategories } from '@/lib/equipment'
@@ -9,8 +9,8 @@ import QRLabel from '@/components/QRLabel'
 
 export default function LabelsPage() {
   const [baseUrl, setBaseUrl] = useState('')
-  const categories = getCategories()
-  const allEquipment = getAllEquipment()
+  const categories = useMemo(() => getCategories(), [])
+  const allEquipment = useMemo(() => getAllEquipment(), [])
 
   useEffect(() => {
     setBaseUrl(window.location.origin)

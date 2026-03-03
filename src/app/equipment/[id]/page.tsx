@@ -34,7 +34,7 @@ export default function EquipmentPage({ params }: EquipmentPageProps) {
   }
 
   return (
-    <Suspense>
+    <Suspense fallback={<div className="max-w-2xl mx-auto px-4 py-6"><div className="animate-pulse space-y-4"><div className="h-8 bg-mytra-card rounded w-1/3" /><div className="h-64 bg-mytra-card rounded-lg" /></div></div>}>
       <EquipmentProfile equipment={equipment} />
     </Suspense>
   )

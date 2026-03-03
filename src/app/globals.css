@@ -7,6 +7,10 @@ body {
   color: #FFFFFF;
 }
 
+input[type="date"] {
+  color-scheme: dark;
+}
+
 /* Hide scrollbar on horizontal pill rows */
 .scrollbar-hide {
   -ms-overflow-style: none;
