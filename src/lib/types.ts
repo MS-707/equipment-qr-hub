@@ -11,6 +11,8 @@ export type EquipmentCategory =
 
 export type EquipmentStatus = 'Active' | 'Out of Service' | 'Retired' | 'Pending Repair'
 
+export type ManualType = 'pdf' | 'webpage' | 'none'
+
 export type PriorityLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
 
 export interface EquipmentItem {
@@ -19,6 +21,7 @@ export interface EquipmentItem {
   category: EquipmentCategory
   oemManual: string
   manualUrl: string
+  manualType: ManualType
   pmDaily: string
   pmWeekly: string
   pmMonthly: string

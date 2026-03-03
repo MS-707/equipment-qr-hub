@@ -17,6 +17,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training before servicing per 3314; machine guarding awareness per 3556; PPE training and written certification per 3380; safe operation training before initial assignment.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 2,
@@ -34,6 +35,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training before servicing per 3314; machine guarding awareness per 3556; PPE training and certification per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 3,
@@ -51,6 +53,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; machine guarding per 3556; PPE training per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 4,
@@ -68,6 +71,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; machine guarding per 3556; PPE training per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 5,
@@ -85,6 +89,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; machine guarding per 3556; PPE training per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 6,
@@ -102,6 +107,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; abrasive wheel safety and ring test per 3580; PPE training per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 7,
@@ -119,6 +125,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels - ring test per 3580 mounting); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; abrasive wheel mounting and ring test per 3580; tool rest/tongue guard adjustment training; PPE (eye/face protection) per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 8,
@@ -136,6 +143,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'Same as Item 7 - ring test training per 3580; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 9,
@@ -153,6 +161,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; abrasive wheel safety per 3577-3583; PPE training per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 10,
@@ -170,6 +179,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 11,
@@ -187,6 +197,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 12,
@@ -204,6 +215,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556 (blade guard/riving knife/anti-kickback critical); PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 13,
@@ -221,6 +233,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556; PPE per 3380 (dust/respiratory).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 14,
@@ -238,6 +251,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 15,
@@ -255,6 +269,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556; PPE per 3380 (dust/respiratory).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 16,
@@ -272,6 +287,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 17,
@@ -289,6 +305,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 4794-4799 (Welding Cutting and Brazing - Gas Systems); T8 CCR 4848 (Fire Prevention in Welding); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; welding operator training per 4799; fire prevention/hot work permit per 4848; LOTO per 3314; PPE per 3380 (welding helmet/gloves/FR clothing).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 18,
@@ -306,6 +323,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 4650 (Storage Handling and Use of Cylinders); T8 CCR 4799 (Training of Operators); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; compressed gas cylinder handling training per 4650; operator instruction per 4799; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 19,
@@ -323,6 +341,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 461-462 (Compressed Air Equipment); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; compressed air safety training; LOTO per 3314 for service; PPE per 3380 (hearing protection).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 20,
@@ -340,6 +359,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 461-462 (Compressed Air Equipment); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; compressed air safety; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 21,
@@ -357,6 +377,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3646 (Elevating Work Platform Operating Instructions); T8 CCR 3648 (Aerial Device Operating Instructions); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; operator must be trained on erecting/disassembling/moving/operating/inspecting per 3646 BEFORE operation; fall protection awareness; LOTO per 3314; PPE per 3380. Training documented.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 22,
@@ -374,6 +395,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3646 (Elevating Work Platforms); T8 CCR 3648 (Aerial Devices); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'Same as Item 21 - operator training per 3646 required before operation; IIPP per 3203; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 23,
@@ -391,6 +413,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3646 (Elevating Work Platforms); T8 CCR 3648 (Aerial Devices); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'Same as Items 21-22 - operator training per 3646; IIPP per 3203; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 24,
@@ -408,6 +431,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3664-3668 (Powered Industrial Truck Operation and Training); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; PIT operator training and evaluation per 3668 (formal instruction + practical training + evaluation BEFORE operation); refresher evaluation every 3 years; LOTO per 3314 for service; PPE per 3380.',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 25,
@@ -425,6 +449,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3664-3668 (PIT Operation and Training); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'Same as Item 24 - PIT training per 3668 is MANDATORY before operation.',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 26,
@@ -442,6 +467,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3664-3668 (PIT Operation and Training); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; PIT training per 3668 (walkie pallet jacks ARE powered industrial trucks - training is REQUIRED per Cal/OSHA); LOTO per 3314; PPE per 3380 (safety shoes).',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 27,
@@ -459,6 +485,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3664 (PIT - manual pallet jacks included by some interpretations); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; training on safe use per 3203(a)(7); PPE per 3380 (safety shoes). Note: Cal/OSHA interpretations vary on whether manual pallet jacks require full 3668 PIT training - conservative approach is to train.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 28,
@@ -476,6 +503,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5031 (Crane Inspection); T8 CCR 5031.1 (Post-Assembly Inspection); T8 CCR 5033 (Maintenance and Repair); T8 CCR 5020 (Operator Qualifications); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; crane operator qualification per 5020; crane inspection requirements per 5031 (pre-shift visual by qualified person); maintenance per 5033; LOTO per 3314 for service; PPE per 3380. Annual inspection records with signature/date/serial must be maintained per 5031.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 29,
@@ -493,6 +521,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3276-3278 (Portable Ladders); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; ladder safety training per 3276-3278; safe use per OSHA 1910.23; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 30,
@@ -510,6 +539,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3276-3278 (Portable Ladders); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; ladder safety per 3276-3278; PPE per 3380.',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 31,
@@ -527,6 +557,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3276-3278 (Portable Ladders); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; ladder safety per 3276-3278; PPE per 3380. Fiberglass ladders: train on UV degradation hazard.',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 32,
@@ -544,6 +575,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3556-3558 (Machine Guarding - portable tools); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE); T8 CCR 3583 (Portable Abrasive Wheels - for grinder)',
     calOshaTrainingReq: 'IIPP per 3203; portable power tool safety training per 3556; LOTO per 3314; PPE per 3380; portable abrasive wheel safety per 3583 (angle grinder).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 33,
@@ -561,6 +593,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3556-3558 (Machine Guarding); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; portable power tool safety per 3556; LOTO per 3314; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 34,
@@ -578,6 +611,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 2540.2 (Refrigeration Systems); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314 (electrical/refrigeration hazards); refrigeration system safety per 2540.2; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 35,
@@ -595,6 +629,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3556 (Machine Guarding); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; machine guarding per 3556 (rotating equipment); PPE per 3380.',
     status: 'Active',
+    manualType: 'none',
   },
   {
     itemNumber: 36,
@@ -612,6 +647,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5110 (Ergonomic - repetitive motion)',
     calOshaTrainingReq: 'IIPP per 3203; ergonomic training per 5110 for repetitive motion prevention.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 37,
@@ -629,6 +665,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5141-5155 (Ventilation for soldering fumes); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; fume exposure training and ventilation per 5141-5155; PPE per 3380 (eye protection/fume protection).',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 38,
@@ -646,6 +683,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5141-5155 (Ventilation - FDM fumes especially ABS/ASA); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; ventilation for fume exposure per 5141-5155 (especially for ABS/ASA/nylon materials); PPE per 3380.',
     status: 'Active',
+    manualType: 'webpage',
   },
   {
     itemNumber: 39,
@@ -663,6 +701,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 2299-2340 (Electrical Safety); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; LOTO per 3314; electrical safety per applicable sections; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 40,
@@ -680,6 +719,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5532-5538 (Flammable Liquids); T8 CCR 6151 (Fire Extinguishers); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; flammable liquid handling and storage training per 5532-5538; fire extinguisher training per 6151; PPE per 3380. GHS/HazCom training per 5194.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 41,
@@ -697,6 +737,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 5144 (Ventilation - if used for hazardous dust); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; if used for hazardous dust collection additional controls per 5144; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 42,
@@ -714,6 +755,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 461-462 (Compressed Air Equipment); T8 CCR 3314 (LOTO)',
     calOshaTrainingReq: 'IIPP per 3203; compressed air safety per 461-462; LOTO per 3314 for service.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 43,
@@ -731,6 +773,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 2299-2340 (Electrical Safety); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP per 3203; qualified electrical worker training per 2299-2340; LOTO per 3314 (CRITICAL - must de-energize for service); arc flash PPE per NFPA 70E; PPE per 3380.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 44,
@@ -748,6 +791,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 2299-2340 (Electrical Safety); T8 CCR 3314 (LOTO); T8 CCR 3380 (PPE); NFPA 70E (Arc Flash/Electrical Safety)',
     calOshaTrainingReq: 'IIPP per 3203; qualified electrical worker training per 2299-2340; LOTO per 3314; arc flash PPE per NFPA 70E; PPE per 3380. Electrical safety training refresher every 3 years per NFPA 70B.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 45,
@@ -765,6 +809,7 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 6151 (Fire Extinguisher Requirements); T8 CCR 6150 (Fire Prevention Plan)',
     calOshaTrainingReq: 'IIPP per 3203; fire extinguisher training per 6151 (initial and annual refresher); fire prevention plan per 6150; employees designated to use extinguishers must receive training upon initial assignment and annually thereafter per OSHA 1910.157.',
     status: 'Active',
+    manualType: 'pdf',
   },
   {
     itemNumber: 46,
@@ -782,5 +827,6 @@ export const equipmentData: EquipmentItem[] = [
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3400 (Medical Services and First Aid)',
     calOshaTrainingReq: 'IIPP per 3203; first aid training per 3400; at least one person per shift trained in first aid and CPR if no nearby medical facility per OSHA 1910.151.',
     status: 'Active',
+    manualType: 'pdf',
   },
 ]

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Calendar, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
-import { EquipmentItem, CATEGORY_COLORS, EQUIPMENT_STATUS_COLORS, requiresMachineGuarding } from '@/lib/types'
+import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
 import TabNav from '@/components/TabNav'
+import StatusToggle from '@/components/StatusToggle'
 import PMSchedule from '@/components/PMSchedule'
 import TrainingInfo from '@/components/TrainingInfo'
 import ComplianceInfo from '@/components/ComplianceInfo'
@@ -33,8 +34,8 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const initialTab = isValidTab(tabParam) ? tabParam : 'training'
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab)
+  const [status, setStatus] = useState<EquipmentStatus>(equipment.status)
   const categoryColor = CATEGORY_COLORS[equipment.category]
-  const statusColor = EQUIPMENT_STATUS_COLORS[equipment.status]
 
   // Sync tab state if URL param changes (e.g. browser back/forward)
   useEffect(() => {
@@ -76,15 +77,11 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             >
               {equipment.category}
             </span>
-            <span
-              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
-              style={{
-                backgroundColor: `${statusColor}18`,
-                color: statusColor,
-              }}
-            >
-              {equipment.status}
-            </span>
+            <StatusToggle
+              itemNumber={equipment.itemNumber}
+              currentStatus={status}
+              onStatusChange={setStatus}
+            />
             {requiresMachineGuarding(equipment) && (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
                 <Shield className="w-3 h-3" />
