@@ -9,27 +9,13 @@ interface TrainingInfoProps {
   equipment: EquipmentItem
 }
 
-function isDirectPdf(url: string): boolean {
-  const lower = url.toLowerCase()
-  return (
-    lower.endsWith('.pdf') ||
-    lower.includes('.pdf/') ||
-    lower.includes('cdn2.ridgid.com/resources/media') ||
-    lower.includes('/catalog/pdfImages/') ||
-    lower.includes('jpw-assets') ||
-    lower.includes('manuals.genielift.com') ||
-    lower.includes('manuals.harborfreight.com') ||
-    lower.includes('.ashx')
-  )
-}
-
 export default function TrainingInfo({ equipment }: TrainingInfoProps) {
   const [showViewer, setShowViewer] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(true)
   const programs = getTrainingProgramsForEquipment(equipment.itemNumber)
 
-  const hasManualUrl = equipment.manualUrl.trim() !== ''
-  const isPdf = hasManualUrl && isDirectPdf(equipment.manualUrl)
+  const isPdf = equipment.manualType === 'pdf'
+  const hasManual = equipment.manualType !== 'none'
 
   return (
     <div className="space-y-6">
@@ -47,7 +33,7 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
               </p>
             </div>
 
-            {hasManualUrl && (
+            {hasManual && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {isPdf ? (
                   <>
@@ -91,9 +77,11 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
               </div>
             )}
 
-            {!hasManualUrl && (
+            {!hasManual && (
               <p className="text-gray-600 text-xs italic pt-1">
-                Manual PDF pending — check equipment nameplate for model number
+                {equipment.name.toLowerCase().includes('custom')
+                  ? 'Custom-built equipment — no OEM manual available. Refer to internal documentation.'
+                  : 'Manual PDF pending — check equipment nameplate for model number.'}
               </p>
             )}
           </div>

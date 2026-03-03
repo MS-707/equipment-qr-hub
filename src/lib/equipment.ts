@@ -1,12 +1,50 @@
 import { equipmentData } from '@/data/equipment'
-import { EquipmentItem, EquipmentCategory } from '@/lib/types'
+import { EquipmentItem, EquipmentCategory, EquipmentStatus } from '@/lib/types'
+
+const STATUS_OVERRIDES_KEY = 'eqr-status-overrides'
+
+function readStatusOverrides(): Record<number, EquipmentStatus> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(STATUS_OVERRIDES_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function applyOverrides(items: EquipmentItem[]): EquipmentItem[] {
+  const overrides = readStatusOverrides()
+  if (Object.keys(overrides).length === 0) return items
+  return items.map((e) => {
+    const override = overrides[e.itemNumber]
+    return override ? { ...e, status: override } : e
+  })
+}
 
 export function getAllEquipment(): EquipmentItem[] {
-  return [...equipmentData].sort((a, b) => a.name.localeCompare(b.name))
+  return applyOverrides([...equipmentData]).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export function getEquipmentById(itemNumber: number): EquipmentItem | undefined {
-  return equipmentData.find(e => e.itemNumber === itemNumber)
+  const item = equipmentData.find(e => e.itemNumber === itemNumber)
+  if (!item) return undefined
+  const overrides = readStatusOverrides()
+  const override = overrides[itemNumber]
+  return override ? { ...item, status: override } : item
+}
+
+export function updateEquipmentStatus(itemNumber: number, status: EquipmentStatus): void {
+  if (typeof window === 'undefined') return
+  const overrides = readStatusOverrides()
+  // If setting back to the original baked-in status, remove the override
+  const original = equipmentData.find(e => e.itemNumber === itemNumber)
+  if (original && original.status === status) {
+    delete overrides[itemNumber]
+  } else {
+    overrides[itemNumber] = status
+  }
+  localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(overrides))
 }
 
 export function getEquipmentByCategory(category: EquipmentCategory): EquipmentItem[] {
