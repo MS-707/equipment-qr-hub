@@ -3,35 +3,45 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, Calendar, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
-import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
+import { ArrowLeft, Calendar, ClipboardCheck, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
+import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding, requiresPreTrip } from '@/lib/types'
+import { getEquipmentById } from '@/lib/equipment'
 import TabNav from '@/components/TabNav'
 import StatusToggle from '@/components/StatusToggle'
 import PMSchedule from '@/components/PMSchedule'
 import TrainingInfo from '@/components/TrainingInfo'
 import ComplianceInfo from '@/components/ComplianceInfo'
+import PreTripInspection from '@/components/PreTripInspection'
 
 interface EquipmentProfileProps {
   equipment: EquipmentItem
 }
 
-const TAB_IDS = ['training', 'pm-schedule', 'compliance'] as const
-type TabId = (typeof TAB_IDS)[number]
-
-const TABS = [
-  { id: 'training' as TabId, label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
-  { id: 'pm-schedule' as TabId, label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
-  { id: 'compliance' as TabId, label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
-]
-
-function isValidTab(value: string | null): value is TabId {
-  return TAB_IDS.includes(value as TabId)
-}
+type TabId = 'pre-trip' | 'training' | 'pm-schedule' | 'compliance'
 
 export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const initialTab = isValidTab(tabParam) ? tabParam : 'training'
+
+  const showPreTrip = requiresPreTrip(equipment)
+
+  const TABS = [
+    ...(showPreTrip
+      ? [{ id: 'pre-trip' as TabId, label: 'Pre-Trip', icon: <ClipboardCheck className="w-4 h-4" /> }]
+      : []),
+    { id: 'training' as TabId, label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'pm-schedule' as TabId, label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'compliance' as TabId, label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
+  ]
+
+  const TAB_IDS = TABS.map((t) => t.id)
+
+  function isValidTab(value: string | null): value is TabId {
+    return TAB_IDS.includes(value as TabId)
+  }
+
+  const defaultTab: TabId = showPreTrip ? 'pre-trip' : 'training'
+  const initialTab = isValidTab(tabParam) ? tabParam : defaultTab
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab)
   const [status, setStatus] = useState<EquipmentStatus>(equipment.status)
@@ -42,7 +52,13 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
     if (isValidTab(tabParam) && tabParam !== activeTab) {
       setActiveTab(tabParam)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabParam, activeTab])
+
+  function handleInspectionStatusChange() {
+    const updated = getEquipmentById(equipment.itemNumber)
+    if (updated) setStatus(updated.status)
+  }
 
   function handleTabChange(id: string) {
     const tabId = id as TabId
@@ -105,6 +121,12 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           aria-labelledby={`tab-${activeTab}`}
           className="mt-5 animate-fadeIn"
         >
+          {activeTab === 'pre-trip' && (
+            <PreTripInspection
+              equipment={equipment}
+              onStatusChange={handleInspectionStatusChange}
+            />
+          )}
           {activeTab === 'training' && <TrainingInfo equipment={equipment} />}
           {activeTab === 'pm-schedule' && <PMSchedule equipment={equipment} />}
           {activeTab === 'compliance' && <ComplianceInfo equipment={equipment} />}
