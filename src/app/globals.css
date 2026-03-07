@@ -14,6 +14,9 @@ body {
 
 input[type="date"] {
   color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 2.25rem;
 }
 
 /* Hide scrollbar on horizontal pill rows */
@@ -29,7 +32,7 @@ input[type="date"] {
 .accordion-content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 200ms ease-out;
+  transition: grid-template-rows 220ms ease-out;
 }
 .accordion-content.open {
   grid-template-rows: 1fr;
