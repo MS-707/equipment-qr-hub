@@ -126,3 +126,56 @@ export const EQUIPMENT_STATUS_COLORS: Record<EquipmentStatus, string> = {
   'Retired': '#6B7280',
   'Pending Repair': '#F97316',
 }
+
+// ── Pre-Trip Inspections ────────────────────────────────
+
+export type ChecklistType = 'electric-forklift' | 'scissor-lift' | 'walkie-pallet-jack' | 'manual-pallet-jack'
+
+export type Shift = 'Day' | 'Swing' | 'Night'
+
+export type InspectionResult = 'pass' | 'fail' | 'na'
+
+export interface InspectionItemResult {
+  id: string
+  label: string
+  category: string
+  critical: boolean
+  result: InspectionResult | null
+  notes: string
+  photo: string | null
+}
+
+export type InspectionSyncStatus = 'pending' | 'synced' | 'failed' | 'offline'
+
+export interface InspectionRecord {
+  id: string
+  equipmentId: number
+  inspectorName: string
+  shift: Shift
+  hourMeterReading: number | null
+  checklistType: ChecklistType
+  items: InspectionItemResult[]
+  result: 'pass' | 'fail'
+  hasCriticalFail: boolean
+  workOrderId: string | null
+  createdAt: string
+  syncStatus: InspectionSyncStatus
+  notionPageId: string | null
+}
+
+export const INSPECTION_CATEGORIES: EquipmentCategory[] = [
+  'Powered Industrial Trucks',
+  'Aerial Work Platforms',
+]
+
+export function requiresPreTrip(item: EquipmentItem): boolean {
+  return INSPECTION_CATEGORIES.includes(item.category)
+}
+
+export function getChecklistType(item: EquipmentItem): ChecklistType {
+  if (item.category === 'Aerial Work Platforms') return 'scissor-lift'
+  const name = item.name.toLowerCase()
+  if (name.includes('manual') || name.includes('hydraulic pallet jack')) return 'manual-pallet-jack'
+  if (name.includes('walkie') || name.includes('pallet jack')) return 'walkie-pallet-jack'
+  return 'electric-forklift'
+}
