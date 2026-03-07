@@ -63,6 +63,7 @@ const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 interface ChecklistItemRowProps {
   item: { id: string; label: string; category: string; critical: boolean }
   state: InspectionItemResult
+  notesMissing: boolean
   onResult: (result: InspectionResult) => void
   onNotes: (notes: string) => void
   onRemovePhoto: () => void
@@ -72,6 +73,7 @@ interface ChecklistItemRowProps {
 function ChecklistItemRow({
   item,
   state,
+  notesMissing,
   onResult,
   onNotes,
   onRemovePhoto,
@@ -145,14 +147,16 @@ function ChecklistItemRow({
           )}
 
           {/* Notes input */}
-          <input
-            type="text"
+          <textarea
+            rows={2}
             value={state.notes}
             onChange={(e) => onNotes(e.target.value)}
             placeholder="Describe the issue..."
-            className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                       text-sm text-white placeholder:text-gray-600
-                       focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+            aria-label="Describe the issue"
+            className={`w-full bg-mytra-input border rounded-lg py-2.5 px-3
+                       text-sm text-white placeholder:text-gray-600 resize-none
+                       focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
+                       ${notesMissing ? 'border-red-500 ring-2 ring-red-500/50' : 'border-mytra-border'}`}
           />
 
           {/* Photo capture or thumbnail */}
@@ -251,17 +255,24 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                     {formatDate(record.createdAt)} &middot; {record.shift} shift
                   </p>
                 </div>
-                <span
-                  className={`shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
-                    record.hasCriticalFail
-                      ? 'bg-red-500/15 text-red-400'
-                      : record.result === 'fail'
-                        ? 'bg-amber-500/15 text-amber-400'
-                        : 'bg-green-500/15 text-green-400'
-                  }`}
-                >
-                  {record.hasCriticalFail ? 'Critical' : record.result === 'fail' ? 'Issues' : 'Pass'}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    record.syncStatus === 'synced' ? 'bg-green-400' :
+                    record.syncStatus === 'failed' ? 'bg-red-400' :
+                    record.syncStatus === 'pending' ? 'bg-amber-400' : 'bg-gray-500'
+                  }`} title={`Sync: ${record.syncStatus}`} />
+                  <span
+                    className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
+                      record.hasCriticalFail
+                        ? 'bg-red-500/15 text-red-400'
+                        : record.result === 'fail'
+                          ? 'bg-amber-500/15 text-amber-400'
+                          : 'bg-green-500/15 text-green-400'
+                    }`}
+                  >
+                    {record.hasCriticalFail ? 'Critical' : record.result === 'fail' ? 'Issues' : 'Pass'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -301,12 +312,23 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     workOrderId: string | null
   } | null>(null)
 
+  // Notes validation
+  const [missingNotes, setMissingNotes] = useState<Set<string>>(new Set())
+
   // History
   const [history, setHistory] = useState<InspectionRecord[]>([])
   const [showHistory, setShowHistory] = useState(false)
 
   // File input refs — managed here, not in ChecklistItemRow
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  // Back-navigation guard during checklist
+  useEffect(() => {
+    if (step !== 'checklist') return
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [step])
 
   // Load last inspector name on mount
   useEffect(() => {
@@ -336,6 +358,14 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     setItems((prev) =>
       prev.map((it) => (it.id === itemId ? { ...it, notes } : it))
     )
+    if (notes.trim()) {
+      setMissingNotes((prev) => {
+        if (!prev.has(itemId)) return prev
+        const next = new Set(prev)
+        next.delete(itemId)
+        return next
+      })
+    }
   }, [])
 
   const handlePhoto = useCallback((itemId: string, photo: string) => {
@@ -382,6 +412,15 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
   function handleSubmit() {
     if (!allAnswered) return
+
+    // Validate notes on failed items
+    const failedWithoutNotes = items
+      .filter((it) => it.result === 'fail' && !it.notes.trim())
+      .map((it) => it.id)
+    if (failedWithoutNotes.length > 0) {
+      setMissingNotes(new Set(failedWithoutNotes))
+      return
+    }
 
     const record = submitInspection({
       equipmentId: equipment.itemNumber,
@@ -441,6 +480,8 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}
                 placeholder="Your name"
+                required
+                aria-required="true"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                            text-sm text-white placeholder:text-gray-600
                            focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
@@ -450,11 +491,13 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             {/* Shift toggle */}
             <div>
               <label className="block text-xs text-gray-400 mb-1">Shift</label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="radiogroup" aria-label="Shift">
                 {SHIFTS.map((s) => (
                   <button
                     key={s}
                     type="button"
+                    role="radio"
+                    aria-checked={shift === s}
                     onClick={() => setShift(s)}
                     className={`flex-1 text-sm font-medium py-2 rounded-lg transition-colors duration-150 ${
                       shift === s
@@ -551,6 +594,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                       <ChecklistItemRow
                         item={checkItem}
                         state={itemState}
+                        notesMissing={missingNotes.has(checkItem.id)}
                         onResult={(result) => handleResult(checkItem.id, result)}
                         onNotes={(notes) => handleNotes(checkItem.id, notes)}
                         onRemovePhoto={() => handleRemovePhoto(checkItem.id)}
@@ -589,7 +633,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover
                          disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
             >
-              {allAnswered ? 'Submit Inspection' : `${remaining} item${remaining === 1 ? '' : 's'} remaining`}
+              {missingNotes.size > 0
+                ? 'Add notes to failed items'
+                : allAnswered
+                  ? 'Submit Inspection'
+                  : `${remaining} item${remaining === 1 ? '' : 's'} remaining`}
             </button>
           </div>
         </div>

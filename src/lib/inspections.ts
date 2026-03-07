@@ -8,11 +8,51 @@
 import { InspectionRecord, InspectionItemResult, ChecklistType, Shift } from '@/lib/types'
 import { getAllItems } from '@/data/inspection-checklists'
 import { createWorkOrder } from '@/lib/work-orders'
-import { updateEquipmentStatus } from '@/lib/equipment'
+import { updateEquipmentStatus, getEquipmentById } from '@/lib/equipment'
 
 const STORAGE_KEY = 'eqr-inspections'
 const COUNTER_KEY = 'eqr-ins-counter'
 const INSPECTOR_KEY = 'eqr-last-inspector'
+
+// ── IndexedDB photo storage ──────────────────────────
+
+const PHOTO_DB = 'eqr-photo-store'
+const PHOTO_STORE = 'photos'
+
+function openPhotoDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(PHOTO_DB, 1)
+    req.onupgradeneeded = () => req.result.createObjectStore(PHOTO_STORE)
+    req.onsuccess = () => resolve(req.result)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function savePhotos(recordId: string, items: InspectionItemResult[]): Promise<void> {
+  const photos = items.filter((i) => i.photo)
+  if (photos.length === 0) return
+  const db = await openPhotoDB()
+  const tx = db.transaction(PHOTO_STORE, 'readwrite')
+  const store = tx.objectStore(PHOTO_STORE)
+  for (const item of photos) {
+    store.put(item.photo, `${recordId}:${item.id}`)
+  }
+  db.close()
+}
+
+export async function getPhotos(recordId: string, itemIds: string[]): Promise<Record<string, string>> {
+  const db = await openPhotoDB()
+  const tx = db.transaction(PHOTO_STORE, 'readonly')
+  const store = tx.objectStore(PHOTO_STORE)
+  const result: Record<string, string> = {}
+  await Promise.all(itemIds.map((id) => new Promise<void>((resolve) => {
+    const req = store.get(`${recordId}:${id}`)
+    req.onsuccess = () => { if (req.result) result[id] = req.result; resolve() }
+    req.onerror = () => resolve()
+  })))
+  db.close()
+  return result
+}
 
 // ── Internal helpers ─────────────────────────────────
 
@@ -28,7 +68,11 @@ function readAll(): InspectionRecord[] {
 
 function writeAll(records: InspectionRecord[]): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+  } catch (e) {
+    console.error('Failed to save inspections:', e)
+  }
 }
 
 function nextId(): string {
@@ -122,10 +166,13 @@ export function submitInspection(data: {
       .map((item) => `${item.label}${item.notes ? ': ' + item.notes : ''}`)
       .join('; ')
 
+    const equipment = getEquipmentById(data.equipmentId)
+    const eqName = equipment?.name ?? `Equipment #${data.equipmentId}`
+
     const wo = createWorkOrder({
       equipmentId: data.equipmentId,
       pmType: 'Daily',
-      tasks: `Pre-trip inspection defects: ${failSummary}`,
+      tasks: `[${eqName}] Pre-trip defects: ${failSummary}`,
       assignedTo: null,
     })
     workOrderId = wo.id
@@ -139,14 +186,16 @@ export function submitInspection(data: {
   // Save inspector name for next time
   setLastInspector(data.inspectorName)
 
+  const recordId = nextId()
+
   const record: InspectionRecord = {
-    id: nextId(),
+    id: recordId,
     equipmentId: data.equipmentId,
     inspectorName: data.inspectorName,
     shift: data.shift,
     hourMeterReading: data.hourMeterReading,
     checklistType: data.checklistType,
-    items: data.items,
+    items: data.items.map((i) => ({ ...i, photo: null })),
     result: hasAnyFail ? 'fail' : 'pass',
     hasCriticalFail,
     workOrderId,
@@ -159,7 +208,14 @@ export function submitInspection(data: {
   all.push(record)
   writeAll(all)
   notify()
-  return record
+
+  // Save photos to IndexedDB (fire-and-forget)
+  savePhotos(recordId, data.items).catch((e) =>
+    console.error('Failed to save photos to IndexedDB:', e)
+  )
+
+  // Return record with original photos still in memory for result screen
+  return { ...record, items: data.items }
 }
 
 // ── Export helpers ────────────────────────────────────
@@ -176,10 +232,10 @@ export function exportInspectionsToCsv(records: InspectionRecord[]): string {
       .map((i) => i.label)
       .join('; ')
     return [
-      r.id, r.equipmentId, `"${r.inspectorName}"`, r.shift,
+      r.id, r.equipmentId, `"${r.inspectorName.replace(/"/g, '""')}"`, r.shift,
       r.hourMeterReading ?? '', r.checklistType, r.result,
       r.hasCriticalFail ? 'YES' : 'NO',
-      `"${failedItems}"`, r.workOrderId ?? '', r.createdAt, r.syncStatus,
+      `"${failedItems.replace(/"/g, '""')}"`, r.workOrderId ?? '', r.createdAt, r.syncStatus,
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')
