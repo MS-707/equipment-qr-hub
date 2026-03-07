@@ -91,8 +91,9 @@ export default function CreateWorkOrderButton({
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full bg-mytra-input border border-mytra-border rounded py-1.5 pl-7 pr-2
-                         text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple"
+              className="w-full bg-mytra-input border border-mytra-border rounded py-2 pl-7 pr-2
+                         text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                         block box-border"
             />
           </div>
         </div>
@@ -103,7 +104,7 @@ export default function CreateWorkOrderButton({
             value={assignedTo}
             onChange={(e) => setAssignedTo(e.target.value)}
             placeholder="Optional"
-            className="w-full bg-mytra-input border border-mytra-border rounded py-1.5 px-2
+            className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-2
                        text-xs text-white placeholder:text-gray-600
                        focus:outline-none focus:ring-1 focus:ring-mytra-purple"
           />

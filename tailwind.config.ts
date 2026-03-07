@@ -35,9 +35,9 @@ const config: Config = {
         },
       },
       animation: {
-        fadeIn: 'fadeIn 200ms ease-out',
-        slideDown: 'slideDown 200ms ease-out',
-        fadeInUp: 'fadeInUp 300ms ease-out both',
+        fadeIn: 'fadeIn 220ms ease-out',
+        slideDown: 'slideDown 220ms ease-out',
+        fadeInUp: 'fadeInUp 330ms ease-out both',
       }
     },
   },
