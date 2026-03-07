@@ -41,7 +41,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
             aria-controls={`tabpanel-${tab.id}`}
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium
                         transition-colors duration-150 border-b-2
                         ${
                           isActive
@@ -49,7 +49,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
                             : 'border-transparent text-gray-500 hover:text-white'
                         }`}
           >
-            {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
+            {tab.icon && <span className="w-4 h-4 hidden sm:block">{tab.icon}</span>}
             {tab.label}
           </button>
         )

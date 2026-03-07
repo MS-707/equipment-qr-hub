@@ -64,41 +64,43 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
             Regulatory Details
           </button>
 
-          {showRegulatory && (
-            <div className="mt-3 space-y-4">
-              {calOshaSections.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-gray-400 mb-2">
-                    Applicable Cal/OSHA Sections
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {calOshaSections.map((section, i) => (
-                      <span
-                        key={i}
-                        className="inline-block bg-mytra-card border border-mytra-border
-                                   rounded-full px-3 py-1 text-xs text-gray-300"
-                      >
-                        {section}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {equipment.calOshaTrainingReq.trim() !== '' && (
-                <div>
-                  <p className="text-xs font-medium text-gray-400 mb-2">
-                    Regulatory Training Requirements
-                  </p>
-                  <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {equipment.calOshaTrainingReq}
+          <div className={`accordion-content ${showRegulatory ? 'open' : ''}`}>
+            <div>
+              <div className="mt-3 space-y-4">
+                {calOshaSections.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-400 mb-2">
+                      Applicable Cal/OSHA Sections
                     </p>
+                    <div className="flex flex-wrap gap-2">
+                      {calOshaSections.map((section, i) => (
+                        <span
+                          key={i}
+                          className="inline-block bg-mytra-card border border-mytra-border
+                                     rounded-full px-3 py-1 text-xs text-gray-300"
+                        >
+                          {section}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {equipment.calOshaTrainingReq.trim() !== '' && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-400 mb-2">
+                      Regulatory Training Requirements
+                    </p>
+                    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {equipment.calOshaTrainingReq}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

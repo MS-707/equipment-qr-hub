@@ -48,7 +48,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
             role="listbox"
             aria-label="Equipment status"
             className="absolute left-0 top-full mt-1 z-50 bg-mytra-card border border-mytra-border
-                       rounded-lg shadow-lg overflow-hidden min-w-[160px]"
+                       rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-slideDown origin-top"
           >
             {STATUSES.map((status) => {
               const statusColor = EQUIPMENT_STATUS_COLORS[status]

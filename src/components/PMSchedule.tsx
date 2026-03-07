@@ -105,28 +105,30 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                 )}
               </button>
 
-              {isOpen && (
-                <div className="px-4 pb-4 border-t border-mytra-border">
-                  <ul className="mt-3 space-y-2">
-                    {tasks.map((task, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-2 text-sm text-gray-300"
-                      >
-                        <span className="text-gray-600 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-gray-600" />
-                        <span>{task}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className={`accordion-content ${isOpen ? 'open' : ''}`}>
+                <div>
+                  <div className="px-4 pb-4 border-t border-mytra-border">
+                    <ul className="mt-3 space-y-2">
+                      {tasks.map((task, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-gray-300"
+                        >
+                          <span className="text-gray-600 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-gray-600" />
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <CreateWorkOrderButton
-                    equipmentId={equipment.itemNumber}
-                    equipmentName={equipment.name}
-                    pmType={freq.pmType}
-                    tasks={freq.value}
-                  />
+                    <CreateWorkOrderButton
+                      equipmentId={equipment.itemNumber}
+                      equipmentName={equipment.name}
+                      pmType={freq.pmType}
+                      tasks={freq.value}
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           )
         })}
