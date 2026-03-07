@@ -182,87 +182,89 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
       </button>
 
       {/* Expanded content */}
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-mytra-border space-y-3">
-          {/* Task list */}
-          <ul className="mt-3 space-y-1.5">
-            {tasks.map((task, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-gray-300">
-                <span className="mt-1.5 shrink-0 w-1 h-1 rounded-full bg-gray-600" />
-                <span>{task}</span>
-              </li>
-            ))}
-          </ul>
+      <div className={`accordion-content ${isExpanded ? 'open' : ''}`}>
+        <div>
+          <div className="px-4 pb-4 border-t border-mytra-border space-y-3">
+            {/* Task list */}
+            <ul className="mt-3 space-y-1.5">
+              {tasks.map((task, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-gray-300">
+                  <span className="mt-1.5 shrink-0 w-1 h-1 rounded-full bg-gray-600" />
+                  <span>{task}</span>
+                </li>
+              ))}
+            </ul>
 
-          {/* Completion notes */}
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">
-              Completion Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={saveNotes}
-              rows={2}
-              placeholder="Issues found, parts replaced, observations..."
-              className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-3
-                         text-xs text-white placeholder:text-gray-600 resize-none
-                         focus:outline-none focus:ring-1 focus:ring-mytra-purple"
-            />
-          </div>
+            {/* Completion notes */}
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">
+                Completion Notes
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onBlur={saveNotes}
+                rows={2}
+                placeholder="Issues found, parts replaced, observations..."
+                className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-3
+                           text-xs text-white placeholder:text-gray-600 resize-none
+                           focus:outline-none focus:ring-1 focus:ring-mytra-purple"
+              />
+            </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Linear dispatch placeholder */}
-            <button
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                         rounded-lg border border-mytra-border text-gray-400
-                         hover:text-white hover:bg-mytra-card-hover transition-colors"
-              title="Send to Linear (requires Linear integration)"
-              onClick={() => {
-                const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
-                const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
-                navigator.clipboard.writeText(`${title}\n\n${desc}`)
-                  .then(() => alert('Work order details copied to clipboard.\nUse Linear to create the issue.'))
-                  .catch(() => alert('Could not copy to clipboard. Please copy manually.'))
-              }}
-            >
-              <ExternalLink className="w-3 h-3" />
-              Send to Linear
-            </button>
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Linear dispatch placeholder */}
+              <button
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
+                           rounded-lg border border-mytra-border text-gray-400
+                           hover:text-white hover:bg-mytra-card-hover transition-colors"
+                title="Send to Linear (requires Linear integration)"
+                onClick={() => {
+                  const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
+                  const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
+                  navigator.clipboard.writeText(`${title}\n\n${desc}`)
+                    .then(() => alert('Work order details copied to clipboard.\nUse Linear to create the issue.'))
+                    .catch(() => alert('Could not copy to clipboard. Please copy manually.'))
+                }}
+              >
+                <ExternalLink className="w-3 h-3" />
+                Send to Linear
+              </button>
 
-            {/* Gmail dispatch placeholder */}
-            <button
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                         rounded-lg border border-mytra-border text-gray-400
-                         hover:text-white hover:bg-mytra-card-hover transition-colors"
-              title="Email work order (requires Gmail integration)"
-              onClick={() => {
-                const subject = `PM Work Order: ${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM [${workOrder.id}]`
-                const body = `Work Order: ${workOrder.id}\nEquipment: ${equipment?.name || 'Unknown'}\nPM Type: ${workOrder.pmType}\nDue Date: ${workOrder.dueDate || 'Not set'}\n\nTasks:\n${tasks.map(t => `• ${t}`).join('\n')}\n\n---\nSent from Equipment QR Hub`
-                window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
-              }}
-            >
-              <Mail className="w-3 h-3" />
-              Email
-            </button>
+              {/* Gmail dispatch placeholder */}
+              <button
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
+                           rounded-lg border border-mytra-border text-gray-400
+                           hover:text-white hover:bg-mytra-card-hover transition-colors"
+                title="Email work order (requires Gmail integration)"
+                onClick={() => {
+                  const subject = `PM Work Order: ${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM [${workOrder.id}]`
+                  const body = `Work Order: ${workOrder.id}\nEquipment: ${equipment?.name || 'Unknown'}\nPM Type: ${workOrder.pmType}\nDue Date: ${workOrder.dueDate || 'Not set'}\n\nTasks:\n${tasks.map(t => `• ${t}`).join('\n')}\n\n---\nSent from Equipment QR Hub`
+                  window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
+                }}
+              >
+                <Mail className="w-3 h-3" />
+                Email
+              </button>
 
-            {/* Delete */}
-            <button
-              onClick={handleDelete}
-              className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                         rounded-lg transition-colors ml-auto ${
-                           confirmDelete
-                             ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-                             : 'text-gray-600 hover:text-red-400'
-                         }`}
-            >
-              <Trash2 className="w-3 h-3" />
-              {confirmDelete ? 'Confirm Delete' : 'Delete'}
-            </button>
+              {/* Delete */}
+              <button
+                onClick={handleDelete}
+                className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
+                           rounded-lg transition-colors ml-auto ${
+                             confirmDelete
+                               ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                               : 'text-gray-600 hover:text-red-400'
+                           }`}
+              >
+                <Trash2 className="w-3 h-3" />
+                {confirmDelete ? 'Confirm Delete' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

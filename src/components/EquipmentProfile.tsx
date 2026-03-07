@@ -99,10 +99,11 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
 
         {/* Tab Content */}
         <div
+          key={activeTab}
           role="tabpanel"
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
-          className="mt-5"
+          className="mt-5 animate-fadeIn"
         >
           {activeTab === 'training' && <TrainingInfo equipment={equipment} />}
           {activeTab === 'pm-schedule' && <PMSchedule equipment={equipment} />}

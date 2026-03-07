@@ -163,8 +163,14 @@ export default function Home() {
       ) : selectedCategory !== 'all' || !groupedEquipment ? (
         /* Flat grid — specific category selected */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredEquipment.map((item) => (
-            <EquipmentCard key={item.itemNumber} equipment={item} />
+          {filteredEquipment.map((item, i) => (
+            <div
+              key={item.itemNumber}
+              className="animate-fadeInUp"
+              style={i < 12 ? { animationDelay: `${i * 30}ms` } : undefined}
+            >
+              <EquipmentCard equipment={item} />
+            </div>
           ))}
         </div>
       ) : (
@@ -205,8 +211,14 @@ export default function Home() {
 
                 {!isCollapsed && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {items!.map((item) => (
-                      <EquipmentCard key={item.itemNumber} equipment={item} showCategory={false} />
+                    {items!.map((item, i) => (
+                      <div
+                        key={item.itemNumber}
+                        className="animate-fadeInUp"
+                        style={i < 12 ? { animationDelay: `${i * 30}ms` } : undefined}
+                      >
+                        <EquipmentCard equipment={item} showCategory={false} />
+                      </div>
                     ))}
                   </div>
                 )}

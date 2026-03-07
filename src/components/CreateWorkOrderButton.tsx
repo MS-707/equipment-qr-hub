@@ -69,7 +69,7 @@ export default function CreateWorkOrderButton({
   }
 
   return (
-    <div className="mt-3 p-3 bg-mytra-bg border border-mytra-border rounded-lg space-y-3">
+    <div className="mt-3 p-3 bg-mytra-bg border border-mytra-border rounded-lg space-y-3 animate-fadeIn">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-white">
           New {pmType} PM Work Order
@@ -82,7 +82,7 @@ export default function CreateWorkOrderButton({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <label className="text-xs text-gray-500 block mb-1">Due Date</label>
           <div className="relative">

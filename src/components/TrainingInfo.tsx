@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Users, BookOpen, Download, ExternalLink, FileText, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Users, BookOpen, Download, ExternalLink, FileText, ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem, PRIORITY_COLORS } from '@/lib/types'
 import { getTrainingProgramsForEquipment } from '@/lib/training'
 
@@ -12,7 +12,18 @@ interface TrainingInfoProps {
 export default function TrainingInfo({ equipment }: TrainingInfoProps) {
   const [showViewer, setShowViewer] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(true)
+  const [slowHint, setSlowHint] = useState(false)
+  const slowTimerRef = useRef<ReturnType<typeof setTimeout>>()
   const programs = getTrainingProgramsForEquipment(equipment.itemNumber)
+
+  useEffect(() => {
+    if (showViewer && pdfLoading) {
+      slowTimerRef.current = setTimeout(() => setSlowHint(true), 8000)
+    } else {
+      setSlowHint(false)
+    }
+    return () => clearTimeout(slowTimerRef.current)
+  }, [showViewer, pdfLoading])
 
   const isPdf = equipment.manualType === 'pdf'
   const hasManual = equipment.manualType !== 'none'
@@ -91,14 +102,28 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
             <div className="mt-3 rounded-lg overflow-hidden border border-mytra-border relative">
               {pdfLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-mytra-card z-10">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400 mb-2" />
-                  <p className="text-gray-400 text-xs">Loading manual...</p>
+                  <div className="w-full h-full p-6 space-y-3">
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-3/4" />
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-full" />
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-5/6" />
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-2/3" />
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-full" />
+                    <div className="h-4 bg-mytra-border rounded animate-pulse w-4/5" />
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <p className="text-gray-400 text-xs">Loading manual...</p>
+                    {slowHint && (
+                      <p className="text-gray-500 text-xs mt-2 animate-fadeIn">
+                        Taking longer than usual? Try the Download button above.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
               <iframe
                 src={`https://docs.google.com/gview?url=${encodeURIComponent(equipment.manualUrl)}&embedded=true`}
-                className="w-full bg-white rounded-lg"
-                style={{ height: '70vh', minHeight: '400px' }}
+                className={`w-full bg-white rounded-lg h-[50vh] sm:h-[70vh] min-h-[300px] sm:min-h-[400px]
+                           ${pdfLoading ? 'opacity-0' : 'animate-fadeIn'}`}
                 title={`${equipment.name} Equipment Manual`}
                 onLoad={() => setPdfLoading(false)}
               />
