@@ -13,6 +13,7 @@ import { updateEquipmentStatus, getEquipmentById } from '@/lib/equipment'
 const STORAGE_KEY = 'eqr-inspections'
 const COUNTER_KEY = 'eqr-ins-counter'
 const INSPECTOR_KEY = 'eqr-last-inspector'
+const LAST_EQUIPMENT_KEY = 'eqr-last-equipment'
 
 // ── IndexedDB photo storage ──────────────────────────
 
@@ -116,6 +117,21 @@ export function setLastInspector(name: string): void {
   localStorage.setItem(INSPECTOR_KEY, name)
 }
 
+// ── Last-used equipment persistence ──────────────────
+
+export function getLastEquipmentId(): number | null {
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem(LAST_EQUIPMENT_KEY)
+  if (!raw) return null
+  const id = parseInt(raw, 10)
+  return Number.isNaN(id) ? null : id
+}
+
+export function setLastEquipmentId(id: number): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(LAST_EQUIPMENT_KEY, String(id))
+}
+
 // ── Blank checklist builder ──────────────────────────
 
 export function buildBlankItems(checklistType: ChecklistType): InspectionItemResult[] {
@@ -183,8 +199,9 @@ export function submitInspection(data: {
     }
   }
 
-  // Save inspector name for next time
+  // Save inspector name and equipment for next time
   setLastInspector(data.inspectorName)
+  setLastEquipmentId(data.equipmentId)
 
   const recordId = nextId()
 
