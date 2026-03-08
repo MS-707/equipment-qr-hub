@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, QrCode, ClipboardList } from 'lucide-react'
+import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
 
 export default function NavHeader() {
@@ -28,6 +28,7 @@ export default function NavHeader() {
 
   const navLinks = [
     { href: '/', label: 'Directory', icon: LayoutGrid, badge: 0 },
+    { href: '/inspections', label: 'Pre-Trip', icon: ClipboardCheck, badge: 0 },
     { href: '/work-orders', label: 'Work Orders', icon: ClipboardList, badge: openCount },
     { href: '/admin/labels', label: 'QR Labels', icon: QrCode, badge: 0 },
   ]
@@ -44,7 +45,7 @@ export default function NavHeader() {
         </Link>
 
         {/* Right: Nav Links */}
-        <nav className="flex items-center gap-5">
+        <nav className="flex items-center gap-3 sm:gap-5">
           {navLinks.map(({ href, label, icon: Icon, badge }) => {
             const isActive =
               href === '/'
