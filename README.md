@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Equipment QR Hub
+
+Equipment tracking and management system for industrial and manufacturing environments. Digitizes paper-based inspection workflows into a searchable, QR-accessible web application.
+
+**Live:** [equipment-qr-hub.vercel.app](https://equipment-qr-hub.vercel.app)
+
+## What It Does
+
+- **Equipment inventory** — Searchable catalog of all tracked equipment organized by category (machine tools, welding, aerial work platforms, powered industrial trucks, material handling, and more)
+- **QR code labels** — Generate and print QR labels for any piece of equipment. Scan with a phone to instantly access its profile, inspection history, and PM schedule.
+- **Pre-trip inspections** — Digital inspection checklists that replace paper forms. Timestamped, auditable, tied to specific equipment.
+- **Work orders** — Create, assign, and track maintenance work orders with priority levels (Critical/High/Medium/Low) and status tracking.
+- **Preventive maintenance schedules** — Daily, weekly, monthly, quarterly, semi-annual, and annual PM tasks per equipment item with due date tracking.
+- **Guard status monitoring** — Track machine guarding status across the fleet.
+- **Cal/OSHA compliance** — Each equipment item includes relevant Cal/OSHA sections and training requirements.
+- **OEM manual access** — Direct links to manufacturer manuals (PDF or web) from each equipment profile.
+
+## Equipment Categories
+
+- Stationary Machine Tools
+- Welding
+- Air Compressors
+- Aerial Work Platforms
+- Powered Industrial Trucks (forklifts, pallet jacks)
+- Material Handling
+- Cordless Power Tools
+- Environmental/Test Equipment
+- Shop Infrastructure
+
+## Tech Stack
+
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Icons:** Lucide React
+- **QR Generation:** Built-in label component
+- **Deployment:** Vercel
+- **PWA:** Service worker for offline access
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key Components
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Component | Purpose |
+|-----------|---------|
+| `EquipmentCard` | Equipment list item with status badge and category color |
+| `EquipmentProfile` | Full equipment detail view with tabs |
+| `PreTripInspection` | Digital inspection checklist form |
+| `QRLabel` | Printable QR code label generator |
+| `WorkOrderBoard` | Kanban-style work order management |
+| `PMSchedule` | Preventive maintenance schedule display |
+| `StatusToggle` | Equipment active/out-of-service toggle |
+| `ComplianceInfo` | Cal/OSHA compliance requirements |
+| `TrainingInfo` | Required training for equipment operation |
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Internal EHS tool.
