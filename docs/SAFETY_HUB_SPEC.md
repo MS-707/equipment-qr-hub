@@ -48,7 +48,7 @@ These were confirmed with the product owner:
 | **PTP workflow** | **Collaborative** — one device, foreman drives, hazards added by the group, and **each person e-signs by drawing their signature** (touch/stylus/mouse). |
 | **Sync target** | **Notion** databases (one per record type). Reuse/extend the existing Notion sync seam. |
 | **Slack** | **Out of scope** for this phase. Do not build it. Leave no dead UI for it. |
-| **Claude API** | **Optional, off by default.** Build the seam (see §13) but gate it behind an env var so it costs nothing unless enabled. Do not make any core flow depend on it. |
+| **Claude API ("Sage")** | **Optional, off by default.** The Claude-powered assistant is branded **Sage**. Scaffold its UX/UI (see §13) but gate it behind an env var so it costs nothing and renders nothing unless enabled. No core flow may depend on Sage. |
 
 ---
 
@@ -79,7 +79,7 @@ Read these files before writing anything. They define every convention you must 
 ### New dependencies authorized by this spec
 
 - `next-auth@^4.24` (Google OAuth). **This is the only new runtime dependency.** Do not add a signature library, a form library, a date library, or the Notion SDK — implement those with platform primitives / `fetch` as described below.
-- (Optional, only if Claude assist is enabled in a later step) `@anthropic-ai/sdk`. Not installed by default.
+- (Optional, only if **Sage** is enabled in a later step) `@anthropic-ai/sdk`. Not installed by default.
 
 ---
 
@@ -139,7 +139,7 @@ src/
       auth/[...nextauth]/route.ts        NextAuth handler (Google)
       safety/
         sync/route.ts                    App Router endpoint: push a safety record to Notion
-        suggest-hazards/route.ts         OPTIONAL Claude assist (env-gated; see §13)
+        suggest-hazards/route.ts         OPTIONAL — Sage (Claude) hazard suggestions, env-gated; see §13
     safety/
       page.tsx                           Safety Hub dashboard (auth-gated)
       ptp/page.tsx                        Pre-Task Plan
@@ -164,6 +164,7 @@ src/
       HazardTable.tsx                     Collaborative hazard rows + quick-add chips
       CrewSignatureBlock.tsx             Roster of signatures using SignaturePad
       PermitChecklist.tsx                Generic checked/notes checklist renderer
+      SageAssist.tsx                      OPTIONAL — "Sage" AI hazard helper; renders null when dormant (§13)
       RecordView.tsx                      Read-only renderer used by record/[id]
       PreTaskPlanForm.tsx
       HeightPermitForm.tsx
@@ -369,6 +370,7 @@ export interface HazardEntry {
   riskLevel: RiskLevel
   controlMeasure: string
   addedBy: string | null      // name of whoever identified it (optional)
+  source?: 'sage' | 'manual'  // provenance; defaults 'manual'. 'sage' = AI-drafted (see §13)
 }
 
 export interface PreTaskPlan extends SafetyRecordBase {
@@ -674,7 +676,7 @@ Subscribe to `onSafetyChange` and the `storage` event (copy `NavHeader` pattern)
 All forms: wrapped in `<AuthGate>`, multi-step where helpful (mirror Pre-Trip's `identify → details → review/submit`), sticky submit, disable submit until required fields + critical checklist items are satisfied, then call the matching `create*` in `safety-records.ts`, then show a success result screen with the new record id and a "View / Print" and "New" action. Prefill `location`/`projectName` from the most recent record of the day for friction reduction (read-only suggestion the user can change).
 
 - **`PreTaskPlanForm.tsx`** (`/safety/ptp`):
-  Step 1 *Plan*: date (default today), shift, projectName, location, scopeOfWork, `HazardTable`, `PPESelector`, site-conditions block (muster point, nearest hospital, first-aid/eyewash, weather, wind), **Heat Illness** block (4 toggles, T8 §3395), toolbox talk topic + notes.
+  Step 1 *Plan*: date (default today), shift, projectName, location, scopeOfWork, **`SageAssist`** (dormant by default — sits directly above the hazard table; see §13), `HazardTable`, `PPESelector`, site-conditions block (muster point, nearest hospital, first-aid/eyewash, weather, wind), **Heat Illness** block (4 toggles, T8 §3395), toolbox talk topic + notes.
   Step 2 *Sign-on*: `CrewSignatureBlock` (collaborative — pass the device around). Mark one signer as supervisor (`requireSupervisor`).
   Submit → `createPreTaskPlan`. Success screen: "PTP logged — {n} crew signed on."
   *Friction note:* allow saving the plan (step 1) and adding signatures progressively; a PTP is valid once ≥1 supervisor + ≥1 crew signature exist, but allow more sign-ons to be appended during the same session before final submit.
@@ -747,18 +749,45 @@ export async function POST(req: Request) {
 
 ---
 
-## 13. OPTIONAL — Claude-assisted hazard suggestions (env-gated)
+## 13. Sage — the (optional, dormant) AI safety assistant
 
-Build the seam but ship it **off**. Value: when a foreman types the scope of work, Claude can draft a list of likely hazards + control measures for them to review/edit — reducing friction without removing human judgment. The user explicitly does not want cost "for no reason," so:
+**Sage** is the product name for the Claude-powered helper inside the Safety Hub. **Scaffold its UX/UI fully as described here, but ship it dormant.** With no `ANTHROPIC_API_KEY` configured (and/or the public flag off), **no Sage UI renders at all** and there is zero cost or behavioral impact. The core module never depends on Sage. The value when enabled: when a foreman types the scope of work, Sage drafts likely hazards + control measures for the crew to review/edit — cutting the blank-page friction of the morning plan without removing human judgment.
 
-- **Feature flag:** active only if `ANTHROPIC_API_KEY` is set. `PreTaskPlanForm` shows a subtle "✨ Suggest hazards" button next to `HazardTable` **only when** a public flag (`NEXT_PUBLIC_AI_ASSIST === '1'`) is on. No key / no flag → button absent, zero behavioral/cost impact.
-- **Route:** `src/app/api/safety/suggest-hazards/route.ts` (App Router POST). Input `{ scopeOfWork, location }`. Server-side only; the key never reaches the client.
-- **SDK & model:** `@anthropic-ai/sdk` (add only when enabling). Use **`claude-sonnet-4-6`** (best latency/cost for this short structured task). Request structured JSON: an array of `{ description, riskLevel, controlMeasure }`. Use a tool/`response_format`-style JSON contract and parse defensively.
-- **Prompt caching (required when implemented):** the system prompt is a stable OSHA/Cal-OSHA hazard-identification rubric (construction/commissioning context). Mark it with `cache_control: { type: 'ephemeral' }` so repeated calls hit the cache and cost less. Keep `max_tokens` small (~600). Add a 1-line cost note in README.
-- **Failure handling:** any error → return `[]` and the UI silently falls back to manual entry. Never block the PTP on the AI.
-- The result only **pre-fills editable rows** in `HazardTable`; the human always confirms. Add a visible "AI-suggested — review before signing" caption.
+### 13.1 Persona & voice
+- **Name:** Sage. **Role:** a calm, experienced site-safety advisor — like a seasoned EHS lead looking over the foreman's shoulder.
+- **Tone:** concise, plain-language, practical, never alarmist or preachy. Always defers to the human ("review before signing").
+- **Identity in UI:** a `Sparkles` Lucide icon in `mytra-purple`, the name **"Sage"** in `text-mytra-purple`, and a one-line tagline on first reveal: *"Sage · your safety co-pilot."* Sage never claims certainty; everything it produces is a draft.
+- **Hard boundaries:** Sage only **suggests**. It never auto-submits, never signs, never closes/revokes a permit, and never satisfies a `critical` checklist item on the user's behalf. Every Sage output is editable and clearly labeled AI-generated.
 
-(If the product owner later wants it, the same seam can summarize incidents for Notion or auto-draft toolbox-talk topics.)
+### 13.2 Where Sage lives & how it behaves (v1 capability: hazard suggestions)
+On the **Pre-Task Plan** form, Step 1, **directly above the `HazardTable`**. Implemented as a dedicated, reusable component **`src/components/safety/SageAssist.tsx`** (props `{ scopeOfWork, location, existingHazards, onAddHazards }`).
+
+**Dormant state (default — what ships):** `SageAssist` returns `null` when `process.env.NEXT_PUBLIC_AI_ASSIST !== '1'`. The PTP renders exactly as if Sage didn't exist — no button, no panel, no placeholder. The server route additionally hard-guards on `ANTHROPIC_API_KEY`, so even a stray flag with no key fails closed to manual entry.
+
+**Active-state UX (only when enabled) — scaffold all of this now, just behind the flag:**
+1. **Trigger** — a subtle, full-width ghost button above the hazard table: `Sparkles` + "Ask Sage to suggest hazards". Style `bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple rounded-lg`, hover → `border-mytra-purple/60`. Disabled with helper text "Add a scope of work first" until `scopeOfWork` has a few words.
+2. **Loading** — button morphs to a pulsing "Sage is thinking…" (sparkles opacity-pulse; reuse `animate-fadeIn`). **Non-blocking** — the rest of the form stays fully editable. Client-side hard timeout ~12s.
+3. **Results panel** — `bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 animate-fadeInUp`. Header: `Sparkles` + "Sage suggests — review before signing". Each suggestion is a row: risk chip (colored via `RISK_COLORS`), description, suggested control measure, a multi-select checkbox, and a quick **＋ Add**. Footer: **"Add selected"** + **"Dismiss"**. Nothing enters the plan without an explicit tap; added items become normal **editable** `HazardEntry` rows in `HazardTable`.
+4. **Provenance (audit honesty)** — a hazard row that originated from Sage shows a tiny `text-[10px] text-mytra-purple` "via Sage" tag in `HazardTable` until the user edits it. Store an additive `source?: 'sage' | 'manual'` on `HazardEntry` (defaults `'manual'`). This keeps the trail clear about what was AI-drafted vs human-authored.
+5. **Empty / regenerate** — if Sage returns nothing useful: "No suggestions — add hazards manually." Offer a client-side rate-limited "Regenerate" to avoid cost surprises.
+
+### 13.3 Technical seam (build the files now, inert)
+- **Component:** `src/components/safety/SageAssist.tsx` — `'use client'`; renders `null` unless `NEXT_PUBLIC_AI_ASSIST === '1'`.
+- **Route:** `src/app/api/safety/suggest-hazards/route.ts` (App Router `POST`). Input `{ scopeOfWork, location }`. **Hard guard:** if `!process.env.ANTHROPIC_API_KEY` → `Response.json({ hazards: [] }, { status: 200 })` (fail-closed, never 500). The key is server-only and never reaches the browser.
+- **SDK & model:** `@anthropic-ai/sdk` — **added only when the feature is turned on**, not a default dependency. Model **`claude-sonnet-4-6`** (best latency/cost for this short structured task; `max_tokens ≈ 600`).
+- **Structured output:** request a JSON array of `{ description, riskLevel: 'low'|'medium'|'high'|'critical', controlMeasure }` via a tool-call/JSON contract; parse defensively; on any parse/shape error return `[]`.
+- **Prompt caching (required when implemented):** the system prompt is a stable OSHA / Cal-OSHA hazard-identification rubric scoped to structural commissioning — mark it `cache_control: { type: 'ephemeral' }` so repeated morning calls hit cache and cost drops. Keep user content minimal (scope + location). **No background/automatic calls** — Sage runs only on explicit tap.
+- **Failure handling:** any error/timeout → silent fallback to manual entry; never block or error the PTP.
+- **Cost posture:** typically cents-per-hundred calls, less with caching; document a one-liner in README.
+
+### 13.4 Future Sage capabilities (spec-only — do NOT build now)
+The same `SageAssist` + server-route pattern can later power, all opt-in and human-reviewed behind the same flag:
+- **Incident assist** — draft a root-cause / corrective-action starting point from an incident description.
+- **Toolbox-talk topics** — suggest a relevant daily topic from the day's scope/hazards.
+- **Permit sanity check** — advisory flag of a likely-missing control before issue (never blocks).
+- **Notion digest** — summarize a record for the office sync.
+
+Naming stays consistent across every capability: it is always **Sage**, always a co-pilot, always "review before signing."
 
 ---
 
@@ -779,9 +808,9 @@ NOTION_PERMITS_DB_ID=
 NOTION_INCIDENTS_DB_ID=
 NOTION_INSPECTIONS_DB_ID=  # (existing) pre-trip inspections
 
-# Claude assist (optional; feature absent unless BOTH are set)
-ANTHROPIC_API_KEY=
-NEXT_PUBLIC_AI_ASSIST=     # set to 1 to show the "Suggest hazards" button
+# Sage — AI safety assistant (optional; Sage UI is absent unless BOTH are set)
+ANTHROPIC_API_KEY=         # server-only; without it Sage fails closed to manual entry
+NEXT_PUBLIC_AI_ASSIST=     # set to 1 to reveal the "Ask Sage to suggest hazards" UI
 ```
 
 **Google Cloud setup (document in README):** create OAuth client (Web), authorized redirect URI `https://<domain>/api/auth/callback/google` (+ `http://localhost:3000/api/auth/callback/google` for dev), set consent screen to Internal if the workspace is Google Workspace (this alone restricts to the org, but keep the server-side domain check regardless).
@@ -816,7 +845,7 @@ Functional:
 
 Non-functional:
 12. `npm run build` and `npm run lint` pass with no new TypeScript or lint errors; strict mode satisfied.
-13. No new runtime dependency other than `next-auth` (and, only if AI assist is turned on, `@anthropic-ai/sdk`).
+13. No new runtime dependency other than `next-auth` (and, only if Sage is turned on, `@anthropic-ai/sdk`). With Sage dormant (default), no Sage UI renders and no Anthropic calls are made.
 14. All new UI uses only `mytra-*` tokens / existing recipes; looks native on a phone in one hand; passes a quick `prefers-reduced-motion` and keyboard-focus check.
 15. PWA offline: `/safety` and its forms load and function offline after first visit; `/api/auth/*` and `/api/safety/*` are never served from cache.
 
@@ -834,7 +863,7 @@ Non-functional:
 8. **Record view + history + CSV + permit close/revoke**.
 9. **Notion sync** (`safety-sync.ts`, `api/safety/sync`, online-listener, retry).
 10. **Pre-Trip enhancement** (session prefill, optional `createdByEmail`).
-11. **(Optional, last) Claude hazard assist** behind flags.
+11. **(Optional, last) Sage** — scaffold `SageAssist.tsx` + `suggest-hazards` route behind the env flag, shipped dormant. (Per current direction: scaffold the UX/UI now, keep it OFF.)
 
 ---
 
