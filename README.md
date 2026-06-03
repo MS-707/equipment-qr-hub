@@ -9,6 +9,7 @@ Equipment tracking and management system for industrial and manufacturing enviro
 - **Equipment inventory** — Searchable catalog of all tracked equipment organized by category (machine tools, welding, aerial work platforms, powered industrial trucks, material handling, and more)
 - **QR code labels** — Generate and print QR labels for any piece of equipment. Scan with a phone to instantly access its profile, inspection history, and PM schedule.
 - **Pre-trip inspections** — Digital inspection checklists that replace paper forms. Timestamped, auditable, tied to specific equipment.
+- **Safety Hub** (`/safety`) — Paperless, auditable safety workflow for construction/commissioning crews: collaborative **Pre-Task Plans** with touch-drawn crew signatures, work-at-height / hot work / confined space permits, and incident reporting. Google sign-in (Mytra domain) backs the audit trail; records sync to Notion. See [`docs/SAFETY_HUB_SPEC.md`](docs/SAFETY_HUB_SPEC.md) and copy [`.env.example`](.env.example) for setup. An optional AI assistant ("Sage") can suggest hazards — dormant unless `ANTHROPIC_API_KEY` + `NEXT_PUBLIC_AI_ASSIST=1` are set.
 - **Work orders** — Create, assign, and track maintenance work orders with priority levels (Critical/High/Medium/Low) and status tracking.
 - **Preventive maintenance schedules** — Daily, weekly, monthly, quarterly, semi-annual, and annual PM tasks per equipment item with due date tracking.
 - **Guard status monitoring** — Track machine guarding status across the fleet.

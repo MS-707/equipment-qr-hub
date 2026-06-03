@@ -3,25 +3,32 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode } from 'lucide-react'
+import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
+import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
+import UserMenu from '@/components/UserMenu'
 
 export default function NavHeader() {
   const pathname = usePathname()
   const [openCount, setOpenCount] = useState(0)
+  const [safetyCount, setSafetyCount] = useState(0)
 
   useEffect(() => {
     setOpenCount(getOpenCount())
+    setSafetyCount(getOpenSafetyCount())
 
     // Listen for same-tab CRUD via pub/sub
     const unsubscribe = onWorkOrderChange(() => setOpenCount(getOpenCount()))
+    const unsubscribeSafety = onSafetyChange(() => setSafetyCount(getOpenSafetyCount()))
     // Listen for cross-tab storage changes
     function handleStorage() {
       setOpenCount(getOpenCount())
+      setSafetyCount(getOpenSafetyCount())
     }
     window.addEventListener('storage', handleStorage)
     return () => {
       unsubscribe()
+      unsubscribeSafety()
       window.removeEventListener('storage', handleStorage)
     }
   }, [])
@@ -29,6 +36,7 @@ export default function NavHeader() {
   const navLinks = [
     { href: '/', label: 'Directory', icon: LayoutGrid, badge: 0 },
     { href: '/inspections', label: 'Pre-Trip', icon: ClipboardCheck, badge: 0 },
+    { href: '/safety', label: 'Safety', icon: ShieldCheck, badge: safetyCount },
     { href: '/work-orders', label: 'Work Orders', icon: ClipboardList, badge: openCount },
     { href: '/admin/labels', label: 'QR Labels', icon: QrCode, badge: 0 },
   ]
@@ -76,6 +84,7 @@ export default function NavHeader() {
               </Link>
             )
           })}
+          <UserMenu />
         </nav>
       </div>
     </header>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Roboto } from 'next/font/google'
 import './globals.css'
 import NavHeader from '@/components/NavHeader'
+import AuthProvider from '@/components/providers/AuthProvider'
 
 const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
 
@@ -36,8 +37,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${roboto.className} bg-mytra-bg text-white min-h-screen`}>
-        <NavHeader />
-        {children}
+        <AuthProvider>
+          <NavHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )
