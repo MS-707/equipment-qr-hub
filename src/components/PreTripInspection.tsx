@@ -28,31 +28,8 @@ import {
   getInspectionsByEquipment,
   onInspectionChange,
 } from '@/lib/inspections'
-
-// ── Photo compression ──────────────────────────────────────
-
-function compressPhoto(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const maxW = 800
-        const scale = img.width > maxW ? maxW / img.width : 1
-        canvas.width = img.width * scale
-        canvas.height = img.height * scale
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        resolve(canvas.toDataURL('image/jpeg', 0.7))
-      }
-      img.onerror = reject
-      img.src = e.target?.result as string
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
+import { compressPhoto } from '@/lib/media'
+import { getCurrentIdentity } from '@/lib/identity'
 
 // ── Shift options ──────────────────────────────────────────
 
@@ -330,8 +307,13 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     return () => window.removeEventListener('beforeunload', handler)
   }, [step])
 
-  // Load last inspector name on mount
+  // Prefill inspector: prefer the signed-in identity, fall back to last-used name.
   useEffect(() => {
+    const identity = getCurrentIdentity()
+    if (identity?.name) {
+      setInspectorName(identity.name)
+      return
+    }
     const last = getLastInspector()
     if (last) setInspectorName(last)
   }, [])
