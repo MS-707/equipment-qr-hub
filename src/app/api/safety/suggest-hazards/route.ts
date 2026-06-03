@@ -1,31 +1,72 @@
-/**
- * POST /api/safety/suggest-hazards  —  "Sage" hazard suggestions.
- *
- * DORMANT BY DEFAULT. The client (SageAssist) only calls this when
- * NEXT_PUBLIC_AI_ASSIST=1. This route additionally FAILS CLOSED: without
- * ANTHROPIC_API_KEY it returns an empty list, so the UI silently falls back to
- * manual hazard entry. No Anthropic SDK dependency is installed yet.
- *
- * TODO(sage): when enabling, add `@anthropic-ai/sdk`, call claude-sonnet-4-6 with
- * a cached OSHA/Cal-OSHA system prompt, request a JSON array of
- * { description, riskLevel, controlMeasure }, and parse defensively. See spec §13.
- */
+import Anthropic from '@anthropic-ai/sdk'
+
+const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
+
+Given a scope of work and optional location, suggest 3-6 hazards the crew should address. For each hazard, provide:
+- description: concise hazard name (e.g. "Overhead power lines", "Silica dust exposure")
+- riskLevel: one of "low", "medium", "high", "critical"
+- controlMeasure: a specific, actionable mitigation (not generic advice)
+
+Base risk levels on OSHA severity × probability. Reference:
+- 29 CFR 1926 (Construction)
+- 29 CFR 1910 (General Industry)
+- Cal/OSHA Title 8
+- NFPA 51B (Hot Work)
+
+Respond ONLY with a JSON object: { "hazards": [...] }
+No markdown, no explanation, no preamble. Just the JSON object.`
 
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY
-
-  // Read (and ignore for now) the body so the contract is stable.
-  try {
-    await req.json()
-  } catch {
-    /* ignore */
-  }
-
   if (!key) {
     return Response.json({ hazards: [] })
   }
 
-  // Inert until the SDK is wired (see TODO above). Returning [] keeps the PTP
-  // working on manual entry even if the flag/key are set before implementation.
-  return Response.json({ hazards: [] })
+  let body: { scopeOfWork?: string; location?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ hazards: [] }, { status: 400 })
+  }
+
+  const scopeOfWork = (body.scopeOfWork ?? '').trim()
+  if (!scopeOfWork) {
+    return Response.json({ hazards: [] })
+  }
+
+  const userMessage = [
+    `Scope of work: ${scopeOfWork}`,
+    body.location ? `Location: ${body.location}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  try {
+    const client = new Anthropic({ apiKey: key })
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-6-20250514',
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMessage }],
+    })
+
+    const text =
+      message.content[0]?.type === 'text' ? message.content[0].text : ''
+
+    const parsed = JSON.parse(text)
+    const hazards = Array.isArray(parsed?.hazards) ? parsed.hazards : []
+
+    const valid = hazards
+      .filter(
+        (h: Record<string, unknown>) =>
+          typeof h.description === 'string' &&
+          typeof h.controlMeasure === 'string' &&
+          ['low', 'medium', 'high', 'critical'].includes(h.riskLevel as string)
+      )
+      .slice(0, 8)
+
+    return Response.json({ hazards: valid })
+  } catch {
+    return Response.json({ hazards: [] })
+  }
 }
