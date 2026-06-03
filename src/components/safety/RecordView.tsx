@@ -62,6 +62,10 @@ export default function RecordView({ id }: { id: string }) {
         if ('workers' in p) p.workers.forEach((s) => slots.push(s.id))
         if ('entrants' in p) (p as { entrants?: CrewSignature[] }).entrants?.forEach((s) => slots.push(s.id))
       }
+      if (isIncident(r)) {
+        r.photoSlots.forEach((slot) => slots.push(slot))
+        if (r.reporterSignatureId) slots.push(r.reporterSignatureId)
+      }
       if (slots.length > 0) getBlobs(r.id, slots).then(setSigImages)
     }
     return unsub
@@ -135,7 +139,7 @@ export default function RecordView({ id }: { id: string }) {
       {/* Type-specific body */}
       {isPTP(r) && <PtpBody ptp={r} sigImages={sigImages} />}
       {isPermit(r) && <PermitBody permit={r as AnyPermit} sigImages={sigImages} />}
-      {isIncident(r) && <IncidentBody incident={r} />}
+      {isIncident(r) && <IncidentBody incident={r} images={sigImages} />}
 
       {/* Permit actions */}
       {isPermit(r) && permitOpen && (
@@ -289,7 +293,7 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
   )
 }
 
-function IncidentBody({ incident }: { incident: IncidentReport }) {
+function IncidentBody({ incident, images }: { incident: IncidentReport; images: Record<string, string> }) {
   return (
     <>
       <Section title="Incident">
@@ -301,12 +305,69 @@ function IncidentBody({ incident }: { incident: IncidentReport }) {
             {incident.severity}
           </span>
           <span className="text-xs text-gray-400">{incident.incidentType}</span>
+          <span className="text-xs text-gray-500">· {fmt(incident.occurredAt)}</span>
         </div>
         <p className="text-sm text-gray-200">{incident.description}</p>
+        {incident.immediateActions && (
+          <p className="text-xs text-gray-400 mt-2">
+            <span className="text-gray-500">Immediate actions: </span>
+            {incident.immediateActions}
+          </p>
+        )}
+        {incident.witnesses.length > 0 && (
+          <p className="text-xs text-gray-400 mt-1">
+            <span className="text-gray-500">Witnesses: </span>
+            {incident.witnesses.join(', ')}
+          </p>
+        )}
+        {incident.reportedToCalOsha && (
+          <p className="text-xs text-amber-300 mt-1">Reported to Cal/OSHA</p>
+        )}
       </Section>
-      {incident.correctiveActions && (
-        <Section title="Corrective actions">
-          <p className="text-sm text-gray-300">{incident.correctiveActions}</p>
+
+      {incident.photoSlots.length > 0 && (
+        <Section title="Photos">
+          <div className="flex flex-wrap gap-2">
+            {incident.photoSlots.map((slot) =>
+              images[slot] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={slot} src={images[slot]} alt="Incident photo" className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
+              ) : (
+                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-[10px] text-gray-600">
+                  on device
+                </div>
+              )
+            )}
+          </div>
+        </Section>
+      )}
+
+      {(incident.rootCause || incident.correctiveActions) && (
+        <Section title="Analysis">
+          {incident.rootCause && (
+            <p className="text-sm text-gray-300">
+              <span className="text-gray-500 text-xs uppercase tracking-wider">Root cause</span>
+              <br />
+              {incident.rootCause}
+            </p>
+          )}
+          {incident.correctiveActions && (
+            <p className="text-sm text-gray-300 mt-2">
+              <span className="text-gray-500 text-xs uppercase tracking-wider">Corrective actions</span>
+              <br />
+              {incident.correctiveActions}
+            </p>
+          )}
+        </Section>
+      )}
+
+      {incident.reporterSignatureId && images[incident.reporterSignatureId] && (
+        <Section title="Reporter">
+          <div className="bg-mytra-input border border-mytra-border rounded-lg p-2 inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={images[incident.reporterSignatureId]} alt="Reporter signature" className="h-12 object-contain" />
+            <p className="text-xs text-white mt-1">{incident.createdBy}</p>
+          </div>
         </Section>
       )}
     </>
