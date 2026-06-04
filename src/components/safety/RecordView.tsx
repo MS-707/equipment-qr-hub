@@ -71,11 +71,11 @@ export default function RecordView({ id }: { id: string }) {
     return unsub
   }, [id, load])
 
-  if (record === undefined) return <div className="max-w-2xl mx-auto px-4 py-10 text-gray-500 text-sm">Loading…</div>
+  if (record === undefined) return <div className="max-w-2xl mx-auto px-4 py-10 text-fg-3 text-sm">Loading…</div>
   if (record === null)
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 text-center">
-        <p className="text-sm text-gray-400">Record not found.</p>
+        <p className="text-sm text-fg-2">Record not found.</p>
         <Link href="/safety/history" className="text-sm text-mytra-purple hover:underline">Back to history</Link>
       </div>
     )
@@ -96,7 +96,7 @@ export default function RecordView({ id }: { id: string }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="no-print flex items-center justify-between">
-        <Link href="/safety/history" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
+        <Link href="/safety/history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg">
           <ArrowLeft className="w-4 h-4" /> History
         </Link>
         <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function RecordView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => trySyncRecord(r.id)}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-300 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Retry sync
             </button>
@@ -112,7 +112,7 @@ export default function RecordView({ id }: { id: string }) {
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 text-xs text-gray-300 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
           >
             <Printer className="w-3.5 h-3.5" /> Print
           </button>
@@ -120,12 +120,12 @@ export default function RecordView({ id }: { id: string }) {
       </div>
 
       {/* Header */}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono text-gray-500">{r.id}</span>
+          <span className="text-[11px] font-mono text-fg-3">{r.id}</span>
           {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
         </div>
-        <h1 className="text-lg font-semibold text-white mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
+        <h1 className="text-lg font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
         <dl className="grid grid-cols-2 gap-2 mt-3 text-sm">
           <Field label="Project" value={r.projectName} />
           <Field label="Location" value={r.location} />
@@ -147,14 +147,14 @@ export default function RecordView({ id }: { id: string }) {
           <button
             type="button"
             onClick={handleClose}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-white hover:bg-mytra-card-hover"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover"
           >
             <XCircle className="w-4 h-4" /> Close permit
           </button>
           <button
             type="button"
             onClick={handleRevoke}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-danger/10 border border-danger/30 text-danger hover:bg-danger/20"
           >
             <Ban className="w-4 h-4" /> Revoke
           </button>
@@ -162,11 +162,11 @@ export default function RecordView({ id }: { id: string }) {
       )}
 
       {/* Audit trail */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-        <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Audit trail</h2>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">Audit trail</h2>
         <ul className="space-y-1.5">
           {r.events.map((e, i) => (
-            <li key={i} className="text-xs text-gray-400 flex items-start gap-2">
+            <li key={i} className="text-xs text-fg-2 flex items-start gap-2">
               <span className="text-mytra-purple font-medium uppercase shrink-0">{e.action}</span>
               <span>
                 {e.by} · {fmt(e.at)}
@@ -183,14 +183,14 @@ export default function RecordView({ id }: { id: string }) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-wider text-gray-500">{label}</dt>
-      <dd className="text-sm text-white break-words">{value || '—'}</dd>
+      <dt className="text-[10px] uppercase tracking-wider text-fg-3">{label}</dt>
+      <dd className="text-sm text-fg break-words">{value || '—'}</dd>
     </div>
   )
 }
 
 function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record<string, string> }) {
-  if (sigs.length === 0) return <p className="text-xs text-gray-600">No signatures.</p>
+  if (sigs.length === 0) return <p className="text-xs text-fg-4">No signatures.</p>
   return (
     <div className="grid grid-cols-2 gap-2">
       {sigs.map((s) => (
@@ -199,10 +199,10 @@ function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record
             // eslint-disable-next-line @next/next/no-img-element
             <img src={images[s.id]} alt={`${s.name} signature`} className="w-full h-12 object-contain" />
           ) : (
-            <div className="h-12 flex items-center justify-center text-[10px] text-gray-600">signature on device</div>
+            <div className="h-12 flex items-center justify-center text-[10px] text-fg-4">signature on device</div>
           )}
-          <p className="text-xs text-white mt-1 truncate">{s.name}</p>
-          <p className="text-[10px] text-gray-500">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+          <p className="text-xs text-fg mt-1 truncate">{s.name}</p>
+          <p className="text-[10px] text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
         </div>
       ))}
     </div>
@@ -213,21 +213,21 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
   return (
     <>
       <Section title="Scope of work">
-        <p className="text-sm text-gray-200">{ptp.scopeOfWork || '—'}</p>
-        <p className="text-xs text-gray-500 mt-1">{ptp.date} · {ptp.shift} shift</p>
+        <p className="text-sm text-fg-2">{ptp.scopeOfWork || '—'}</p>
+        <p className="text-xs text-fg-3 mt-1">{ptp.date} · {ptp.shift} shift</p>
       </Section>
 
       <Section title="Hazards & controls">
         {ptp.hazards.length === 0 ? (
-          <p className="text-xs text-gray-600">None recorded.</p>
+          <p className="text-xs text-fg-4">None recorded.</p>
         ) : (
           <ul className="space-y-2">
             {ptp.hazards.map((h) => (
               <li key={h.id} className="text-sm">
-                <span className="text-white">{h.description}</span>
-                <span className="text-[10px] text-gray-500 ml-1">({h.riskLevel})</span>
+                <span className="text-fg">{h.description}</span>
+                <span className="text-[10px] text-fg-3 ml-1">({h.riskLevel})</span>
                 {h.source === 'sage' && <span className="text-[10px] text-mytra-purple ml-1">✨ Sage</span>}
-                <p className="text-xs text-gray-400">{h.controlMeasure}</p>
+                <p className="text-xs text-fg-2">{h.controlMeasure}</p>
               </li>
             ))}
           </ul>
@@ -238,7 +238,7 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         <Section title="PPE required">
           <div className="flex flex-wrap gap-1.5">
             {ptp.ppeRequired.map((id) => (
-              <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-gray-300">
+              <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">
                 {ppeLabel(id)}
               </span>
             ))}
@@ -248,8 +248,8 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
 
       {(ptp.toolboxTalkTopic || ptp.toolboxTalkNotes) && (
         <Section title="Toolbox talk">
-          <p className="text-sm text-white">{ptp.toolboxTalkTopic}</p>
-          {ptp.toolboxTalkNotes && <p className="text-xs text-gray-400 mt-0.5">{ptp.toolboxTalkNotes}</p>}
+          <p className="text-sm text-fg">{ptp.toolboxTalkTopic}</p>
+          {ptp.toolboxTalkNotes && <p className="text-xs text-fg-2 mt-0.5">{ptp.toolboxTalkNotes}</p>}
         </Section>
       )}
 
@@ -277,8 +277,8 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
         <ul className="space-y-1">
           {permit.checklist.map((c) => (
             <li key={c.id} className="text-xs flex items-start gap-2">
-              <span className={c.checked ? 'text-green-400' : 'text-gray-600'}>{c.checked ? '✓' : '○'}</span>
-              <span className={c.checked ? 'text-gray-300' : 'text-gray-500'}>
+              <span className={c.checked ? 'text-ok' : 'text-fg-4'}>{c.checked ? '✓' : '○'}</span>
+              <span className={c.checked ? 'text-fg-2' : 'text-fg-3'}>
                 {c.label}
                 {c.notes ? ` — ${c.notes}` : ''}
               </span>
@@ -304,24 +304,24 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
           >
             {incident.severity}
           </span>
-          <span className="text-xs text-gray-400">{incident.incidentType}</span>
-          <span className="text-xs text-gray-500">· {fmt(incident.occurredAt)}</span>
+          <span className="text-xs text-fg-2">{incident.incidentType}</span>
+          <span className="text-xs text-fg-3">· {fmt(incident.occurredAt)}</span>
         </div>
-        <p className="text-sm text-gray-200">{incident.description}</p>
+        <p className="text-sm text-fg-2">{incident.description}</p>
         {incident.immediateActions && (
-          <p className="text-xs text-gray-400 mt-2">
-            <span className="text-gray-500">Immediate actions: </span>
+          <p className="text-xs text-fg-2 mt-2">
+            <span className="text-fg-3">Immediate actions: </span>
             {incident.immediateActions}
           </p>
         )}
         {incident.witnesses.length > 0 && (
-          <p className="text-xs text-gray-400 mt-1">
-            <span className="text-gray-500">Witnesses: </span>
+          <p className="text-xs text-fg-2 mt-1">
+            <span className="text-fg-3">Witnesses: </span>
             {incident.witnesses.join(', ')}
           </p>
         )}
         {incident.reportedToCalOsha && (
-          <p className="text-xs text-amber-300 mt-1">Reported to Cal/OSHA</p>
+          <p className="text-xs text-warn mt-1">Reported to Cal/OSHA</p>
         )}
       </Section>
 
@@ -333,7 +333,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={slot} src={images[slot]} alt="Incident photo" className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
               ) : (
-                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-[10px] text-gray-600">
+                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-[10px] text-fg-4">
                   on device
                 </div>
               )
@@ -345,15 +345,15 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
       {(incident.rootCause || incident.correctiveActions) && (
         <Section title="Analysis">
           {incident.rootCause && (
-            <p className="text-sm text-gray-300">
-              <span className="text-gray-500 text-xs uppercase tracking-wider">Root cause</span>
+            <p className="text-sm text-fg-2">
+              <span className="text-fg-3 text-xs uppercase tracking-wider">Root cause</span>
               <br />
               {incident.rootCause}
             </p>
           )}
           {incident.correctiveActions && (
-            <p className="text-sm text-gray-300 mt-2">
-              <span className="text-gray-500 text-xs uppercase tracking-wider">Corrective actions</span>
+            <p className="text-sm text-fg-2 mt-2">
+              <span className="text-fg-3 text-xs uppercase tracking-wider">Corrective actions</span>
               <br />
               {incident.correctiveActions}
             </p>
@@ -366,7 +366,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
           <div className="bg-mytra-input border border-mytra-border rounded-lg p-2 inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[incident.reporterSignatureId]} alt="Reporter signature" className="h-12 object-contain" />
-            <p className="text-xs text-white mt-1">{incident.createdBy}</p>
+            <p className="text-xs text-fg mt-1">{incident.createdBy}</p>
           </div>
         </Section>
       )}
@@ -376,8 +376,8 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-      <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">{title}</h2>
+    <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">{title}</h2>
       {children}
     </section>
   )

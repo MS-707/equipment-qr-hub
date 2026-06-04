@@ -62,30 +62,30 @@ export default function SafetyHistory() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
-        <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
+        <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg">
           <ArrowLeft className="w-4 h-4" /> Safety Hub
         </Link>
         <button
           type="button"
           onClick={downloadCsv}
           disabled={filtered.length === 0}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-300 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-40"
         >
           <Download className="w-3.5 h-3.5" /> Export CSV
         </button>
       </div>
 
-      <h1 className="text-xl font-bold text-white">Safety records</h1>
+      <h1 className="text-xl font-bold text-fg">Safety records</h1>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search id, location, project, person…"
-          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-9 pr-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         />
       </div>
 
@@ -99,7 +99,7 @@ export default function SafetyHistory() {
             className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
               filter === t.key
                 ? 'bg-mytra-purple text-white border-mytra-purple'
-                : 'bg-mytra-bg text-gray-400 border-mytra-border hover:text-white'
+                : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
             }`}
           >
             {t.label}
@@ -108,7 +108,7 @@ export default function SafetyHistory() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-10">No records match.</p>
+        <p className="text-sm text-fg-3 text-center py-10">No records match.</p>
       ) : (
         <div className="space-y-2">
           {filtered.map((r) => (

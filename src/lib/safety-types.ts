@@ -239,10 +239,10 @@ export const SAFETY_TYPE_LABELS: Record<SafetyRecordType, string> = {
 }
 
 export const RISK_COLORS: Record<RiskLevel, string> = {
-  critical: '#EF4444',
-  high: '#F97316',
-  medium: '#EAB308',
-  low: '#6B7280',
+  critical: 'var(--risk-critical)',
+  high: 'var(--risk-high)',
+  medium: 'var(--risk-medium)',
+  low: 'var(--risk-low)',
 }
 
 export const RISK_LABELS: Record<RiskLevel, string> = {
@@ -253,15 +253,15 @@ export const RISK_LABELS: Record<RiskLevel, string> = {
 }
 
 export const PERMIT_STATUS_COLORS: Record<PermitStatus | 'expired', string> = {
-  active: '#22C55E',
-  closed: '#6B7280',
-  revoked: '#EF4444',
-  expired: '#F97316',
+  active: 'var(--ok)',
+  closed: 'var(--fg-4)',
+  revoked: 'var(--danger)',
+  expired: 'var(--expired)',
 }
 
 export const INCIDENT_SEVERITY_COLORS: Record<IncidentSeverity, string> = {
-  minor: '#6B7280',
-  moderate: '#EAB308',
-  serious: '#F97316',
-  critical: '#EF4444',
+  minor: 'var(--risk-low)',
+  moderate: 'var(--risk-medium)',
+  serious: 'var(--risk-high)',
+  critical: 'var(--risk-critical)',
 }

@@ -12,9 +12,9 @@ import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
 
-const labelCls = 'block text-xs text-gray-400 mb-1'
+const labelCls = 'block text-xs text-fg-2 mb-1'
 const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent'
+  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
 
 export default function HotWorkPermitForm() {
   const win = defaultValidityWindow(8)
@@ -112,10 +112,10 @@ export default function HotWorkPermitForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-white">Hot Work Permit</h3>
+          <h3 className="text-sm font-semibold text-fg">Hot Work Permit</h3>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -134,13 +134,13 @@ export default function HotWorkPermitForm() {
       </div>
 
       <section className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold px-1">Type of hot work</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Type of hot work</h4>
         <ChipMultiSelect options={HOT_WORK_TYPES} selected={hotWorkTypes} onChange={setHotWorkTypes} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Fire watch & suppression</h4>
-        <label className="flex items-center gap-2 text-sm text-gray-300">
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
+        <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-4 h-4" />
           Fire watch required
         </label>
@@ -153,7 +153,7 @@ export default function HotWorkPermitForm() {
                 value={fireWatchName}
                 onChange={(e) => setFireWatchName(e.target.value)}
                 placeholder="Name"
-                className={`${inputCls} ${!fireWatchName.trim() ? 'border-amber-500/60' : ''}`}
+                className={`${inputCls} ${!fireWatchName.trim() ? 'border-warn/60' : ''}`}
               />
             </div>
             <div>
@@ -176,7 +176,7 @@ export default function HotWorkPermitForm() {
           <label className={labelCls}>Sprinkler status</label>
           <input type="text" value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder="In service / impaired / N/A" className={inputCls} />
         </div>
-        <label className="flex items-center gap-2 text-sm text-gray-300">
+        <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={gasTestRequired} onChange={() => setGasTestRequired((v) => !v)} className="accent-mytra-purple w-4 h-4" />
           Atmosphere / gas test required
         </label>
@@ -187,15 +187,15 @@ export default function HotWorkPermitForm() {
 
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Pre-issue checklist</h4>
-          {critLeft > 0 && <span className="text-[10px] text-amber-400">{critLeft} required left</span>}
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
+          {critLeft > 0 && <span className="text-[10px] text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-[10px] text-gray-600 px-1">{regRef}</p>
+        <p className="text-[10px] text-fg-4 px-1">{regRef}</p>
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Validity window</h4>
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Valid from</label>
@@ -207,15 +207,15 @@ export default function HotWorkPermitForm() {
               type="datetime-local"
               value={validUntil}
               onChange={(e) => setValidUntil(e.target.value)}
-              className={`${inputCls} ${!validWindowOk ? 'border-red-500/60' : ''}`}
+              className={`${inputCls} ${!validWindowOk ? 'border-danger/60' : ''}`}
             />
           </div>
         </div>
       </div>
 
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Sign-on</h4>
-        <p className="text-xs text-gray-400 mb-3">Each worker acknowledges. Mark the issuer.</p>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Sign-on</h4>
+        <p className="text-xs text-fg-2 mb-3">Each worker acknowledges. Mark the issuer.</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}

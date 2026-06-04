@@ -12,9 +12,9 @@ import { toLocalInput, toIso } from '@/lib/datetime'
 import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
 
-const labelCls = 'block text-xs text-gray-400 mb-1'
+const labelCls = 'block text-xs text-fg-2 mb-1'
 const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent'
+  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
 
 const TYPES: { value: IncidentType; label: string }[] = [
   { value: 'injury', label: 'Injury' },
@@ -127,10 +127,10 @@ export default function IncidentReportForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-white">Incident / Near-Miss Report</h3>
+          <h3 className="text-sm font-semibold text-fg">Incident / Near-Miss Report</h3>
         </div>
 
         <div>
@@ -144,7 +144,7 @@ export default function IncidentReportForm() {
                 className={`text-xs font-medium py-2 rounded-lg transition-colors ${
                   incidentType === t.value
                     ? 'bg-mytra-purple text-white'
-                    : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white'
+                    : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                 }`}
               >
                 {t.label}
@@ -167,7 +167,7 @@ export default function IncidentReportForm() {
                   style={
                     on
                       ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: '#fff', borderColor: INCIDENT_SEVERITY_COLORS[s] }
-                      : { backgroundColor: 'transparent', color: '#9CA3AF', borderColor: '#232323' }
+                      : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                   }
                 >
                   {s}
@@ -178,11 +178,11 @@ export default function IncidentReportForm() {
         </div>
 
         {isSerious && (
-          <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-300 leading-relaxed">
+          <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
+            <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+            <div className="text-xs text-warn leading-relaxed">
               Serious injuries must be reported to Cal/OSHA within 8 hours (T8 §342 / LC §6409.1).
-              <label className="flex items-center gap-2 mt-1.5 text-amber-200">
+              <label className="flex items-center gap-2 mt-1.5 text-fg-2">
                 <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-4 h-4" />
                 Reported to Cal/OSHA
               </label>
@@ -215,8 +215,8 @@ export default function IncidentReportForm() {
       </div>
 
       {/* Witnesses */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Witnesses</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Witnesses</h4>
         <div className="flex gap-2">
           <input
             type="text"
@@ -231,16 +231,16 @@ export default function IncidentReportForm() {
             placeholder="Add a name"
             className={inputCls}
           />
-          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-gray-300 hover:text-white">
+          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg">
             <Plus className="w-4 h-4" />
           </button>
         </div>
         {witnesses.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {witnesses.map((w, i) => (
-              <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-gray-300">
+              <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-fg-2">
                 {w}
-                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400">
+                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} className="text-fg-3 hover:text-danger">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -250,8 +250,8 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Photos */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Photos</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
         <div className="flex flex-wrap gap-2">
           {photos.map((p) => (
             <div key={p.id} className="relative">
@@ -260,7 +260,7 @@ export default function IncidentReportForm() {
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-500"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger rounded-full flex items-center justify-center hover:bg-danger"
               >
                 <X className="w-3 h-3 text-white" />
               </button>
@@ -269,7 +269,7 @@ export default function IncidentReportForm() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-gray-500 hover:text-white hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
+            className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
             <span className="text-[9px]">Add</span>
@@ -289,8 +289,8 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Root cause & corrective */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Analysis</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label className={labelCls}>Root cause</label>
           <textarea rows={2} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
@@ -302,8 +302,8 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Reporter signature */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Reporter</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
           <label className={labelCls}>Name</label>
           <input type="text" value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />

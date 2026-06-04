@@ -25,7 +25,7 @@ export default function PPESelector({ selected, onChange }: PPESelectorProps) {
             className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors duration-150 ${
               on
                 ? 'bg-mytra-purple text-white border-mytra-purple'
-                : 'bg-mytra-bg text-gray-400 border-mytra-border hover:text-white hover:border-mytra-purple/50'
+                : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg hover:border-mytra-purple/50'
             }`}
           >
             {p.label}

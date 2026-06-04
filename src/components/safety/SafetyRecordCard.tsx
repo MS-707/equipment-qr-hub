@@ -42,7 +42,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
   return (
     <Link
       href={`/safety/record/${record.id}`}
-      className="block bg-mytra-card border border-mytra-border rounded-lg px-3 py-3
+      className="block bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card
                  hover:bg-mytra-card-hover transition-colors"
     >
       <div className="flex items-start gap-3">
@@ -51,11 +51,11 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-gray-500">{record.id}</span>
-            <span className="text-[11px] text-gray-600">· {SAFETY_TYPE_LABELS[record.type]}</span>
+            <span className="text-[11px] font-mono text-fg-3">{record.id}</span>
+            <span className="text-[11px] text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
           </div>
-          <p className="text-sm text-white truncate">{title(record)}</p>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-sm text-fg truncate">{title(record)}</p>
+          <p className="text-xs text-fg-3 truncate">
             {record.location ? `${record.location} · ` : ''}
             {record.createdBy} · {relativeTime(record.createdAt)}
           </p>
@@ -64,12 +64,12 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
           <span
             className={`w-1.5 h-1.5 rounded-full ${
               record.syncStatus === 'synced'
-                ? 'bg-green-400'
+                ? 'bg-ok'
                 : record.syncStatus === 'failed'
-                  ? 'bg-red-400'
+                  ? 'bg-danger'
                   : record.syncStatus === 'pending'
-                    ? 'bg-amber-400'
-                    : 'bg-gray-500'
+                    ? 'bg-warn'
+                    : 'bg-fg-3'
             }`}
             title={`Sync: ${record.syncStatus}`}
           />

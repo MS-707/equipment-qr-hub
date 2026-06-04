@@ -18,9 +18,9 @@ function todayStr(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-const labelCls = 'block text-xs text-gray-400 mb-1'
+const labelCls = 'block text-xs text-fg-2 mb-1'
 const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent'
+  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
 
 export default function PreTaskPlanForm() {
   const [step, setStep] = useState<'plan' | 'signon' | 'done'>('plan')
@@ -104,12 +104,12 @@ export default function PreTaskPlanForm() {
   if (step === 'done' && submittedId) {
     return (
       <div className="animate-fadeIn space-y-4">
-        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6 text-center">
-          <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-green-400 mb-1">PTP Logged</h3>
-          <p className="text-sm text-green-300/80">
+        <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
+          <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-ok mb-1">PTP Logged</h3>
+          <p className="text-sm text-ok">
             {sigData.signatures.length} crew signed on. Recorded as{' '}
-            <span className="font-mono text-white">{submittedId}</span>.
+            <span className="font-mono text-fg">{submittedId}</span>.
           </p>
         </div>
         <Link
@@ -121,11 +121,11 @@ export default function PreTaskPlanForm() {
         <button
           type="button"
           onClick={resetNew}
-          className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-white hover:bg-mytra-card-hover transition-colors"
+          className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
         >
           New Plan
         </button>
-        <Link href="/safety" className="block text-center text-sm text-gray-400 hover:text-white">
+        <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
           Back to Safety Hub
         </Link>
       </div>
@@ -139,14 +139,14 @@ export default function PreTaskPlanForm() {
         <button
           type="button"
           onClick={() => setStep('plan')}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white"
+          className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg"
         >
           <ArrowLeft className="w-4 h-4" /> Back to plan
         </button>
 
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-white mb-1">Crew sign-on</h3>
-          <p className="text-xs text-gray-400 mb-3">
+        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
+          <p className="text-xs text-fg-2 mb-3">
             Pass the device around — each crew member signs to acknowledge the plan. Mark one as
             supervisor.
           </p>
@@ -180,10 +180,10 @@ export default function PreTaskPlanForm() {
   // ── PLAN ──────────────────────────────────────────────────
   return (
     <div className="animate-fadeIn space-y-4">
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-white">Pre-Task / Pre-Build Plan</h3>
+          <h3 className="text-sm font-semibold text-fg">Pre-Task / Pre-Build Plan</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -204,7 +204,7 @@ export default function PreTaskPlanForm() {
                   className={`flex-1 text-xs font-medium py-2.5 rounded-lg transition-colors ${
                     shift === s
                       ? 'bg-mytra-purple text-white'
-                      : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white'
+                      : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                   }`}
                 >
                   {s}
@@ -230,7 +230,7 @@ export default function PreTaskPlanForm() {
 
       {/* Hazards (Sage sits above the table, dormant by default) */}
       <section className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold px-1">Hazards & Controls</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Hazards & Controls</h4>
         <SageAssist
           scopeOfWork={scopeOfWork}
           location={location}
@@ -241,13 +241,13 @@ export default function PreTaskPlanForm() {
 
       {/* PPE */}
       <section className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold px-1">PPE Required</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">PPE Required</h4>
         <PPESelector selected={ppe} onChange={setPpe} />
       </section>
 
       {/* Site conditions */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Site Conditions & Emergency</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Site Conditions & Emergency</h4>
         <div>
           <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point</label>
           <input id="ptp-muster" type="text" value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} className={inputCls} />
@@ -275,9 +275,9 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* Heat illness (T8 §3395) */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
-          Heat Illness Prevention <span className="text-gray-600 normal-case">· Cal-OSHA T8 §3395</span>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
+          Heat Illness Prevention <span className="text-fg-4 normal-case">· Cal-OSHA T8 §3395</span>
         </h4>
         <div className="grid grid-cols-2 gap-2">
           {([
@@ -286,7 +286,7 @@ export default function PreTaskPlanForm() {
             ['restBreaks', 'Rest breaks'],
             ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
           ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
-            <label key={key} className="flex items-center gap-2 text-sm text-gray-300">
+            <label key={key} className="flex items-center gap-2 text-sm text-fg-2">
               <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-4 h-4" />
               {lbl}
             </label>
@@ -295,8 +295,8 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* Toolbox talk */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Toolbox Talk</h4>
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>
         <div>
           <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
           <input id="ptp-tbt-topic" type="text" value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />

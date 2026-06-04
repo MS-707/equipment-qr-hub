@@ -17,7 +17,7 @@ export default function PermitStatusBadge({ permit }: { permit: AnyPermit }) {
   return (
     <span
       className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded"
-      style={{ color, backgroundColor: color + '26' }}
+      style={{ color, backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)` }}
     >
       {LABELS[status]}
     </span>
