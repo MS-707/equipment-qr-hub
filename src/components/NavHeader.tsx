@@ -3,25 +3,32 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode } from 'lucide-react'
+import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
+import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
+import UserMenu from '@/components/UserMenu'
 
 export default function NavHeader() {
   const pathname = usePathname()
   const [openCount, setOpenCount] = useState(0)
+  const [safetyCount, setSafetyCount] = useState(0)
 
   useEffect(() => {
     setOpenCount(getOpenCount())
+    setSafetyCount(getOpenSafetyCount())
 
     // Listen for same-tab CRUD via pub/sub
     const unsubscribe = onWorkOrderChange(() => setOpenCount(getOpenCount()))
+    const unsubscribeSafety = onSafetyChange(() => setSafetyCount(getOpenSafetyCount()))
     // Listen for cross-tab storage changes
     function handleStorage() {
       setOpenCount(getOpenCount())
+      setSafetyCount(getOpenSafetyCount())
     }
     window.addEventListener('storage', handleStorage)
     return () => {
       unsubscribe()
+      unsubscribeSafety()
       window.removeEventListener('storage', handleStorage)
     }
   }, [])
@@ -29,6 +36,7 @@ export default function NavHeader() {
   const navLinks = [
     { href: '/', label: 'Directory', icon: LayoutGrid, badge: 0 },
     { href: '/inspections', label: 'Pre-Trip', icon: ClipboardCheck, badge: 0 },
+    { href: '/safety', label: 'Safety', icon: ShieldCheck, badge: safetyCount },
     { href: '/work-orders', label: 'Work Orders', icon: ClipboardList, badge: openCount },
     { href: '/admin/labels', label: 'QR Labels', icon: QrCode, badge: 0 },
   ]
@@ -38,7 +46,7 @@ export default function NavHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: Logo / Title */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-lg font-bold text-white">Equipment QR Hub</span>
+          <span className="text-lg font-bold text-fg">Equipment QR Hub</span>
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>
@@ -60,8 +68,8 @@ export default function NavHeader() {
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-fg'
+                      : 'text-fg-2 hover:text-fg'
                   }`}
               >
                 <Icon size={16} />
@@ -76,6 +84,7 @@ export default function NavHeader() {
               </Link>
             )
           })}
+          <UserMenu />
         </nav>
       </div>
     </header>
