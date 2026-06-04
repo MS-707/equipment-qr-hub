@@ -16,6 +16,10 @@ Base risk levels on OSHA severity × probability. Reference:
 Respond ONLY with a JSON object: { "hazards": [...] }
 No markdown, no explanation, no preamble. Just the JSON object.`
 
+// Allow the Claude call enough headroom; Vercel's default function timeout is
+// 10s which can cut off generation. 30s is well within Hobby plan limits.
+export const maxDuration = 30
+
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
