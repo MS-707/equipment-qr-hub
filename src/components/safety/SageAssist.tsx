@@ -106,19 +106,19 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
         </button>
       )}
       {!suggestions && !canAsk && !loading && (
-        <p className="text-[11px] text-gray-600 mt-1 text-center">Add a scope of work first</p>
+        <p className="text-[11px] text-fg-4 mt-1 text-center">Add a scope of work first</p>
       )}
 
       {suggestions && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
-            <span className="text-sm font-medium text-white">Sage suggests</span>
+            <span className="text-sm font-medium text-fg">Sage suggests</span>
             <span className="text-[10px] text-mytra-purple">— review before signing</span>
           </div>
 
           {suggestions.length === 0 ? (
-            <p className="text-xs text-gray-400 py-2">No suggestions — add hazards manually.</p>
+            <p className="text-xs text-fg-2 py-2">No suggestions — add hazards manually.</p>
           ) : (
             <div className="space-y-1.5">
               {suggestions.map((s, i) => (
@@ -140,9 +140,9 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
                       >
                         {RISK_LABELS[s.riskLevel]}
                       </span>
-                      <span className="text-sm text-white">{s.description}</span>
+                      <span className="text-sm text-fg">{s.description}</span>
                     </span>
-                    <span className="block text-xs text-gray-400 mt-0.5">{s.controlMeasure}</span>
+                    <span className="block text-xs text-fg-2 mt-0.5">{s.controlMeasure}</span>
                   </span>
                 </label>
               ))}
@@ -164,7 +164,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
               type="button"
               onClick={() => setSuggestions(null)}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-gray-300 hover:text-white transition-colors"
+                         text-fg-2 hover:text-fg transition-colors"
             >
               Dismiss
             </button>

@@ -40,14 +40,14 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
     <div className="space-y-4">
       {categories.map((category) => (
         <div key={category}>
-          <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-1">{category}</h4>
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">{category}</h4>
           <div className="space-y-2">
             {items
               .filter((i) => i.category === category)
               .map((item) => {
                 const notesOpen = openNotes.has(item.id)
                 return (
-                  <div key={item.id} className="bg-mytra-card border border-mytra-border rounded-lg p-3">
+                  <div key={item.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <button
                         type="button"
@@ -68,9 +68,9 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         onClick={() => set(item.id, { checked: !item.checked })}
                         className="flex-1 text-left min-w-0"
                       >
-                        <span className="text-sm text-white leading-snug">{item.label}</span>
+                        <span className="text-sm text-fg leading-snug">{item.label}</span>
                         {item.critical && (
-                          <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded align-middle">
+                          <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded align-middle">
                             <AlertTriangle className="w-2.5 h-2.5" />
                             Required
                           </span>
@@ -84,7 +84,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${
                           notesOpen || item.notes
                             ? 'bg-mytra-purple/10 border-mytra-purple/40 text-mytra-purple'
-                            : 'bg-mytra-bg border-mytra-border text-gray-500 hover:text-white'
+                            : 'bg-mytra-bg border-mytra-border text-fg-3 hover:text-fg'
                         }`}
                       >
                         <MessageSquarePlus className="w-4 h-4" />
@@ -98,8 +98,8 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         onChange={(e) => set(item.id, { notes: e.target.value })}
                         placeholder="Note (optional)"
                         className="mt-2 w-full bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
-                                   text-sm text-white placeholder:text-gray-600
-                                   focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent animate-fadeIn"
+                                   text-sm text-fg placeholder:text-fg-4
+                                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple animate-fadeIn"
                       />
                     )}
                   </div>

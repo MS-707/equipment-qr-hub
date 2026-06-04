@@ -46,7 +46,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
             type="button"
             onClick={() => addTemplate(t)}
             className="text-[11px] px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border
-                       text-gray-400 hover:text-white hover:border-mytra-purple/50 transition-colors"
+                       text-fg-2 hover:text-fg hover:border-mytra-purple/50 transition-colors"
           >
             + {t.description}
           </button>
@@ -55,11 +55,11 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
 
       {/* Rows */}
       {hazards.length === 0 ? (
-        <p className="text-xs text-gray-600 py-2">No hazards yet — tap a chip above or add one.</p>
+        <p className="text-xs text-fg-4 py-2">No hazards yet — tap a chip above or add one.</p>
       ) : (
         <div className="space-y-2">
           {hazards.map((h) => (
-            <div key={h.id} className="bg-mytra-card border border-mytra-border rounded-lg p-3 space-y-2">
+            <div key={h.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-2">
               <div className="flex items-start gap-2">
                 <input
                   type="text"
@@ -67,15 +67,15 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
                   onChange={(e) => update(h.id, { description: e.target.value })}
                   placeholder="Hazard"
                   className="flex-1 bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
-                             text-sm text-white placeholder:text-gray-600
-                             focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                             text-sm text-fg placeholder:text-fg-4
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
                 />
                 <button
                   type="button"
                   onClick={() => remove(h.id)}
                   aria-label="Remove hazard"
                   className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg
-                             bg-mytra-bg border border-mytra-border text-gray-500 hover:text-red-400 transition-colors"
+                             bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -93,7 +93,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
                       style={
                         on
                           ? { backgroundColor: RISK_COLORS[lvl], color: '#fff', borderColor: RISK_COLORS[lvl] }
-                          : { backgroundColor: 'transparent', color: '#9CA3AF', borderColor: '#232323' }
+                          : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                       }
                     >
                       {RISK_LABELS[lvl]}
@@ -108,8 +108,8 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
                 onChange={(e) => update(h.id, { controlMeasure: e.target.value })}
                 placeholder="Control measure"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
-                           text-sm text-white placeholder:text-gray-600
-                           focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                           text-sm text-fg placeholder:text-fg-4
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
 
               {h.source === 'sage' && (
@@ -125,7 +125,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
       <button
         type="button"
         onClick={addBlank}
-        className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white
+        className="inline-flex items-center gap-1.5 text-xs text-fg-2 hover:text-fg
                    bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 hover:border-mytra-purple/50 transition-colors"
       >
         <Plus className="w-3.5 h-3.5" /> Add hazard

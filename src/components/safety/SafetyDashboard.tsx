@@ -75,10 +75,10 @@ export default function SafetyDashboard() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       {/* Greeting */}
       <div>
-        <h1 className="text-xl font-bold text-white">
+        <h1 className="text-xl font-bold text-fg">
           {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
         </h1>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-fg-2">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -97,7 +97,7 @@ export default function SafetyDashboard() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-1">Quick actions</h2>
+        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Quick actions</h2>
         <div className="grid grid-cols-2 gap-2">
           {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary }) => (
             <Link
@@ -106,7 +106,7 @@ export default function SafetyDashboard() {
               className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors border ${
                 primary
                   ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover'
-                  : 'bg-mytra-card text-gray-200 border-mytra-border hover:bg-mytra-card-hover'
+                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -116,7 +116,7 @@ export default function SafetyDashboard() {
           <Link
             href="/inspections"
             className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors
-                       bg-mytra-card text-gray-200 border border-mytra-border hover:bg-mytra-card-hover"
+                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover"
           >
             <Truck className="w-4 h-4 shrink-0" />
             Pre-Trip Inspection
@@ -127,20 +127,20 @@ export default function SafetyDashboard() {
       {/* Active permits */}
       {activePermits.length > 0 && (
         <section>
-          <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-1">Active permits</h2>
+          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Active permits</h2>
           <div className="space-y-2">
             {activePermits.map((p) => (
               <Link
                 key={p.id}
                 href={`/safety/record/${p.id}`}
-                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 hover:bg-mytra-card-hover transition-colors"
+                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors"
               >
                 <div className="min-w-0">
-                  <p className="text-[11px] font-mono text-gray-500">{p.id}</p>
-                  <p className="text-sm text-white truncate">
+                  <p className="text-[11px] font-mono text-fg-3">{p.id}</p>
+                  <p className="text-sm text-fg truncate">
                     {('workDescription' in p ? p.workDescription : p.spaceDescription) || p.projectName}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">{p.location}</p>
+                  <p className="text-xs text-fg-3 truncate">{p.location}</p>
                 </div>
                 <div className="shrink-0 text-right space-y-1">
                   <PermitStatusBadge permit={p} />
@@ -157,15 +157,15 @@ export default function SafetyDashboard() {
       {/* Recent activity */}
       <section>
         <div className="flex items-center justify-between mb-2 px-1">
-          <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Recent activity</h2>
+          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Recent activity</h2>
           <Link href="/safety/history" className="text-xs text-mytra-purple hover:underline inline-flex items-center gap-0.5">
             View history <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
         {recent.length === 0 ? (
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 text-center">
-            <CheckCircle2 className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">No safety records yet. Start your day with a PTP.</p>
+          <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 shadow-card text-center">
+            <CheckCircle2 className="w-8 h-8 text-fg-4 mx-auto mb-2" />
+            <p className="text-sm text-fg-2">No safety records yet. Start your day with a PTP.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -190,12 +190,12 @@ function StatCard({
   sub: string
   tone: 'good' | 'warn' | 'neutral'
 }) {
-  const valueColor = tone === 'good' ? 'text-green-400' : tone === 'warn' ? 'text-amber-400' : 'text-white'
+  const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3">
-      <p className="text-[10px] uppercase tracking-wider text-gray-500">{label}</p>
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 shadow-card">
+      <p className="text-[10px] uppercase tracking-wider text-fg-3">{label}</p>
       <p className={`text-base font-semibold mt-0.5 ${valueColor}`}>{value}</p>
-      <p className="text-[11px] text-gray-600">{sub}</p>
+      <p className="text-[11px] text-fg-4">{sub}</p>
     </div>
   )
 }

@@ -60,7 +60,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <Centered>
         <Loader2 className="w-6 h-6 text-mytra-purple animate-spin" />
-        <p className="text-sm text-gray-400 mt-3">Checking your sign-in…</p>
+        <p className="text-sm text-fg-2 mt-3">Checking your sign-in…</p>
       </Centered>
     )
   }
@@ -85,9 +85,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (!online && !cached) {
     return (
       <Centered>
-        <WifiOff className="w-8 h-8 text-gray-500" />
-        <h2 className="text-base font-semibold text-white mt-3">Sign in once to work offline</h2>
-        <p className="text-sm text-gray-400 mt-1 max-w-xs">
+        <WifiOff className="w-8 h-8 text-fg-3" />
+        <h2 className="text-base font-semibold text-fg mt-3">Sign in once to work offline</h2>
+        <p className="text-sm text-fg-2 mt-1 max-w-xs">
           Connect to the internet and sign in with your Mytra account. After that, the Safety Hub
           works offline on this device.
         </p>
@@ -115,12 +115,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <Centered>
-      <div className="w-full max-w-sm bg-mytra-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
+      <div className="w-full max-w-sm bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="w-6 h-6 text-mytra-purple" />
-          <span className="text-lg font-bold text-white">Safety Hub</span>
+          <span className="text-lg font-bold text-fg">Safety Hub</span>
         </div>
-        <p className="text-sm text-gray-400 mb-5">
+        <p className="text-sm text-fg-2 mb-5">
           Sign in with your Mytra account to access safety forms. Your identity is recorded on every
           plan, permit, and signature.
         </p>
@@ -149,7 +149,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         {hasGoogle && hasDev && (
           <div className="flex items-center gap-3 my-4">
             <div className="h-px bg-mytra-border flex-1" />
-            <span className="text-[10px] uppercase tracking-wider text-gray-600">or</span>
+            <span className="text-[10px] uppercase tracking-wider text-fg-4">or</span>
             <div className="h-px bg-mytra-border flex-1" />
           </div>
         )}
@@ -157,7 +157,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         {hasDev && (
           <form onSubmit={devSubmit} className="space-y-3">
             <div>
-              <label htmlFor="dev-name" className="block text-xs text-gray-400 mb-1">
+              <label htmlFor="dev-name" className="block text-xs text-fg-2 mb-1">
                 Full name
               </label>
               <input
@@ -167,12 +167,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                 onChange={(e) => setDevName(e.target.value)}
                 placeholder="Your name"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                           text-sm text-white placeholder:text-gray-600
-                           focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                           text-sm text-fg placeholder:text-fg-4
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
             </div>
             <div>
-              <label htmlFor="dev-email" className="block text-xs text-gray-400 mb-1">
+              <label htmlFor="dev-email" className="block text-xs text-fg-2 mb-1">
                 Company email
               </label>
               <input
@@ -182,8 +182,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                 onChange={(e) => setDevEmail(e.target.value)}
                 placeholder="you@mytra.ai"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                           text-sm text-white placeholder:text-gray-600
-                           focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                           text-sm text-fg placeholder:text-fg-4
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
             </div>
             <button
@@ -196,7 +196,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>
             {!hasGoogle && (
-              <p className="text-[11px] text-gray-600 text-center">
+              <p className="text-[11px] text-fg-4 text-center">
                 Dev sign-in (Google not configured yet). Restricted to the Mytra email domain.
               </p>
             )}
@@ -204,7 +204,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         )}
 
         {!hasGoogle && !hasDev && (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-fg-2">
             No sign-in method is configured. Set Google OAuth env vars or enable dev login.
           </p>
         )}

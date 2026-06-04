@@ -68,7 +68,7 @@ export default function CrewSignatureBlock({
       {value.signatures.length > 0 && (
         <div className="space-y-2">
           {value.signatures.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 bg-mytra-card border border-mytra-border rounded-lg p-2.5">
+            <div key={s.id} className="flex items-center gap-3 bg-mytra-card shadow-card border border-mytra-border rounded-lg p-2.5">
               {value.blobs[s.id] && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -78,8 +78,8 @@ export default function CrewSignatureBlock({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-white truncate">{s.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-fg truncate">{s.name}</p>
+                <p className="text-xs text-fg-3">
                   {s.role ? `${s.role} · ` : ''}signed {formatTime(s.signedAt)}
                 </p>
               </div>
@@ -91,7 +91,7 @@ export default function CrewSignatureBlock({
                   className={`shrink-0 inline-flex items-center gap-1 text-[10px] px-1.5 py-1 rounded border transition-colors ${
                     supervisorId === s.id
                       ? 'bg-mytra-purple/20 text-mytra-purple border-mytra-purple/40'
-                      : 'bg-mytra-bg text-gray-500 border-mytra-border hover:text-white'
+                      : 'bg-mytra-bg text-fg-3 border-mytra-border hover:text-fg'
                   }`}
                 >
                   <Star className="w-3 h-3" />
@@ -102,7 +102,7 @@ export default function CrewSignatureBlock({
                 type="button"
                 onClick={() => remove(s.id)}
                 aria-label="Remove signature"
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-gray-500 hover:text-red-400 transition-colors"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -112,9 +112,9 @@ export default function CrewSignatureBlock({
       )}
 
       {adding ? (
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
+        <div className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Name</label>
+            <label className="block text-xs text-fg-2 mb-1">Name</label>
             <input
               type="text"
               list="crew-roster"
@@ -122,8 +122,8 @@ export default function CrewSignatureBlock({
               onChange={(e) => setName(e.target.value)}
               placeholder="Crew member name"
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                         text-sm text-white placeholder:text-gray-600
-                         focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                         text-sm text-fg placeholder:text-fg-4
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
             />
             <datalist id="crew-roster">
               {crewRoster.map((c) => (
@@ -132,12 +132,12 @@ export default function CrewSignatureBlock({
             </datalist>
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Role (optional)</label>
+            <label className="block text-xs text-fg-2 mb-1">Role (optional)</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                         text-sm text-white focus:outline-none focus:ring-2 focus:ring-mytra-purple"
+                         text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
             >
               <option value="">—</option>
               {roleOptions.map((r) => (
@@ -148,7 +148,7 @@ export default function CrewSignatureBlock({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Signature</label>
+            <label className="block text-xs text-fg-2 mb-1">Signature</label>
             <SignaturePad onChange={(url) => setDataUrl(url)} />
           </div>
           <div className="flex gap-2">
@@ -166,7 +166,7 @@ export default function CrewSignatureBlock({
               type="button"
               onClick={reset}
               className="px-4 py-2.5 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-gray-300 hover:text-white transition-colors"
+                         text-fg-2 hover:text-fg transition-colors"
             >
               Cancel
             </button>
@@ -177,8 +177,8 @@ export default function CrewSignatureBlock({
           type="button"
           onClick={() => setAdding(true)}
           className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium
-                     bg-mytra-bg border border-dashed border-mytra-border text-gray-400
-                     hover:text-white hover:border-mytra-purple/50 transition-colors"
+                     bg-mytra-bg border border-dashed border-mytra-border text-fg-2
+                     hover:text-fg hover:border-mytra-purple/50 transition-colors"
         >
           <Plus className="w-4 h-4" /> Add signature
         </button>

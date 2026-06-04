@@ -34,7 +34,7 @@ export default function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition rounded
+        className="flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg transition rounded
                    focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -54,13 +54,13 @@ export default function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-56 bg-mytra-card border border-mytra-border rounded-lg
-                     shadow-lg p-2 animate-slideDown z-50"
+          className="absolute right-0 mt-2 w-56 bg-mytra-card shadow-card border border-mytra-border rounded-lg
+                     shadow-pop p-2 animate-slideDown z-50"
         >
           <div className="px-2 py-1.5">
-            <p className="text-sm text-white truncate">{name}</p>
+            <p className="text-sm text-fg truncate">{name}</p>
             {session.user.email && (
-              <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+              <p className="text-xs text-fg-3 truncate">{session.user.email}</p>
             )}
           </div>
           <div className="h-px bg-mytra-border my-1" />
@@ -71,7 +71,7 @@ export default function UserMenu() {
               clearCurrentIdentity()
               signOut({ callbackUrl: '/safety' })
             }}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-gray-300 hover:text-white
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-fg-2 hover:text-fg
                        hover:bg-mytra-card-hover rounded transition-colors"
           >
             <LogOut className="w-4 h-4" /> Sign out

@@ -131,7 +131,7 @@ export default function SignaturePad({
           onPointerLeave={handleUp}
         />
         {isEmpty && (
-          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-gray-600">
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-fg-4">
             Sign here — finger or stylus
           </span>
         )}
@@ -139,7 +139,7 @@ export default function SignaturePad({
           type="button"
           onClick={clear}
           className="no-print absolute top-1.5 right-1.5 inline-flex items-center gap-1 text-[10px]
-                     text-gray-400 hover:text-white bg-mytra-bg/70 border border-mytra-border rounded px-1.5 py-0.5
+                     text-fg-2 hover:text-fg bg-mytra-bg/70 border border-mytra-border rounded px-1.5 py-0.5
                      transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         >
           <Eraser className="w-3 h-3" /> Clear

@@ -26,9 +26,9 @@ export default function PermitTimer({ validUntil, status }: PermitTimerProps) {
     return () => clearInterval(id)
   }, [status])
 
-  if (status === 'closed') return <span className="text-xs text-gray-500">Closed</span>
-  if (status === 'revoked') return <span className="text-xs text-red-400">Revoked</span>
+  if (status === 'closed') return <span className="text-xs text-fg-3">Closed</span>
+  if (status === 'revoked') return <span className="text-xs text-danger">Revoked</span>
 
   const { text, expired } = remainingLabel(validUntil)
-  return <span className={`text-xs font-medium ${expired ? 'text-orange-400' : 'text-gray-400'}`}>{text}</span>
+  return <span className={`text-xs font-medium ${expired ? 'text-expired' : 'text-fg-2'}`}>{text}</span>
 }

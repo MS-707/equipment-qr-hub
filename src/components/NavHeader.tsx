@@ -46,7 +46,7 @@ export default function NavHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: Logo / Title */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-lg font-bold text-white">Equipment QR Hub</span>
+          <span className="text-lg font-bold text-fg">Equipment QR Hub</span>
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>
@@ -68,8 +68,8 @@ export default function NavHeader() {
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-fg'
+                      : 'text-fg-2 hover:text-fg'
                   }`}
               >
                 <Icon size={16} />

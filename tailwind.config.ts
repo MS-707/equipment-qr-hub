@@ -8,17 +8,36 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
+      },
       colors: {
         mytra: {
-          bg: '#0A0A0A',
-          card: '#161616',
-          'card-hover': '#1E1E1E',
-          input: '#0F0F0F',
-          border: '#232323',
-          purple: '#583AF6',
-          'purple-hover': '#6B4FF7',
-          'purple-glow': 'rgba(88, 58, 246, 0.12)',
-        }
+          bg: 'var(--bg)',
+          card: 'var(--surface)',
+          'card-hover': 'var(--surface-2)',
+          input: 'var(--surface-inset)',
+          border: 'var(--border)',
+          'border-strong': 'var(--border-strong)',
+          purple: 'var(--accent)',
+          'purple-hover': 'var(--accent-hover)',
+          'purple-glow': 'var(--accent-weak)',
+        },
+        fg: {
+          DEFAULT: 'var(--fg)',
+          2: 'var(--fg-2)',
+          3: 'var(--fg-3)',
+          4: 'var(--fg-4)',
+        },
+        ok: 'var(--ok)',
+        warn: 'var(--warn)',
+        danger: 'var(--danger)',
+        expired: 'var(--expired)',
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
+        pop: 'var(--shadow-pop)',
       },
       keyframes: {
         fadeIn: {
