@@ -39,7 +39,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
     setError(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 15000)
+      const timer = setTimeout(() => ctrl.abort(), 28000)
       const res = await fetch('/api/safety/suggest-hazards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
