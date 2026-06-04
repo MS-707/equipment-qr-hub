@@ -27,6 +27,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
   const [loading, setLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [error, setError] = useState<string | null>(null)
 
   if (!SAGE_ENABLED) return null
 
@@ -35,9 +36,10 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
   async function ask() {
     setLoading(true)
     setSuggestions(null)
+    setError(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 12000)
+      const timer = setTimeout(() => ctrl.abort(), 15000)
       const res = await fetch('/api/safety/suggest-hazards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,10 +48,19 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
       })
       clearTimeout(timer)
       const data = await res.json()
-      const list: Suggestion[] = Array.isArray(data?.hazards) ? data.hazards : []
-      setSuggestions(list)
-      setSelected(new Set(list.map((_, i) => i)))
-    } catch {
+      if (data?.error) {
+        setError(data.error)
+        setSuggestions([])
+      } else {
+        const list: Suggestion[] = Array.isArray(data?.hazards) ? data.hazards : []
+        setSuggestions(list)
+        setSelected(new Set(list.map((_, i) => i)))
+      }
+    } catch (err) {
+      const msg = err instanceof DOMException && err.name === 'AbortError'
+        ? 'Request timed out — try again'
+        : 'Network error — check your connection'
+      setError(msg)
       setSuggestions([])
     } finally {
       setLoading(false)
@@ -118,7 +129,9 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
           </div>
 
           {suggestions.length === 0 ? (
-            <p className="text-xs text-fg-2 py-2">No suggestions — add hazards manually.</p>
+            <p className="text-xs text-fg-2 py-2">
+              {error || 'No suggestions — add hazards manually.'}
+            </p>
           ) : (
             <div className="space-y-1.5">
               {suggestions.map((s, i) => (
@@ -136,7 +149,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
                     <span className="flex items-center gap-1.5">
                       <span
                         className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                        style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: RISK_COLORS[s.riskLevel] + '1A' }}
+                        style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.riskLevel]} 10%, transparent)` }}
                       >
                         {RISK_LABELS[s.riskLevel]}
                       </span>
