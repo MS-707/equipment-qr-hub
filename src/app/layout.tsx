@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Roboto } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import NavHeader from '@/components/NavHeader'
+import AuthProvider from '@/components/providers/AuthProvider'
 
-const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: 'Equipment QR Hub | Mytra EHS',
@@ -31,13 +33,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" data-theme="dark" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`${roboto.className} bg-mytra-bg text-white min-h-screen`}>
-        <NavHeader />
-        {children}
+      <body className="font-sans bg-mytra-bg text-fg min-h-screen">
+        <AuthProvider>
+          <NavHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )
