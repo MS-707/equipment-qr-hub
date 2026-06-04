@@ -19,19 +19,22 @@ No markdown, no explanation, no preamble. Just the JSON object.`
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
-    return Response.json({ hazards: [] })
+    return Response.json(
+      { hazards: [], error: 'ANTHROPIC_API_KEY not configured' },
+      { status: 503 }
+    )
   }
 
   let body: { scopeOfWork?: string; location?: string }
   try {
     body = await req.json()
   } catch {
-    return Response.json({ hazards: [] }, { status: 400 })
+    return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
   }
 
   const scopeOfWork = (body.scopeOfWork ?? '').trim()
   if (!scopeOfWork) {
-    return Response.json({ hazards: [] })
+    return Response.json({ hazards: [], error: 'No scope of work provided' })
   }
 
   const userMessage = [
@@ -66,7 +69,9 @@ export async function POST(req: Request) {
       .slice(0, 8)
 
     return Response.json({ hazards: valid })
-  } catch {
-    return Response.json({ hazards: [] })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[sage] suggest-hazards failed:', msg)
+    return Response.json({ hazards: [], error: msg }, { status: 502 })
   }
 }
