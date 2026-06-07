@@ -88,7 +88,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                 aria-expanded={isOpen}
                 className="w-full flex items-center justify-between px-4 py-3
                            hover:bg-mytra-card-hover active:bg-mytra-border
-                           transition-colors duration-150"
+                           transition-colors duration-150 press-scale"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-fg font-medium text-sm">
