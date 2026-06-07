@@ -137,7 +137,7 @@ function nextId(type: SafetyRecordType): string {
   if (!c || c.year !== year) c = { year, count: 0 }
   c.count += 1
   counters[prefix] = c
-  localStorage.setItem(COUNTER_KEY, JSON.stringify(counters))
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(counters)) } catch { /* non-fatal */ }
   return `${prefix}-${year}-${String(c.count).padStart(4, '0')}`
 }
 

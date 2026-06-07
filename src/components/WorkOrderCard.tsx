@@ -123,6 +123,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
           {/* Status toggle */}
           <button
             onClick={cycleStatus}
+            aria-label={`Status: ${workOrder.status}. Click to change.`}
             className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full
                        transition-colors hover:opacity-80 shrink-0"
             style={{

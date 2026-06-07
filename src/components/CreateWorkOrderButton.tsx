@@ -76,6 +76,7 @@ export default function CreateWorkOrderButton({
         </span>
         <button
           onClick={() => setIsOpen(false)}
+          aria-label="Close work order form"
           className="text-fg-4 hover:text-fg transition-colors"
         >
           <X className="w-3.5 h-3.5" />
@@ -84,10 +85,11 @@ export default function CreateWorkOrderButton({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
-          <label className="text-xs text-fg-4 block mb-1">Due Date</label>
+          <label htmlFor="wo-due-date" className="text-xs text-fg-4 block mb-1">Due Date</label>
           <div className="relative">
             <CalendarDays className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-4 pointer-events-none" />
             <input
+              id="wo-due-date"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -98,8 +100,9 @@ export default function CreateWorkOrderButton({
           </div>
         </div>
         <div>
-          <label className="text-xs text-fg-4 block mb-1">Assign To</label>
+          <label htmlFor="wo-assign-to" className="text-xs text-fg-4 block mb-1">Assign To</label>
           <input
+            id="wo-assign-to"
             type="text"
             value={assignedTo}
             onChange={(e) => setAssignedTo(e.target.value)}
@@ -113,7 +116,7 @@ export default function CreateWorkOrderButton({
 
       <button
         onClick={handleCreate}
-        className="w-full bg-mytra-purple hover:bg-mytra-purple/80 text-fg text-xs
+        className="w-full bg-mytra-purple hover:bg-mytra-purple/80 text-white text-xs
                    font-medium py-2 rounded-lg transition-colors"
       >
         Create Work Order

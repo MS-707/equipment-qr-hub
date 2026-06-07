@@ -84,6 +84,7 @@ export default function SafetyHistory() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search safety records"
           placeholder="Search id, location, project, person…"
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-9 pr-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         />
