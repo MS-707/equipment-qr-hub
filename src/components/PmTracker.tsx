@@ -91,7 +91,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
             <div>
               <p className="text-sm text-fg">{assignment.driName}</p>
               {assignment.driEmail && <p className="text-xs text-fg-3">{assignment.driEmail}</p>}
-              <p className="text-[10px] text-fg-4 mt-0.5">Assigned {formatDate(assignment.assignedAt)}</p>
+              <p className="text-xs text-fg-4 mt-0.5">Assigned {formatDate(assignment.assignedAt)}</p>
             </div>
             <button
               onClick={() => setAssigning(true)}
@@ -196,17 +196,17 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                   <div className="min-w-0">
                     <p className="text-sm text-fg">{freq}</p>
                     {latest ? (
-                      <p className="text-[10px] text-fg-3 truncate">
+                      <p className="text-xs text-fg-3 truncate">
                         Last: {formatDate(latest.completedAt)} by {latest.completedBy}
                       </p>
                     ) : (
-                      <p className="text-[10px] text-fg-4 italic">Never completed</p>
+                      <p className="text-xs text-fg-4 italic">Never completed</p>
                     )}
                   </div>
                 </div>
                 <button
                   onClick={() => setLogFreq(freq)}
-                  className="text-[10px] font-medium text-mytra-purple hover:text-mytra-purple-hover
+                  className="text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover
                              hover:bg-mytra-purple/10 rounded transition-colors shrink-0 px-2 py-1"
                 >
                   Log

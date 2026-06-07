@@ -80,6 +80,8 @@ export default function Home() {
         />
         <input
           type="text"
+          inputMode="search"
+          enterKeyHint="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search equipment..."
@@ -199,7 +201,7 @@ export default function Home() {
                     {category}
                   </h2>
                   <span
-                    className="text-[11px] font-medium px-1.5 py-0.5 rounded"
+                    className="text-xs font-medium px-1.5 py-0.5 rounded"
                     style={{
                       backgroundColor: `${color}15`,
                       color: color,

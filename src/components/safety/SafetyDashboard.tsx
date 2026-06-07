@@ -103,7 +103,7 @@ export default function SafetyDashboard() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium
+              className={`flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                          transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
                          active:scale-[0.97] ${
                 primary
@@ -117,7 +117,7 @@ export default function SafetyDashboard() {
           ))}
           <Link
             href="/inspections"
-            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium
+            className="flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                        transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
                        bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover
                        hover:shadow-card active:scale-[0.97]"
@@ -140,7 +140,7 @@ export default function SafetyDashboard() {
                 className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors"
               >
                 <div className="min-w-0">
-                  <p className="text-[11px] font-mono text-fg-3">{p.id}</p>
+                  <p className="text-xs font-mono text-fg-3">{p.id}</p>
                   <p className="text-sm text-fg truncate">
                     {('workDescription' in p ? p.workDescription : p.spaceDescription) || p.projectName}
                   </p>
@@ -196,11 +196,11 @@ function StatCard({
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 shadow-card
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
                     transition-shadow duration-200 hover:shadow-pop">
-      <p className="text-[10px] uppercase tracking-wider text-fg-3">{label}</p>
-      <p className={`text-base font-semibold mt-0.5 ${valueColor}`}>{value}</p>
-      <p className="text-[11px] text-fg-4">{sub}</p>
+      <p className="text-xs uppercase tracking-wider text-fg-3">{label}</p>
+      <p className={`text-lg font-semibold mt-0.5 ${valueColor}`}>{value}</p>
+      <p className="text-xs text-fg-4">{sub}</p>
     </div>
   )
 }

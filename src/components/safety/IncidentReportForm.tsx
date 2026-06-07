@@ -183,7 +183,7 @@ export default function IncidentReportForm() {
             <div className="text-xs text-warn leading-relaxed">
               Serious injuries must be reported to Cal/OSHA within 8 hours (T8 §342 / LC §6409.1).
               <label className="flex items-center gap-2 mt-1.5 text-fg-2">
-                <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+                <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
                 Reported to Cal/OSHA
               </label>
             </div>

@@ -124,8 +124,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
           <button
             onClick={cycleStatus}
             aria-label={`Status: ${workOrder.status}. Click to change.`}
-            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full
-                       transition-colors hover:opacity-80 shrink-0"
+            className="flex items-center gap-1.5 text-xs font-medium px-4 py-2.5 rounded-full
+                       transition-colors hover:opacity-80 shrink-0 min-h-[44px]"
             style={{
               backgroundColor:
                 workOrder.status === 'Complete'

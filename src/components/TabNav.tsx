@@ -63,7 +63,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
             aria-controls={`tabpanel-${tab.id}`}
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium min-h-[44px]
                         transition-colors duration-200
                         ${isActive ? 'text-fg' : 'text-fg-4 hover:text-fg'}`}
           >

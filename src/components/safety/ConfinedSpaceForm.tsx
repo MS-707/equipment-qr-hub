@@ -180,7 +180,7 @@ export default function ConfinedSpaceForm() {
                   onChange={(e) => f.set(e.target.value)}
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : ''}`}
                 />
-                {bad && <p className="text-[10px] text-danger mt-0.5">Out of acceptable range</p>}
+                {bad && <p className="text-xs text-danger mt-0.5">Out of acceptable range</p>}
               </div>
             )
           })}
@@ -197,11 +197,11 @@ export default function ConfinedSpaceForm() {
         </div>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 text-sm text-fg-2">
-            <input type="checkbox" checked={continuousMonitoring} onChange={() => setContinuousMonitoring((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+            <input type="checkbox" checked={continuousMonitoring} onChange={() => setContinuousMonitoring((v) => !v)} className="accent-mytra-purple w-5 h-5" />
             Continuous monitoring
           </label>
           <label className="flex items-center gap-2 text-sm text-fg-2">
-            <input type="checkbox" checked={ventilationInUse} onChange={() => setVentilationInUse((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+            <input type="checkbox" checked={ventilationInUse} onChange={() => setVentilationInUse((v) => !v)} className="accent-mytra-purple w-5 h-5" />
             Ventilation in use
           </label>
         </div>
@@ -227,10 +227,10 @@ export default function ConfinedSpaceForm() {
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-entry checklist</h4>
-          {critLeft > 0 && <span className="text-[10px] text-warn">{critLeft} required left</span>}
+          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-[10px] text-fg-4 px-1">{regRef}</p>
+        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">

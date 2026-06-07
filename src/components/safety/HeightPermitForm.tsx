@@ -128,7 +128,7 @@ export default function HeightPermitForm() {
         </div>
         <div>
           <label className={labelCls}>Working height</label>
-          <input type="text" value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder="e.g. 8 m / 26 ft" className={inputCls} />
+          <input type="text" inputMode="decimal" value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder="e.g. 8 m / 26 ft" className={inputCls} />
         </div>
       </div>
 
@@ -164,10 +164,10 @@ export default function HeightPermitForm() {
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
-          {critLeft > 0 && <span className="text-[10px] text-warn">{critLeft} required left</span>}
+          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-[10px] text-fg-4 px-1">{regRef}</p>
+        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
