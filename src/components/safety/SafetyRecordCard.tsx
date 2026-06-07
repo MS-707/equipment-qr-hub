@@ -43,7 +43,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
     <Link
       href={`/safety/record/${record.id}`}
       className="block bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card
-                 hover:bg-mytra-card-hover transition-colors"
+                 hover:bg-mytra-card-hover transition-colors press-scale"
     >
       <div className="flex items-start gap-3">
         <span className="shrink-0 w-9 h-9 rounded-lg bg-mytra-bg border border-mytra-border flex items-center justify-center">

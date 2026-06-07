@@ -196,7 +196,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
         className="w-full flex items-center justify-between px-4 py-3
                    bg-mytra-card border border-mytra-border rounded-lg
                    hover:bg-mytra-card-hover active:bg-mytra-border
-                   transition-colors duration-150"
+                   transition-colors duration-150 press-scale"
       >
         <span className="text-sm font-medium text-fg">
           Recent Inspections ({history.length})

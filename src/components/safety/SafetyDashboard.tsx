@@ -137,7 +137,7 @@ export default function SafetyDashboard() {
               <Link
                 key={p.id}
                 href={`/safety/record/${p.id}`}
-                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors"
+                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors press-scale"
               >
                 <div className="min-w-0">
                   <p className="text-xs font-mono text-fg-3">{p.id}</p>
