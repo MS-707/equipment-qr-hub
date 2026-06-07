@@ -72,7 +72,7 @@ export default function SafetyDashboard() {
   }, [load])
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
       <div>
         <h1 className="text-xl font-bold text-fg">
@@ -103,10 +103,12 @@ export default function SafetyDashboard() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors border ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium
+                         transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
+                         active:scale-[0.97] ${
                 primary
-                  ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover'
-                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover'
+                  ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
+                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -115,8 +117,10 @@ export default function SafetyDashboard() {
           ))}
           <Link
             href="/inspections"
-            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors
-                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover"
+            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium
+                       transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover
+                       hover:shadow-card active:scale-[0.97]"
           >
             <Truck className="w-4 h-4 shrink-0" />
             Pre-Trip Inspection
@@ -192,7 +196,8 @@ function StatCard({
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 shadow-card">
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 shadow-card
+                    transition-shadow duration-200 hover:shadow-pop">
       <p className="text-[10px] uppercase tracking-wider text-fg-3">{label}</p>
       <p className={`text-base font-semibold mt-0.5 ${valueColor}`}>{value}</p>
       <p className="text-[11px] text-fg-4">{sub}</p>

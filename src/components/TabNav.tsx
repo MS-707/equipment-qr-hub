@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useRef, useEffect, useState } from 'react'
 
 interface Tab {
   id: string
@@ -15,6 +15,21 @@ interface TabNavProps {
 }
 
 export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 })
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const activeEl = container.querySelector<HTMLElement>(`[data-tab-id="${activeTab}"]`)
+    if (activeEl) {
+      setIndicator({
+        left: activeEl.offsetLeft,
+        width: activeEl.offsetWidth,
+      })
+    }
+  }, [activeTab, tabs])
+
   function handleKeyDown(e: React.KeyboardEvent) {
     const tabIds = tabs.map((t) => t.id)
     const currentIndex = tabIds.indexOf(activeTab)
@@ -29,7 +44,13 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   }
 
   return (
-    <div role="tablist" aria-label="Equipment information" className="no-print flex w-full border-b border-mytra-border" onKeyDown={handleKeyDown}>
+    <div
+      ref={containerRef}
+      role="tablist"
+      aria-label="Equipment information"
+      className="no-print relative flex w-full border-b border-mytra-border"
+      onKeyDown={handleKeyDown}
+    >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (
@@ -37,23 +58,25 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
             key={tab.id}
             role="tab"
             id={`tab-${tab.id}`}
+            data-tab-id={tab.id}
             aria-selected={isActive}
             aria-controls={`tabpanel-${tab.id}`}
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium
-                        transition-colors duration-150 border-b-2
-                        ${
-                          isActive
-                            ? 'border-mytra-purple text-fg'
-                            : 'border-transparent text-fg-4 hover:text-fg'
-                        }`}
+                        transition-colors duration-200
+                        ${isActive ? 'text-fg' : 'text-fg-4 hover:text-fg'}`}
           >
             {tab.icon && <span className="w-4 h-4 hidden sm:block">{tab.icon}</span>}
             {tab.label}
           </button>
         )
       })}
+      {/* Sliding active indicator */}
+      <div
+        className="absolute bottom-0 h-0.5 bg-mytra-purple rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ left: indicator.left, width: indicator.width }}
+      />
     </div>
   )
 }
