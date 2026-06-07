@@ -115,7 +115,7 @@ export default function HeightPermitForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} className={inputCls} />
+            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
@@ -124,7 +124,7 @@ export default function HeightPermitForm() {
         </div>
         <div>
           <label className={labelCls}>Work description</label>
-          <textarea rows={2} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Working height</label>

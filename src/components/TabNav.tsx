@@ -29,7 +29,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   }
 
   return (
-    <div role="tablist" aria-label="Equipment information" className="flex w-full border-b border-mytra-border" onKeyDown={handleKeyDown}>
+    <div role="tablist" aria-label="Equipment information" className="no-print flex w-full border-b border-mytra-border" onKeyDown={handleKeyDown}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (

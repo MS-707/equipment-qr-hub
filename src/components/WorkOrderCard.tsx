@@ -168,6 +168,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
       {/* Expand toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
         className="w-full px-4 py-2 flex items-center justify-center gap-1 text-xs text-fg-4
                    hover:text-fg hover:bg-mytra-card-hover transition-colors border-t border-mytra-border"
       >

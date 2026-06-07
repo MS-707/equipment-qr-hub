@@ -120,16 +120,16 @@ export default function HotWorkPermitForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} className={inputCls} />
+            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} />
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
           </div>
         </div>
         <div>
           <label className={labelCls}>Work description</label>
-          <textarea rows={2} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -165,7 +165,7 @@ export default function HotWorkPermitForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Extinguisher location</label>
-            <input type="text" value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} className={inputCls} />
+            <input type="text" value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} placeholder="Nearest station / bay" className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Extinguisher type</label>
