@@ -45,7 +45,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
                         transition-colors duration-150 border-b-2
                         ${
                           isActive
-                            ? 'border-mytra-purple text-white'
+                            ? 'border-mytra-purple text-fg'
                             : 'border-transparent text-fg-4 hover:text-fg'
                         }`}
           >

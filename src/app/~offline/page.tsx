@@ -5,9 +5,9 @@ export default function OfflinePage() {
   return (
     <main className="min-h-screen bg-mytra-bg flex items-center justify-center px-4">
       <div className="text-center">
-        <WifiOff className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-white mb-2">You are offline</h1>
-        <p className="text-gray-400 text-sm mb-6">
+        <WifiOff className="w-12 h-12 text-fg-4 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-fg mb-2">You are offline</h1>
+        <p className="text-fg-3 text-sm mb-6">
           This page hasn&apos;t been cached yet. Connect to the network and try again.
         </p>
         <Link
