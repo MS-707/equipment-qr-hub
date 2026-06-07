@@ -261,6 +261,29 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </Section>
       )}
 
+      {(ptp.emergencyMusterPoint || ptp.nearestHospital || ptp.firstAidEyewashLocation || ptp.weatherNotes || ptp.windSpeed) && (
+        <Section title="Site conditions & emergency">
+          <dl className="grid grid-cols-2 gap-2 text-sm">
+            {ptp.emergencyMusterPoint && <Field label="Muster point" value={ptp.emergencyMusterPoint} />}
+            {ptp.nearestHospital && <Field label="Nearest hospital" value={ptp.nearestHospital} />}
+            {ptp.firstAidEyewashLocation && <Field label="First aid / eyewash" value={ptp.firstAidEyewashLocation} />}
+            {ptp.weatherNotes && <Field label="Weather" value={ptp.weatherNotes} />}
+            {ptp.windSpeed && <Field label="Wind speed" value={ptp.windSpeed} />}
+          </dl>
+        </Section>
+      )}
+
+      {Object.values(ptp.heatIllnessPlan).some(Boolean) && (
+        <Section title="Heat illness prevention">
+          <div className="flex flex-wrap gap-2">
+            {ptp.heatIllnessPlan.water && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Water available</span>}
+            {ptp.heatIllnessPlan.shade && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Shade available</span>}
+            {ptp.heatIllnessPlan.restBreaks && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Rest breaks</span>}
+            {ptp.heatIllnessPlan.highHeatProcedures && <span className="text-xs px-2 py-1 rounded-full bg-warn/10 border border-warn/20 text-warn">High-heat procedures</span>}
+          </div>
+        </Section>
+      )}
+
       {(ptp.toolboxTalkTopic || ptp.toolboxTalkNotes) && (
         <Section title="Toolbox talk">
           <p className="text-sm text-fg">{ptp.toolboxTalkTopic}</p>
