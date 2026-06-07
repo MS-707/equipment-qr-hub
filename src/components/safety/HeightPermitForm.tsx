@@ -40,6 +40,7 @@ export default function HeightPermitForm() {
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [issuerId, setIssuerId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -91,11 +92,13 @@ export default function HeightPermitForm() {
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
     clearDraft()
+    setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
   }
 
   function reset() {
     clearDraft()
+    setWasOffline(false)
     const w = defaultValidityWindow(8)
     setWorkDescription('')
     setWorkingHeight('')
@@ -119,6 +122,7 @@ export default function HeightPermitForm() {
         message="Work-at-Height permit is active, logged as"
         onNew={reset}
         newLabel="New permit"
+        offline={wasOffline}
       />
     )
   }
