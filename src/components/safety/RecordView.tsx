@@ -66,7 +66,7 @@ export default function RecordView({ id }: { id: string }) {
         r.photoSlots.forEach((slot) => slots.push(slot))
         if (r.reporterSignatureId) slots.push(r.reporterSignatureId)
       }
-      if (slots.length > 0) getBlobs(r.id, slots).then(setSigImages)
+      if (slots.length > 0) getBlobs(r.id, slots).then(setSigImages).catch(() => {})
     }
     return unsub
   }, [id, load])

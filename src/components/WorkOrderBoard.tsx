@@ -94,9 +94,9 @@ export default function WorkOrderBoard() {
             setFilterEquipment(e.target.value === 'all' ? 'all' : Number(e.target.value))
           }
           aria-label="Filter by equipment"
-          className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
+          className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
                      text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
-                     max-w-[200px]"
+                     max-w-[200px] min-h-[44px]"
         >
           <option value="all">All Equipment</option>
           {equipment.map((e) => (
@@ -112,8 +112,9 @@ export default function WorkOrderBoard() {
             setFilterPmType(e.target.value === 'all' ? 'all' : (e.target.value as PmType))
           }
           aria-label="Filter by PM type"
-          className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
-                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple"
+          className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
+                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                     min-h-[44px]"
         >
           <option value="all">All PM Types</option>
           {PM_TYPES.map((t) => (
@@ -126,8 +127,8 @@ export default function WorkOrderBoard() {
         {overdueOrders.length > 0 && (
           <button
             onClick={() => setShowOverdueOnly(!showOverdueOnly)}
-            className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                       rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2.5
+                       rounded-lg transition-colors min-h-[44px] ${
                          showOverdueOnly
                            ? 'bg-danger/20 text-danger border border-danger/50'
                            : 'text-danger border border-mytra-border hover:bg-danger/10'
@@ -140,8 +141,8 @@ export default function WorkOrderBoard() {
 
         <button
           onClick={handleExport}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                     rounded-lg border border-mytra-border text-fg-3
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2.5
+                     rounded-lg border border-mytra-border text-fg-3 min-h-[44px]
                      hover:text-fg hover:bg-mytra-card-hover transition-colors ml-auto"
         >
           <Download className="w-3 h-3" />
