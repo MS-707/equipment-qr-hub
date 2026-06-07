@@ -65,9 +65,9 @@ function ChecklistItemRow({
       {/* Item label and critical badge */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-start gap-2 min-w-0">
-          <span className="text-sm text-white leading-snug">{item.label}</span>
+          <span className="text-sm text-fg leading-snug">{item.label}</span>
           {item.critical && (
-            <span className="inline-flex items-center gap-0.5 shrink-0 text-[10px] font-medium text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">
+            <span className="inline-flex items-center gap-0.5 shrink-0 text-[10px] font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded">
               <AlertTriangle className="w-2.5 h-2.5" />
               Safety-critical
             </span>
@@ -82,8 +82,8 @@ function ChecklistItemRow({
           onClick={() => onResult('pass')}
           className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
             state.result === 'pass'
-              ? 'bg-green-600 text-white'
-              : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white hover:border-green-600/50'
+              ? 'bg-ok text-white'
+              : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-ok/50'
           }`}
         >
           Pass
@@ -93,8 +93,8 @@ function ChecklistItemRow({
           onClick={() => onResult('fail')}
           className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
             state.result === 'fail'
-              ? 'bg-red-600 text-white'
-              : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white hover:border-red-600/50'
+              ? 'bg-danger text-white'
+              : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-danger/50'
           }`}
         >
           Fail
@@ -104,8 +104,8 @@ function ChecklistItemRow({
           onClick={() => onResult('na')}
           className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
             state.result === 'na'
-              ? 'bg-gray-600 text-white'
-              : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white hover:border-gray-500/50'
+              ? 'bg-fg-4 text-white'
+              : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-fg-4/50'
           }`}
         >
           N/A
@@ -117,9 +117,9 @@ function ChecklistItemRow({
         <div className="mt-3 space-y-2 animate-fadeIn">
           {/* Critical warning banner */}
           {item.critical && (
-            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-300 leading-relaxed">
+            <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
+              <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-xs text-warn/80 leading-relaxed">
                 This is a safety-critical item — flagging it will send this unit to maintenance.
               </p>
             </div>
@@ -133,9 +133,9 @@ function ChecklistItemRow({
             placeholder="Describe the issue..."
             aria-label="Describe the issue"
             className={`w-full bg-mytra-input border rounded-lg py-2.5 px-3
-                       text-sm text-white placeholder:text-gray-600 resize-none
+                       text-sm text-fg placeholder:text-fg-4 resize-none
                        focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
-                       ${notesMissing ? 'border-red-500 ring-2 ring-red-500/50' : 'border-mytra-border'}`}
+                       ${notesMissing ? 'border-danger ring-2 ring-danger/50' : 'border-mytra-border'}`}
           />
 
           {/* Photo capture or thumbnail */}
@@ -151,8 +151,8 @@ function ChecklistItemRow({
                 <button
                   type="button"
                   onClick={onRemovePhoto}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 rounded-full
-                             flex items-center justify-center hover:bg-red-500 transition-colors"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger rounded-full
+                             flex items-center justify-center hover:bg-danger/80 transition-colors"
                 >
                   <X className="w-3 h-3 text-white" />
                 </button>
@@ -161,7 +161,7 @@ function ChecklistItemRow({
               <button
                 type="button"
                 onClick={() => onCameraClick(item.id)}
-                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white
+                className="inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg
                            bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2
                            hover:border-mytra-purple/50 transition-colors duration-150"
               >
@@ -198,13 +198,13 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                    hover:bg-mytra-card-hover active:bg-mytra-border
                    transition-colors duration-150"
       >
-        <span className="text-sm font-medium text-white">
+        <span className="text-sm font-medium text-fg">
           Recent Inspections ({history.length})
         </span>
         {showHistory ? (
-          <ChevronUp className="w-4 h-4 text-gray-400" />
+          <ChevronUp className="w-4 h-4 text-fg-3" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400" />
+          <ChevronDown className="w-4 h-4 text-fg-3" />
         )}
       </button>
 
@@ -218,24 +218,24 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                            flex items-center justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="text-sm text-white truncate">{record.inspectorName}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-fg truncate">{record.inspectorName}</p>
+                  <p className="text-xs text-fg-3">
                     {formatDateTime(record.createdAt)} &middot; {record.shift} shift
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                    record.syncStatus === 'synced' ? 'bg-green-400' :
-                    record.syncStatus === 'failed' ? 'bg-red-400' :
-                    record.syncStatus === 'pending' ? 'bg-amber-400' : 'bg-gray-500'
+                    record.syncStatus === 'synced' ? 'bg-ok' :
+                    record.syncStatus === 'failed' ? 'bg-danger' :
+                    record.syncStatus === 'pending' ? 'bg-warn' : 'bg-fg-4'
                   }`} title={`Sync: ${record.syncStatus}`} />
                   <span
                     className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
                       record.hasCriticalFail
-                        ? 'bg-red-500/15 text-red-400'
+                        ? 'bg-danger/15 text-danger'
                         : record.result === 'fail'
-                          ? 'bg-amber-500/15 text-amber-400'
-                          : 'bg-green-500/15 text-green-400'
+                          ? 'bg-warn/15 text-warn'
+                          : 'bg-ok/15 text-ok'
                     }`}
                   >
                     {record.hasCriticalFail ? 'Critical' : record.result === 'fail' ? 'Issues' : 'Pass'}
@@ -452,14 +452,14 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <ClipboardCheck className="w-5 h-5 text-mytra-purple" />
-              <h3 className="text-sm font-semibold text-white">
+              <h3 className="text-sm font-semibold text-fg">
                 {checklist.title} Pre-Trip Inspection
               </h3>
             </div>
 
             {/* Inspector name */}
             <div>
-              <label htmlFor="inspector-name" className="block text-xs text-gray-400 mb-1">
+              <label htmlFor="inspector-name" className="block text-xs text-fg-3 mb-1">
                 Inspector Name
               </label>
               <input
@@ -471,14 +471,14 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                 required
                 aria-required="true"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                           text-sm text-white placeholder:text-gray-600
+                           text-sm text-fg placeholder:text-fg-4
                            focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
               />
             </div>
 
             {/* Shift toggle */}
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Shift</label>
+              <label className="block text-xs text-fg-3 mb-1">Shift</label>
               <div className="flex gap-2" role="radiogroup" aria-label="Shift">
                 {SHIFTS.map((s) => (
                   <button
@@ -490,7 +490,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                     className={`flex-1 text-sm font-medium py-2 rounded-lg transition-colors duration-150 ${
                       shift === s
                         ? 'bg-mytra-purple text-white'
-                        : 'bg-mytra-bg border border-mytra-border text-gray-400 hover:text-white hover:border-mytra-purple/50'
+                        : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50'
                     }`}
                   >
                     {s}
@@ -502,7 +502,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             {/* Hour meter — hidden for manual pallet jack */}
             {!isManualPalletJack && (
               <div>
-                <label htmlFor="hour-meter" className="block text-xs text-gray-400 mb-1">
+                <label htmlFor="hour-meter" className="block text-xs text-fg-3 mb-1">
                   Hour Meter Reading
                 </label>
                 <input
@@ -513,7 +513,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                   onChange={(e) => setHourMeter(e.target.value)}
                   placeholder="e.g. 1234.5"
                   className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                             text-sm text-white placeholder:text-gray-600
+                             text-sm text-fg placeholder:text-fg-4
                              focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
                 />
               </div>
@@ -566,11 +566,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
           {/* Progress bar */}
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-fg-3">
                 {answeredItems}/{totalItems} items checked
               </span>
               {criticalFailCount > 0 && (
-                <span className="text-xs text-red-400 font-medium">
+                <span className="text-xs text-danger font-medium">
                   {criticalFailCount} critical {criticalFailCount === 1 ? 'fail' : 'fails'}
                 </span>
               )}
@@ -580,7 +580,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${totalItems > 0 ? (answeredItems / totalItems) * 100 : 0}%`,
-                  backgroundColor: criticalFailCount > 0 ? '#EF4444' : '#583AF6',
+                  backgroundColor: criticalFailCount > 0 ? 'var(--danger)' : 'var(--accent)',
                 }}
               />
             </div>
@@ -589,7 +589,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
           {/* Sections with category headers */}
           {checklist.sections.map((section) => (
             <div key={section.category}>
-              <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-1">
+              <h4 className="text-xs uppercase tracking-wider text-fg-4 font-semibold mb-2 px-1">
                 {section.category}
               </h4>
               <div className="space-y-2">
@@ -655,10 +655,10 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
         <div className="animate-fadeIn space-y-4">
           {/* Pass */}
           {submittedRecord.result === 'pass' && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-green-400 mb-1">All Clear</h3>
-              <p className="text-sm text-green-300/80">
+            <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
+              <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-ok mb-1">All Clear</h3>
+              <p className="text-sm text-ok/80">
                 You&apos;re good to go. Inspection logged.
               </p>
             </div>
@@ -666,15 +666,15 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
           {/* Non-critical fail */}
           {submittedRecord.result === 'fail' && !submittedRecord.hasCriticalFail && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-6 text-center">
-              <Wrench className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-amber-400 mb-1">Issues Noted</h3>
-              <p className="text-sm text-amber-300/80 mb-3">
+            <div className="bg-warn/10 border border-warn/20 rounded-lg p-6 text-center">
+              <Wrench className="w-12 h-12 text-warn mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-warn mb-1">Issues Noted</h3>
+              <p className="text-sm text-warn/80 mb-3">
                 Maintenance has been notified. You may operate with caution.
               </p>
               {submittedRecord.workOrderId && (
-                <p className="text-xs text-gray-400">
-                  Work Order: <span className="text-white font-mono">{submittedRecord.workOrderId}</span>
+                <p className="text-xs text-fg-3">
+                  Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
                 </p>
               )}
             </div>
@@ -682,15 +682,15 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
           {/* Critical fail */}
           {submittedRecord.result === 'fail' && submittedRecord.hasCriticalFail && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
-              <Shield className="w-12 h-12 text-red-400 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-red-400 mb-1">Out of Service</h3>
-              <p className="text-sm text-red-300/80 mb-3">
+            <div className="bg-danger/10 border border-danger/20 rounded-lg p-6 text-center">
+              <Shield className="w-12 h-12 text-danger mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-danger mb-1">Out of Service</h3>
+              <p className="text-sm text-danger/80 mb-3">
                 This unit has been taken out of service for maintenance. Thanks for keeping everyone safe.
               </p>
               {submittedRecord.workOrderId && (
-                <p className="text-xs text-gray-400">
-                  Work Order: <span className="text-white font-mono">{submittedRecord.workOrderId}</span>
+                <p className="text-xs text-fg-3">
+                  Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
                 </p>
               )}
             </div>
@@ -701,7 +701,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             type="button"
             onClick={handleReset}
             className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
-                       bg-mytra-card border border-mytra-border text-white
+                       bg-mytra-card border border-mytra-border text-fg
                        hover:bg-mytra-card-hover"
           >
             New Inspection
