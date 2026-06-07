@@ -7,6 +7,9 @@ import type {
   SafetyRecord,
   PreTaskPlan,
   AnyPermit,
+  HeightPermit,
+  HotWorkPermit,
+  ConfinedSpacePermit,
   IncidentReport,
   CrewSignature,
 } from '@/lib/safety-types'
@@ -285,6 +288,11 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
           {'workDescription' in permit && <Field label="Work" value={(permit as { workDescription: string }).workDescription} />}
         </dl>
       </Section>
+
+      {permit.type === 'height-permit' && <HeightDetails permit={permit as HeightPermit} />}
+      {permit.type === 'hot-work-permit' && <HotWorkDetails permit={permit as HotWorkPermit} />}
+      {permit.type === 'confined-space-permit' && <ConfinedSpaceDetails permit={permit as ConfinedSpacePermit} />}
+
       <Section title="Checklist">
         <ul className="space-y-1">
           {permit.checklist.map((c) => (
@@ -302,6 +310,115 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
         <SignatureGrid sigs={sigs} images={sigImages} />
       </Section>
     </>
+  )
+}
+
+function HeightDetails({ permit }: { permit: HeightPermit }) {
+  return (
+    <Section title="Height work details">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        {permit.workingHeight && <Field label="Working height" value={permit.workingHeight} />}
+        {permit.anchorPoints && <Field label="Anchor points" value={permit.anchorPoints} />}
+      </dl>
+      {permit.accessMethod.length > 0 && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Access method</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.accessMethod.map((m) => (
+              <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {permit.fallProtection.length > 0 && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Fall protection</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.fallProtection.map((m) => (
+              <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {permit.rescuePlan && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function HotWorkDetails({ permit }: { permit: HotWorkPermit }) {
+  return (
+    <Section title="Hot work details">
+      {permit.hotWorkTypes.length > 0 && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Type of work</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.hotWorkTypes.map((t) => (
+              <span key={t} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{t}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        <Field label="Fire watch" value={permit.fireWatchRequired ? `Yes — ${permit.fireWatchName || 'unassigned'}` : 'No'} />
+        {permit.fireWatchRequired && <Field label="Post-work monitoring" value={`${permit.fireWatchPostDurationMin} min`} />}
+        {permit.extinguisherLocation && <Field label="Extinguisher" value={`${permit.extinguisherType} at ${permit.extinguisherLocation}`} />}
+        {permit.sprinklerStatus && <Field label="Sprinkler status" value={permit.sprinklerStatus} />}
+      </dl>
+      {permit.gasTestRequired && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Atmosphere test</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.gasTestNotes || 'Required — no notes'}</dd>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
+  const atmo = permit.atmospheric
+  return (
+    <Section title="Confined space details">
+      {permit.spaceDescription && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Space description</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.spaceDescription}</dd>
+        </div>
+      )}
+      {permit.hazards.length > 0 && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Hazards present</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.hazards.map((h) => (
+              <span key={h} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{h}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      <dl className="grid grid-cols-2 gap-2 text-sm mb-2">
+        <Field label="O₂ %" value={atmo.oxygenPct || '—'} />
+        <Field label="LEL %" value={atmo.lelPct || '—'} />
+        <Field label="CO ppm" value={atmo.coPpm || '—'} />
+        <Field label="H₂S ppm" value={atmo.h2sPpm || '—'} />
+        {atmo.testedBy && <Field label="Tested by" value={atmo.testedBy} />}
+        {atmo.testedAt && <Field label="Tested at" value={fmt(atmo.testedAt)} />}
+      </dl>
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        <Field label="Attendant" value={permit.attendantName || '—'} />
+        <Field label="Continuous monitoring" value={permit.continuousMonitoring ? 'Yes' : 'No'} />
+        <Field label="Ventilation" value={permit.ventilationInUse ? 'In use' : 'No'} />
+      </dl>
+      {permit.rescuePlan && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
+        </div>
+      )}
+    </Section>
   )
 }
 
