@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search } from 'lucide-react'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
+import { isPTP, isPermit, isIncident } from '@/lib/safety-types'
 import { getAllSafetyRecords, onSafetyChange, exportSafetyToCsv } from '@/lib/safety-records'
 import SafetyRecordCard from './SafetyRecordCard'
 
@@ -39,14 +40,21 @@ export default function SafetyHistory() {
     return records.filter((r) => {
       if (filter !== 'all' && r.type !== filter) return false
       if (!q) return true
-      return (
-        r.id.toLowerCase().includes(q) ||
-        r.location.toLowerCase().includes(q) ||
-        r.projectName.toLowerCase().includes(q) ||
-        r.createdBy.toLowerCase().includes(q)
-      )
+      const searchable = [r.id, r.location, r.projectName, r.createdBy]
+      if (isPTP(r)) searchable.push(r.scopeOfWork)
+      if (isPermit(r) && 'workDescription' in r) searchable.push((r as { workDescription: string }).workDescription)
+      if (isIncident(r)) searchable.push(r.description)
+      return searchable.some((s) => s.toLowerCase().includes(q))
     })
   }, [records, filter, query])
+
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const r of records) {
+      counts[r.type] = (counts[r.type] || 0) + 1
+    }
+    return counts
+  }, [records])
 
   function downloadCsv() {
     const csv = exportSafetyToCsv(filtered)
@@ -94,20 +102,23 @@ export default function SafetyHistory() {
 
       {/* Type filter pills */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1">
-        {TYPE_FILTERS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setFilter(t.key)}
-            className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-              filter === t.key
-                ? 'bg-mytra-purple text-white border-mytra-purple'
-                : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TYPE_FILTERS.map((t) => {
+          const count = t.key === 'all' ? records.length : (typeCounts[t.key] || 0)
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setFilter(t.key)}
+              className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                filter === t.key
+                  ? 'bg-mytra-purple text-white border-mytra-purple'
+                  : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
+              }`}
+            >
+              {t.label}{count > 0 ? ` (${count})` : ''}
+            </button>
+          )
+        })}
       </div>
 
       {filtered.length === 0 ? (
