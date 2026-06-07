@@ -351,7 +351,7 @@ export function createIncidentReport(input: IncidentInput): IncidentReport {
 
 // ── Permit lifecycle transitions (append-only) ───────────────
 
-export function closePermit(id: string, by: { name: string; email: string | null }): SafetyRecord | undefined {
+export function closePermit(id: string, by: { name: string; email: string | null }, note?: string): SafetyRecord | undefined {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
   if (idx === -1) return undefined
@@ -363,7 +363,7 @@ export function closePermit(id: string, by: { name: string; email: string | null
     status: 'closed',
     closedAt: at,
     closedBy: by.name,
-    events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at }],
+    events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at, note: note || undefined }],
   }
   writeAll(all)
   notify()

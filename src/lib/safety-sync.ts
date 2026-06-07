@@ -9,33 +9,41 @@
 
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
 
-export async function trySyncRecord(id: string): Promise<boolean> {
+async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
-  if (!record) return false
-  try {
-    const res = await fetch('/api/safety/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record),
-    })
-    if (res.status === 503) {
-      // Notion not configured — leave pending, don't alarm the user.
-      return false
-    }
-    if (!res.ok) {
-      markSyncFailed(id)
-      return false
-    }
-    const data = await res.json()
-    if (data?.ok && data?.notionPageId) {
-      markSynced(id, data.notionPageId)
-      return true
-    }
-    return false
-  } catch {
-    // network/offline — keep it pending for the next attempt
-    return false
+  if (!record) return 'fail'
+  const res = await fetch('/api/safety/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record),
+  })
+  if (res.status === 503) return 'not-configured'
+  if (!res.ok) return 'fail'
+  const data = await res.json()
+  if (data?.ok && data?.notionPageId) {
+    markSynced(id, data.notionPageId)
+    return 'ok'
   }
+  return 'fail'
+}
+
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+export async function trySyncRecord(id: string): Promise<boolean> {
+  if (!getSafetyRecordById(id)) return false
+  const delays = [1000, 2000, 4000]
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      const result = await attemptSync(id)
+      if (result === 'ok') return true
+      if (result === 'not-configured') return false
+    } catch {
+      // network/offline — retry if attempts remain
+    }
+    if (attempt < delays.length) await wait(delays[attempt])
+  }
+  markSyncFailed(id)
+  return false
 }
 
 export async function syncAllPending(): Promise<void> {

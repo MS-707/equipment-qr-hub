@@ -7,6 +7,8 @@ import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
 import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
+import { getLastContext, saveLastContext } from '@/lib/use-last-context'
+import LastUsedChip from './LastUsedChip'
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
@@ -43,6 +45,7 @@ export default function IncidentReportForm() {
   const [reporterSig, setReporterSig] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [lastCtx] = useState(getLastContext)
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -117,6 +120,7 @@ export default function IncidentReportForm() {
       )
     }
     void trySyncRecord(record.id)
+    saveLastContext({ projectName, location })
     clearDraft()
     setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
@@ -233,10 +237,12 @@ export default function IncidentReportForm() {
           <div>
             <label className={labelCls}>Project / Structure</label>
             <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
             <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
