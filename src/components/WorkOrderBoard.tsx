@@ -85,7 +85,7 @@ export default function WorkOrderBoard() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="no-print flex flex-wrap items-center gap-2">
         <Filter className="w-4 h-4 text-fg-4 shrink-0" />
 
         <select
