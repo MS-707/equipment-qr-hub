@@ -9,9 +9,12 @@ import { getEquipmentById } from '@/lib/equipment'
 import TabNav from '@/components/TabNav'
 import StatusToggle from '@/components/StatusToggle'
 import PMSchedule from '@/components/PMSchedule'
+import PmTracker from '@/components/PmTracker'
 import TrainingInfo from '@/components/TrainingInfo'
+import TrainingTracker from '@/components/TrainingTracker'
 import ComplianceInfo from '@/components/ComplianceInfo'
 import PreTripInspection from '@/components/PreTripInspection'
+import AuthorizedUsers from '@/components/AuthorizedUsers'
 
 interface EquipmentProfileProps {
   equipment: EquipmentItem
@@ -110,6 +113,11 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           </h1>
         </div>
 
+        {/* Authorization */}
+        <div className="mb-6">
+          <AuthorizedUsers itemNumber={equipment.itemNumber} />
+        </div>
+
         {/* Tab Navigation */}
         <TabNav tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
@@ -127,8 +135,18 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
               onStatusChange={handleInspectionStatusChange}
             />
           )}
-          {activeTab === 'training' && <TrainingInfo equipment={equipment} />}
-          {activeTab === 'pm-schedule' && <PMSchedule equipment={equipment} />}
+          {activeTab === 'training' && (
+            <div className="space-y-6">
+              <TrainingTracker equipment={equipment} />
+              <TrainingInfo equipment={equipment} />
+            </div>
+          )}
+          {activeTab === 'pm-schedule' && (
+            <div className="space-y-6">
+              <PmTracker equipment={equipment} />
+              <PMSchedule equipment={equipment} />
+            </div>
+          )}
           {activeTab === 'compliance' && <ComplianceInfo equipment={equipment} />}
         </div>
       </div>
