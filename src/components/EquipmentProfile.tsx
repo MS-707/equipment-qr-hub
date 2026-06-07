@@ -108,7 +108,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
               </span>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-white leading-tight">
+          <h1 className="text-2xl font-bold text-fg leading-tight">
             {equipment.name}
           </h1>
         </div>

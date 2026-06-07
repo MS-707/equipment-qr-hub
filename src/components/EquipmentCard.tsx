@@ -64,7 +64,7 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
       </div>
 
       {/* Equipment name */}
-      <p className="text-white font-medium text-sm leading-snug">
+      <p className="text-fg font-medium text-sm leading-snug">
         {equipment.name}
       </p>
     </Link>

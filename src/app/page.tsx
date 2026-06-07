@@ -63,7 +63,7 @@ export default function Home() {
       {/* ── Header ──────────────────────────────────── */}
       <header className="mb-6">
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-fg">
             Equipment QR Hub
           </h1>
           <span className="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-mytra-purple/20 text-mytra-purple">
@@ -75,7 +75,7 @@ export default function Home() {
       {/* ── Search ──────────────────────────────────── */}
       <div className="relative mb-4">
         <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-4 pointer-events-none"
           size={18}
         />
         <input
@@ -85,7 +85,7 @@ export default function Home() {
           placeholder="Search equipment..."
           aria-label="Search equipment"
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-10 pr-10
-                     text-sm text-white placeholder:text-gray-500
+                     text-sm text-fg placeholder:text-fg-4
                      focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
                      transition-colors"
         />
@@ -93,7 +93,7 @@ export default function Home() {
           <button
             onClick={() => setSearchQuery('')}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-4 hover:text-fg
                        transition-colors p-0.5"
           >
             <X size={16} />
@@ -111,7 +111,7 @@ export default function Home() {
             ${
               selectedCategory === 'all'
                 ? 'bg-mytra-purple text-white'
-                : 'bg-mytra-card border border-mytra-border text-gray-400 hover:bg-mytra-card-hover'
+                : 'bg-mytra-card border border-mytra-border text-fg-3 hover:bg-mytra-card-hover'
             }`}
         >
           All
@@ -137,9 +137,9 @@ export default function Home() {
                       color: color,
                     }
                   : {
-                      backgroundColor: '#161616',
-                      borderColor: '#232323',
-                      color: '#9CA3AF',
+                      backgroundColor: 'var(--surface)',
+                      borderColor: 'var(--border)',
+                      color: 'var(--fg-3)',
                     }
               }
             >
@@ -154,9 +154,9 @@ export default function Home() {
       {filteredEquipment.length === 0 ? (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Search className="text-gray-600 mb-3" size={40} />
-          <p className="text-gray-400 text-sm font-medium">No equipment found</p>
-          <p className="text-gray-600 text-xs mt-1">
+          <Search className="text-fg-4 mb-3" size={40} />
+          <p className="text-fg-3 text-sm font-medium">No equipment found</p>
+          <p className="text-fg-4 text-xs mt-1">
             Try adjusting your search or filter.
           </p>
         </div>
@@ -191,11 +191,11 @@ export default function Home() {
                   style={{ borderColor: color }}
                 >
                   {isCollapsed ? (
-                    <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-fg-4 group-hover:text-fg transition-colors" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                    <ChevronDown className="w-4 h-4 text-fg-4 group-hover:text-fg transition-colors" />
                   )}
-                  <h2 className="text-sm font-semibold text-white">
+                  <h2 className="text-sm font-semibold text-fg">
                     {category}
                   </h2>
                   <span
