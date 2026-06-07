@@ -12,6 +12,7 @@ import {
   onShopMgmtChange,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import { formatDate } from '@/lib/datetime'
 
 const PM_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual'] as const
 const FREQ_KEYS: Record<string, keyof EquipmentItem> = {
@@ -76,10 +77,6 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
     setLogNotes('')
   }
 
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
-
   return (
     <div className="space-y-4">
       {/* DRI Assignment */}
@@ -130,28 +127,38 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                 Assign myself ({identity.name})
               </button>
             )}
-            <input
-              type="text"
-              placeholder="DRI name"
-              value={driName}
-              onChange={(e) => setDriName(e.target.value)}
-              className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                         placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-            />
-            <input
-              type="email"
-              placeholder="DRI email (optional)"
-              value={driEmail}
-              onChange={(e) => setDriEmail(e.target.value)}
-              className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                         placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-            />
+            <div>
+              <label htmlFor="dri-name" className="sr-only">DRI name</label>
+              <input
+                id="dri-name"
+                type="text"
+                placeholder="DRI name"
+                value={driName}
+                onChange={(e) => setDriName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAssign()}
+                className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                           placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+              />
+            </div>
+            <div>
+              <label htmlFor="dri-email" className="sr-only">DRI email (optional)</label>
+              <input
+                id="dri-email"
+                type="email"
+                placeholder="DRI email (optional)"
+                value={driEmail}
+                onChange={(e) => setDriEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAssign()}
+                className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                           placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+              />
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={handleAssign}
                 disabled={!driName.trim()}
                 className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                           hover:bg-mytra-purple-hover transition-colors disabled:opacity-40"
+                           hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Assign
               </button>
@@ -200,7 +207,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                 <button
                   onClick={() => setLogFreq(freq)}
                   className="text-[10px] font-medium text-mytra-purple hover:text-mytra-purple-hover
-                             transition-colors shrink-0 px-2 py-1"
+                             hover:bg-mytra-purple/10 rounded transition-colors shrink-0 px-2 py-1"
                 >
                   Log
                 </button>
