@@ -47,6 +47,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const initialTab = isValidTab(tabParam) ? tabParam : defaultTab
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab)
+  const [tabDirection, setTabDirection] = useState<'left' | 'right'>('right')
   const [status, setStatus] = useState<EquipmentStatus>(equipment.status)
   const categoryColor = CATEGORY_COLORS[equipment.category]
 
@@ -65,6 +66,9 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
 
   function handleTabChange(id: string) {
     const tabId = id as TabId
+    const oldIdx = TAB_IDS.indexOf(activeTab)
+    const newIdx = TAB_IDS.indexOf(tabId)
+    setTabDirection(newIdx >= oldIdx ? 'right' : 'left')
     setActiveTab(tabId)
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tabId)
@@ -127,7 +131,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           role="tabpanel"
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
-          className="mt-5 animate-fadeIn"
+          className={`mt-5 ${tabDirection === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}`}
         >
           {activeTab === 'pre-trip' && (
             <PreTripInspection

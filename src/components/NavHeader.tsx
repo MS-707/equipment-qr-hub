@@ -81,7 +81,7 @@ export default function NavHeader() {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-1.5 text-sm transition rounded
+                className={`relative flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
@@ -97,6 +97,9 @@ export default function NavHeader() {
                                    bg-mytra-purple text-white">
                     {badge}
                   </span>
+                )}
+                {isActive && (
+                  <span className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-mytra-purple" />
                 )}
               </Link>
             )
