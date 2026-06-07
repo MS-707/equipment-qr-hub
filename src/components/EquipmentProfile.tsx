@@ -102,7 +102,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
               onStatusChange={setStatus}
             />
             {requiresMachineGuarding(equipment) && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-warn/10 text-warn">
                 <Shield className="w-3 h-3" />
                 Machine Guarding Required
               </span>
