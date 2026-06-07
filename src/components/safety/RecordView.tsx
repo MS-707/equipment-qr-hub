@@ -29,6 +29,7 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
 import PermitStatusBadge from './PermitStatusBadge'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -43,6 +44,7 @@ function fmt(iso: string): string {
 export default function RecordView({ id }: { id: string }) {
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
+  const [revokeOpen, setRevokeOpen] = useState(false)
 
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
@@ -86,9 +88,9 @@ export default function RecordView({ id }: { id: string }) {
   function handleClose() {
     closePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
   }
-  function handleRevoke() {
-    const note = window.prompt('Reason for revoking this permit?') ?? ''
-    revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note)
+  function handleRevoke(note?: string) {
+    revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
+    setRevokeOpen(false)
   }
 
   const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
@@ -153,13 +155,23 @@ export default function RecordView({ id }: { id: string }) {
           </button>
           <button
             type="button"
-            onClick={handleRevoke}
+            onClick={() => setRevokeOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-danger/10 border border-danger/30 text-danger hover:bg-danger/20"
           >
             <Ban className="w-4 h-4" /> Revoke
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={revokeOpen}
+        title="Revoke Permit"
+        message="This action is recorded in the audit trail and cannot be undone."
+        confirmLabel="Revoke"
+        variant="danger"
+        inputPrompt="Reason for revoking this permit"
+        onConfirm={handleRevoke}
+        onCancel={() => setRevokeOpen(false)}
+      />
 
       {/* Audit trail */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">

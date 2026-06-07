@@ -1,0 +1,100 @@
+'use client'
+
+import { useRef, useEffect, useState } from 'react'
+
+interface ConfirmDialogProps {
+  open: boolean
+  title: string
+  message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  variant?: 'danger' | 'default'
+  inputPrompt?: string
+  onConfirm: (inputValue?: string) => void
+  onCancel: () => void
+}
+
+export default function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  variant = 'default',
+  inputPrompt,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
+  const ref = useRef<HTMLDialogElement>(null)
+  const [inputValue, setInputValue] = useState('')
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (open && !el.open) {
+      setInputValue('')
+      el.showModal()
+    } else if (!open && el.open) {
+      el.close()
+    }
+  }, [open])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    function handleCancel(e: Event) {
+      e.preventDefault()
+      onCancel()
+    }
+    el.addEventListener('cancel', handleCancel)
+    return () => el.removeEventListener('cancel', handleCancel)
+  }, [onCancel])
+
+  return (
+    <dialog
+      ref={ref}
+      className="backdrop:bg-black/60 bg-mytra-card border border-mytra-border rounded-2xl
+                 shadow-pop p-6 max-w-sm w-[calc(100%-2rem)] animate-scaleIn
+                 text-fg outline-none"
+    >
+      <h2 className="text-base font-semibold text-fg mb-1">{title}</h2>
+      <p className="text-sm text-fg-2 mb-4">{message}</p>
+
+      {inputPrompt && (
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder={inputPrompt}
+          autoFocus
+          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
+                     text-sm text-fg placeholder:text-fg-4 mb-4
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
+        />
+      )}
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px]
+                     bg-mytra-bg border border-mytra-border text-fg-2
+                     hover:text-fg hover:bg-mytra-card-hover transition-colors"
+        >
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => onConfirm(inputPrompt ? inputValue : undefined)}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors
+            ${variant === 'danger'
+              ? 'bg-danger text-white hover:bg-danger/90'
+              : 'bg-mytra-purple text-white hover:bg-mytra-purple-hover'
+            }`}
+        >
+          {confirmLabel}
+        </button>
+      </div>
+    </dialog>
+  )
+}
