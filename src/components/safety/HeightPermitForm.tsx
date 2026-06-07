@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { ArrowUpFromLine } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { ArrowUpFromLine, RotateCcw } from 'lucide-react'
 import { createHeightPermit, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
 import {
   buildPermitItems,
   getPermitChecklistDef,
@@ -40,6 +41,23 @@ export default function HeightPermitForm() {
   const [issuerId, setIssuerId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
 
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.workDescription === 'string') setWorkDescription(d.workDescription)
+    if (typeof d.workingHeight === 'string') setWorkingHeight(d.workingHeight)
+    if (Array.isArray(d.accessMethod)) setAccessMethod(d.accessMethod)
+    if (Array.isArray(d.fallProtection)) setFallProtection(d.fallProtection)
+    if (typeof d.anchorPoints === 'string') setAnchorPoints(d.anchorPoints)
+    if (typeof d.rescuePlan === 'string') setRescuePlan(d.rescuePlan)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'height-permit',
+    () => ({ projectName, location, workDescription, workingHeight, accessMethod, fallProtection, anchorPoints, rescuePlan }),
+    restore
+  )
+
   const pfasSelected = fallProtection.includes(PFAS)
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
@@ -72,10 +90,12 @@ export default function HeightPermitForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    clearDraft()
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
     const w = defaultValidityWindow(8)
     setWorkDescription('')
     setWorkingHeight('')
@@ -107,6 +127,17 @@ export default function HeightPermitForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="w-5 h-5 text-mytra-purple" />

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
 import HazardTable from './HazardTable'
 import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
@@ -50,6 +51,30 @@ export default function PreTaskPlanForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
 
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.date === 'string') setDate(d.date)
+    if (typeof d.shift === 'string') setShift(d.shift as Shift)
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.scopeOfWork === 'string') setScopeOfWork(d.scopeOfWork)
+    if (Array.isArray(d.hazards)) setHazards(d.hazards)
+    if (Array.isArray(d.ppe)) setPpe(d.ppe)
+    if (typeof d.musterPoint === 'string') setMusterPoint(d.musterPoint)
+    if (typeof d.hospital === 'string') setHospital(d.hospital)
+    if (typeof d.firstAid === 'string') setFirstAid(d.firstAid)
+    if (typeof d.weather === 'string') setWeather(d.weather)
+    if (typeof d.wind === 'string') setWind(d.wind)
+    if (d.heat && typeof d.heat === 'object') setHeat(d.heat as HeatIllnessPlan)
+    if (typeof d.toolboxTopic === 'string') setToolboxTopic(d.toolboxTopic)
+    if (typeof d.toolboxNotes === 'string') setToolboxNotes(d.toolboxNotes)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'ptp',
+    () => ({ date, shift, projectName, location, scopeOfWork, hazards, ppe, musterPoint, hospital, firstAid, weather, wind, heat, toolboxTopic, toolboxNotes }),
+    restore
+  )
+
   const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0
   const canSubmit = sigData.signatures.length >= 1 && supervisorId !== null
 
@@ -84,11 +109,13 @@ export default function PreTaskPlanForm() {
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
 
+    clearDraft()
     setSubmittedId(record.id)
     setStep('done')
   }
 
   function resetNew() {
+    clearDraft()
     setStep('plan')
     setScopeOfWork('')
     setHazards([])
@@ -180,6 +207,17 @@ export default function PreTaskPlanForm() {
   // ── PLAN ──────────────────────────────────────────────────
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-mytra-purple" />

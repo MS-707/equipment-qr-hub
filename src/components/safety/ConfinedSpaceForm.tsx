@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { PackageOpen } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { PackageOpen, RotateCcw } from 'lucide-react'
 import { createConfinedSpacePermit, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
 import { buildPermitItems, getPermitChecklistDef, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso, toLocalInput } from '@/lib/datetime'
@@ -48,6 +49,28 @@ export default function ConfinedSpaceForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
 
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.spaceDescription === 'string') setSpaceDescription(d.spaceDescription)
+    if (Array.isArray(d.hazards)) setHazards(d.hazards)
+    if (typeof d.oxygen === 'string') setOxygen(d.oxygen)
+    if (typeof d.lel === 'string') setLel(d.lel)
+    if (typeof d.co === 'string') setCo(d.co)
+    if (typeof d.h2s === 'string') setH2s(d.h2s)
+    if (typeof d.testedBy === 'string') setTestedBy(d.testedBy)
+    if (typeof d.continuousMonitoring === 'boolean') setContinuousMonitoring(d.continuousMonitoring)
+    if (typeof d.ventilationInUse === 'boolean') setVentilationInUse(d.ventilationInUse)
+    if (typeof d.rescuePlan === 'string') setRescuePlan(d.rescuePlan)
+    if (typeof d.attendantName === 'string') setAttendantName(d.attendantName)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'confined-space-permit',
+    () => ({ projectName, location, spaceDescription, hazards, oxygen, lel, co, h2s, testedBy, continuousMonitoring, ventilationInUse, rescuePlan, attendantName }),
+    restore
+  )
+
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
   const canSubmit =
@@ -87,10 +110,12 @@ export default function ConfinedSpaceForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    clearDraft()
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
     const w = defaultValidityWindow(4)
     setSpaceDescription('')
     setHazards([])
@@ -135,6 +160,17 @@ export default function ConfinedSpaceForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
