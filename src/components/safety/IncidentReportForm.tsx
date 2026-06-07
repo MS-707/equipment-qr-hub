@@ -279,7 +279,6 @@ export default function IncidentReportForm() {
           ref={fileRef}
           type="file"
           accept="image/*"
-          capture="environment"
           className="hidden"
           onChange={(e) => {
             onFile(e.target.files?.[0] ?? null)
