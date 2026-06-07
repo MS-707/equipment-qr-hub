@@ -98,10 +98,10 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
                   </div>
                   <button
                     onClick={() => handleRemove(u.email, u.name)}
-                    className="text-fg-4 hover:text-danger transition-colors p-1 shrink-0"
+                    className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0"
                     aria-label={`Remove ${u.name}`}
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}

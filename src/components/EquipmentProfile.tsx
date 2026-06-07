@@ -77,7 +77,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white
+          className="inline-flex items-center gap-1.5 text-fg-3 hover:text-fg
                      text-sm transition-colors duration-150 mb-6 py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />

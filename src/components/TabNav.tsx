@@ -46,7 +46,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
                         ${
                           isActive
                             ? 'border-mytra-purple text-white'
-                            : 'border-transparent text-gray-500 hover:text-white'
+                            : 'border-transparent text-fg-4 hover:text-fg'
                         }`}
           >
             {tab.icon && <span className="w-4 h-4 hidden sm:block">{tab.icon}</span>}

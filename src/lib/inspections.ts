@@ -265,6 +265,6 @@ export async function syncToNotion(record: InspectionRecord): Promise<boolean> {
   // POST to /api/sync-inspection with the record
   // On success, update record.syncStatus = 'synced' and record.notionPageId
   // On failure, update record.syncStatus = 'failed'
-  console.log('[Notion sync stub] Would sync inspection:', record.id)
+  void record
   return false
 }
