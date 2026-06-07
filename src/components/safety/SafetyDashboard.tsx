@@ -11,6 +11,7 @@ import {
   Truck,
   CheckCircle2,
   ChevronRight,
+  RefreshCw,
 } from 'lucide-react'
 import {
   getPtpForDate,
@@ -42,6 +43,7 @@ export default function SafetyDashboard() {
   const [ptp, setPtp] = useState<PreTaskPlan | undefined>(undefined)
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
+  const [pendingSyncCount, setPendingSyncCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
   const [firstName, setFirstName] = useState('')
 
@@ -52,6 +54,9 @@ export default function SafetyDashboard() {
     const all = getAllSafetyRecords()
     setIncidentCount(
       all.filter((r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo).length
+    )
+    setPendingSyncCount(
+      all.filter((r) => r.syncStatus === 'pending' || r.syncStatus === 'offline' || r.syncStatus === 'failed').length
     )
     setRecent(all.slice(0, 5))
   }, [])
@@ -94,6 +99,16 @@ export default function SafetyDashboard() {
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} />
       </div>
+
+      {/* Sync status */}
+      {pendingSyncCount > 0 && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+          <RefreshCw className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-xs text-warn">
+            {pendingSyncCount} record{pendingSyncCount !== 1 ? 's' : ''} waiting to sync
+          </p>
+        </div>
+      )}
 
       {/* Quick actions */}
       <section>
