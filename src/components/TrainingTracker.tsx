@@ -8,11 +8,10 @@ import {
   addTrainingRecord,
   isTrainingCurrent,
   onShopMgmtChange,
+  EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
 import { formatDate } from '@/lib/datetime'
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface TrainingTrackerProps {
   equipment: EquipmentItem

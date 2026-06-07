@@ -30,7 +30,7 @@ import {
 } from '@/lib/inspections'
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
-import { getAuthorization, isUserAuthorized } from '@/lib/shop-management'
+import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
 
 // ── Shift options ──────────────────────────────────────────
@@ -298,16 +298,26 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     return () => window.removeEventListener('beforeunload', handler)
   }, [step])
 
-  // Authorization state
-  const authInfo = getAuthorization(equipment.itemNumber)
-  const identity = getCurrentIdentity()
-  const operatorAuthorized = !authInfo.restricted || isUserAuthorized(equipment.itemNumber, identity?.email ?? null)
+  // Authorization state — only needed during identify step, subscribes to changes
+  const [operatorAuthorized, setOperatorAuthorized] = useState(true)
+  const [authRestricted, setAuthRestricted] = useState(false)
+
+  useEffect(() => {
+    function refresh() {
+      const auth = getAuthorization(equipment.itemNumber)
+      const id = getCurrentIdentity()
+      setAuthRestricted(auth.restricted)
+      setOperatorAuthorized(!auth.restricted || isUserAuthorized(equipment.itemNumber, id?.email ?? null))
+    }
+    refresh()
+    return onShopMgmtChange(refresh)
+  }, [equipment.itemNumber])
 
   // Prefill inspector: prefer the signed-in identity, fall back to last-used name.
   useEffect(() => {
-    const identity = getCurrentIdentity()
-    if (identity?.name) {
-      setInspectorName(identity.name)
+    const id = getCurrentIdentity()
+    if (id?.name) {
+      setInspectorName(id.name)
       return
     }
     const last = getLastInspector()
@@ -510,13 +520,13 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             )}
 
             {/* Authorization check */}
-            {authInfo.restricted && operatorAuthorized && (
+            {authRestricted && operatorAuthorized && (
               <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2">
                 <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
                 <p className="text-xs text-ok">Authorized operator</p>
               </div>
             )}
-            {authInfo.restricted && !operatorAuthorized && (
+            {authRestricted && !operatorAuthorized && (
               <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-danger mt-0.5 shrink-0" />
                 <div>

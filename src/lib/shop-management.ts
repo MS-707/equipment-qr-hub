@@ -59,6 +59,10 @@ const PM_COMPLETIONS_KEY = 'eqr-pm-completions'
 const PM_ASSIGNMENTS_KEY = 'eqr-pm-assignments'
 const TRAINING_KEY = 'eqr-training-records'
 
+// ── Validation ──────────────────────────────────────────────
+
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 // ── Helpers ──────────────────────────────────────────────────
 
 function readJson<T>(key: string, fallback: T): T {
