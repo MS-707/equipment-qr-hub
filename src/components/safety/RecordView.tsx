@@ -122,7 +122,7 @@ export default function RecordView({ id }: { id: string }) {
       {/* Header */}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono text-fg-3">{r.id}</span>
+          <span className="text-xs font-mono text-fg-3">{r.id}</span>
           {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
         </div>
         <h1 className="text-lg font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
@@ -183,7 +183,7 @@ export default function RecordView({ id }: { id: string }) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-wider text-fg-3">{label}</dt>
+      <dt className="text-xs uppercase tracking-wider text-fg-3">{label}</dt>
       <dd className="text-sm text-fg break-words">{value || '—'}</dd>
     </div>
   )
@@ -199,10 +199,10 @@ function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record
             // eslint-disable-next-line @next/next/no-img-element
             <img src={images[s.id]} alt={`${s.name} signature`} className="w-full h-12 object-contain" />
           ) : (
-            <div className="h-12 flex items-center justify-center text-[10px] text-fg-4">signature on device</div>
+            <div className="h-12 flex items-center justify-center text-xs text-fg-4">signature on device</div>
           )}
           <p className="text-xs text-fg mt-1 truncate">{s.name}</p>
-          <p className="text-[10px] text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+          <p className="text-xs text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
         </div>
       ))}
     </div>
@@ -225,8 +225,8 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
             {ptp.hazards.map((h) => (
               <li key={h.id} className="text-sm">
                 <span className="text-fg">{h.description}</span>
-                <span className="text-[10px] text-fg-3 ml-1">({h.riskLevel})</span>
-                {h.source === 'sage' && <span className="text-[10px] text-mytra-purple ml-1">✨ Sage</span>}
+                <span className="text-xs text-fg-3 ml-1">({h.riskLevel})</span>
+                {h.source === 'sage' && <span className="text-xs text-mytra-purple ml-1">✨ Sage</span>}
                 <p className="text-xs text-fg-2">{h.controlMeasure}</p>
               </li>
             ))}
@@ -299,7 +299,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
       <Section title="Incident">
         <div className="flex items-center gap-2 mb-2">
           <span
-            className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
+            className="text-xs font-semibold uppercase px-2 py-0.5 rounded"
             style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity], backgroundColor: INCIDENT_SEVERITY_COLORS[incident.severity] + '1A' }}
           >
             {incident.severity}
@@ -333,7 +333,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={slot} src={images[slot]} alt="Incident photo" className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
               ) : (
-                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-[10px] text-fg-4">
+                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-xs text-fg-4">
                   on device
                 </div>
               )

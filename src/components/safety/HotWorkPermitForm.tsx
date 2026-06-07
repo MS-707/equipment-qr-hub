@@ -141,7 +141,7 @@ export default function HotWorkPermitForm() {
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
         <label className="flex items-center gap-2 text-sm text-fg-2">
-          <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+          <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
           Fire watch required
         </label>
         {fireWatchRequired && (
@@ -177,7 +177,7 @@ export default function HotWorkPermitForm() {
           <input type="text" value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder="In service / impaired / N/A" className={inputCls} />
         </div>
         <label className="flex items-center gap-2 text-sm text-fg-2">
-          <input type="checkbox" checked={gasTestRequired} onChange={() => setGasTestRequired((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+          <input type="checkbox" checked={gasTestRequired} onChange={() => setGasTestRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
           Atmosphere / gas test required
         </label>
         {gasTestRequired && (
@@ -188,10 +188,10 @@ export default function HotWorkPermitForm() {
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
-          {critLeft > 0 && <span className="text-[10px] text-warn">{critLeft} required left</span>}
+          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-[10px] text-fg-4 px-1">{regRef}</p>
+        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">

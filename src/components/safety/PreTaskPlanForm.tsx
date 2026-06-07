@@ -269,7 +269,7 @@ export default function PreTaskPlanForm() {
           </div>
           <div>
             <label htmlFor="ptp-wind" className={labelCls}>Wind speed</label>
-            <input id="ptp-wind" type="text" value={wind} onChange={(e) => setWind(e.target.value)} placeholder="For MEWP / height" className={inputCls} />
+            <input id="ptp-wind" type="text" inputMode="decimal" value={wind} onChange={(e) => setWind(e.target.value)} placeholder="For MEWP / height" className={inputCls} />
           </div>
         </div>
       </section>
@@ -287,7 +287,7 @@ export default function PreTaskPlanForm() {
             ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
           ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
             <label key={key} className="flex items-center gap-2 text-sm text-fg-2">
-              <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-4 h-4" />
+              <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-5 h-5" />
               {lbl}
             </label>
           ))}

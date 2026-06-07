@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import NavHeader from '@/components/NavHeader'
+import BottomTabBar from '@/components/BottomTabBar'
 import AuthProvider from '@/components/providers/AuthProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
@@ -37,10 +38,11 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="font-sans bg-mytra-bg text-fg min-h-screen">
+      <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-16 sm:pb-0">
         <AuthProvider>
           <NavHeader />
           {children}
+          <BottomTabBar />
         </AuthProvider>
       </body>
     </html>

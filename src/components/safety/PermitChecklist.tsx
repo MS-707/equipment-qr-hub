@@ -70,7 +70,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                       >
                         <span className="text-sm text-fg leading-snug">{item.label}</span>
                         {item.critical && (
-                          <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded align-middle">
+                          <span className="ml-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded align-middle">
                             <AlertTriangle className="w-2.5 h-2.5" />
                             Required
                           </span>

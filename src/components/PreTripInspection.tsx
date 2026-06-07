@@ -67,7 +67,7 @@ function ChecklistItemRow({
         <div className="flex items-start gap-2 min-w-0">
           <span className="text-sm text-fg leading-snug">{item.label}</span>
           {item.critical && (
-            <span className="inline-flex items-center gap-0.5 shrink-0 text-[10px] font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded">
+            <span className="inline-flex items-center gap-0.5 shrink-0 text-xs font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded">
               <AlertTriangle className="w-2.5 h-2.5" />
               Safety-critical
             </span>
@@ -230,7 +230,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                     record.syncStatus === 'pending' ? 'bg-warn' : 'bg-fg-4'
                   }`} title={`Sync: ${record.syncStatus}`} />
                   <span
-                    className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
+                    className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
                       record.hasCriticalFail
                         ? 'bg-danger/15 text-danger'
                         : record.result === 'fail'

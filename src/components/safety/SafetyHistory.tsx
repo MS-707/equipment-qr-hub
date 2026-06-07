@@ -82,6 +82,8 @@ export default function SafetyHistory() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
         <input
           type="text"
+          inputMode="search"
+          enterKeyHint="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search safety records"

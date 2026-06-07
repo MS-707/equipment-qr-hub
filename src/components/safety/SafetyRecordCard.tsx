@@ -51,8 +51,8 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-fg-3">{record.id}</span>
-            <span className="text-[11px] text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
+            <span className="text-xs font-mono text-fg-3">{record.id}</span>
+            <span className="text-xs text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
           </div>
           <p className="text-sm text-fg truncate">{title(record)}</p>
           <p className="text-xs text-fg-3 truncate">

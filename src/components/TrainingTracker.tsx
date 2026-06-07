@@ -101,7 +101,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                   <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
                 )}
                 <span className="text-sm text-fg flex-1 min-w-0">{topic}</span>
-                <span className="text-[10px] text-fg-4 shrink-0">
+                <span className="text-xs text-fg-4 shrink-0">
                   {records.length} {records.length === 1 ? 'record' : 'records'}
                 </span>
               </button>
@@ -117,13 +117,13 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         >
                           <div className="min-w-0">
                             <p className="text-xs text-fg truncate">{r.employeeName}</p>
-                            <p className="text-[10px] text-fg-4 truncate">{r.employeeEmail}</p>
+                            <p className="text-xs text-fg-4 truncate">{r.employeeEmail}</p>
                           </div>
-                          <p className="text-[10px] text-fg-3 shrink-0">{formatDate(r.completedAt)}</p>
+                          <p className="text-xs text-fg-3 shrink-0">{formatDate(r.completedAt)}</p>
                         </div>
                       ))}
                       {records.length > 10 && (
-                        <p className="text-[10px] text-fg-4 italic pt-1">
+                        <p className="text-xs text-fg-4 italic pt-1">
                           Showing 10 of {records.length} records
                         </p>
                       )}
@@ -183,14 +183,14 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                       {identity?.email && !currentUserTrained && (
                         <button
                           onClick={() => handleAddSelf(topic)}
-                          className="text-[10px] font-medium text-ok hover:text-ok/80 transition-colors"
+                          className="text-xs font-medium text-ok hover:text-ok/80 transition-colors"
                         >
                           Mark myself trained
                         </button>
                       )}
                       <button
                         onClick={() => setAddingTopic(topic)}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-mytra-purple
+                        className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple
                                    hover:text-mytra-purple-hover transition-colors"
                       >
                         <Plus className="w-3 h-3" /> Add employee

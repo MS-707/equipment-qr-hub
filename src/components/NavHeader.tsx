@@ -66,12 +66,13 @@ export default function NavHeader() {
         {/* Right: Nav Links */}
         <nav className="flex items-center gap-3 sm:gap-5">
           {!online && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
               <WifiOff className="w-3 h-3" />
               <span className="hidden sm:inline">Offline</span>
             </span>
           )}
           {navLinks.map(({ href, label, icon: Icon, badge }) => {
+            /* Nav links are hidden on mobile — BottomTabBar handles them */
             const isActive =
               href === '/'
                 ? pathname === '/'
@@ -81,7 +82,7 @@ export default function NavHeader() {
               <Link
                 key={href}
                 href={href}
-                className={`relative flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
+                className={`relative hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
@@ -93,7 +94,7 @@ export default function NavHeader() {
                 <span className="hidden sm:inline">{label}</span>
                 {badge > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-[10px] font-bold rounded-full
+                                   px-1 text-xs font-bold rounded-full
                                    bg-mytra-purple text-white">
                     {badge}
                   </span>
