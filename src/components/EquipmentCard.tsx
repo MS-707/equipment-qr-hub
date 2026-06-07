@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
-import { Shield } from 'lucide-react'
+import { Shield, ShieldAlert } from 'lucide-react'
 import { EquipmentItem, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
+import { getAuthorization } from '@/lib/shop-management'
 
 interface EquipmentCardProps {
   equipment: EquipmentItem
@@ -10,6 +13,7 @@ interface EquipmentCardProps {
 export default function EquipmentCard({ equipment, showCategory = true }: EquipmentCardProps) {
   const categoryColor = CATEGORY_COLORS[equipment.category]
   const hasGuarding = requiresMachineGuarding(equipment)
+  const isRestricted = getAuthorization(equipment.itemNumber).restricted
 
   return (
     <Link
@@ -44,6 +48,17 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
           >
             <Shield className="w-3 h-3" />
             Guarded
+          </span>
+        )}
+
+        {/* Restricted access indicator */}
+        {isRestricted && (
+          <span
+            className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5
+                       rounded-full bg-warn/10 text-warn"
+          >
+            <ShieldAlert className="w-3 h-3" />
+            Restricted
           </span>
         )}
       </div>
