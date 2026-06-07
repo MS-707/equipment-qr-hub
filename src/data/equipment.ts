@@ -124,7 +124,7 @@ export const equipmentData: EquipmentItem[] = [
     keyPmSummary: 'Daily ring test and guard gap check (OSHA critical); weekly vibration check; monthly wheel dressing; quarterly flange/spindle inspection; annual full motor service. CRITICAL: 1/8-inch tool rest gap and 1/4-inch tongue guard gap per OSHA/Cal-OSHA.',
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels - ring test per 3580 mounting); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'IIPP training per 3203; LOTO training per 3314; abrasive wheel mounting and ring test per 3580; tool rest/tongue guard adjustment training; PPE (eye/face protection) per 3380.',
-    status: 'Active',
+    status: 'Out of Service',
     manualType: 'pdf',
   },
   {
@@ -142,7 +142,7 @@ export const equipmentData: EquipmentItem[] = [
     keyPmSummary: 'Same as Item 7 - Daily ring test and gap checks are OSHA-critical items.',
     calOshaSections: 'T8 CCR 3203 (IIPP); T8 CCR 3314 (LOTO); T8 CCR 3577-3583 (Abrasive Wheels); T8 CCR 3380 (PPE)',
     calOshaTrainingReq: 'Same as Item 7 - ring test training per 3580; LOTO per 3314; PPE per 3380.',
-    status: 'Active',
+    status: 'Out of Service',
     manualType: 'pdf',
   },
   {
