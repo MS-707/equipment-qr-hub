@@ -47,7 +47,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-mytra-bg/95 backdrop-blur-sm border-t border-mytra-border"
+      className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-mytra-bg/95 backdrop-blur-sm border-t border-mytra-border no-print"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Main navigation"
     >
