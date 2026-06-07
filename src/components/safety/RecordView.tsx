@@ -48,6 +48,7 @@ export default function RecordView({ id }: { id: string }) {
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
+  const [closeOpen, setCloseOpen] = useState(false)
 
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
@@ -88,8 +89,9 @@ export default function RecordView({ id }: { id: string }) {
   const r = record
   const identity = getCurrentIdentity()
 
-  function handleClose() {
-    closePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+  function handleClose(note?: string) {
+    closePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
+    setCloseOpen(false)
   }
   function handleRevoke(note?: string) {
     revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
@@ -151,7 +153,7 @@ export default function RecordView({ id }: { id: string }) {
         <div className="no-print flex gap-2">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={() => setCloseOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover"
           >
             <XCircle className="w-4 h-4" /> Close permit
@@ -165,6 +167,15 @@ export default function RecordView({ id }: { id: string }) {
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={closeOpen}
+        title="Close Permit"
+        message="Mark this permit as closed. This will be recorded in the audit trail."
+        confirmLabel="Close permit"
+        inputPrompt="Closing note (optional)"
+        onConfirm={handleClose}
+        onCancel={() => setCloseOpen(false)}
+      />
       <ConfirmDialog
         open={revokeOpen}
         title="Revoke Permit"

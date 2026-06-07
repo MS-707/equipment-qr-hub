@@ -5,6 +5,8 @@ import { PackageOpen, RotateCcw } from 'lucide-react'
 import { createConfinedSpacePermit, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
+import { getLastContext, saveLastContext } from '@/lib/use-last-context'
+import LastUsedChip from './LastUsedChip'
 import { buildPermitItems, getPermitChecklistDef, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso, toLocalInput } from '@/lib/datetime'
@@ -49,6 +51,7 @@ export default function ConfinedSpaceForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -74,11 +77,17 @@ export default function ConfinedSpaceForm() {
 
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const atmoUnsafe =
+    outOfRange(oxygen, { min: 19.5, max: 23.5 }) ||
+    outOfRange(lel, { max: 10 }) ||
+    outOfRange(co, { max: 35 }) ||
+    outOfRange(h2s, { max: 10 })
   const canSubmit =
     spaceDescription.trim().length > 0 &&
     location.trim().length > 0 &&
     attendantName.trim().length > 0 &&
     critLeft === 0 &&
+    !atmoUnsafe &&
     sigData.signatures.length >= 1 &&
     supervisorId !== null &&
     validWindowOk
@@ -111,6 +120,7 @@ export default function ConfinedSpaceForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    saveLastContext({ projectName, location })
     clearDraft()
     setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
@@ -184,10 +194,12 @@ export default function ConfinedSpaceForm() {
           <div>
             <label className={labelCls}>Project / Structure</label>
             <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
             <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
@@ -313,15 +325,17 @@ export default function ConfinedSpaceForm() {
         >
           {critLeft > 0
             ? `Check ${critLeft} required item${critLeft === 1 ? '' : 's'}`
-            : !attendantName.trim()
-              ? 'Assign an attendant'
-              : sigData.signatures.length === 0
-                ? 'Add entrant sign-on'
-                : supervisorId === null
-                  ? 'Mark the entry supervisor'
-                  : !validWindowOk
-                    ? 'Fix validity window'
-                    : 'Issue Permit'}
+            : atmoUnsafe
+              ? 'Atmosphere out of range'
+              : !attendantName.trim()
+                ? 'Assign an attendant'
+                : sigData.signatures.length === 0
+                  ? 'Add entrant sign-on'
+                  : supervisorId === null
+                    ? 'Mark the entry supervisor'
+                    : !validWindowOk
+                      ? 'Fix validity window'
+                      : 'Issue Permit'}
         </button>
       </div>
     </div>

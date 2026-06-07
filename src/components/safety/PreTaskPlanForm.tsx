@@ -8,6 +8,8 @@ import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
+import { getLastContext, saveLastContext } from '@/lib/use-last-context'
+import LastUsedChip from './LastUsedChip'
 import HazardTable from './HazardTable'
 import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
@@ -51,6 +53,7 @@ export default function PreTaskPlanForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.date === 'string') setDate(d.date)
@@ -110,6 +113,7 @@ export default function PreTaskPlanForm() {
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
 
+    saveLastContext({ projectName, location, shift })
     clearDraft()
     setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
@@ -264,10 +268,12 @@ export default function PreTaskPlanForm() {
         <div>
           <label htmlFor="ptp-project" className={labelCls}>Project / Structure</label>
           <input id="ptp-project" type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+          {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
         </div>
         <div>
           <label htmlFor="ptp-location" className={labelCls}>Location / Area</label>
           <input id="ptp-location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Level 3, grid C4" className={inputCls} />
+          {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
         </div>
         <div>
           <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
