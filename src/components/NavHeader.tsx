@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck } from 'lucide-react'
+import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck, WifiOff } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
 import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
 import UserMenu from '@/components/UserMenu'
@@ -12,6 +12,7 @@ export default function NavHeader() {
   const pathname = usePathname()
   const [openCount, setOpenCount] = useState(0)
   const [safetyCount, setSafetyCount] = useState(0)
+  const [online, setOnline] = useState(true)
 
   useEffect(() => {
     setOpenCount(getOpenCount())
@@ -26,10 +27,20 @@ export default function NavHeader() {
       setSafetyCount(getOpenSafetyCount())
     }
     window.addEventListener('storage', handleStorage)
+
+    // Offline/online status
+    setOnline(navigator.onLine)
+    const goOnline = () => setOnline(true)
+    const goOffline = () => setOnline(false)
+    window.addEventListener('online', goOnline)
+    window.addEventListener('offline', goOffline)
+
     return () => {
       unsubscribe()
       unsubscribeSafety()
       window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('online', goOnline)
+      window.removeEventListener('offline', goOffline)
     }
   }, [])
 
@@ -54,6 +65,12 @@ export default function NavHeader() {
 
         {/* Right: Nav Links */}
         <nav className="flex items-center gap-3 sm:gap-5">
+          {!online && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
+              <WifiOff className="w-3 h-3" />
+              <span className="hidden sm:inline">Offline</span>
+            </span>
+          )}
           {navLinks.map(({ href, label, icon: Icon, badge }) => {
             const isActive =
               href === '/'
