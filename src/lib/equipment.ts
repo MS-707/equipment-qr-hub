@@ -44,7 +44,7 @@ export function updateEquipmentStatus(itemNumber: number, status: EquipmentStatu
   } else {
     overrides[itemNumber] = status
   }
-  localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(overrides))
+  try { localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(overrides)) } catch { /* non-fatal */ }
 }
 
 export function getEquipmentByCategory(category: EquipmentCategory): EquipmentItem[] {

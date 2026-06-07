@@ -25,7 +25,11 @@ function readAll(): WorkOrder[] {
 
 function writeAll(orders: WorkOrder[]): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+  } catch {
+    console.error('Failed to save work orders — storage may be full')
+  }
 }
 
 function nextNumber(): string {
@@ -41,7 +45,7 @@ function nextNumber(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
   return `WO-${year}-${String(stored.count).padStart(4, '0')}`
 }
 

@@ -78,7 +78,7 @@ export default function LabelsPage() {
             </div>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple-hover text-fg font-medium text-sm px-5 py-2 rounded-lg transition-colors shrink-0"
+              className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple-hover text-white font-medium text-sm px-5 py-2 rounded-lg transition-colors shrink-0"
             >
               <Printer size={16} />
               Print All Labels

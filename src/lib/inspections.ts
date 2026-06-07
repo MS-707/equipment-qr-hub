@@ -88,7 +88,7 @@ function nextId(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
   return `INS-${year}-${String(stored.count).padStart(4, '0')}`
 }
 
@@ -109,27 +109,29 @@ function notify() {
 
 export function getLastInspector(): string {
   if (typeof window === 'undefined') return ''
-  return localStorage.getItem(INSPECTOR_KEY) || ''
+  try { return localStorage.getItem(INSPECTOR_KEY) || '' } catch { return '' }
 }
 
 export function setLastInspector(name: string): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(INSPECTOR_KEY, name)
+  try { localStorage.setItem(INSPECTOR_KEY, name) } catch { /* non-fatal */ }
 }
 
 // ── Last-used equipment persistence ──────────────────
 
 export function getLastEquipmentId(): number | null {
   if (typeof window === 'undefined') return null
-  const raw = localStorage.getItem(LAST_EQUIPMENT_KEY)
-  if (!raw) return null
-  const id = parseInt(raw, 10)
-  return Number.isNaN(id) ? null : id
+  try {
+    const raw = localStorage.getItem(LAST_EQUIPMENT_KEY)
+    if (!raw) return null
+    const id = parseInt(raw, 10)
+    return Number.isNaN(id) ? null : id
+  } catch { return null }
 }
 
 export function setLastEquipmentId(id: number): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(LAST_EQUIPMENT_KEY, String(id))
+  try { localStorage.setItem(LAST_EQUIPMENT_KEY, String(id)) } catch { /* non-fatal */ }
 }
 
 // ── Blank checklist builder ──────────────────────────
