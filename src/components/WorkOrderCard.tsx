@@ -34,11 +34,18 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   const [isExpanded, setIsExpanded] = useState(false)
   const [notes, setNotes] = useState(workOrder.completionNotes)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [copyMsg, setCopyMsg] = useState<string | null>(null)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     return () => { clearTimeout(deleteTimerRef.current) }
   }, [])
+
+  useEffect(() => {
+    if (!copyMsg) return
+    const t = setTimeout(() => setCopyMsg(null), 2500)
+    return () => clearTimeout(t)
+  }, [copyMsg])
 
   const equipment = useMemo(
     () => getEquipmentById(workOrder.equipmentId),
@@ -78,7 +85,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   return (
     <div
-      className={`bg-mytra-card border rounded-lg overflow-hidden transition-colors ${
+      className={`relative bg-mytra-card border rounded-lg overflow-hidden transition-colors ${
         overdue ? 'border-danger/50' : 'border-mytra-border'
       }`}
     >
@@ -226,8 +233,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                   const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
                   const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
                   navigator.clipboard.writeText(`${title}\n\n${desc}`)
-                    .then(() => alert('Work order details copied to clipboard.\nUse Linear to create the issue.'))
-                    .catch(() => alert('Could not copy to clipboard. Please copy manually.'))
+                    .then(() => setCopyMsg('Copied to clipboard'))
+                    .catch(() => setCopyMsg('Copy failed — please copy manually'))
                 }}
               >
                 <ExternalLink className="w-3 h-3" />
@@ -267,6 +274,12 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
           </div>
         </div>
       </div>
+      {copyMsg && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-mytra-card border border-mytra-border
+                        rounded-lg px-3 py-2 text-xs text-fg-2 shadow-pop animate-fadeInUp whitespace-nowrap">
+          {copyMsg}
+        </div>
+      )}
     </div>
   )
 }

@@ -12,6 +12,7 @@ import {
   EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface AuthorizedUsersProps {
   itemNumber: number
@@ -44,9 +45,13 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
     setAdding(false)
   }
 
+  const [removeTarget, setRemoveTarget] = useState<{ email: string; name: string } | null>(null)
   function handleRemove(userEmail: string, userName: string) {
-    if (!confirm(`Remove ${userName} from authorized users?`)) return
-    removeAuthorizedUser(itemNumber, userEmail)
+    setRemoveTarget({ email: userEmail, name: userName })
+  }
+  function confirmRemove() {
+    if (removeTarget) removeAuthorizedUser(itemNumber, removeTarget.email)
+    setRemoveTarget(null)
   }
 
   return (
@@ -171,6 +176,16 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
           This equipment is unrestricted — any employee may operate it. Click &quot;Restrict&quot; to require authorization.
         </p>
       )}
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        title="Remove User"
+        message={`${removeTarget?.name ?? 'This user'} will no longer have access to this equipment.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={confirmRemove}
+        onCancel={() => setRemoveTarget(null)}
+      />
     </div>
   )
 }
