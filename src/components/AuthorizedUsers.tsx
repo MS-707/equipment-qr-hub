@@ -9,10 +9,9 @@ import {
   removeAuthorizedUser,
   isUserAuthorized,
   onShopMgmtChange,
+  EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface AuthorizedUsersProps {
   itemNumber: number
