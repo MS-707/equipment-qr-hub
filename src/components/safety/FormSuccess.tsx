@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, WifiOff } from 'lucide-react'
 
 interface FormSuccessProps {
   id: string
@@ -9,9 +9,10 @@ interface FormSuccessProps {
   message: string
   onNew: () => void
   newLabel?: string
+  offline?: boolean
 }
 
-export default function FormSuccess({ id, title, message, onNew, newLabel = 'New' }: FormSuccessProps) {
+export default function FormSuccess({ id, title, message, onNew, newLabel = 'New', offline }: FormSuccessProps) {
   return (
     <div className="animate-fadeIn space-y-4">
       <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
@@ -21,6 +22,12 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
           {message} <span className="font-mono text-fg">{id}</span>.
         </p>
       </div>
+      {offline && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+          <WifiOff className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+        </div>
+      )}
       <Link
         href={`/safety/record/${id}`}
         className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"

@@ -42,6 +42,7 @@ export default function IncidentReportForm() {
   const [reporterName, setReporterName] = useState('')
   const [reporterSig, setReporterSig] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -117,11 +118,13 @@ export default function IncidentReportForm() {
     }
     void trySyncRecord(record.id)
     clearDraft()
+    setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
   }
 
   function reset() {
     clearDraft()
+    setWasOffline(false)
     setIncidentType('near-miss')
     setSeverity('minor')
     setOccurredAt(toLocalInput(new Date()))
@@ -145,6 +148,7 @@ export default function IncidentReportForm() {
         message="Incident report recorded as"
         onNew={reset}
         newLabel="New report"
+        offline={wasOffline}
       />
     )
   }

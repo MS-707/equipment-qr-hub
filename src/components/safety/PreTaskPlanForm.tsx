@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures } from '@/lib/safety-records'
@@ -50,6 +50,7 @@ export default function PreTaskPlanForm() {
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.date === 'string') setDate(d.date)
@@ -110,12 +111,14 @@ export default function PreTaskPlanForm() {
     void trySyncRecord(record.id)
 
     clearDraft()
+    setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
     setStep('done')
   }
 
   function resetNew() {
     clearDraft()
+    setWasOffline(false)
     setStep('plan')
     setScopeOfWork('')
     setHazards([])
@@ -139,6 +142,12 @@ export default function PreTaskPlanForm() {
             <span className="font-mono text-fg">{submittedId}</span>.
           </p>
         </div>
+        {wasOffline && (
+          <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+            <WifiOff className="w-4 h-4 text-warn shrink-0" />
+            <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+          </div>
+        )}
         <Link
           href={`/safety/record/${submittedId}`}
           className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
