@@ -172,12 +172,48 @@ input[type="datetime-local"] {
 
 @media print {
   body {
-    background-color: #FFFFFF;
-    color: #000000;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    font-size: 11pt;
   }
 
-  .no-print {
+  .no-print,
+  nav,
+  dialog,
+  [role="tabbar"] {
     display: none !important;
+  }
+
+  * {
+    color: #000000 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-color: #cccccc !important;
+  }
+
+  section,
+  [class*="shadow-card"] {
+    border: 1px solid #cccccc !important;
+    border-radius: 4px !important;
+    padding: 12px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 8px !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
   }
 
   .print-grid {
