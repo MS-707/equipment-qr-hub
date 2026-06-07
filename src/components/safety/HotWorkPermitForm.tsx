@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Flame } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { Flame, RotateCcw } from 'lucide-react'
 import { createHotWorkPermit, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
 import { buildPermitItems, getPermitChecklistDef, HOT_WORK_TYPES } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso } from '@/lib/datetime'
@@ -36,6 +37,27 @@ export default function HotWorkPermitForm() {
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [issuerId, setIssuerId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.workDescription === 'string') setWorkDescription(d.workDescription)
+    if (Array.isArray(d.hotWorkTypes)) setHotWorkTypes(d.hotWorkTypes)
+    if (typeof d.fireWatchRequired === 'boolean') setFireWatchRequired(d.fireWatchRequired)
+    if (typeof d.fireWatchName === 'string') setFireWatchName(d.fireWatchName)
+    if (typeof d.postDuration === 'number') setPostDuration(d.postDuration)
+    if (typeof d.extinguisherLocation === 'string') setExtinguisherLocation(d.extinguisherLocation)
+    if (typeof d.extinguisherType === 'string') setExtinguisherType(d.extinguisherType)
+    if (typeof d.sprinklerStatus === 'string') setSprinklerStatus(d.sprinklerStatus)
+    if (typeof d.gasTestRequired === 'boolean') setGasTestRequired(d.gasTestRequired)
+    if (typeof d.gasTestNotes === 'string') setGasTestNotes(d.gasTestNotes)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'hot-work-permit',
+    () => ({ projectName, location, workDescription, hotWorkTypes, fireWatchRequired, fireWatchName, postDuration, extinguisherLocation, extinguisherType, sprinklerStatus, gasTestRequired, gasTestNotes }),
+    restore
+  )
 
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
@@ -73,10 +95,12 @@ export default function HotWorkPermitForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    clearDraft()
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
     const w = defaultValidityWindow(8)
     setWorkDescription('')
     setHotWorkTypes([])
@@ -112,6 +136,17 @@ export default function HotWorkPermitForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />

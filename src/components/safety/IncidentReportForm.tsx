@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { AlertTriangle, Camera, X, Plus } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { AlertTriangle, Camera, X, Plus, RotateCcw } from 'lucide-react'
 import type { IncidentType, IncidentSeverity } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
 import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
@@ -43,6 +44,27 @@ export default function IncidentReportForm() {
   const [submittedId, setSubmittedId] = useState<string | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.incidentType === 'string') setIncidentType(d.incidentType as IncidentType)
+    if (typeof d.severity === 'string') setSeverity(d.severity as IncidentSeverity)
+    if (typeof d.occurredAt === 'string') setOccurredAt(d.occurredAt)
+    if (typeof d.description === 'string') setDescription(d.description)
+    if (typeof d.immediateActions === 'string') setImmediateActions(d.immediateActions)
+    if (Array.isArray(d.witnesses)) setWitnesses(d.witnesses)
+    if (typeof d.rootCause === 'string') setRootCause(d.rootCause)
+    if (typeof d.correctiveActions === 'string') setCorrectiveActions(d.correctiveActions)
+    if (typeof d.reportedToCalOsha === 'boolean') setReportedToCalOsha(d.reportedToCalOsha)
+    if (typeof d.reporterName === 'string') setReporterName(d.reporterName)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'incident',
+    () => ({ projectName, location, incidentType, severity, occurredAt, description, immediateActions, witnesses, rootCause, correctiveActions, reportedToCalOsha, reporterName }),
+    restore
+  )
 
   useEffect(() => {
     const id = getCurrentIdentity()
@@ -94,10 +116,12 @@ export default function IncidentReportForm() {
       )
     }
     void trySyncRecord(record.id)
+    clearDraft()
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
     setIncidentType('near-miss')
     setSeverity('minor')
     setOccurredAt(toLocalInput(new Date()))
@@ -127,6 +151,17 @@ export default function IncidentReportForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
