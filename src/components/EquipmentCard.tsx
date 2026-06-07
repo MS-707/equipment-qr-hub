@@ -1,9 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Shield, ShieldAlert } from 'lucide-react'
 import { EquipmentItem, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
-import { getAuthorization } from '@/lib/shop-management'
+import { getAuthorization, onShopMgmtChange } from '@/lib/shop-management'
 
 interface EquipmentCardProps {
   equipment: EquipmentItem
@@ -13,7 +14,15 @@ interface EquipmentCardProps {
 export default function EquipmentCard({ equipment, showCategory = true }: EquipmentCardProps) {
   const categoryColor = CATEGORY_COLORS[equipment.category]
   const hasGuarding = requiresMachineGuarding(equipment)
-  const isRestricted = getAuthorization(equipment.itemNumber).restricted
+  const [isRestricted, setIsRestricted] = useState(false)
+
+  useEffect(() => {
+    function refresh() {
+      setIsRestricted(getAuthorization(equipment.itemNumber).restricted)
+    }
+    refresh()
+    return onShopMgmtChange(refresh)
+  }, [equipment.itemNumber])
 
   return (
     <Link
