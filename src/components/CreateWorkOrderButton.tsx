@@ -48,7 +48,7 @@ export default function CreateWorkOrderButton({
 
   if (justCreated) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-green-400 font-medium px-2 py-1">
+      <span className="inline-flex items-center gap-1 text-xs text-ok font-medium px-2 py-1">
         Created
       </span>
     )
@@ -58,7 +58,7 @@ export default function CreateWorkOrderButton({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-mytra-purple
+        className="inline-flex items-center gap-1 text-xs text-fg-4 hover:text-mytra-purple
                    transition-colors px-2 py-1 rounded hover:bg-mytra-purple/10"
         title={`Create work order for ${equipmentName} ${pmType} PM`}
       >
@@ -71,12 +71,12 @@ export default function CreateWorkOrderButton({
   return (
     <div className="mt-3 p-3 bg-mytra-bg border border-mytra-border rounded-lg space-y-3 animate-fadeIn">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-white">
+        <span className="text-xs font-medium text-fg">
           New {pmType} PM Work Order
         </span>
         <button
           onClick={() => setIsOpen(false)}
-          className="text-gray-500 hover:text-white transition-colors"
+          className="text-fg-4 hover:text-fg transition-colors"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -84,28 +84,28 @@ export default function CreateWorkOrderButton({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Due Date</label>
+          <label className="text-xs text-fg-4 block mb-1">Due Date</label>
           <div className="relative">
-            <CalendarDays className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+            <CalendarDays className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-4 pointer-events-none" />
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               className="w-full bg-mytra-input border border-mytra-border rounded py-2 pl-7 pr-2
-                         text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                         text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
                          block box-border"
             />
           </div>
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Assign To</label>
+          <label className="text-xs text-fg-4 block mb-1">Assign To</label>
           <input
             type="text"
             value={assignedTo}
             onChange={(e) => setAssignedTo(e.target.value)}
             placeholder="Optional"
             className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-2
-                       text-xs text-white placeholder:text-gray-600
+                       text-xs text-fg placeholder:text-fg-4
                        focus:outline-none focus:ring-1 focus:ring-mytra-purple"
           />
         </div>
@@ -113,7 +113,7 @@ export default function CreateWorkOrderButton({
 
       <button
         onClick={handleCreate}
-        className="w-full bg-mytra-purple hover:bg-mytra-purple/80 text-white text-xs
+        className="w-full bg-mytra-purple hover:bg-mytra-purple/80 text-fg text-xs
                    font-medium py-2 rounded-lg transition-colors"
       >
         Create Work Order

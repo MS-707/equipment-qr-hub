@@ -61,10 +61,10 @@ export default function QRLabel({ equipment, baseUrl, printMode = false }: QRLab
         level="M"
         includeMargin={false}
       />
-      <p className="text-white font-medium text-sm mt-3 leading-snug">
+      <p className="text-fg font-medium text-sm mt-3 leading-snug">
         {equipment.name}
       </p>
-      <p className="text-gray-500 text-xs mt-1">
+      <p className="text-fg-4 text-xs mt-1">
         Item #{equipment.itemNumber}
       </p>
       <span

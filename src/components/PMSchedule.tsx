@@ -65,8 +65,8 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
       {/* Key PM Summary */}
       {equipment.keyPmSummary.trim() !== '' && (
         <div className="bg-mytra-purple/10 border-l-4 border-mytra-purple rounded-r-lg p-4">
-          <h3 className="text-sm font-semibold text-white mb-1">Key PM Summary</h3>
-          <p className="text-gray-300 text-sm leading-relaxed">
+          <h3 className="text-sm font-semibold text-fg mb-1">Key PM Summary</h3>
+          <p className="text-fg-2 text-sm leading-relaxed">
             {equipment.keyPmSummary}
           </p>
         </div>
@@ -91,17 +91,17 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                            transition-colors duration-150"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-white font-medium text-sm">
+                  <span className="text-fg font-medium text-sm">
                     {freq.label}
                   </span>
-                  <span className="text-xs text-gray-400 bg-mytra-bg px-2 py-0.5 rounded-full">
+                  <span className="text-xs text-fg-3 bg-mytra-bg px-2 py-0.5 rounded-full">
                     {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
                   </span>
                 </div>
                 {isOpen ? (
-                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                  <ChevronUp className="w-4 h-4 text-fg-3" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-fg-3" />
                 )}
               </button>
 
@@ -112,9 +112,9 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                       {tasks.map((task, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-2 text-sm text-gray-300"
+                          className="flex items-start gap-2 text-sm text-fg-2"
                         >
-                          <span className="text-gray-600 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-gray-600" />
+                          <span className="text-fg-4 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-fg-4" />
                           <span>{task}</span>
                         </li>
                       ))}
@@ -135,7 +135,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
       </div>
 
       {activeFrequencies.length === 0 && (
-        <p className="text-gray-400 text-sm">
+        <p className="text-fg-3 text-sm">
           No PM schedule data available for this equipment.
         </p>
       )}
