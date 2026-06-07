@@ -31,6 +31,7 @@ import {
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
 import { getAuthorization, isUserAuthorized } from '@/lib/shop-management'
+import { formatDateTime } from '@/lib/datetime'
 
 // ── Shift options ──────────────────────────────────────────
 
@@ -186,17 +187,6 @@ interface InspectionHistoryProps {
 function InspectionHistory({ history, showHistory, onToggle }: InspectionHistoryProps) {
   if (history.length === 0) return null
 
-  function formatDate(iso: string): string {
-    const d = new Date(iso)
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    })
-  }
-
   return (
     <div className="mt-6">
       <button
@@ -230,7 +220,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                 <div className="min-w-0">
                   <p className="text-sm text-white truncate">{record.inspectorName}</p>
                   <p className="text-xs text-gray-400">
-                    {formatDate(record.createdAt)} &middot; {record.shift} shift
+                    {formatDateTime(record.createdAt)} &middot; {record.shift} shift
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -307,6 +297,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [step])
+
+  // Authorization state
+  const authInfo = getAuthorization(equipment.itemNumber)
+  const identity = getCurrentIdentity()
+  const operatorAuthorized = !authInfo.restricted || isUserAuthorized(equipment.itemNumber, identity?.email ?? null)
 
   // Prefill inspector: prefer the signed-in identity, fall back to last-used name.
   useEffect(() => {
@@ -515,35 +510,29 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             )}
 
             {/* Authorization check */}
-            {(() => {
-              const auth = getAuthorization(equipment.itemNumber)
-              if (!auth.restricted) return null
-              const identity = getCurrentIdentity()
-              const authorized = isUserAuthorized(equipment.itemNumber, identity?.email ?? null)
-              if (authorized) return (
-                <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2">
-                  <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
-                  <p className="text-xs text-ok">Authorized operator</p>
+            {authInfo.restricted && operatorAuthorized && (
+              <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2">
+                <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
+                <p className="text-xs text-ok">Authorized operator</p>
+              </div>
+            )}
+            {authInfo.restricted && !operatorAuthorized && (
+              <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-danger mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-danger">Not Authorized</p>
+                  <p className="text-xs text-fg-2 mt-0.5">
+                    This equipment requires authorization. You are not on the authorized operator list. Contact your supervisor or EHS.
+                  </p>
                 </div>
-              )
-              return (
-                <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-danger">Not Authorized</p>
-                    <p className="text-xs text-fg-2 mt-0.5">
-                      This equipment requires authorization. You are not on the authorized operator list. Contact your supervisor or EHS.
-                    </p>
-                  </div>
-                </div>
-              )
-            })()}
+              </div>
+            )}
 
             {/* Start button */}
             <button
               type="button"
               onClick={() => setStep('checklist')}
-              disabled={!inspectorName.trim() || (getAuthorization(equipment.itemNumber).restricted && !isUserAuthorized(equipment.itemNumber, getCurrentIdentity()?.email ?? null))}
+              disabled={!inspectorName.trim() || !operatorAuthorized}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover
                          disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
