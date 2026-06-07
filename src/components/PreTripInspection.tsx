@@ -104,7 +104,7 @@ function ChecklistItemRow({
           onClick={() => onResult('na')}
           className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
             state.result === 'na'
-              ? 'bg-fg-4 text-white'
+              ? 'bg-fg-3 text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-fg-4/50'
           }`}
         >
