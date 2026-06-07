@@ -30,6 +30,7 @@ import {
 } from '@/lib/inspections'
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
+import { getAuthorization, isUserAuthorized } from '@/lib/shop-management'
 
 // ── Shift options ──────────────────────────────────────────
 
@@ -513,11 +514,36 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               </div>
             )}
 
+            {/* Authorization check */}
+            {(() => {
+              const auth = getAuthorization(equipment.itemNumber)
+              if (!auth.restricted) return null
+              const identity = getCurrentIdentity()
+              const authorized = isUserAuthorized(equipment.itemNumber, identity?.email ?? null)
+              if (authorized) return (
+                <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2">
+                  <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
+                  <p className="text-xs text-ok">Authorized operator</p>
+                </div>
+              )
+              return (
+                <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-danger">Not Authorized</p>
+                    <p className="text-xs text-fg-2 mt-0.5">
+                      This equipment requires authorization. You are not on the authorized operator list. Contact your supervisor or EHS.
+                    </p>
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* Start button */}
             <button
               type="button"
               onClick={() => setStep('checklist')}
-              disabled={!inspectorName.trim()}
+              disabled={!inspectorName.trim() || (getAuthorization(equipment.itemNumber).restricted && !isUserAuthorized(equipment.itemNumber, getCurrentIdentity()?.email ?? null))}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover
                          disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
