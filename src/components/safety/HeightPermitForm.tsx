@@ -43,6 +43,7 @@ export default function HeightPermitForm() {
   const [issuerId, setIssuerId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
@@ -76,21 +77,28 @@ export default function HeightPermitForm() {
 
   function submit() {
     if (!canSubmit) return
-    const record = createHeightPermit({
-      projectName,
-      location,
-      workDescription,
-      workingHeight,
-      accessMethod,
-      fallProtection,
-      anchorPoints,
-      rescuePlan,
-      checklist,
-      validFrom: toIso(validFrom),
-      validUntil: toIso(validUntil),
-      workers: sigData.signatures,
-      issuerSignatureId: issuerId,
-    })
+    setSaveError(null)
+    let record: ReturnType<typeof createHeightPermit>
+    try {
+      record = createHeightPermit({
+        projectName,
+        location,
+        workDescription,
+        workingHeight,
+        accessMethod,
+        fallProtection,
+        anchorPoints,
+        rescuePlan,
+        checklist,
+        validFrom: toIso(validFrom),
+        validUntil: toIso(validUntil),
+        workers: sigData.signatures,
+        issuerSignatureId: issuerId,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
