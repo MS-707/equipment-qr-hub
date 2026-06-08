@@ -12,6 +12,7 @@ import {
   EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import { isAdmin } from '@/lib/admin'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface AuthorizedUsersProps {
@@ -30,8 +31,10 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
 
   const identity = getCurrentIdentity()
   const currentUserAuthorized = isUserAuthorized(itemNumber, identity?.email ?? null)
+  const canManage = isAdmin(identity?.email)
 
   function handleToggleRestricted() {
+    if (!canManage) return
     setRestricted(itemNumber, !auth.restricted)
   }
 
@@ -61,13 +64,15 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
           {auth.restricted ? <ShieldAlert className="w-4 h-4 text-warn" /> : <ShieldCheck className="w-4 h-4 text-ok" />}
           Authorization
         </h3>
-        <button
-          onClick={handleToggleRestricted}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg
-                     border border-mytra-border bg-mytra-card hover:bg-mytra-card-hover transition-colors text-fg-2"
-        >
-          {auth.restricted ? <><Unlock className="w-3 h-3" /> Unrestrict</> : <><Lock className="w-3 h-3" /> Restrict</>}
-        </button>
+        {canManage && (
+          <button
+            onClick={handleToggleRestricted}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg
+                       border border-mytra-border bg-mytra-card hover:bg-mytra-card-hover transition-colors text-fg-2"
+          >
+            {auth.restricted ? <><Unlock className="w-3 h-3" /> Unrestrict</> : <><Lock className="w-3 h-3" /> Restrict</>}
+          </button>
+        )}
       </div>
 
       {auth.restricted && (
@@ -101,79 +106,83 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
                     <p className="text-sm text-fg truncate">{u.name}</p>
                     <p className="text-xs text-fg-3 truncate">{u.email}</p>
                   </div>
-                  <button
-                    onClick={() => handleRemove(u.email, u.name)}
-                    className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0"
-                    aria-label={`Remove ${u.name}`}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={() => handleRemove(u.email, u.name)}
+                      className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0"
+                      aria-label={`Remove ${u.name}`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
 
-          {adding ? (
-            <div className="space-y-2 border-t border-mytra-border pt-3">
-              <div>
-                <label htmlFor="auth-user-name" className="sr-only">Name</label>
-                <input
-                  id="auth-user-name"
-                  type="text"
-                  placeholder="Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                  className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                             placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-                />
+          {canManage && (
+            adding ? (
+              <div className="space-y-2 border-t border-mytra-border pt-3">
+                <div>
+                  <label htmlFor="auth-user-name" className="sr-only">Name</label>
+                  <input
+                    id="auth-user-name"
+                    type="text"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                    className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                               placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="auth-user-email" className="sr-only">Email</label>
+                  <input
+                    id="auth-user-email"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                    className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                               placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAdd}
+                    disabled={!name.trim() || !validEmail}
+                    className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
+                               hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => { setAdding(false); setName(''); setEmail('') }}
+                    className="px-4 py-2 text-xs font-medium text-fg-2 bg-mytra-bg border border-mytra-border
+                               rounded-lg hover:text-fg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-              <div>
-                <label htmlFor="auth-user-email" className="sr-only">Email</label>
-                <input
-                  id="auth-user-email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                  className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                             placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAdd}
-                  disabled={!name.trim() || !validEmail}
-                  className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                             hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Add
-                </button>
-                <button
-                  onClick={() => { setAdding(false); setName(''); setEmail('') }}
-                  className="px-4 py-2 text-xs font-medium text-fg-2 bg-mytra-bg border border-mytra-border
-                             rounded-lg hover:text-fg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setAdding(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-mytra-purple
-                         hover:text-mytra-purple-hover transition-colors"
-            >
-              <UserPlus className="w-3.5 h-3.5" /> Add authorized user
-            </button>
+            ) : (
+              <button
+                onClick={() => setAdding(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-mytra-purple
+                           hover:text-mytra-purple-hover transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" /> Add authorized user
+              </button>
+            )
           )}
         </div>
       )}
 
       {!auth.restricted && (
         <p className="text-xs text-fg-3">
-          This equipment is unrestricted — any employee may operate it. Click &quot;Restrict&quot; to require authorization.
+          This equipment is unrestricted — any employee may operate it.{canManage ? ' Click "Restrict" to require authorization.' : ''}
         </p>
       )}
 

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { EquipmentStatus, EQUIPMENT_STATUS_COLORS } from '@/lib/types'
 import { updateEquipmentStatus } from '@/lib/equipment'
+import { getCurrentIdentity } from '@/lib/identity'
+import { isAdmin } from '@/lib/admin'
 
 const STATUSES: EquipmentStatus[] = ['Active', 'Out of Service', 'Pending Repair', 'Retired']
 
@@ -16,8 +18,11 @@ interface StatusToggleProps {
 export default function StatusToggle({ itemNumber, currentStatus, onStatusChange }: StatusToggleProps) {
   const [isOpen, setIsOpen] = useState(false)
   const color = EQUIPMENT_STATUS_COLORS[currentStatus]
+  const identity = getCurrentIdentity()
+  const canEdit = isAdmin(identity?.email)
 
   function handleSelect(status: EquipmentStatus) {
+    if (!canEdit) return
     updateEquipmentStatus(itemNumber, status)
     onStatusChange(status)
     setIsOpen(false)
@@ -25,19 +30,21 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full transition-colors min-h-[44px]"
+      <span
+        className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full transition-colors min-h-[44px] ${canEdit ? 'cursor-pointer' : ''}`}
         style={{
           backgroundColor: `${color}18`,
           color: color,
         }}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
+        role={canEdit ? 'button' : undefined}
+        tabIndex={canEdit ? 0 : undefined}
+        onClick={canEdit ? () => setIsOpen(!isOpen) : undefined}
+        aria-haspopup={canEdit ? 'listbox' : undefined}
+        aria-expanded={canEdit ? isOpen : undefined}
       >
         {currentStatus}
-        <ChevronDown className="w-3 h-3" />
-      </button>
+        {canEdit && <ChevronDown className="w-3 h-3" />}
+      </span>
 
       {isOpen && (
         <>

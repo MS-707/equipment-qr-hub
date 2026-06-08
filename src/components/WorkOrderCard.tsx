@@ -16,6 +16,8 @@ import {
 import { WorkOrder, PM_TYPE_COLORS, WorkOrderStatus } from '@/lib/types'
 import { updateWorkOrder, deleteWorkOrder, isOverdue } from '@/lib/work-orders'
 import { getEquipmentById } from '@/lib/equipment'
+import { getCurrentIdentity } from '@/lib/identity'
+import { isAdmin } from '@/lib/admin'
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder
@@ -36,6 +38,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [copyMsg, setCopyMsg] = useState<string | null>(null)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const canDelete = isAdmin(getCurrentIdentity()?.email)
 
   useEffect(() => {
     return () => { clearTimeout(deleteTimerRef.current) }
@@ -257,19 +260,21 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 Email
               </button>
 
-              {/* Delete */}
-              <button
-                onClick={handleDelete}
-                className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                           rounded-lg transition-colors ml-auto ${
-                             confirmDelete
-                               ? 'bg-danger/20 text-danger border border-danger/50'
-                               : 'text-fg-4 hover:text-danger'
-                           }`}
-              >
-                <Trash2 className="w-3 h-3" />
-                {confirmDelete ? 'Confirm Delete' : 'Delete'}
-              </button>
+              {/* Delete — admin only */}
+              {canDelete && (
+                <button
+                  onClick={handleDelete}
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
+                             rounded-lg transition-colors ml-auto ${
+                               confirmDelete
+                                 ? 'bg-danger/20 text-danger border border-danger/50'
+                                 : 'text-fg-4 hover:text-danger'
+                             }`}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  {confirmDelete ? 'Confirm Delete' : 'Delete'}
+                </button>
+              )}
             </div>
           </div>
         </div>

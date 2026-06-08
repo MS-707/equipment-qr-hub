@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Printer, ArrowLeft } from 'lucide-react'
+import { Printer, ArrowLeft, ShieldAlert } from 'lucide-react'
 import { getAllEquipment, getCategories } from '@/lib/equipment'
 import { CATEGORY_COLORS, EquipmentCategory } from '@/lib/types'
+import { getCurrentIdentity } from '@/lib/identity'
+import { isAdmin } from '@/lib/admin'
 import QRLabel from '@/components/QRLabel'
 
 export default function LabelsPage() {
+  const identity = getCurrentIdentity()
+  const canAccess = isAdmin(identity?.email)
   const [baseUrl, setBaseUrl] = useState('')
   const categories = useMemo(() => getCategories(), [])
   const allEquipment = useMemo(() => getAllEquipment(), [])
@@ -20,6 +24,23 @@ export default function LabelsPage() {
     acc[category] = allEquipment.filter(e => e.category === category)
     return acc
   }, {} as Record<EquipmentCategory, typeof allEquipment>)
+
+  if (!canAccess) {
+    return (
+      <main className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
+        <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 text-center max-w-sm">
+          <ShieldAlert className="w-8 h-8 text-warn mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-fg">Admin Access Required</h2>
+          <p className="text-sm text-fg-3 mt-2">
+            QR label management is restricted to administrators. Contact your safety officer for access.
+          </p>
+          <Link href="/equipment" className="inline-block mt-4 text-sm text-mytra-purple hover:text-mytra-purple-hover">
+            Back to Equipment
+          </Link>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <>
