@@ -3,6 +3,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { critique, hintDescriptions } from '@/lib/hazard-critic'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
 
@@ -13,9 +14,6 @@ Given a scope of work and optional location, suggest 3-6 hazards the crew should
 
 Base risk levels on severity × probability using standard construction safety practices. Do not cite specific regulatory codes in the output.`
 
-// Structured-output schema — the model is constrained to this shape, so there is
-// no parse-failure path to handle. enum + (implicit) additionalProperties:false
-// are fully supported by structured outputs on claude-sonnet-4-6.
 const HazardsSchema = z.object({
   hazards: z.array(
     z.object({
@@ -26,7 +24,29 @@ const HazardsSchema = z.object({
   ),
 })
 
+type Hazard = z.infer<typeof HazardsSchema>['hazards'][number]
+
 export const maxDuration = 30
+
+async function generate(
+  client: Anthropic,
+  userMessage: string,
+  hints: string[] = []
+): Promise<Hazard[]> {
+  const refinementNote = hints.length > 0
+    ? `\n\nAlso consider these additional hazard categories that may apply: ${hints.join(', ')}. Only add them if genuinely relevant to the scope.`
+    : ''
+
+  const message = await client.messages.parse({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    system: SYSTEM_PROMPT + refinementNote,
+    messages: [{ role: 'user', content: userMessage }],
+    output_config: { format: zodOutputFormat(HazardsSchema) },
+  })
+
+  return message.parsed_output?.hazards ?? []
+}
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {
@@ -72,16 +92,23 @@ export async function POST(req: Request) {
 
   try {
     const client = new Anthropic({ apiKey: key })
-    const message = await client.messages.parse({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
-      output_config: { format: zodOutputFormat(HazardsSchema) },
-    })
+    const startMs = Date.now()
 
-    // parsed_output is null on refusal or max_tokens truncation — degrade gracefully.
-    const hazards = message.parsed_output?.hazards ?? []
+    // Phase 1: generate initial suggestions
+    let hazards = await generate(client, userMessage)
+
+    // Phase 2: critique and refine (one iteration, within 30s budget)
+    const elapsed = Date.now() - startMs
+    if (hazards.length > 0 && elapsed < 18_000) {
+      const { hints } = critique(hazards)
+      if (hints.length > 0) {
+        const descriptions = hintDescriptions(hints)
+        if (descriptions.length > 0) {
+          hazards = await generate(client, userMessage, descriptions)
+        }
+      }
+    }
+
     return Response.json({ hazards: hazards.slice(0, 8) })
   } catch (err) {
     console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)

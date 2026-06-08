@@ -336,7 +336,7 @@ export default function IncidentReportForm() {
             className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
-            <span className="text-[11px]">Add</span>
+            <span className="text-xs">Add</span>
           </button>
         </div>
         <input
