@@ -1,40 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
-import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
+import { useLiveCounts } from '@/hooks/useLiveCounts'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
-  const [openCount, setOpenCount] = useState(0)
-  const [safetyCount, setSafetyCount] = useState(0)
-
-  useEffect(() => {
-    setOpenCount(getOpenCount())
-    setSafetyCount(getOpenSafetyCount())
-
-    const unsubWo = onWorkOrderChange(() => setOpenCount(getOpenCount()))
-    const unsubSafety = onSafetyChange(() => setSafetyCount(getOpenSafetyCount()))
-
-    function handleStorage() {
-      setOpenCount(getOpenCount())
-      setSafetyCount(getOpenSafetyCount())
-    }
-    window.addEventListener('storage', handleStorage)
-
-    return () => {
-      unsubWo()
-      unsubSafety()
-      window.removeEventListener('storage', handleStorage)
-    }
-  }, [])
+  const { openOrders, openSafety } = useLiveCounts()
 
   const badgeCounts: Record<BadgeKey, number> = {
-    safety: safetyCount,
-    orders: openCount,
+    safety: openSafety,
+    orders: openOrders,
   }
 
   return (

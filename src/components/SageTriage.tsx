@@ -11,6 +11,8 @@ const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 const HISTORY_KEY = 'sage-triage-history'
 const TS_KEY = 'sage-triage-ts'
 const SEEN_KEY = 'sage-fab-seen'
+const LAUNCH_KEY = 'sage-fab-launches'
+const MAX_HINT_LAUNCHES = 3
 const IDLE_MS = 15 * 60 * 1000
 
 interface ChatMessage {
@@ -67,7 +69,14 @@ function SageTriageInner() {
 
   useEffect(() => {
     setMessages(loadHistory())
-    setShowPulse(!localStorage.getItem(SEEN_KEY))
+    // Show the discovery hint for the first few app launches until Sage is opened.
+    if (!localStorage.getItem(SEEN_KEY)) {
+      const launches = Number(localStorage.getItem(LAUNCH_KEY) || '0')
+      if (launches < MAX_HINT_LAUNCHES) {
+        setShowPulse(true)
+        localStorage.setItem(LAUNCH_KEY, String(launches + 1))
+      }
+    }
     setOnline(navigator.onLine)
     const goOn = () => setOnline(true)
     const goOff = () => setOnline(false)
@@ -178,16 +187,28 @@ function SageTriageInner() {
     <>
       {/* FAB */}
       {!open && (
-        <button
-          onClick={handleOpen}
-          aria-label="Open safety assistant"
-          className={`no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] w-12 h-12 rounded-full
-                     bg-mytra-purple text-white shadow-pop flex items-center justify-center
-                     hover:bg-mytra-purple-hover active:scale-95 transition-all
-                     ${showPulse ? 'animate-pulse' : ''}`}
-        >
-          <MessageCircle className="w-5 h-5" />
-        </button>
+        <div className="no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] flex items-center gap-2">
+          {showPulse && (
+            <button
+              onClick={handleOpen}
+              className="animate-fadeIn bg-mytra-card border border-mytra-border text-fg
+                         text-xs font-medium px-3 py-2 rounded-full shadow-pop min-h-[44px]
+                         hover:bg-mytra-card-hover transition-colors"
+            >
+              Ask Sage
+            </button>
+          )}
+          <button
+            onClick={handleOpen}
+            aria-label="Open safety assistant"
+            className={`w-12 h-12 rounded-full
+                       bg-mytra-purple text-white shadow-pop flex items-center justify-center
+                       hover:bg-mytra-purple-hover active:scale-95 transition-all
+                       ${showPulse ? 'animate-pulse' : ''}`}
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
+        </div>
       )}
 
       {/* Chat dialog */}
