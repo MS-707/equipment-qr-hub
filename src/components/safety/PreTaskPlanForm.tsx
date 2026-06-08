@@ -208,7 +208,7 @@ export default function PreTaskPlanForm() {
             <RotateCcw className="w-4 h-4" />
             <span>Draft restored</span>
           </div>
-          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
             Dismiss
           </button>
         </div>

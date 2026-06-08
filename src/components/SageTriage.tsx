@@ -227,7 +227,7 @@ function SageTriageInner() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" role="log">
             {/* Greeting */}
             <div className="flex gap-2">
-              <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-0.5">
+              <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[11px] font-bold shrink-0 mt-0.5">
                 S
               </span>
               <div className="bg-mytra-card-hover rounded-lg rounded-tl-sm px-3 py-2 text-sm text-fg max-w-[85%]">
@@ -256,7 +256,7 @@ function SageTriageInner() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                 {msg.role === 'assistant' && (
-                  <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-0.5">
+                  <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[11px] font-bold shrink-0 mt-0.5">
                     S
                   </span>
                 )}
@@ -275,7 +275,7 @@ function SageTriageInner() {
             {/* Typing indicator */}
             {loading && (
               <div className="flex gap-2">
-                <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-0.5">
+                <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-[11px] font-bold shrink-0 mt-0.5">
                   S
                 </span>
                 <div className="bg-mytra-card-hover rounded-lg rounded-tl-sm px-3 py-2">

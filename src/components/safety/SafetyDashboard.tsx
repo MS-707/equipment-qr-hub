@@ -28,6 +28,7 @@ import SafetyRecordCard from './SafetyRecordCard'
 import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
+import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -50,6 +51,7 @@ export default function SafetyDashboard() {
   const [reviewRejectedCount, setReviewRejectedCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
   const [firstName, setFirstName] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
   useReviewPoller()
 
@@ -68,6 +70,7 @@ export default function SafetyDashboard() {
     setReviewApprovedCount(reviewItems.approved.length)
     setReviewRejectedCount(reviewItems.rejected.length)
     setRecent(all.slice(0, 5))
+    setLoaded(true)
   }, [])
 
   useEffect(() => {
@@ -99,6 +102,14 @@ export default function SafetyDashboard() {
 
       {/* Status row */}
       <div className="grid grid-cols-3 gap-3">
+        {!loaded ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
         <StatCard
           label="Today's PTP"
           value={ptp ? 'Logged' : 'Not started'}
@@ -107,6 +118,8 @@ export default function SafetyDashboard() {
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} />
+          </>
+        )}
       </div>
 
       {/* Sync status */}
@@ -216,7 +229,13 @@ export default function SafetyDashboard() {
             View history <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
-        {recent.length === 0 ? (
+        {!loaded ? (
+          <div className="space-y-2">
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
+          </div>
+        ) : recent.length === 0 ? (
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 shadow-card text-center">
             <CheckCircle2 className="w-8 h-8 text-fg-4 mx-auto mb-2" />
             <p className="text-sm text-fg-2">No safety records yet. Start your day with a PTP.</p>
