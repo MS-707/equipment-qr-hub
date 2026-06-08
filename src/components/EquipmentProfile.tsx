@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Calendar, ClipboardCheck, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
+import { useSwipe } from '@/hooks/useSwipe'
 import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding, requiresPreTrip } from '@/lib/types'
 import { getEquipmentById } from '@/lib/equipment'
 import TabNav from '@/components/TabNav'
@@ -47,6 +48,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const initialTab = isValidTab(tabParam) ? tabParam : defaultTab
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab)
+  const [tabDirection, setTabDirection] = useState<'left' | 'right'>('right')
   const [status, setStatus] = useState<EquipmentStatus>(equipment.status)
   const categoryColor = CATEGORY_COLORS[equipment.category]
 
@@ -65,11 +67,28 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
 
   function handleTabChange(id: string) {
     const tabId = id as TabId
+    const oldIdx = TAB_IDS.indexOf(activeTab)
+    const newIdx = TAB_IDS.indexOf(tabId)
+    setTabDirection(newIdx >= oldIdx ? 'right' : 'left')
     setActiveTab(tabId)
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tabId)
     window.history.replaceState(null, '', url.toString())
   }
+
+  const goNext = useCallback(() => {
+    const idx = TAB_IDS.indexOf(activeTab)
+    if (idx < TAB_IDS.length - 1) handleTabChange(TAB_IDS[idx + 1])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, TAB_IDS])
+
+  const goPrev = useCallback(() => {
+    const idx = TAB_IDS.indexOf(activeTab)
+    if (idx > 0) handleTabChange(TAB_IDS[idx - 1])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, TAB_IDS])
+
+  const swipeHandlers = useSwipe(goNext, goPrev)
 
   return (
     <main className="min-h-screen bg-mytra-bg">
@@ -77,7 +96,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white
+          className="inline-flex items-center gap-1.5 text-fg-3 hover:text-fg
                      text-sm transition-colors duration-150 mb-6 py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -102,13 +121,13 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
               onStatusChange={setStatus}
             />
             {requiresMachineGuarding(equipment) && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-warn/10 text-warn">
                 <Shield className="w-3 h-3" />
                 Machine Guarding Required
               </span>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-white leading-tight">
+          <h1 className="text-2xl font-bold text-fg leading-tight">
             {equipment.name}
           </h1>
         </div>
@@ -127,7 +146,8 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           role="tabpanel"
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
-          className="mt-5 animate-fadeIn"
+          className={`mt-5 ${tabDirection === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}`}
+          {...swipeHandlers}
         >
           {activeTab === 'pre-trip' && (
             <PreTripInspection

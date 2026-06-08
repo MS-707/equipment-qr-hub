@@ -28,6 +28,7 @@ import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
 
 const STORAGE_KEY = 'eqr-safety-records'
+const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
 const COUNTER_KEY = 'eqr-safety-counters'
 
 const ID_PREFIX: Record<SafetyRecordType, string> = {
@@ -105,20 +106,56 @@ export async function getBlobs(recordId: string, slotIds: string[]): Promise<Rec
 
 function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as SafetyRecord[]) : []
-  } catch {
+    const parsed = JSON.parse(raw) as SafetyRecord[]
+    return parsed.map((r) => ({ reviewStatus: undefined, ...r }))
+  } catch (primaryErr) {
+    // Primary store is corrupted (truncated write, partial setItem, etc.).
+    // Attempt recovery from the last known-good backup before giving up.
+    console.error('[safety-records] Primary store corrupt — attempting backup restore:', primaryErr)
+    const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
+    if (backup) {
+      try {
+        const recovered = (JSON.parse(backup) as SafetyRecord[]).map((r) => ({ reviewStatus: undefined, ...r }))
+        console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+        // Promote the backup back to primary so subsequent reads succeed.
+        try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+        return recovered
+      } catch {
+        console.error('[safety-records] Backup also corrupt. Returning empty store.')
+      }
+    }
+    // Emit a detectable event so an error boundary / Sentry hook can alert.
+    try {
+      window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
+    } catch { /* SSR guard */ }
     return []
   }
 }
 
 function writeAll(records: SafetyRecord[]): void {
   if (typeof window === 'undefined') return
+  const serialized = JSON.stringify(records)
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+    // Write backup first so the last known-good copy is never newer than primary.
+    // Ignore quota errors on the backup — it is best-effort.
+    try { localStorage.setItem(STORAGE_KEY_BACKUP, serialized) } catch { /* non-fatal */ }
+    localStorage.setItem(STORAGE_KEY, serialized)
   } catch (e) {
+    // Re-throw so callers (createBase, closePermit, etc.) can surface the
+    // failure to the UI instead of silently losing data.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
     console.error('Failed to save safety records:', e)
+    if (isQuota) {
+      throw new Error(
+        'Device storage is full. Free up space or sync pending records before continuing.'
+      )
+    }
+    throw e
   }
 }
 
@@ -137,7 +174,7 @@ function nextId(type: SafetyRecordType): string {
   if (!c || c.year !== year) c = { year, count: 0 }
   c.count += 1
   counters[prefix] = c
-  localStorage.setItem(COUNTER_KEY, JSON.stringify(counters))
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(counters)) } catch { /* non-fatal */ }
   return `${prefix}-${year}-${String(c.count).padStart(4, '0')}`
 }
 
@@ -217,7 +254,10 @@ export function getOpenSafetyCount(): number {
   const recentIncidents = records.filter(
     (r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo
   ).length
-  return activePermits + recentIncidents
+  const rejectedReviews = records.filter(
+    (r) => r.reviewStatus === 'rejected'
+  ).length
+  return activePermits + recentIncidents + rejectedReviews
 }
 
 // ── Creates ───────────────────────────────────────────────────
@@ -351,7 +391,7 @@ export function createIncidentReport(input: IncidentInput): IncidentReport {
 
 // ── Permit lifecycle transitions (append-only) ───────────────
 
-export function closePermit(id: string, by: { name: string; email: string | null }): SafetyRecord | undefined {
+export function closePermit(id: string, by: { name: string; email: string | null }, note?: string): SafetyRecord | undefined {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
   if (idx === -1) return undefined
@@ -363,7 +403,7 @@ export function closePermit(id: string, by: { name: string; email: string | null
     status: 'closed',
     closedAt: at,
     closedBy: by.name,
-    events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at }],
+    events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at, note: note || undefined }],
   }
   writeAll(all)
   notify()
@@ -445,14 +485,140 @@ export function cryptoRandomId(): string {
 // ── CSV export ────────────────────────────────────────────────
 
 function csvCell(v: unknown): string {
-  const s = v == null ? '' : String(v)
+  let s = v == null ? '' : String(v)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
   return `"${s.replace(/"/g, '""')}"`
 }
+
+// ── EHS review mutations (append-only, guarded) ────────────
+
+export function markSubmittedForReview(
+  id: string,
+  by: { name: string; email: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus === 'approved') return rec
+  if (rec.reviewStatus === 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'submitted',
+    events: [...rec.events, { action: 'submitted-for-review', by: by.name, byEmail: by.email, at }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewApproved(
+  id: string,
+  decision: { reviewerName: string; reviewerEmail: string | null; reviewNote: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus === 'approved') return rec
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'approved',
+    reviewerName: decision.reviewerName,
+    reviewerEmail: decision.reviewerEmail,
+    reviewNote: decision.reviewNote ?? undefined,
+    reviewDecidedAt: at,
+    events: [...rec.events, {
+      action: 'review-decided',
+      by: decision.reviewerName,
+      byEmail: decision.reviewerEmail,
+      at,
+      note: `Approved${decision.reviewNote ? ': ' + decision.reviewNote : ''}`,
+    }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewRejected(
+  id: string,
+  decision: { reviewerName: string; reviewerEmail: string | null; reviewNote: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'rejected',
+    reviewerName: decision.reviewerName,
+    reviewerEmail: decision.reviewerEmail,
+    reviewNote: decision.reviewNote ?? undefined,
+    reviewDecidedAt: at,
+    events: [...rec.events, {
+      action: 'review-decided',
+      by: decision.reviewerName,
+      byEmail: decision.reviewerEmail,
+      at,
+      note: `Rejected${decision.reviewNote ? ': ' + decision.reviewNote : ''}`,
+    }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewRecalled(
+  id: string,
+  by: { name: string; email: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'recalled',
+    reviewerName: undefined,
+    reviewerEmail: undefined,
+    reviewNote: undefined,
+    reviewDecidedAt: undefined,
+    events: [...rec.events, { action: 'review-recalled', by: by.name, byEmail: by.email, at }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+// ── EHS review read helpers ─────────────────────────────────
+
+export function getReviewPendingRecords(): SafetyRecord[] {
+  return readAll().filter((r) => r.reviewStatus === 'submitted' && r.notionPageId)
+}
+
+export function getReviewActionableRecords(): { approved: SafetyRecord[]; rejected: SafetyRecord[] } {
+  const all = readAll()
+  return {
+    approved: all.filter((r) => r.reviewStatus === 'approved'),
+    rejected: all.filter((r) => r.reviewStatus === 'rejected'),
+  }
+}
+
+// ── CSV export ────────────────────────────────────────────────
 
 export function exportSafetyToCsv(records: SafetyRecord[]): string {
   const headers = [
     'ID', 'Type', 'Project', 'Location', 'Created_By', 'Created_At',
     'Status_Or_Result', 'Signatures', 'Sync_Status',
+    'Review_Status', 'Reviewed_By', 'Review_Decided_At',
   ]
   const rows = records.map((r) => {
     let statusOrResult = ''
@@ -468,8 +634,9 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
       statusOrResult = (r as IncidentReport).severity
     }
     return [
-      r.id, r.type, csvCell(r.projectName), csvCell(r.location),
-      csvCell(r.createdBy), r.createdAt, statusOrResult, sigCount, r.syncStatus,
+      csvCell(r.id), csvCell(r.type), csvCell(r.projectName), csvCell(r.location),
+      csvCell(r.createdBy), csvCell(r.createdAt), csvCell(statusOrResult), csvCell(sigCount), csvCell(r.syncStatus),
+      csvCell(r.reviewStatus ?? ''), csvCell(r.reviewerName ?? ''), csvCell(r.reviewDecidedAt ?? ''),
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')

@@ -9,8 +9,10 @@ import {
   removeAuthorizedUser,
   isUserAuthorized,
   onShopMgmtChange,
+  EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface AuthorizedUsersProps {
   itemNumber: number
@@ -33,16 +35,23 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
     setRestricted(itemNumber, !auth.restricted)
   }
 
+  const validEmail = EMAIL_RE.test(email.trim())
+
   function handleAdd() {
-    if (!name.trim() || !email.trim()) return
+    if (!name.trim() || !validEmail) return
     addAuthorizedUser(itemNumber, { name: name.trim(), email: email.trim() }, identity?.name ?? 'Unknown')
     setName('')
     setEmail('')
     setAdding(false)
   }
 
-  function handleRemove(userEmail: string) {
-    removeAuthorizedUser(itemNumber, userEmail)
+  const [removeTarget, setRemoveTarget] = useState<{ email: string; name: string } | null>(null)
+  function handleRemove(userEmail: string, userName: string) {
+    setRemoveTarget({ email: userEmail, name: userName })
+  }
+  function confirmRemove() {
+    if (removeTarget) removeAuthorizedUser(itemNumber, removeTarget.email)
+    setRemoveTarget(null)
   }
 
   return (
@@ -63,13 +72,15 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
 
       {auth.restricted && (
         <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
-          {!currentUserAuthorized && identity && (
+          {!currentUserAuthorized && (
             <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 text-danger mt-0.5 shrink-0" />
+              <ShieldAlert className="w-5 h-5 text-danger mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-danger">Not Authorized</p>
                 <p className="text-xs text-fg-2 mt-0.5">
-                  You ({identity.email}) are not on the authorized user list for this equipment.
+                  {identity
+                    ? `You (${identity.email}) are not on the authorized user list for this equipment.`
+                    : 'You are not on the authorized user list. Sign in to verify your status.'}
                 </p>
               </div>
             </div>
@@ -91,11 +102,11 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
                     <p className="text-xs text-fg-3 truncate">{u.email}</p>
                   </div>
                   <button
-                    onClick={() => handleRemove(u.email)}
-                    className="text-fg-4 hover:text-danger transition-colors p-1 shrink-0"
+                    onClick={() => handleRemove(u.email, u.name)}
+                    className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0"
                     aria-label={`Remove ${u.name}`}
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -104,28 +115,38 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
 
           {adding ? (
             <div className="space-y-2 border-t border-mytra-border pt-3">
-              <input
-                type="text"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                           placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                           placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-              />
+              <div>
+                <label htmlFor="auth-user-name" className="sr-only">Name</label>
+                <input
+                  id="auth-user-name"
+                  type="text"
+                  placeholder="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                  className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                             placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="auth-user-email" className="sr-only">Email</label>
+                <input
+                  id="auth-user-email"
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                  className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                             placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                />
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleAdd}
-                  disabled={!name.trim() || !email.trim()}
+                  disabled={!name.trim() || !validEmail}
                   className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                             hover:bg-mytra-purple-hover transition-colors disabled:opacity-40"
+                             hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Add
                 </button>
@@ -155,6 +176,16 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
           This equipment is unrestricted — any employee may operate it. Click &quot;Restrict&quot; to require authorization.
         </p>
       )}
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        title="Remove User"
+        message={`${removeTarget?.name ?? 'This user'} will no longer have access to this equipment.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={confirmRemove}
+        onCancel={() => setRemoveTarget(null)}
+      />
     </div>
   )
 }

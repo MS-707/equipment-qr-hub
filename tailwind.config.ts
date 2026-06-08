@@ -45,18 +45,38 @@ const config: Config = {
           to: { opacity: '1' },
         },
         slideDown: {
-          from: { opacity: '0', transform: 'translateY(-4px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
+          from: { opacity: '0', transform: 'translateY(-6px) scale(0.98)' },
+          to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         fadeInUp: {
-          from: { opacity: '0', transform: 'translateY(8px)' },
+          from: { opacity: '0', transform: 'translateY(10px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInRight: {
+          from: { opacity: '0', transform: 'translateX(12px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideInLeft: {
+          from: { opacity: '0', transform: 'translateX(-12px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
       animation: {
-        fadeIn: 'fadeIn 220ms ease-out',
-        slideDown: 'slideDown 220ms ease-out',
-        fadeInUp: 'fadeInUp 330ms ease-out both',
+        fadeIn: 'fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        slideDown: 'slideDown 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        fadeInUp: 'fadeInUp 350ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        slideInRight: 'slideInRight 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        slideInLeft: 'slideInLeft 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        scaleIn: 'scaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        shimmer: 'shimmer 2s linear infinite',
       }
     },
   },

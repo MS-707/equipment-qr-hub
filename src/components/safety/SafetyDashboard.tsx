@@ -11,20 +11,25 @@ import {
   Truck,
   CheckCircle2,
   ChevronRight,
+  RefreshCw,
 } from 'lucide-react'
 import {
   getPtpForDate,
   getActivePermits,
   getAllSafetyRecords,
   onSafetyChange,
+  getReviewActionableRecords,
 } from '@/lib/safety-records'
 import { installSyncListeners } from '@/lib/safety-sync'
+import { useReviewPoller } from '@/lib/review-poll'
 import { getCurrentIdentity } from '@/lib/identity'
 import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
 import SafetyRecordCard from './SafetyRecordCard'
 import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
+import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
+import PullToRefresh from '@/components/PullToRefresh'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -42,8 +47,14 @@ export default function SafetyDashboard() {
   const [ptp, setPtp] = useState<PreTaskPlan | undefined>(undefined)
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
+  const [pendingSyncCount, setPendingSyncCount] = useState(0)
+  const [reviewApprovedCount, setReviewApprovedCount] = useState(0)
+  const [reviewRejectedCount, setReviewRejectedCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
   const [firstName, setFirstName] = useState('')
+  const [loaded, setLoaded] = useState(false)
+
+  useReviewPoller()
 
   const load = useCallback(() => {
     setPtp(getPtpForDate(today()))
@@ -53,7 +64,14 @@ export default function SafetyDashboard() {
     setIncidentCount(
       all.filter((r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo).length
     )
+    setPendingSyncCount(
+      all.filter((r) => r.syncStatus === 'pending' || r.syncStatus === 'offline' || r.syncStatus === 'failed').length
+    )
+    const reviewItems = getReviewActionableRecords()
+    setReviewApprovedCount(reviewItems.approved.length)
+    setReviewRejectedCount(reviewItems.rejected.length)
     setRecent(all.slice(0, 5))
+    setLoaded(true)
   }, [])
 
   useEffect(() => {
@@ -72,7 +90,8 @@ export default function SafetyDashboard() {
   }, [load])
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <PullToRefresh onRefresh={load}>
+    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
       <div>
         <h1 className="text-xl font-bold text-fg">
@@ -85,6 +104,14 @@ export default function SafetyDashboard() {
 
       {/* Status row */}
       <div className="grid grid-cols-3 gap-3">
+        {!loaded ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
         <StatCard
           label="Today's PTP"
           value={ptp ? 'Logged' : 'Not started'}
@@ -93,7 +120,45 @@ export default function SafetyDashboard() {
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} />
+          </>
+        )}
       </div>
+
+      {/* Sync status */}
+      {pendingSyncCount > 0 && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+          <RefreshCw className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-xs text-warn">
+            {pendingSyncCount} record{pendingSyncCount !== 1 ? 's' : ''} waiting to sync
+          </p>
+        </div>
+      )}
+
+      {/* EHS review banners */}
+      {reviewRejectedCount > 0 && (
+        <Link
+          href="/safety/history"
+          className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-lg px-4 py-2.5 hover:bg-danger/15 transition-colors"
+        >
+          <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+          <p className="text-xs text-danger flex-1">
+            {reviewRejectedCount} record{reviewRejectedCount !== 1 ? 's' : ''} need{reviewRejectedCount === 1 ? 's' : ''} revision — rejected by EHS
+          </p>
+          <ChevronRight className="w-3.5 h-3.5 text-danger shrink-0" />
+        </Link>
+      )}
+      {reviewApprovedCount > 0 && (
+        <Link
+          href="/safety/history"
+          className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 hover:bg-ok/15 transition-colors"
+        >
+          <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
+          <p className="text-xs text-ok flex-1">
+            {reviewApprovedCount} record{reviewApprovedCount !== 1 ? 's' : ''} approved by EHS
+          </p>
+          <ChevronRight className="w-3.5 h-3.5 text-ok shrink-0" />
+        </Link>
+      )}
 
       {/* Quick actions */}
       <section>
@@ -103,10 +168,12 @@ export default function SafetyDashboard() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors border ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
+                         transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
+                         active:scale-[0.97] ${
                 primary
-                  ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover'
-                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover'
+                  ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
+                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -115,8 +182,10 @@ export default function SafetyDashboard() {
           ))}
           <Link
             href="/inspections"
-            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors
-                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover"
+            className="flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
+                       transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover
+                       hover:shadow-card active:scale-[0.97]"
           >
             <Truck className="w-4 h-4 shrink-0" />
             Pre-Trip Inspection
@@ -133,10 +202,10 @@ export default function SafetyDashboard() {
               <Link
                 key={p.id}
                 href={`/safety/record/${p.id}`}
-                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors"
+                className="flex items-center justify-between gap-3 bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card hover:bg-mytra-card-hover transition-colors press-scale"
               >
                 <div className="min-w-0">
-                  <p className="text-[11px] font-mono text-fg-3">{p.id}</p>
+                  <p className="text-xs font-mono text-fg-3">{p.id}</p>
                   <p className="text-sm text-fg truncate">
                     {('workDescription' in p ? p.workDescription : p.spaceDescription) || p.projectName}
                   </p>
@@ -162,7 +231,13 @@ export default function SafetyDashboard() {
             View history <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
-        {recent.length === 0 ? (
+        {!loaded ? (
+          <div className="space-y-2">
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
+          </div>
+        ) : recent.length === 0 ? (
           <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 shadow-card text-center">
             <CheckCircle2 className="w-8 h-8 text-fg-4 mx-auto mb-2" />
             <p className="text-sm text-fg-2">No safety records yet. Start your day with a PTP.</p>
@@ -176,6 +251,7 @@ export default function SafetyDashboard() {
         )}
       </section>
     </div>
+    </PullToRefresh>
   )
 }
 
@@ -192,10 +268,11 @@ function StatCard({
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3 shadow-card">
-      <p className="text-[10px] uppercase tracking-wider text-fg-3">{label}</p>
-      <p className={`text-base font-semibold mt-0.5 ${valueColor}`}>{value}</p>
-      <p className="text-[11px] text-fg-4">{sub}</p>
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
+                    transition-shadow duration-200 hover:shadow-pop">
+      <p className="text-xs uppercase tracking-wider text-fg-3">{label}</p>
+      <p className={`text-lg font-semibold mt-0.5 ${valueColor}`}>{value}</p>
+      <p className="text-xs text-fg-4">{sub}</p>
     </div>
   )
 }

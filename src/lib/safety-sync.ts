@@ -9,32 +9,56 @@
 
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
 
-export async function trySyncRecord(id: string): Promise<boolean> {
+async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
-  if (!record) return false
+  if (!record) return 'fail'
+  // If a previous markSynced call succeeded but the storage write failed, the
+  // notionPageId acts as a tombstone — do not create a duplicate Notion page.
+  if (record.notionPageId) {
+    markSynced(id, record.notionPageId)
+    return 'ok'
+  }
+  const res = await fetch('/api/safety/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record),
+  })
+  if (res.status === 503) return 'not-configured'
+  if (!res.ok) return 'fail'
+  const data = await res.json()
+  if (data?.ok && data?.notionPageId) {
+    markSynced(id, data.notionPageId)
+    return 'ok'
+  }
+  return 'fail'
+}
+
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+// Tracks records currently being synced to prevent concurrent duplicate POSTs
+// when a page reload or 'online' event fires while a sync is in-flight.
+const inFlight = new Set<string>()
+
+export async function trySyncRecord(id: string): Promise<boolean> {
+  if (!getSafetyRecordById(id)) return false
+  if (inFlight.has(id)) return false
+  inFlight.add(id)
+  const delays = [1000, 2000, 4000]
   try {
-    const res = await fetch('/api/safety/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record),
-    })
-    if (res.status === 503) {
-      // Notion not configured — leave pending, don't alarm the user.
-      return false
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+      try {
+        const result = await attemptSync(id)
+        if (result === 'ok') return true
+        if (result === 'not-configured') return false
+      } catch {
+        // network/offline — retry if attempts remain
+      }
+      if (attempt < delays.length) await wait(delays[attempt])
     }
-    if (!res.ok) {
-      markSyncFailed(id)
-      return false
-    }
-    const data = await res.json()
-    if (data?.ok && data?.notionPageId) {
-      markSynced(id, data.notionPageId)
-      return true
-    }
+    markSyncFailed(id)
     return false
-  } catch {
-    // network/offline — keep it pending for the next attempt
-    return false
+  } finally {
+    inFlight.delete(id)
   }
 }
 

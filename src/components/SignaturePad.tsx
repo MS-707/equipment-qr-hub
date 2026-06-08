@@ -16,7 +16,7 @@ interface SignaturePadProps {
  */
 export default function SignaturePad({
   onChange,
-  height = 180,
+  height = 200,
   className = '',
   penColor = '#FFFFFF',
 }: SignaturePadProps) {
@@ -45,7 +45,7 @@ export default function SignaturePad({
     ctx.clearRect(0, 0, w, h)
     ctx.lineJoin = 'round'
     ctx.lineCap = 'round'
-    ctx.lineWidth = 2.2
+    ctx.lineWidth = 2.5
     ctx.strokeStyle = penColor
     ctx.fillStyle = penColor
     for (const stroke of strokes.current) {
@@ -138,8 +138,8 @@ export default function SignaturePad({
         <button
           type="button"
           onClick={clear}
-          className="no-print absolute top-1.5 right-1.5 inline-flex items-center gap-1 text-[10px]
-                     text-fg-2 hover:text-fg bg-mytra-bg/70 border border-mytra-border rounded px-1.5 py-0.5
+          className="no-print absolute top-1.5 right-1.5 inline-flex items-center gap-1 text-xs
+                     text-fg-2 hover:text-fg bg-mytra-bg/80 border border-mytra-border rounded px-3 py-2 min-h-[44px]
                      transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         >
           <Eraser className="w-3 h-3" /> Clear

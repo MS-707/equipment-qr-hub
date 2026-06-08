@@ -8,8 +8,10 @@ import {
   addTrainingRecord,
   isTrainingCurrent,
   onShopMgmtChange,
+  EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import { formatDate } from '@/lib/datetime'
 
 interface TrainingTrackerProps {
   equipment: EquipmentItem
@@ -36,8 +38,10 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
   const identity = getCurrentIdentity()
   const topics = parseTrainingTopics(equipment.calOshaTrainingReq)
 
+  const validEmail = EMAIL_RE.test(empEmail.trim())
+
   function handleAdd() {
-    if (!addingTopic || !empName.trim() || !empEmail.trim()) return
+    if (!addingTopic || !empName.trim() || !validEmail) return
     addTrainingRecord({
       employeeEmail: empEmail.trim(),
       employeeName: empName.trim(),
@@ -57,10 +61,6 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
       topic,
       verifiedBy: identity.name,
     })
-  }
-
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   if (topics.length === 0) {
@@ -101,7 +101,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                   <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
                 )}
                 <span className="text-sm text-fg flex-1 min-w-0">{topic}</span>
-                <span className="text-[10px] text-fg-4 shrink-0">
+                <span className="text-xs text-fg-4 shrink-0">
                   {records.length} {records.length === 1 ? 'record' : 'records'}
                 </span>
               </button>
@@ -117,11 +117,16 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         >
                           <div className="min-w-0">
                             <p className="text-xs text-fg truncate">{r.employeeName}</p>
-                            <p className="text-[10px] text-fg-4 truncate">{r.employeeEmail}</p>
+                            <p className="text-xs text-fg-4 truncate">{r.employeeEmail}</p>
                           </div>
-                          <p className="text-[10px] text-fg-3 shrink-0">{formatDate(r.completedAt)}</p>
+                          <p className="text-xs text-fg-3 shrink-0">{formatDate(r.completedAt)}</p>
                         </div>
                       ))}
+                      {records.length > 10 && (
+                        <p className="text-xs text-fg-4 italic pt-1">
+                          Showing 10 of {records.length} records
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs text-fg-4 italic">No training records yet.</p>
@@ -129,34 +134,45 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
 
                   {addingTopic === topic ? (
                     <div className="space-y-2 pt-2 border-t border-mytra-border">
-                      <input
-                        type="text"
-                        placeholder="Employee name"
-                        value={empName}
-                        onChange={(e) => setEmpName(e.target.value)}
-                        className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                                   placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Employee email"
-                        value={empEmail}
-                        onChange={(e) => setEmpEmail(e.target.value)}
-                        className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
-                                   placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
-                      />
+                      <div>
+                        <label htmlFor="train-emp-name" className="sr-only">Employee name</label>
+                        <input
+                          id="train-emp-name"
+                          type="text"
+                          placeholder="Employee name"
+                          value={empName}
+                          onChange={(e) => setEmpName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                          className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                                     placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="train-emp-email" className="sr-only">Employee email</label>
+                        <input
+                          id="train-emp-email"
+                          type="email"
+                          placeholder="Employee email"
+                          value={empEmail}
+                          onChange={(e) => setEmpEmail(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                          className="w-full bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg
+                                     placeholder:text-fg-4 focus-visible:ring-2 focus-visible:ring-mytra-purple outline-none"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <button
                           onClick={handleAdd}
-                          disabled={!empName.trim() || !empEmail.trim()}
+                          disabled={!empName.trim() || !validEmail}
                           className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                                     hover:bg-mytra-purple-hover transition-colors disabled:opacity-40"
+                                     hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           Record Training
                         </button>
                         <button
                           onClick={() => { setAddingTopic(null); setEmpName(''); setEmpEmail('') }}
                           className="p-2 text-fg-3 hover:text-fg transition-colors"
+                          aria-label="Cancel"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -167,14 +183,14 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                       {identity?.email && !currentUserTrained && (
                         <button
                           onClick={() => handleAddSelf(topic)}
-                          className="text-[10px] font-medium text-ok hover:text-ok/80 transition-colors"
+                          className="text-xs font-medium text-ok hover:text-ok/80 transition-colors"
                         >
                           Mark myself trained
                         </button>
                       )}
                       <button
                         onClick={() => setAddingTopic(topic)}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-mytra-purple
+                        className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple
                                    hover:text-mytra-purple-hover transition-colors"
                       >
                         <Plus className="w-3 h-3" /> Add employee

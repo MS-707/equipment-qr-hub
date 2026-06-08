@@ -41,9 +41,9 @@ export default function UserMenu() {
       >
         {session.user.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={session.user.image} alt="" className="w-6 h-6 rounded-full" />
+          <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
         ) : (
-          <span className="w-6 h-6 rounded-full bg-mytra-purple/20 text-mytra-purple text-[10px] font-bold flex items-center justify-center">
+          <span className="w-8 h-8 rounded-full bg-mytra-purple/20 text-mytra-purple text-xs font-bold flex items-center justify-center">
             {initials}
           </span>
         )}
@@ -71,8 +71,8 @@ export default function UserMenu() {
               clearCurrentIdentity()
               signOut({ callbackUrl: '/safety' })
             }}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-fg-2 hover:text-fg
-                       hover:bg-mytra-card-hover rounded transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
+                       hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
             <LogOut className="w-4 h-4" /> Sign out
           </button>

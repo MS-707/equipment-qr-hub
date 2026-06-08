@@ -45,7 +45,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
             key={t.description}
             type="button"
             onClick={() => addTemplate(t)}
-            className="text-[11px] px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border
+            className="text-xs px-3 py-2 rounded-full bg-mytra-bg border border-mytra-border
                        text-fg-2 hover:text-fg hover:border-mytra-purple/50 transition-colors"
           >
             + {t.description}
@@ -74,22 +74,24 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
                   type="button"
                   onClick={() => remove(h.id)}
                   aria-label="Remove hazard"
-                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg
+                  className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg
                              bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5" role="radiogroup" aria-label="Risk level">
                 {RISK_LEVELS.map((lvl) => {
                   const on = h.riskLevel === lvl
                   return (
                     <button
                       key={lvl}
                       type="button"
+                      role="radio"
+                      aria-checked={on}
                       onClick={() => update(h.id, { riskLevel: lvl })}
-                      className="flex-1 text-[11px] font-medium py-1.5 rounded-md border transition-colors"
+                      className="flex-1 text-xs font-medium py-2.5 rounded-md border transition-colors min-h-[44px]"
                       style={
                         on
                           ? { backgroundColor: RISK_COLORS[lvl], color: '#fff', borderColor: RISK_COLORS[lvl] }
@@ -113,7 +115,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
               />
 
               {h.source === 'sage' && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-mytra-purple">
+                <span className="inline-flex items-center gap-1 text-xs text-mytra-purple">
                   ✨ via Sage — review before signing
                 </span>
               )}

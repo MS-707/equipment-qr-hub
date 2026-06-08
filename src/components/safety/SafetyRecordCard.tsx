@@ -5,6 +5,7 @@ import { ClipboardList, ArrowUpFromLine, Flame, PackageOpen, AlertTriangle } fro
 import type { SafetyRecord, SafetyRecordType, AnyPermit } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS, isPermit, isPTP, isIncident } from '@/lib/safety-types'
 import PermitStatusBadge from './PermitStatusBadge'
+import ReviewStatusBadge from './ReviewStatusBadge'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -43,7 +44,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
     <Link
       href={`/safety/record/${record.id}`}
       className="block bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card
-                 hover:bg-mytra-card-hover transition-colors"
+                 hover:bg-mytra-card-hover transition-colors press-scale"
     >
       <div className="flex items-start gap-3">
         <span className="shrink-0 w-9 h-9 rounded-lg bg-mytra-bg border border-mytra-border flex items-center justify-center">
@@ -51,8 +52,8 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-fg-3">{record.id}</span>
-            <span className="text-[11px] text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
+            <span className="text-xs font-mono text-fg-3">{record.id}</span>
+            <span className="text-xs text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
           </div>
           <p className="text-sm text-fg truncate">{title(record)}</p>
           <p className="text-xs text-fg-3 truncate">
@@ -74,6 +75,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
             title={`Sync: ${record.syncStatus}`}
           />
           {isPermit(record) && <PermitStatusBadge permit={record as AnyPermit} />}
+          <ReviewStatusBadge record={record} />
         </div>
       </div>
     </Link>

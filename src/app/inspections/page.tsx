@@ -45,12 +45,12 @@ export default function InspectionsPage() {
       {/* Page header */}
       <div className="flex items-center gap-2.5 mb-6">
         <ClipboardCheck className="w-6 h-6 text-mytra-purple" />
-        <h1 className="text-xl font-bold text-white">Pre-Trip Inspections</h1>
+        <h1 className="text-xl font-bold text-fg">Pre-Trip Inspections</h1>
       </div>
 
       {/* Equipment selector */}
       <div className="mb-6">
-        <label htmlFor="equipment-select" className="block text-xs text-gray-400 mb-1.5">
+        <label htmlFor="equipment-select" className="block text-xs text-fg-3 mb-1.5">
           Select Equipment
         </label>
         <select
@@ -58,7 +58,7 @@ export default function InspectionsPage() {
           value={selectedId ?? ''}
           onChange={(e) => setSelectedId(parseInt(e.target.value, 10))}
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
-                     text-sm text-white
+                     text-sm text-fg
                      focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
                      appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20fill%3D%22%239CA3AF%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center]"
         >
