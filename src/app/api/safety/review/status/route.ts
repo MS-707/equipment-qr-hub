@@ -16,6 +16,10 @@ interface ReviewResult {
 }
 
 export async function GET(req: Request) {
+  if (process.env.NEXT_PUBLIC_EHS_REVIEW !== '1') {
+    return Response.json({ decisions: {} })
+  }
+
   const { error } = await requireSession()
   if (error) return error
 

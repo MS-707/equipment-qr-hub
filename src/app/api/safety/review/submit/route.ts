@@ -22,6 +22,10 @@ function dbForType(type: string): string | undefined {
 }
 
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_EHS_REVIEW !== '1') {
+    return Response.json({ error: 'EHS review is not enabled' }, { status: 404 })
+  }
+
   const { error } = await requireSession()
   if (error) return error
 

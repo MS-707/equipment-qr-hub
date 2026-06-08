@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
 
@@ -20,8 +21,17 @@ No markdown, no explanation, no preamble. Just the JSON object.`
 export const maxDuration = 30
 
 export async function POST(req: Request) {
-  const { error } = await requireSession()
+  if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {
+    return Response.json({ hazards: [], error: 'AI assist is not enabled' }, { status: 404 })
+  }
+
+  const { session, error } = await requireSession()
   if (error) return error
+
+  const rl = rateLimit(`hazards:${session!.user!.email}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ hazards: [], error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
