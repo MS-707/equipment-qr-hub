@@ -1,7 +1,7 @@
 {
-  "name": "Equipment QR Hub",
-  "short_name": "EQR Hub",
-  "description": "Equipment profiles, PM schedules, and QR code labels for shop floor equipment",
+  "name": "Sage by Mytra",
+  "short_name": "Sage",
+  "description": "AI-assisted construction safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for the field",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

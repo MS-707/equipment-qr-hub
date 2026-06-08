@@ -10,14 +10,14 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
-  title: 'Equipment QR Hub | Mytra EHS',
-  description: 'Equipment profiles, PM schedules, and QR code labels for shop floor equipment',
-  applicationName: 'Equipment QR Hub',
+  title: 'Sage | Mytra EHS',
+  description: 'AI-assisted construction safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for the field',
+  applicationName: 'Sage',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Equipment QR Hub',
+    title: 'Sage',
   },
   formatDetection: {
     telephone: false,

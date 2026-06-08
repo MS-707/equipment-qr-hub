@@ -3,17 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ShieldCheck, ClipboardList, QrCode } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
 import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
-
-const TABS = [
-  { href: '/', label: 'Directory', icon: LayoutGrid },
-  { href: '/inspections', label: 'Pre-Trip', icon: ClipboardCheck },
-  { href: '/safety', label: 'Safety', icon: ShieldCheck },
-  { href: '/work-orders', label: 'Orders', icon: ClipboardList },
-  { href: '/admin/labels', label: 'QR', icon: QrCode },
-]
+import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
@@ -40,9 +32,9 @@ export default function BottomTabBar() {
     }
   }, [])
 
-  const badges: Record<string, number> = {
-    '/work-orders': openCount,
-    '/safety': safetyCount,
+  const badgeCounts: Record<BadgeKey, number> = {
+    safety: safetyCount,
+    orders: openCount,
   }
 
   return (
@@ -52,10 +44,9 @@ export default function BottomTabBar() {
       aria-label="Main navigation"
     >
       <div className="flex items-stretch">
-        {TABS.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === '/' ? pathname === '/' : pathname.startsWith(href)
-          const badge = badges[href] || 0
+        {NAV_ITEMS.map(({ href, label, icon: Icon, badge }) => {
+          const isActive = isNavItemActive(href, pathname)
+          const badgeCount = badge ? badgeCounts[badge] : 0
 
           return (
             <Link
@@ -69,10 +60,10 @@ export default function BottomTabBar() {
             >
               <span className="relative">
                 <Icon className="w-6 h-6" />
-                {badge > 0 && (
+                {badgeCount > 0 && (
                   <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px]
                                    px-1 text-[11px] font-bold rounded-full bg-mytra-purple text-white">
-                    {badge}
+                    {badgeCount}
                   </span>
                 )}
               </span>
