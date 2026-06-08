@@ -494,6 +494,18 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     })
     setStep('result')
 
+    // Email the completed inspection to EHS (fire-and-forget, env-gated server-side).
+    // Strip photos to keep the payload small; the email is a text summary.
+    void fetch('/api/inspections/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        record: { ...record, items: record.items.map((i) => ({ ...i, photo: null })) },
+        equipmentName: equipment.name,
+        equipmentCategory: equipment.category,
+      }),
+    }).catch(() => { /* offline — inspection is saved locally regardless */ })
+
     // Notify parent if status changed (critical fail sets Out of Service)
     if (record.hasCriticalFail && onStatusChange) {
       onStatusChange()
