@@ -132,7 +132,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="mb-4 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">
             <p className="text-xs text-danger/80">
               {authError === 'AccessDenied'
-                ? "That account isn't on an approved domain. Use your @mytra.ai email."
+                ? "That account isn't on an approved domain. Use your company email."
                 : 'Sign-in failed. Please try again.'}
             </p>
           </div>
@@ -183,7 +183,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                 type="email"
                 value={devEmail}
                 onChange={(e) => setDevEmail(e.target.value)}
-                placeholder="you@mytra.ai"
+                placeholder="Your company email"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                            text-sm text-fg placeholder:text-fg-4
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
