@@ -118,7 +118,18 @@ function writeAll(records: SafetyRecord[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
   } catch (e) {
+    // Re-throw so callers (createBase, closePermit, etc.) can surface the
+    // failure to the UI instead of silently losing data.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
     console.error('Failed to save safety records:', e)
+    if (isQuota) {
+      throw new Error(
+        'Device storage is full. Free up space or sync pending records before continuing.'
+      )
+    }
+    throw e
   }
 }
 
