@@ -23,6 +23,7 @@ import type {
   ConfinedSpacePermit,
   IncidentReport,
   CrewSignature,
+  ReviewStatus,
 } from '@/lib/safety-types'
 import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
@@ -109,7 +110,8 @@ function readAll(): SafetyRecord[] {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
   try {
-    return JSON.parse(raw) as SafetyRecord[]
+    const parsed = JSON.parse(raw) as SafetyRecord[]
+    return parsed.map((r) => ({ reviewStatus: undefined, ...r }))
   } catch (primaryErr) {
     // Primary store is corrupted (truncated write, partial setItem, etc.).
     // Attempt recovery from the last known-good backup before giving up.
@@ -117,7 +119,7 @@ function readAll(): SafetyRecord[] {
     const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
     if (backup) {
       try {
-        const recovered = JSON.parse(backup) as SafetyRecord[]
+        const recovered = (JSON.parse(backup) as SafetyRecord[]).map((r) => ({ reviewStatus: undefined, ...r }))
         console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
         // Promote the backup back to primary so subsequent reads succeed.
         try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
@@ -253,7 +255,10 @@ export function getOpenSafetyCount(): number {
   const recentIncidents = records.filter(
     (r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo
   ).length
-  return activePermits + recentIncidents
+  const rejectedReviews = records.filter(
+    (r) => r.reviewStatus === 'rejected'
+  ).length
+  return activePermits + recentIncidents + rejectedReviews
 }
 
 // ── Creates ───────────────────────────────────────────────────
@@ -485,10 +490,135 @@ function csvCell(v: unknown): string {
   return `"${s.replace(/"/g, '""')}"`
 }
 
+// ── EHS review mutations (append-only, guarded) ────────────
+
+export function markSubmittedForReview(
+  id: string,
+  by: { name: string; email: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus === 'approved') return rec
+  if (rec.reviewStatus === 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'submitted' as ReviewStatus,
+    events: [...rec.events, { action: 'submitted-for-review', by: by.name, byEmail: by.email, at }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewApproved(
+  id: string,
+  decision: { reviewerName: string; reviewerEmail: string | null; reviewNote: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus === 'approved') return rec
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'approved' as ReviewStatus,
+    reviewerName: decision.reviewerName,
+    reviewerEmail: decision.reviewerEmail,
+    reviewNote: decision.reviewNote ?? undefined,
+    reviewDecidedAt: at,
+    events: [...rec.events, {
+      action: 'review-decided',
+      by: decision.reviewerName,
+      byEmail: decision.reviewerEmail,
+      at,
+      note: `Approved${decision.reviewNote ? ': ' + decision.reviewNote : ''}`,
+    }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewRejected(
+  id: string,
+  decision: { reviewerName: string; reviewerEmail: string | null; reviewNote: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'rejected' as ReviewStatus,
+    reviewerName: decision.reviewerName,
+    reviewerEmail: decision.reviewerEmail,
+    reviewNote: decision.reviewNote ?? undefined,
+    reviewDecidedAt: at,
+    events: [...rec.events, {
+      action: 'review-decided',
+      by: decision.reviewerName,
+      byEmail: decision.reviewerEmail,
+      at,
+      note: `Rejected${decision.reviewNote ? ': ' + decision.reviewNote : ''}`,
+    }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+export function markReviewRecalled(
+  id: string,
+  by: { name: string; email: string | null }
+): SafetyRecord | undefined {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return undefined
+  const rec = all[idx]
+  if (rec.reviewStatus !== 'submitted') return rec
+  const at = nowIso()
+  all[idx] = {
+    ...rec,
+    reviewStatus: 'recalled' as ReviewStatus,
+    reviewerName: undefined,
+    reviewerEmail: undefined,
+    reviewNote: undefined,
+    reviewDecidedAt: undefined,
+    events: [...rec.events, { action: 'review-recalled', by: by.name, byEmail: by.email, at }],
+  }
+  writeAll(all)
+  notify()
+  return all[idx]
+}
+
+// ── EHS review read helpers ─────────────────────────────────
+
+export function getReviewPendingRecords(): SafetyRecord[] {
+  return readAll().filter((r) => r.reviewStatus === 'submitted' && r.notionPageId)
+}
+
+export function getReviewActionableRecords(): { approved: SafetyRecord[]; rejected: SafetyRecord[] } {
+  const all = readAll()
+  return {
+    approved: all.filter((r) => r.reviewStatus === 'approved'),
+    rejected: all.filter((r) => r.reviewStatus === 'rejected'),
+  }
+}
+
+// ── CSV export ────────────────────────────────────────────────
+
 export function exportSafetyToCsv(records: SafetyRecord[]): string {
   const headers = [
     'ID', 'Type', 'Project', 'Location', 'Created_By', 'Created_At',
     'Status_Or_Result', 'Signatures', 'Sync_Status',
+    'Review_Status', 'Reviewed_By', 'Review_Decided_At',
   ]
   const rows = records.map((r) => {
     let statusOrResult = ''
@@ -506,6 +636,7 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
     return [
       r.id, r.type, csvCell(r.projectName), csvCell(r.location),
       csvCell(r.createdBy), r.createdAt, statusOrResult, sigCount, r.syncStatus,
+      r.reviewStatus ?? '', csvCell(r.reviewerName ?? ''), r.reviewDecidedAt ?? '',
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')

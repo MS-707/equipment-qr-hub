@@ -5,6 +5,7 @@ import { ClipboardList, ArrowUpFromLine, Flame, PackageOpen, AlertTriangle } fro
 import type { SafetyRecord, SafetyRecordType, AnyPermit } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS, isPermit, isPTP, isIncident } from '@/lib/safety-types'
 import PermitStatusBadge from './PermitStatusBadge'
+import ReviewStatusBadge from './ReviewStatusBadge'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -74,6 +75,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
             title={`Sync: ${record.syncStatus}`}
           />
           {isPermit(record) && <PermitStatusBadge permit={record as AnyPermit} />}
+          <ReviewStatusBadge record={record} />
         </div>
       </div>
     </Link>

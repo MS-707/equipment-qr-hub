@@ -21,6 +21,8 @@ export type SafetyRecordType =
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 
+export type ReviewStatus = 'submitted' | 'approved' | 'rejected' | 'recalled'
+
 /** Permit lifecycle. 'expired' is DERIVED (now > validUntil), never stored. */
 export type PermitStatus = 'active' | 'closed' | 'revoked'
 
@@ -40,7 +42,9 @@ export interface CrewSignature {
 
 /** Append-only audit event. */
 export interface AuditEvent {
-  action: 'created' | 'submitted' | 'closed' | 'revoked' | 'synced' | 'sync-failed' | 'amended'
+  action:
+    | 'created' | 'submitted' | 'closed' | 'revoked' | 'synced' | 'sync-failed' | 'amended'
+    | 'submitted-for-review' | 'review-decided' | 'review-recalled'
   by: string
   byEmail: string | null
   at: string
@@ -58,6 +62,11 @@ export interface SafetyRecordBase {
   syncStatus: InspectionSyncStatus
   notionPageId: string | null
   events: AuditEvent[]
+  reviewStatus?: ReviewStatus
+  reviewerName?: string
+  reviewerEmail?: string | null
+  reviewNote?: string
+  reviewDecidedAt?: string
 }
 
 export interface PermitCheckItem {
@@ -264,4 +273,18 @@ export const INCIDENT_SEVERITY_COLORS: Record<IncidentSeverity, string> = {
   moderate: 'var(--risk-medium)',
   serious: 'var(--risk-high)',
   critical: 'var(--risk-critical)',
+}
+
+export const REVIEW_STATUS_COLORS: Record<ReviewStatus, string> = {
+  submitted: 'var(--warn)',
+  approved: 'var(--ok)',
+  rejected: 'var(--danger)',
+  recalled: 'var(--fg-4)',
+}
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  submitted: 'Pending Review',
+  approved: 'Approved',
+  rejected: 'Needs Revision',
+  recalled: 'Recalled',
 }

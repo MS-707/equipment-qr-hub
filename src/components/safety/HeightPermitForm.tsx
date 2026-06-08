@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from 'react'
 import { ArrowUpFromLine, RotateCcw } from 'lucide-react'
-import { createHeightPermit, saveSignatures } from '@/lib/safety-records'
+import { createHeightPermit, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
 import LastUsedChip from './LastUsedChip'
+import { getCurrentIdentity } from '@/lib/identity'
 import {
   buildPermitItems,
   getPermitChecklistDef,
@@ -135,6 +136,12 @@ export default function HeightPermitForm() {
         onNew={reset}
         newLabel="New permit"
         offline={wasOffline}
+        onSubmitForReview={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' ? async () => {
+          const identity = getCurrentIdentity()
+          markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+          const rec = getSafetyRecordById(submittedId)
+          if (rec) fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }) }).catch(() => {})
+        } : undefined}
       />
     )
   }
