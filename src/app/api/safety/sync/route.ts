@@ -13,6 +13,7 @@ const NOTION_VERSION = '2022-06-28'
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
+  'jha': process.env.NOTION_JHA_DB_ID || process.env.NOTION_PTP_DB_ID,
   'incident-report': process.env.NOTION_INCIDENTS_DB_ID,
   'height-permit': process.env.NOTION_PERMITS_DB_ID,
   'hot-work-permit': process.env.NOTION_PERMITS_DB_ID,

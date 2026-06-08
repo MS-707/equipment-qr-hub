@@ -1,6 +1,8 @@
 import type { SafetyRecord } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
+import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
+import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
@@ -11,6 +13,7 @@ function escapeSlack(s: string): string {
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
+  'jha': process.env.NOTION_JHA_DB_ID || process.env.NOTION_PTP_DB_ID,
   'incident-report': process.env.NOTION_INCIDENTS_DB_ID,
   'height-permit': process.env.NOTION_PERMITS_DB_ID,
   'hot-work-permit': process.env.NOTION_PERMITS_DB_ID,
@@ -30,14 +33,19 @@ export async function POST(req: Request) {
   if (error) return error
 
   const notionKey = process.env.NOTION_API_KEY
-  if (!notionKey) {
+  const emailConfigured = isEmailConfigured()
+  const slackUrl = process.env.SLACK_EHS_WEBHOOK_URL
+
+  // At least one delivery channel must be configured, otherwise the submission
+  // would silently go nowhere.
+  if (!notionKey && !emailConfigured && !slackUrl) {
     return Response.json(
-      { error: 'Notion integration not configured' },
+      { error: 'No EHS notification channel configured (set RESEND_API_KEY, NOTION_API_KEY, or SLACK_EHS_WEBHOOK_URL)' },
       { status: 503 }
     )
   }
 
-  let body: { record: Pick<SafetyRecord, 'id' | 'type' | 'projectName' | 'location' | 'createdBy' | 'createdAt'>; notionPageId: string | null }
+  let body: { record: SafetyRecord; notionPageId: string | null }
   try {
     body = await req.json()
   } catch {
@@ -54,43 +62,44 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid Notion page ID' }, { status: 400 })
   }
 
+  // ── Notion (optional record store) ───────────────────────────
   let pageId = notionPageId
-  if (!pageId) {
-    const syncResult = await syncToNotion(notionKey, record as SafetyRecord)
-    if (!syncResult.ok) {
-      return Response.json(
-        { error: 'Notion sync failed' },
-        { status: 502 }
-      )
+  let notionOk = false
+  if (notionKey) {
+    try {
+      if (!pageId) {
+        const syncResult = await syncToNotion(notionKey, record)
+        if (syncResult.ok) pageId = syncResult.pageId
+      }
+      if (pageId) {
+        const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${notionKey}`,
+            'Notion-Version': NOTION_VERSION,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ properties: { 'EHS Review': { select: { name: 'Pending' } } } }),
+        })
+        notionOk = res.ok
+        if (!res.ok) console.error('[review/submit] Notion PATCH error:', await res.text())
+      }
+    } catch (e) {
+      console.error('[review/submit] Notion error:', e instanceof Error ? e.message : e)
     }
-    pageId = syncResult.pageId
   }
 
-  try {
-    const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${notionKey}`,
-        'Notion-Version': NOTION_VERSION,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        properties: {
-          'EHS Review': { select: { name: 'Pending' } },
-        },
-      }),
+  // ── Email notification (primary EHS channel) ─────────────────
+  let emailed = false
+  if (emailConfigured) {
+    const outcome = await sendEhsNotification({
+      subject: `EHS Review Requested — ${buildRecordSubject(record)}`,
+      text: buildRecordText(record),
     })
-
-    if (!res.ok) {
-      console.error('[review/submit] Notion PATCH error:', await res.text())
-      return Response.json({ error: 'Failed to set review property' }, { status: 502 })
-    }
-  } catch (e) {
-    console.error('[review/submit] unexpected error:', e instanceof Error ? e.message : e)
-    return Response.json({ error: 'Review submission failed' }, { status: 500 })
+    emailed = outcome === 'sent'
   }
 
-  const slackUrl = process.env.SLACK_EHS_WEBHOOK_URL
+  // ── Slack (best-effort) ──────────────────────────────────────
   if (slackUrl) {
     const label = SAFETY_TYPE_LABELS[record.type] ?? record.type
     try {
@@ -106,7 +115,13 @@ export async function POST(req: Request) {
     }
   }
 
-  return Response.json({ ok: true, notionPageId: pageId })
+  // Succeed if any channel delivered. If every configured channel failed,
+  // surface an error so the client can let the user retry.
+  if (!notionOk && !emailed && !slackUrl) {
+    return Response.json({ error: 'Failed to deliver EHS submission' }, { status: 502 })
+  }
+
+  return Response.json({ ok: true, notionPageId: pageId, emailed })
 }
 
 async function syncToNotion(
