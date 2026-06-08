@@ -257,14 +257,14 @@ export default function PreTaskPlanForm() {
           <input id="ptp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Level 3, grid C4" className={inputCls} />
           {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
         </div>
-        <div>
+        <div data-tour-module="scope-of-work">
           <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
           <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the crew building/commissioning today?" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
       {/* Hazards (Sage sits above the table, dormant by default) */}
-      <section className="space-y-2">
+      <section data-tour-module="hazard-table" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Hazards & Controls</h4>
         <SageAssist
           scopeOfWork={scopeOfWork}
@@ -275,7 +275,7 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* PPE */}
-      <section className="space-y-2">
+      <section data-tour-module="ppe-selector" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">PPE Required</h4>
         <PPESelector selected={ppe} onChange={setPpe} />
       </section>
@@ -342,7 +342,7 @@ export default function PreTaskPlanForm() {
         </div>
       </section>
 
-      <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
           onClick={() => setStep('signon')}

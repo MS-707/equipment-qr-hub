@@ -71,6 +71,18 @@ function SageTriageInner() {
   const [showPulse, setShowPulse] = useState(false)
   const [online, setOnline] = useState(true)
   const [fabTop, setFabTop] = useState<number | null>(null)
+  const [tourHidden, setTourHidden] = useState(false)
+
+  useEffect(() => {
+    const hide = () => setTourHidden(true)
+    const show = () => setTourHidden(false)
+    window.addEventListener('sage:tour-active', hide)
+    window.addEventListener('sage:tour-ended', show)
+    return () => {
+      window.removeEventListener('sage:tour-active', hide)
+      window.removeEventListener('sage:tour-ended', show)
+    }
+  }, [])
   const dialogRef = useRef<HTMLDialogElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -241,7 +253,7 @@ function SageTriageInner() {
       {!open && (
         <div
           data-tour="sage-fab"
-          className={`no-print fixed right-4 z-[41] flex items-center gap-2 ${fabTop == null ? 'bottom-20 sm:bottom-6' : ''}`}
+          className={`no-print fixed right-4 z-[41] flex items-center gap-2 transition-opacity duration-200 ${fabTop == null ? 'bottom-20 sm:bottom-6' : ''} ${tourHidden ? 'opacity-0 pointer-events-none' : ''}`}
           style={fabTop == null ? undefined : { top: fabTop }}
         >
           {showPulse && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { ClipboardCheck } from 'lucide-react'
+import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { getAllEquipment } from '@/lib/equipment'
 import { getLastEquipmentId } from '@/lib/inspections'
 import { requiresPreTrip, INSPECTION_CATEGORIES, EquipmentItem } from '@/lib/types'
@@ -46,10 +47,11 @@ export default function InspectionsPage() {
       <div className="flex items-center gap-2.5 mb-6">
         <ClipboardCheck className="w-6 h-6 text-mytra-purple" />
         <h1 className="text-xl font-bold text-fg">Pre-Trip Inspections</h1>
+        <ModuleTourButton tourId="inspections" />
       </div>
 
       {/* Equipment selector */}
-      <div className="mb-6">
+      <div data-tour-module="equip-dropdown" className="mb-6">
         <label htmlFor="equipment-select" className="block text-xs text-fg-3 mb-1.5">
           Select Equipment
         </label>

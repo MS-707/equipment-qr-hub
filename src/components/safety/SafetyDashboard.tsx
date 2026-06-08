@@ -25,6 +25,7 @@ import { useReviewPoller } from '@/lib/review-poll'
 import { getCurrentIdentity } from '@/lib/identity'
 import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
 import SafetyRecordCard from './SafetyRecordCard'
+import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
@@ -93,17 +94,18 @@ export default function SafetyDashboard() {
     <PullToRefresh onRefresh={load}>
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
-      <div>
+      <div className="flex items-start justify-between">
         <h1 className="text-xl font-bold text-fg">
           {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
         </h1>
+        <ModuleTourButton tourId="dashboard" />
         <p className="text-sm text-fg-2">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
 
       {/* Status row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div data-tour-module="ptp-status" className="grid grid-cols-3 gap-3">
         {!loaded ? (
           <>
             <StatCardSkeleton />
@@ -161,7 +163,7 @@ export default function SafetyDashboard() {
       )}
 
       {/* Quick actions */}
-      <section>
+      <section data-tour-module="quick-actions">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Quick actions</h2>
         <div className="grid grid-cols-2 gap-2">
           {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary }) => (
@@ -196,7 +198,7 @@ export default function SafetyDashboard() {
       {/* Active permits */}
       {activePermits.length > 0 && (
         <section>
-          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Active permits</h2>
+          <h2 data-tour-module="active-permits" className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Active permits</h2>
           <div className="space-y-2">
             {activePermits.map((p) => (
               <Link
@@ -224,7 +226,7 @@ export default function SafetyDashboard() {
       )}
 
       {/* Recent activity */}
-      <section>
+      <section data-tour-module="recent-activity">
         <div className="flex items-center justify-between mb-2 px-1">
           <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Recent activity</h2>
           <Link href="/safety/history" className="text-xs text-mytra-purple hover:underline inline-flex items-center gap-0.5">

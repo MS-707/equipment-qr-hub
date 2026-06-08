@@ -132,6 +132,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
           {/* Status toggle */}
           <button
+            data-tour-module="wo-status"
             onClick={cycleStatus}
             aria-label={`Status: ${workOrder.status}. Click to change.`}
             className="flex items-center gap-1.5 text-xs font-medium px-4 py-2.5 rounded-full
