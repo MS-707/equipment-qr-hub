@@ -189,7 +189,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
   if (history.length === 0) return null
 
   return (
-    <div className="mt-6">
+    <div data-tour-module="inspection-history" className="mt-6">
       <button
         type="button"
         onClick={onToggle}
@@ -450,7 +450,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       {/* ── IDENTIFY STEP ──────────────────────────────────── */}
       {step === 'identify' && (
         <div className="animate-fadeIn space-y-4">
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
+          <div data-tour-module="inspector-form" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <ClipboardCheck className="w-5 h-5 text-mytra-purple" />
               <h3 className="text-sm font-semibold text-fg">
@@ -542,6 +542,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
             {/* Start button */}
             <button
+              data-tour-module="start-inspection"
               type="button"
               onClick={() => setStep('checklist')}
               disabled={!inspectorName.trim() || !operatorAuthorized}
