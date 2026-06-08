@@ -190,12 +190,14 @@ function SageTriageInner() {
         className="backdrop:bg-black/50 bg-transparent p-0 m-0
                    fixed inset-0 sm:inset-auto sm:right-4 sm:bottom-4 sm:top-auto sm:left-auto
                    w-full sm:w-[360px] h-full sm:h-[min(600px,85vh)]
+                   max-w-full max-h-full
                    outline-none animate-fadeIn"
       >
         <div className="flex flex-col h-full sm:rounded-2xl overflow-hidden
-                        bg-mytra-card border border-mytra-border shadow-pop">
+                        bg-mytra-card border border-mytra-border shadow-pop
+                        pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-mytra-border">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-mytra-border shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold">
                 S
@@ -280,7 +282,7 @@ function SageTriageInner() {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2">
+          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2 shrink-0">
             <input
               ref={inputRef}
               type="text"
@@ -288,6 +290,7 @@ function SageTriageInner() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Sage a question..."
               disabled={loading}
+              maxLength={500}
               inputMode="text"
               enterKeyHint="send"
               className="flex-1 bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
