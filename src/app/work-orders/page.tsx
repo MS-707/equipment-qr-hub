@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import WorkOrderBoard from '@/components/WorkOrderBoard'
 
 export const metadata: Metadata = {
-  title: 'Work Orders | Equipment QR Hub',
+  title: 'Work Orders | Sage',
   description: 'PM work order tracking for shop floor equipment',
 }
 

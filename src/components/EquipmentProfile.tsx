@@ -95,12 +95,12 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link
-          href="/"
+          href="/equipment"
           className="inline-flex items-center gap-1.5 text-fg-3 hover:text-fg
                      text-sm transition-colors duration-150 mb-6 py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Directory
+          Back to Equipment
         </Link>
 
         {/* Header */}

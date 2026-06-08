@@ -47,7 +47,7 @@ if (allowDevLogin) {
   providers.push(
     Credentials({
       id: 'dev',
-      name: 'Mytra email',
+      name: 'Company email',
       credentials: {
         name: { label: 'Full name', type: 'text' },
         email: { label: 'Company email', type: 'email' },

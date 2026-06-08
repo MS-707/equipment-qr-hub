@@ -3,32 +3,18 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck, WifiOff } from 'lucide-react'
-import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
-import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
+import { WifiOff } from 'lucide-react'
+import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
+import { useLiveCounts } from '@/hooks/useLiveCounts'
 import UserMenu from '@/components/UserMenu'
+import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
-  const [openCount, setOpenCount] = useState(0)
-  const [safetyCount, setSafetyCount] = useState(0)
+  const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
   useEffect(() => {
-    setOpenCount(getOpenCount())
-    setSafetyCount(getOpenSafetyCount())
-
-    // Listen for same-tab CRUD via pub/sub
-    const unsubscribe = onWorkOrderChange(() => setOpenCount(getOpenCount()))
-    const unsubscribeSafety = onSafetyChange(() => setSafetyCount(getOpenSafetyCount()))
-    // Listen for cross-tab storage changes
-    function handleStorage() {
-      setOpenCount(getOpenCount())
-      setSafetyCount(getOpenSafetyCount())
-    }
-    window.addEventListener('storage', handleStorage)
-
-    // Offline/online status
     setOnline(navigator.onLine)
     const goOnline = () => setOnline(true)
     const goOffline = () => setOnline(false)
@@ -36,28 +22,22 @@ export default function NavHeader() {
     window.addEventListener('offline', goOffline)
 
     return () => {
-      unsubscribe()
-      unsubscribeSafety()
-      window.removeEventListener('storage', handleStorage)
       window.removeEventListener('online', goOnline)
       window.removeEventListener('offline', goOffline)
     }
   }, [])
 
-  const navLinks = [
-    { href: '/', label: 'Directory', icon: LayoutGrid, badge: 0 },
-    { href: '/inspections', label: 'Pre-Trip', icon: ClipboardCheck, badge: 0 },
-    { href: '/safety', label: 'Safety', icon: ShieldCheck, badge: safetyCount },
-    { href: '/work-orders', label: 'Work Orders', icon: ClipboardList, badge: openCount },
-    { href: '/admin/labels', label: 'QR Labels', icon: QrCode, badge: 0 },
-  ]
+  const badgeCounts: Record<BadgeKey, number> = {
+    safety: openSafety,
+    orders: openOrders,
+  }
 
   return (
     <header className="no-print sticky top-0 z-50 bg-mytra-bg/95 backdrop-blur-sm border-b border-mytra-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: Logo / Title */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-lg font-bold text-fg">Equipment QR Hub</span>
+          <span className="text-lg font-bold text-fg">Sage</span>
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>
@@ -71,17 +51,16 @@ export default function NavHeader() {
               <span className="hidden sm:inline">Offline</span>
             </span>
           )}
-          {navLinks.map(({ href, label, icon: Icon, badge }) => {
+          {NAV_ITEMS.map(({ href, longLabel, icon: Icon, badge }) => {
             /* Nav links are hidden on mobile — BottomTabBar handles them */
-            const isActive =
-              href === '/'
-                ? pathname === '/'
-                : pathname.startsWith(href)
+            const isActive = isNavItemActive(href, pathname)
+            const badgeCount = badge ? badgeCounts[badge] : 0
 
             return (
               <Link
                 key={href}
                 href={href}
+                data-tour-tab={href}
                 className={`relative hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
@@ -91,12 +70,12 @@ export default function NavHeader() {
                   }`}
               >
                 <Icon size={16} />
-                <span className="hidden sm:inline">{label}</span>
-                {badge > 0 && (
+                <span className="hidden sm:inline">{longLabel}</span>
+                {badgeCount > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
                                    px-1 text-xs font-bold rounded-full
                                    bg-mytra-purple text-white">
-                    {badge}
+                    {badgeCount}
                   </span>
                 )}
                 {isActive && (
@@ -105,6 +84,7 @@ export default function NavHeader() {
               </Link>
             )
           })}
+          <HelpButton />
           <UserMenu />
         </nav>
       </div>

@@ -249,7 +249,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 title="Email work order (requires Gmail integration)"
                 onClick={() => {
                   const subject = `PM Work Order: ${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM [${workOrder.id}]`
-                  const body = `Work Order: ${workOrder.id}\nEquipment: ${equipment?.name || 'Unknown'}\nPM Type: ${workOrder.pmType}\nDue Date: ${workOrder.dueDate || 'Not set'}\n\nTasks:\n${tasks.map(t => `• ${t}`).join('\n')}\n\n---\nSent from Equipment QR Hub`
+                  const body = `Work Order: ${workOrder.id}\nEquipment: ${equipment?.name || 'Unknown'}\nPM Type: ${workOrder.pmType}\nDue Date: ${workOrder.dueDate || 'Not set'}\n\nTasks:\n${tasks.map(t => `• ${t}`).join('\n')}\n\n---\nSent from Sage`
                   window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
                 }}
               >

@@ -44,11 +44,11 @@ export default function LabelsPage() {
           {/* Header */}
           <div className="mb-8">
             <Link
-              href="/"
+              href="/equipment"
               className="inline-flex items-center gap-1.5 text-sm text-fg-3 hover:text-fg transition-colors mb-4"
             >
               <ArrowLeft size={16} />
-              Back to Directory
+              Back to Equipment
             </Link>
             <h1 className="text-2xl font-bold text-fg">
               QR Label Generator
