@@ -342,14 +342,14 @@ export default function PreTaskPlanForm() {
         </div>
       </section>
 
-      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent">
         <button
           type="button"
           onClick={() => setStep('signon')}
           disabled={!canContinue}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canContinue ? 'Continue to crew sign-on' : 'Add scope and location'}
+          {canContinue ? 'Continue to crew sign-on' : 'Fill in scope and location to continue'}
         </button>
       </div>
     </div>
