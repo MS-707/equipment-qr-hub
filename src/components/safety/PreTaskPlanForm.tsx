@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, Loader2 } from 'lucide-react'
 import type { Shift } from '@/lib/types'
@@ -359,6 +359,9 @@ export default function PreTaskPlanForm() {
 function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: string; sigCount: number; wasOffline: boolean; onNew: () => void }) {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewDone, setReviewDone] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { headingRef.current?.focus() }, [])
   const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
   async function handleReviewSubmit() {
@@ -383,7 +386,7 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
     <div className="animate-fadeIn space-y-4">
       <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-ok mb-1">PTP Logged</h3>
+        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">PTP Logged</h3>
         <p className="text-sm text-ok">
           {sigCount} crew signed on. Recorded as{' '}
           <span className="font-mono text-fg">{submittedId}</span>.
