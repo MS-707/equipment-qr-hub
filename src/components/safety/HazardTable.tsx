@@ -45,7 +45,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
             key={t.description}
             type="button"
             onClick={() => addTemplate(t)}
-            className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border
+            className="text-xs px-3 py-2 rounded-full bg-mytra-bg border border-mytra-border
                        text-fg-2 hover:text-fg hover:border-mytra-purple/50 transition-colors"
           >
             + {t.description}

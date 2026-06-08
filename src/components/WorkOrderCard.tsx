@@ -176,7 +176,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
-        className="w-full px-4 py-2 flex items-center justify-center gap-1 text-xs text-fg-4
+        className="w-full px-4 py-2.5 flex items-center justify-center gap-1 text-xs text-fg-4 min-h-[44px]
                    hover:text-fg hover:bg-mytra-card-hover transition-colors border-t border-mytra-border"
       >
         {isExpanded ? (

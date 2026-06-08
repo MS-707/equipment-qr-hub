@@ -22,9 +22,14 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
   async function handleReviewSubmit() {
     if (!onSubmitForReview) return
     setReviewSubmitting(true)
-    await onSubmitForReview()
-    setReviewDone(true)
-    setReviewSubmitting(false)
+    try {
+      await onSubmitForReview()
+      setReviewDone(true)
+    } catch {
+      // Submission failed — button returns to ready state so user can retry
+    } finally {
+      setReviewSubmitting(false)
+    }
   }
 
   return (

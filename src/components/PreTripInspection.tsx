@@ -80,7 +80,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('pass')}
-          className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
+          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'pass'
               ? 'bg-ok text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-ok/50'
@@ -91,7 +91,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('fail')}
-          className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
+          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'fail'
               ? 'bg-danger text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-danger/50'
@@ -102,7 +102,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('na')}
-          className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors duration-150 ${
+          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'na'
               ? 'bg-fg-3 text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-fg-4/50'

@@ -2,6 +2,11 @@ import type { SafetyRecord } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 
 const NOTION_VERSION = '2022-06-28'
+const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
+
+function escapeSlack(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
 
 export async function POST(req: Request) {
   const notionKey = process.env.NOTION_API_KEY
@@ -20,6 +25,14 @@ export async function POST(req: Request) {
   }
 
   const { record, notionPageId } = body
+
+  if (!record?.id || !record?.type) {
+    return Response.json({ error: 'Missing record id or type' }, { status: 400 })
+  }
+
+  if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
+    return Response.json({ error: 'Invalid Notion page ID' }, { status: 400 })
+  }
 
   let pageId = notionPageId
   if (!pageId) {
@@ -64,7 +77,7 @@ export async function POST(req: Request) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `📋 *EHS Review Requested*\n*${label}* — ${record.id}\n*Project:* ${record.projectName}\n*Location:* ${record.location}\n*Submitted by:* ${record.createdBy}`,
+          text: `📋 *EHS Review Requested*\n*${escapeSlack(label)}* — ${escapeSlack(record.id)}\n*Project:* ${escapeSlack(record.projectName || '')}\n*Location:* ${escapeSlack(record.location || '')}\n*Submitted by:* ${escapeSlack(record.createdBy || '')}`,
         }),
       })
     } catch {
