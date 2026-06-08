@@ -1,14 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { ClipboardList, ArrowUpFromLine, Flame, PackageOpen, AlertTriangle } from 'lucide-react'
+import { ClipboardList, ListChecks, ArrowUpFromLine, Flame, PackageOpen, AlertTriangle } from 'lucide-react'
 import type { SafetyRecord, SafetyRecordType, AnyPermit } from '@/lib/safety-types'
-import { SAFETY_TYPE_LABELS, isPermit, isPTP, isIncident } from '@/lib/safety-types'
+import { SAFETY_TYPE_LABELS, isPermit, isPTP, isJHA, isIncident } from '@/lib/safety-types'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
+  'jha': ListChecks,
   'height-permit': ArrowUpFromLine,
   'hot-work-permit': Flame,
   'confined-space-permit': PackageOpen,
@@ -29,6 +30,7 @@ function relativeTime(iso: string): string {
 
 function title(r: SafetyRecord): string {
   if (isPTP(r)) return r.scopeOfWork || 'Pre-Task Plan'
+  if (isJHA(r)) return r.jobTitle || 'Job Hazard Analysis'
   if (isPermit(r)) {
     const p = r as AnyPermit
     if ('workDescription' in p) return p.workDescription || SAFETY_TYPE_LABELS[r.type]

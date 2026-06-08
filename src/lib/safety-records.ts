@@ -18,6 +18,7 @@ import type {
   SafetyRecordType,
   AnyPermit,
   PreTaskPlan,
+  JobHazardAnalysis,
   HeightPermit,
   HotWorkPermit,
   ConfinedSpacePermit,
@@ -33,6 +34,7 @@ const COUNTER_KEY = 'eqr-safety-counters'
 
 const ID_PREFIX: Record<SafetyRecordType, string> = {
   'ptp': 'PTP',
+  'jha': 'JHA',
   'height-permit': 'WAH',
   'hot-work-permit': 'HWP',
   'confined-space-permit': 'CSP',
@@ -282,6 +284,28 @@ export function createPreTaskPlan(input: PtpInput): PreTaskPlan {
   const record: PreTaskPlan = {
     id,
     type: 'ptp',
+    ...stamp,
+    createdAt: at,
+    syncStatus: typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'pending',
+    notionPageId: null,
+    events: [{ action: 'created', by: stamp.createdBy, byEmail: stamp.createdByEmail, at }],
+    ...input,
+  }
+  return createBase(record)
+}
+
+export type JhaInput = Omit<
+  JobHazardAnalysis,
+  'id' | 'type' | 'createdBy' | 'createdByEmail' | 'createdAt' | 'syncStatus' | 'notionPageId' | 'events'
+>
+
+export function createJobHazardAnalysis(input: JhaInput): JobHazardAnalysis {
+  const id = nextId('jha')
+  const stamp = identityStamp()
+  const at = nowIso()
+  const record: JobHazardAnalysis = {
+    id,
+    type: 'jha',
     ...stamp,
     createdAt: at,
     syncStatus: typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'pending',

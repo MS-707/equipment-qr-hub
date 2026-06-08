@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="760" viewBox="0 0 1040 760" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8b5cf6"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect width="1040" height="760" fill="#0a0a0a"/>
+  <text x="32" y="44" fill="#ffffff" font-size="24" font-weight="700">Sage EHS — Sync &amp; Submission Flow</text>
+  <text x="32" y="70" fill="#9ca3af" font-size="14">How a safety record travels from a field device to Notion, email, and Slack</text>
+
+  <!-- ───────────── DEVICE ───────────── -->
+  <rect x="32" y="100" width="300" height="380" rx="12" fill="#141414" stroke="#262626" stroke-width="1.5"/>
+  <text x="52" y="130" fill="#8b5cf6" font-size="13" font-weight="700" letter-spacing="1">FIELD DEVICE — iPhone / iPad PWA</text>
+
+  <rect x="52" y="148" width="260" height="92" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="64" y="170" fill="#e5e5e5" font-size="13" font-weight="600">Forms (offline-capable)</text>
+  <text x="64" y="192" fill="#9ca3af" font-size="12">• Pre-Task Plan   • Job Hazard Analysis</text>
+  <text x="64" y="210" fill="#9ca3af" font-size="12">• Height / Hot Work / Confined permits</text>
+  <text x="64" y="228" fill="#9ca3af" font-size="12">• Incident report   • Pre-Trip inspection</text>
+
+  <rect x="52" y="256" width="124" height="80" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="64" y="278" fill="#e5e5e5" font-size="12" font-weight="600">localStorage</text>
+  <text x="64" y="298" fill="#9ca3af" font-size="11">record JSON</text>
+  <text x="64" y="314" fill="#9ca3af" font-size="11">+ audit events</text>
+
+  <rect x="188" y="256" width="124" height="80" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="200" y="278" fill="#e5e5e5" font-size="12" font-weight="600">IndexedDB</text>
+  <text x="200" y="298" fill="#9ca3af" font-size="11">signature +</text>
+  <text x="200" y="314" fill="#9ca3af" font-size="11">photo blobs</text>
+
+  <rect x="52" y="352" width="260" height="108" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="64" y="374" fill="#e5e5e5" font-size="12" font-weight="600">syncStatus per record</text>
+  <circle cx="70" cy="394" r="5" fill="#f59e0b"/><text x="84" y="398" fill="#9ca3af" font-size="11">pending — created, not yet sent</text>
+  <circle cx="70" cy="414" r="5" fill="#6b7280"/><text x="84" y="418" fill="#9ca3af" font-size="11">offline — queued, no connection</text>
+  <circle cx="70" cy="434" r="5" fill="#ef4444"/><text x="84" y="438" fill="#9ca3af" font-size="11">failed — retries exhausted</text>
+  <circle cx="70" cy="452" r="5" fill="#22c55e"/><text x="84" y="456" fill="#9ca3af" font-size="11">synced — Notion page created</text>
+
+  <!-- ───────────── SERVER ───────────── -->
+  <rect x="420" y="100" width="300" height="240" rx="12" fill="#141414" stroke="#262626" stroke-width="1.5"/>
+  <text x="440" y="130" fill="#8b5cf6" font-size="13" font-weight="700" letter-spacing="1">SERVER — Next.js API (Vercel)</text>
+
+  <rect x="440" y="148" width="260" height="78" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="452" y="170" fill="#e5e5e5" font-size="13" font-weight="600">POST /api/safety/sync</text>
+  <text x="452" y="190" fill="#9ca3af" font-size="11">Fires on create &amp; on reconnect.</text>
+  <text x="452" y="206" fill="#9ca3af" font-size="11">Retry w/ backoff (1s,2s,4s). Pushes</text>
+  <text x="452" y="220" fill="#9ca3af" font-size="11">record to Notion. 503 → stays pending.</text>
+
+  <rect x="440" y="238" width="260" height="88" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="452" y="260" fill="#e5e5e5" font-size="13" font-weight="600">POST /api/safety/review/submit</text>
+  <text x="452" y="280" fill="#9ca3af" font-size="11">Fires on "Submit for EHS Review".</text>
+  <text x="452" y="296" fill="#9ca3af" font-size="11">Fans out to 3 channels independently:</text>
+  <text x="452" y="312" fill="#9ca3af" font-size="11">Notion · Email · Slack (any can be off).</text>
+
+  <!-- ───────────── DESTINATIONS ───────────── -->
+  <rect x="808" y="100" width="200" height="380" rx="12" fill="#141414" stroke="#262626" stroke-width="1.5"/>
+  <text x="828" y="130" fill="#8b5cf6" font-size="13" font-weight="700" letter-spacing="1">DESTINATIONS</text>
+
+  <rect x="828" y="148" width="160" height="92" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="840" y="170" fill="#e5e5e5" font-size="13" font-weight="600">Notion</text>
+  <text x="840" y="190" fill="#9ca3af" font-size="11">PTP + JHA DB</text>
+  <text x="840" y="206" fill="#9ca3af" font-size="11">Permits DB</text>
+  <text x="840" y="222" fill="#9ca3af" font-size="11">Incidents DB</text>
+
+  <rect x="828" y="256" width="160" height="92" rx="8" fill="#1c1c1c" stroke="#8b5cf6"/>
+  <text x="840" y="278" fill="#e5e5e5" font-size="13" font-weight="600">Email (Resend)</text>
+  <text x="840" y="298" fill="#c4b5fd" font-size="11">mark.starr</text>
+  <text x="840" y="314" fill="#c4b5fd" font-size="11">@mytra.ai</text>
+  <text x="840" y="334" fill="#9ca3af" font-size="10">full record as text</text>
+
+  <rect x="828" y="364" width="160" height="72" rx="8" fill="#1c1c1c" stroke="#333"/>
+  <text x="840" y="386" fill="#e5e5e5" font-size="13" font-weight="600">Slack</text>
+  <text x="840" y="406" fill="#9ca3af" font-size="11">#ehs channel</text>
+  <text x="840" y="422" fill="#9ca3af" font-size="11">webhook ping</text>
+
+  <!-- arrows device -> server -->
+  <line x1="332" y1="200" x2="438" y2="187" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="332" y1="290" x2="438" y2="282" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- arrows server -> destinations -->
+  <line x1="700" y1="187" x2="826" y2="194" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="700" y1="282" x2="826" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="700" y1="288" x2="826" y2="300" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="700" y1="300" x2="826" y2="392" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ───────────── WHAT'S NEEDED ───────────── -->
+  <rect x="32" y="512" width="976" height="216" rx="12" fill="#141414" stroke="#262626" stroke-width="1.5"/>
+  <text x="52" y="542" fill="#f59e0b" font-size="14" font-weight="700">WHY "3 records waiting to sync" — and what to set in Vercel to fix it</text>
+  <text x="52" y="566" fill="#9ca3af" font-size="12">Records stay "pending" because the server has no destination configured yet, so /api/safety/sync returns 503 and the device keeps them queued.</text>
+  <text x="52" y="584" fill="#9ca3af" font-size="12">Nothing is lost — they retry automatically. Set the env vars for whichever channel(s) you want, then redeploy. Each channel is independent.</text>
+
+  <text x="52" y="618" fill="#e5e5e5" font-size="12" font-weight="700">Email → your inbox (recommended, simplest)</text>
+  <text x="64" y="638" fill="#9ca3af" font-size="11.5">RESEND_API_KEY = your Resend key</text>
+  <text x="64" y="656" fill="#9ca3af" font-size="11.5">EHS_NOTIFY_EMAIL = mark.starr@mytra.ai  (default)</text>
+  <text x="64" y="674" fill="#9ca3af" font-size="11.5">EHS_NOTIFY_FROM = "Sage EHS &lt;sage@mytra.ai&gt;"  (verified domain)</text>
+  <text x="64" y="692" fill="#9ca3af" font-size="11.5">NEXT_PUBLIC_EHS_REVIEW = 1  (shows the Submit button)</text>
+
+  <text x="400" y="618" fill="#e5e5e5" font-size="12" font-weight="700">Notion → record archive (optional)</text>
+  <text x="412" y="638" fill="#9ca3af" font-size="11.5">NOTION_API_KEY</text>
+  <text x="412" y="656" fill="#9ca3af" font-size="11.5">NOTION_PTP_DB_ID  (also used for JHA)</text>
+  <text x="412" y="674" fill="#9ca3af" font-size="11.5">NOTION_PERMITS_DB_ID</text>
+  <text x="412" y="692" fill="#9ca3af" font-size="11.5">NOTION_INCIDENTS_DB_ID   ·   NOTION_JHA_DB_ID (opt.)</text>
+
+  <text x="730" y="618" fill="#e5e5e5" font-size="12" font-weight="700">Slack → team channel (optional)</text>
+  <text x="742" y="638" fill="#9ca3af" font-size="11.5">SLACK_EHS_WEBHOOK_URL</text>
+  <text x="742" y="668" fill="#6b7280" font-size="11">Set any one of these and submissions</text>
+  <text x="742" y="684" fill="#6b7280" font-size="11">are delivered there. Set none and the</text>
+  <text x="742" y="700" fill="#6b7280" font-size="11">submit button reports "not configured".</text>
+</svg>

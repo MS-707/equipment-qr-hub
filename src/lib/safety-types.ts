@@ -14,6 +14,7 @@ import type { Shift, InspectionSyncStatus } from '@/lib/types'
 
 export type SafetyRecordType =
   | 'ptp'
+  | 'jha'
   | 'height-permit'
   | 'hot-work-permit'
   | 'confined-space-permit'
@@ -116,6 +117,40 @@ export interface PreTaskPlan extends SafetyRecordBase {
   supervisorSignatureId: string | null
 }
 
+// ── Job Hazard Analysis (JHA) ────────────────────────────────
+// Distinct from the PTP: a JHA breaks a job into sequential task STEPS and
+// analyses the hazards/controls of each step. Built per the Mytra JHA program
+// (EHSPD017) and submitted to EHS for review before work begins.
+
+export interface JhaStep {
+  id: string
+  /** What is done in this step of the job. */
+  taskActivity: string
+  /** Hazard(s) identified for this step (free text; one per line). */
+  hazards: string
+  /** Risk rated BEFORE controls (severity × likelihood). */
+  riskLevel: RiskLevel
+  /** Controls / mitigations; note residual risk here. */
+  controls: string
+  /** Person responsible for the control (DRI). */
+  responsible: string
+  /** Provenance of the hazard/control content for this step. */
+  source?: 'sage' | 'manual'
+}
+
+export interface JobHazardAnalysis extends SafetyRecordBase {
+  type: 'jha'
+  jobTitle: string
+  dateOfAnalysis: string
+  department: string
+  referenceDoc: string
+  ppeRequired: string[]
+  steps: JhaStep[]
+  additionalNotes: string
+  signatures: CrewSignature[]
+  preparedBySignatureId: string | null
+}
+
 // ── Work-at-Height Permit ────────────────────────────────────
 
 export interface HeightPermit extends SafetyRecordBase {
@@ -212,6 +247,7 @@ export interface IncidentReport extends SafetyRecordBase {
 
 export type SafetyRecord =
   | PreTaskPlan
+  | JobHazardAnalysis
   | HeightPermit
   | HotWorkPermit
   | ConfinedSpacePermit
@@ -223,6 +259,10 @@ export type AnyPermit = HeightPermit | HotWorkPermit | ConfinedSpacePermit
 
 export function isPTP(r: SafetyRecord): r is PreTaskPlan {
   return r.type === 'ptp'
+}
+
+export function isJHA(r: SafetyRecord): r is JobHazardAnalysis {
+  return r.type === 'jha'
 }
 
 export function isPermit(r: SafetyRecord): r is AnyPermit {
@@ -241,6 +281,7 @@ export function isIncident(r: SafetyRecord): r is IncidentReport {
 
 export const SAFETY_TYPE_LABELS: Record<SafetyRecordType, string> = {
   'ptp': 'Pre-Task Plan',
+  'jha': 'Job Hazard Analysis',
   'height-permit': 'Work-at-Height Permit',
   'hot-work-permit': 'Hot Work Permit',
   'confined-space-permit': 'Confined Space Permit',
