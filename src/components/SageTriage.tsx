@@ -122,7 +122,7 @@ function SageTriageInner() {
       const faqAnswer = matchFaq(trimmed)
       const reply: ChatMessage = {
         role: 'assistant',
-        content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can navigate the app using the bottom tabs — Safety, Work Orders, and Equipment Directory are all available offline.",
+        content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can still use the app offline — the bottom tabs (Home, Pre-Trip, Assets, Orders) all work without a connection.",
       }
       const updated = [...next, reply]
       setMessages(updated)
