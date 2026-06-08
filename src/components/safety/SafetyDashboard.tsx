@@ -29,6 +29,7 @@ import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
+import PullToRefresh from '@/components/PullToRefresh'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -89,6 +90,7 @@ export default function SafetyDashboard() {
   }, [load])
 
   return (
+    <PullToRefresh onRefresh={load}>
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
       <div>
@@ -249,6 +251,7 @@ export default function SafetyDashboard() {
         )}
       </section>
     </div>
+    </PullToRefresh>
   )
 }
 

@@ -10,6 +10,7 @@ import {
 } from '@/lib/work-orders'
 import { getAllEquipment } from '@/lib/equipment'
 import WorkOrderCard from '@/components/WorkOrderCard'
+import PullToRefresh from '@/components/PullToRefresh'
 
 const STATUSES: WorkOrderStatus[] = ['Not Started', 'In Progress', 'Complete']
 const PM_TYPES: PmType[] = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual']
@@ -83,6 +84,7 @@ export default function WorkOrderBoard() {
   }
 
   return (
+    <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       {/* Filters */}
       <div className="no-print flex flex-wrap items-center gap-2">
@@ -204,5 +206,6 @@ export default function WorkOrderBoard() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   )
 }
