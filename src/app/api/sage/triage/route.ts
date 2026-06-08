@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { message?: string; history?: Message[] }
+  let body: { message?: string; context?: string; history?: Message[] }
   try {
     body = await req.json()
   } catch {
@@ -70,7 +70,9 @@ export async function POST(req: Request) {
   }
 
   const userName = session.user.name ?? session.user.email.split('@')[0]
-  const contextBlock = `\n\nCURRENT CONTEXT:\nWorker: ${userName}\nTime: ${timeOfDay()}`
+  const clientContext = typeof body.context === 'string' ? body.context.slice(0, 2000) : ''
+  const fallbackContext = `Worker: ${userName}\nTime: ${timeOfDay()}`
+  const contextBlock = `\n\nCURRENT CONTEXT:\n${clientContext || fallbackContext}`
   const systemPrompt = SYSTEM_PROMPT + contextBlock
 
   const history: Message[] = Array.isArray(body.history)
