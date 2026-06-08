@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   ClipboardCheck,
+  RotateCcw,
 } from 'lucide-react'
 import {
   EquipmentItem,
@@ -32,6 +33,9 @@ import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
+
+const DRAFT_KEY_PREFIX = 'draft:inspection:'
+const DRAFT_SAVE_DELAY = 2000
 
 // ── Shift options ──────────────────────────────────────────
 
@@ -291,6 +295,69 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
   // File input refs — managed here, not in ChecklistItemRow
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
+  // Draft persistence — save checklist progress to localStorage so a locked
+  // phone or browser crash mid-inspection doesn't wipe out answered items.
+  const draftKey = `${DRAFT_KEY_PREFIX}${equipment.itemNumber}`
+  const draftHandled = useRef(false)
+  const [draftRestored, setDraftRestored] = useState(false)
+
+  useEffect(() => {
+    if (draftHandled.current) return
+    draftHandled.current = true
+    try {
+      const raw = localStorage.getItem(draftKey)
+      if (!raw) return
+      const d = JSON.parse(raw)
+      // Only restore drafts that match the current checklist shape — equipment
+      // can change checklist type, which would make stale item ids meaningless.
+      const blank = buildBlankItems(checklistType)
+      const sameShape =
+        Array.isArray(d.items) &&
+        d.items.length === blank.length &&
+        d.items.every((it: InspectionItemResult, i: number) => it.id === blank[i].id)
+      const hasProgress = sameShape && d.items.some((it: InspectionItemResult) => it.result !== null)
+      if (hasProgress) {
+        setItems(d.items)
+        if (typeof d.inspectorName === 'string') setInspectorName(d.inspectorName)
+        if (typeof d.shift === 'string') setShift(d.shift as Shift)
+        if (typeof d.hourMeter === 'string') setHourMeter(d.hourMeter)
+        if (d.step === 'checklist') setStep('checklist')
+        setDraftRestored(true)
+      } else {
+        localStorage.removeItem(draftKey)
+      }
+    } catch {
+      localStorage.removeItem(draftKey)
+    }
+  }, [draftKey, checklistType])
+
+  useEffect(() => {
+    if (step === 'result') {
+      localStorage.removeItem(draftKey)
+      return
+    }
+    const timer = setTimeout(() => {
+      try {
+        const hasProgress = items.some((it) => it.result !== null)
+        if (!hasProgress) return
+        // Strip photo data URLs — they can be megabytes each and would blow
+        // the localStorage quota. Pass/fail/notes are what's costly to re-enter;
+        // photos can be re-added on the failed items after a restore.
+        const lean = items.map((it) => ({ ...it, photo: null }))
+        localStorage.setItem(draftKey, JSON.stringify({ step, inspectorName, shift, hourMeter, items: lean }))
+      } catch {}
+    }, DRAFT_SAVE_DELAY)
+    return () => clearTimeout(timer)
+  })
+
+  function discardDraft() {
+    localStorage.removeItem(draftKey)
+    setItems(buildBlankItems(checklistType))
+    setHourMeter('')
+    setStep('identify')
+    setDraftRestored(false)
+  }
+
   // Back-navigation guard during checklist
   useEffect(() => {
     if (step !== 'checklist') return
@@ -436,17 +503,35 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
   // ── Reset to new inspection ──────────────────────────────
 
   function handleReset() {
+    localStorage.removeItem(draftKey)
     setStep('identify')
     setItems(buildBlankItems(checklistType))
     setSubmittedRecord(null)
     setHourMeter('')
-    // Keep inspectorName and shift for convenience
+    setDraftRestored(false)
   }
 
   // ── RENDER ───────────────────────────────────────────────
 
   return (
     <div className="space-y-4">
+      {/* Draft restored notice */}
+      {draftRestored && step !== 'result' && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4 shrink-0" />
+            <span>In-progress inspection restored</span>
+          </div>
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center shrink-0"
+          >
+            Start fresh
+          </button>
+        </div>
+      )}
+
       {/* ── IDENTIFY STEP ──────────────────────────────────── */}
       {step === 'identify' && (
         <div className="animate-fadeIn space-y-4">
