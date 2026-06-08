@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban } from 'lucide-react'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
@@ -29,6 +29,7 @@ import {
   permitDisplayStatus,
 } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { shareRecord } from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
 import PermitStatusBadge from './PermitStatusBadge'
@@ -52,6 +53,7 @@ export default function RecordView({ id }: { id: string }) {
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
+  const [shared, setShared] = useState(false)
 
   useReviewPoller()
 
@@ -102,6 +104,13 @@ export default function RecordView({ id }: { id: string }) {
     revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
     setRevokeOpen(false)
   }
+  async function handleShare() {
+    const outcome = await shareRecord(r)
+    if (outcome === 'shared' || outcome === 'mailto') {
+      setShared(true)
+      setTimeout(() => setShared(false), 2500)
+    }
+  }
 
   const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
 
@@ -121,6 +130,14 @@ export default function RecordView({ id }: { id: string }) {
               <RefreshCw className="w-3.5 h-3.5" /> Retry sync
             </button>
           )}
+          <button
+            type="button"
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+          >
+            {shared ? <Check className="w-3.5 h-3.5 text-ok" /> : <Share2 className="w-3.5 h-3.5" />}
+            {shared ? 'Shared' : 'Share'}
+          </button>
           <button
             type="button"
             onClick={() => window.print()}
