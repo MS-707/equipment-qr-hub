@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { requireSession } from '@/lib/api-auth'
 
 const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
 
@@ -16,15 +17,16 @@ Base risk levels on OSHA severity × probability. Reference:
 Respond ONLY with a JSON object: { "hazards": [...] }
 No markdown, no explanation, no preamble. Just the JSON object.`
 
-// Allow the Claude call enough headroom; Vercel's default function timeout is
-// 10s which can cut off generation. 30s is well within Hobby plan limits.
 export const maxDuration = 30
 
 export async function POST(req: Request) {
+  const { error } = await requireSession()
+  if (error) return error
+
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
     return Response.json(
-      { hazards: [], error: 'ANTHROPIC_API_KEY not configured' },
+      { hazards: [], error: 'AI assistant not configured' },
       { status: 503 }
     )
   }
@@ -36,14 +38,16 @@ export async function POST(req: Request) {
     return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim()
+  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
   if (!scopeOfWork) {
     return Response.json({ hazards: [], error: 'No scope of work provided' })
   }
 
+  const location = (body.location ?? '').trim().slice(0, 200)
+
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
-    body.location ? `Location: ${body.location}` : null,
+    location ? `Location: ${location}` : null,
   ]
     .filter(Boolean)
     .join('\n')
@@ -60,7 +64,6 @@ export async function POST(req: Request) {
     const raw =
       message.content[0]?.type === 'text' ? message.content[0].text : ''
 
-    // Claude sometimes wraps JSON in markdown fences despite instructions
     const text = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
 
     const parsed = JSON.parse(text)

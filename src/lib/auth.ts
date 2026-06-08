@@ -8,9 +8,8 @@
  *
  * Domain restriction is enforced SERVER-SIDE (Google `hd` is only a UI hint).
  *
- * Dev/demo sign-in: enabled when ALLOW_DEV_LOGIN=1, or automatically when Google
- * isn't configured yet, so the Safety Hub is demoable out of the box. Turn it off
- * in production by configuring Google AND setting ALLOW_DEV_LOGIN=0.
+ * Dev/demo sign-in: enabled ONLY when ALLOW_DEV_LOGIN=1 AND NODE_ENV !== production.
+ * Never available in production builds regardless of env vars.
  */
 
 import type { NextAuthOptions } from 'next-auth'
@@ -29,8 +28,8 @@ export function emailAllowed(email?: string | null): boolean {
 }
 
 const hasGoogle = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
-const allowDevLogin =
-  process.env.ALLOW_DEV_LOGIN === '1' || (!hasGoogle && process.env.ALLOW_DEV_LOGIN !== '0')
+const isProduction = process.env.NODE_ENV === 'production'
+const allowDevLogin = process.env.ALLOW_DEV_LOGIN === '1' && !isProduction
 
 const providers: NextAuthOptions['providers'] = []
 
@@ -65,14 +64,14 @@ if (allowDevLogin) {
 
 export const authOptions: NextAuthOptions = {
   providers,
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 12 * 60 * 60 },
   callbacks: {
     async signIn({ account, profile }) {
       // Google: enforce verified email + allowed domain.
       // Credentials: already validated in authorize().
       if (account?.provider === 'google') {
         const p = profile as { email?: string; email_verified?: boolean } | undefined
-        return emailAllowed(p?.email) && p?.email_verified !== false
+        return emailAllowed(p?.email) && p?.email_verified === true
       }
       return true
     },

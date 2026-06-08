@@ -208,18 +208,18 @@ export default function ConfinedSpaceForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
           <label className={labelCls}>Space description</label>
-          <textarea rows={2} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -255,7 +255,7 @@ export default function ConfinedSpaceForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Tested by</label>
-            <input type="text" value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={100} value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Tested at</label>
@@ -280,6 +280,7 @@ export default function ConfinedSpaceForm() {
           <input
             type="text"
             value={attendantName}
+            maxLength={100}
             onChange={(e) => setAttendantName(e.target.value)}
             placeholder="Name"
             className={`${inputCls} ${!attendantName.trim() ? 'border-warn/60' : ''}`}
@@ -287,7 +288,7 @@ export default function ConfinedSpaceForm() {
         </div>
         <div>
           <label className={labelCls}>Rescue plan</label>
-          <textarea rows={2} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services" className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services" className={`${inputCls} resize-none`} />
         </div>
       </div>
 

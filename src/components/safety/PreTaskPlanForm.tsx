@@ -249,17 +249,17 @@ export default function PreTaskPlanForm() {
 
         <div>
           <label htmlFor="ptp-project" className={labelCls}>Project / Structure</label>
-          <input id="ptp-project" type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+          <input id="ptp-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
           {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
         </div>
         <div>
           <label htmlFor="ptp-location" className={labelCls}>Location / Area</label>
-          <input id="ptp-location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Level 3, grid C4" className={inputCls} />
+          <input id="ptp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Level 3, grid C4" className={inputCls} />
           {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
         </div>
         <div>
           <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
-          <textarea id="ptp-scope" rows={2} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the crew building/commissioning today?" className={`${inputCls} resize-none`} />
+          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the crew building/commissioning today?" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -285,26 +285,26 @@ export default function PreTaskPlanForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Site Conditions & Emergency</h4>
         <div>
           <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point</label>
-          <input id="ptp-muster" type="text" value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} className={inputCls} />
+          <input id="ptp-muster" type="text" maxLength={200} value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} className={inputCls} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="ptp-hospital" className={labelCls}>Nearest hospital</label>
-            <input id="ptp-hospital" type="text" value={hospital} onChange={(e) => setHospital(e.target.value)} className={inputCls} />
+            <input id="ptp-hospital" type="text" maxLength={200} value={hospital} onChange={(e) => setHospital(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label htmlFor="ptp-firstaid" className={labelCls}>First aid / eyewash</label>
-            <input id="ptp-firstaid" type="text" value={firstAid} onChange={(e) => setFirstAid(e.target.value)} className={inputCls} />
+            <input id="ptp-firstaid" type="text" maxLength={200} value={firstAid} onChange={(e) => setFirstAid(e.target.value)} className={inputCls} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="ptp-weather" className={labelCls}>Weather</label>
-            <input id="ptp-weather" type="text" value={weather} onChange={(e) => setWeather(e.target.value)} placeholder="Conditions" className={inputCls} />
+            <input id="ptp-weather" type="text" maxLength={100} value={weather} onChange={(e) => setWeather(e.target.value)} placeholder="Conditions" className={inputCls} />
           </div>
           <div>
             <label htmlFor="ptp-wind" className={labelCls}>Wind speed</label>
-            <input id="ptp-wind" type="text" inputMode="decimal" value={wind} onChange={(e) => setWind(e.target.value)} placeholder="For MEWP / height" className={inputCls} />
+            <input id="ptp-wind" type="text" inputMode="decimal" maxLength={50} value={wind} onChange={(e) => setWind(e.target.value)} placeholder="For MEWP / height" className={inputCls} />
           </div>
         </div>
       </section>
@@ -334,11 +334,11 @@ export default function PreTaskPlanForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>
         <div>
           <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
-          <input id="ptp-tbt-topic" type="text" value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
+          <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
         </div>
         <div>
           <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
-          <textarea id="ptp-tbt-notes" rows={2} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </section>
 

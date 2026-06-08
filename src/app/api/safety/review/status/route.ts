@@ -1,3 +1,5 @@
+import { requireSession } from '@/lib/api-auth'
+
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
 
@@ -14,6 +16,9 @@ interface ReviewResult {
 }
 
 export async function GET(req: Request) {
+  const { error } = await requireSession()
+  if (error) return error
+
   const notionKey = process.env.NOTION_API_KEY
   if (!notionKey) {
     return Response.json({ decisions: {} })

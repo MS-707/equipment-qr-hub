@@ -254,12 +254,12 @@ export default function IncidentReportForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
@@ -269,11 +269,11 @@ export default function IncidentReportForm() {
         </div>
         <div>
           <label className={labelCls}>What happened?</label>
-          <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
+          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Immediate actions taken</label>
-          <textarea rows={2} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -284,6 +284,7 @@ export default function IncidentReportForm() {
           <input
             type="text"
             value={witnessInput}
+            maxLength={100}
             onChange={(e) => setWitnessInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -355,11 +356,11 @@ export default function IncidentReportForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label className={labelCls}>Root cause</label>
-          <textarea rows={2} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Corrective actions</label>
-          <textarea rows={2} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </section>
 
@@ -368,7 +369,7 @@ export default function IncidentReportForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
           <label className={labelCls}>Name</label>
-          <input type="text" value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
+          <input type="text" maxLength={100} value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Signature (optional)</label>

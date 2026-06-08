@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, Loader2, WifiOff } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
-import { buildSageContext, contextToPrompt } from '@/lib/sage-context'
 import { matchFaq } from '@/lib/sage-faq'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
@@ -53,7 +51,6 @@ export default function SageTriage() {
 }
 
 function SageTriageInner() {
-  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -122,8 +119,6 @@ function SageTriageInner() {
     }
 
     try {
-      const identity = getCurrentIdentity()
-      const ctx = buildSageContext(pathname, identity?.name ?? null)
       const ctrl = new AbortController()
       const timer = setTimeout(() => ctrl.abort(), 28000)
 
@@ -132,7 +127,6 @@ function SageTriageInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
-          context: contextToPrompt(ctx),
           history: messages.slice(-10),
         }),
         signal: ctrl.signal,
@@ -161,7 +155,7 @@ function SageTriageInner() {
     } finally {
       setLoading(false)
     }
-  }, [messages, loading, online, pathname])
+  }, [messages, loading, online])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
