@@ -5,6 +5,7 @@ import NavHeader from '@/components/NavHeader'
 import BottomTabBar from '@/components/BottomTabBar'
 import SageTriage from '@/components/SageTriage'
 import OnboardingTour from '@/components/onboarding/OnboardingTour'
+import ModuleTourEngine from '@/components/onboarding/ModuleTourEngine'
 import AuthProvider from '@/components/providers/AuthProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
@@ -54,6 +55,7 @@ export default function RootLayout({
           <BottomTabBar />
           <SageTriage />
           <OnboardingTour />
+          <ModuleTourEngine />
         </AuthProvider>
       </body>
     </html>
