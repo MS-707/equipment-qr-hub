@@ -57,8 +57,11 @@ export async function POST(req: Request) {
       messages: [{ role: 'user', content: userMessage }],
     })
 
-    const text =
+    const raw =
       message.content[0]?.type === 'text' ? message.content[0].text : ''
+
+    // Claude sometimes wraps JSON in markdown fences despite instructions
+    const text = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
 
     const parsed = JSON.parse(text)
     const hazards = Array.isArray(parsed?.hazards) ? parsed.hazards : []
@@ -74,8 +77,11 @@ export async function POST(req: Request) {
 
     return Response.json({ hazards: valid })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[sage] suggest-hazards failed:', msg)
-    return Response.json({ hazards: [], error: msg }, { status: 502 })
+    console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
+    const isSyntax = err instanceof SyntaxError
+    return Response.json(
+      { hazards: [], error: isSyntax ? 'Sage returned an unexpected format — try again' : 'Sage is temporarily unavailable' },
+      { status: 502 }
+    )
   }
 }
