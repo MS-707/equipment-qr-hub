@@ -1,9 +1,11 @@
-import { spawnSync } from "node:child_process";
 import withSerwistInit from "@serwist/next";
 
-const revision =
-  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ||
-  crypto.randomUUID();
+let revision;
+try {
+  const { spawnSync } = await import("node:child_process");
+  revision = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim();
+} catch { /* git unavailable in build env */ }
+if (!revision) revision = crypto.randomUUID();
 
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
