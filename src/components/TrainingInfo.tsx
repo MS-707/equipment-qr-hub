@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Users, BookOpen, Download, ExternalLink, FileText, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import { EquipmentItem } from '@/lib/types'
+import { stripRegCitations } from '@/lib/strip-citations'
 
 interface TrainingInfoProps {
   equipment: EquipmentItem
@@ -59,7 +60,7 @@ export default function TrainingInfo({ equipment }: TrainingInfoProps) {
             <div className="flex items-start gap-3">
               <BookOpen className="w-5 h-5 text-fg-3 mt-0.5 shrink-0" />
               <p className="text-fg-2 text-sm leading-relaxed">
-                {equipment.oemManual}
+                {stripRegCitations(equipment.oemManual)}
               </p>
             </div>
 

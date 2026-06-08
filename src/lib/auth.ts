@@ -30,6 +30,7 @@ export function emailAllowed(email?: string | null): boolean {
 const hasGoogle = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 const isProduction = process.env.NODE_ENV === 'production'
 const allowDevLogin = process.env.ALLOW_DEV_LOGIN === '1' && !isProduction
+const allowEmailLogin = process.env.ALLOW_EMAIL_LOGIN === '1'
 
 const providers: NextAuthOptions['providers'] = []
 
@@ -43,7 +44,7 @@ if (hasGoogle) {
   )
 }
 
-if (allowDevLogin) {
+if (allowDevLogin || allowEmailLogin) {
   providers.push(
     Credentials({
       id: 'dev',
@@ -94,4 +95,4 @@ export const authOptions: NextAuthOptions = {
 }
 
 /** Exposed so the client can tailor the sign-in screen (Google button vs dev form). */
-export const authConfigFlags = { hasGoogle, allowDevLogin }
+export const authConfigFlags = { hasGoogle, allowDevLogin: allowDevLogin || allowEmailLogin }

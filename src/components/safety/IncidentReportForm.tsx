@@ -242,10 +242,10 @@ export default function IncidentReportForm() {
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
             <div className="text-xs text-warn leading-relaxed">
-              Serious injuries must be reported to Cal/OSHA within 8 hours (T8 §342 / LC §6409.1).
+              Serious injuries must be reported to your safety officer promptly. Check your local reporting requirements.
               <label className="flex items-center gap-2 mt-1.5 text-fg-2">
                 <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-                Reported to Cal/OSHA
+                Reported to authorities
               </label>
             </div>
           </div>
@@ -336,7 +336,7 @@ export default function IncidentReportForm() {
             className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
-            <span className="text-[11px]">Add</span>
+            <span className="text-xs">Add</span>
           </button>
         </div>
         <input

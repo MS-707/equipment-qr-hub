@@ -38,3 +38,6 @@ next-env.d.ts
 # serwist service worker (build artifact)
 public/sw.js
 public/sw.js.map
+
+# Sage eval harness generated output
+evals/sage/out/

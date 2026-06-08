@@ -10,7 +10,6 @@ import LastUsedChip from './LastUsedChip'
 import { getCurrentIdentity } from '@/lib/identity'
 import {
   buildPermitItems,
-  getPermitChecklistDef,
   HEIGHT_ACCESS_METHODS,
   HEIGHT_FALL_PROTECTION,
 } from '@/data/safety-checklists'
@@ -146,8 +145,6 @@ export default function HeightPermitForm() {
     )
   }
 
-  const regRef = getPermitChecklistDef('height').regRef
-
   return (
     <div className="animate-fadeIn space-y-4">
       {hasDraft && (
@@ -224,7 +221,6 @@ export default function HeightPermitForm() {
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">

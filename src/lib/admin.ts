@@ -1,0 +1,23 @@
+/**
+ * Admin role check — server and client.
+ *
+ * Admin users can change equipment status, manage authorized users,
+ * delete work orders, record PM completions, and access /admin routes.
+ * Regular workers can view everything, submit inspections, and create
+ * safety records, but cannot modify system configuration.
+ *
+ * Admin list is configured via ADMIN_EMAILS env var (comma-separated).
+ * Falls back to a hard-coded default for the primary admin.
+ */
+
+const ADMIN_EMAILS: Set<string> = new Set(
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? 'mark.starr@mytra.ai')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+)
+
+export function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false
+  return ADMIN_EMAILS.has(email.trim().toLowerCase())
+}
