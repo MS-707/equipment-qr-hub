@@ -207,9 +207,19 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         )}
 
         {!hasGoogle && !hasDev && (
-          <p className="text-sm text-fg-2">
-            No sign-in method is configured. Set Google OAuth env vars or enable dev login.
-          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-fg-2">
+              Sign-in is not configured yet. Ask your administrator to set up Google OAuth
+              or enable development login.
+            </p>
+            <a
+              href="/equipment"
+              className="block w-full py-2.5 rounded-lg text-sm font-medium text-center
+                         border border-mytra-border text-fg-2 hover:bg-mytra-card-hover transition-colors"
+            >
+              Browse equipment without signing in
+            </a>
+          </div>
         )}
       </div>
     </Centered>
