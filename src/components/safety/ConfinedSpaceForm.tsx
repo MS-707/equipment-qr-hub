@@ -51,6 +51,7 @@ export default function ConfinedSpaceForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
@@ -94,29 +95,36 @@ export default function ConfinedSpaceForm() {
 
   function submit() {
     if (!canSubmit) return
-    const record = createConfinedSpacePermit({
-      projectName,
-      location,
-      spaceDescription,
-      hazards,
-      atmospheric: {
-        oxygenPct: oxygen,
-        lelPct: lel,
-        coPpm: co,
-        h2sPpm: h2s,
-        testedBy,
-        testedAt: toIso(testedAt),
-      },
-      continuousMonitoring,
-      ventilationInUse,
-      rescuePlan,
-      checklist,
-      entrySupervisorSignatureId: supervisorId,
-      attendantName,
-      entrants: sigData.signatures,
-      validFrom: toIso(validFrom),
-      validUntil: toIso(validUntil),
-    })
+    setSaveError(null)
+    let record: ReturnType<typeof createConfinedSpacePermit>
+    try {
+      record = createConfinedSpacePermit({
+        projectName,
+        location,
+        spaceDescription,
+        hazards,
+        atmospheric: {
+          oxygenPct: oxygen,
+          lelPct: lel,
+          coPpm: co,
+          h2sPpm: h2s,
+          testedBy,
+          testedAt: toIso(testedAt),
+        },
+        continuousMonitoring,
+        ventilationInUse,
+        rescuePlan,
+        checklist,
+        entrySupervisorSignatureId: supervisorId,
+        attendantName,
+        entrants: sigData.signatures,
+        validFrom: toIso(validFrom),
+        validUntil: toIso(validUntil),
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)

@@ -53,6 +53,7 @@ export default function PreTaskPlanForm() {
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
@@ -88,25 +89,32 @@ export default function PreTaskPlanForm() {
 
   function handleSubmit() {
     if (!canSubmit) return
-    const record = createPreTaskPlan({
-      date,
-      shift,
-      projectName,
-      location,
-      scopeOfWork,
-      hazards,
-      ppeRequired: ppe,
-      emergencyMusterPoint: musterPoint,
-      nearestHospital: hospital,
-      firstAidEyewashLocation: firstAid,
-      weatherNotes: weather,
-      windSpeed: wind,
-      heatIllnessPlan: heat,
-      toolboxTalkTopic: toolboxTopic,
-      toolboxTalkNotes: toolboxNotes,
-      crewSignatures: sigData.signatures,
-      supervisorSignatureId: supervisorId,
-    })
+    setSaveError(null)
+    let record: ReturnType<typeof createPreTaskPlan>
+    try {
+      record = createPreTaskPlan({
+        date,
+        shift,
+        projectName,
+        location,
+        scopeOfWork,
+        hazards,
+        ppeRequired: ppe,
+        emergencyMusterPoint: musterPoint,
+        nearestHospital: hospital,
+        firstAidEyewashLocation: firstAid,
+        weatherNotes: weather,
+        windSpeed: wind,
+        heatIllnessPlan: heat,
+        toolboxTalkTopic: toolboxTopic,
+        toolboxTalkNotes: toolboxNotes,
+        crewSignatures: sigData.signatures,
+        supervisorSignatureId: supervisorId,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
 
     // Persist signature images to IndexedDB, then attempt sync (both fire-and-forget).
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
@@ -199,6 +207,12 @@ export default function PreTaskPlanForm() {
           />
         </div>
 
+        {saveError && (
+          <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+            <span className="font-semibold shrink-0">Save failed:</span>
+            <span>{saveError}</span>
+          </div>
+        )}
         <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
           <button
             type="button"
