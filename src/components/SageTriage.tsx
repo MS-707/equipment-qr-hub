@@ -187,7 +187,7 @@ function SageTriageInner() {
     <>
       {/* FAB */}
       {!open && (
-        <div className="no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] flex items-center gap-2">
+        <div data-tour="sage-fab" className="no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] flex items-center gap-2">
           {showPulse && (
             <button
               onClick={handleOpen}

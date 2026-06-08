@@ -29,6 +29,7 @@ export default function BottomTabBar() {
             <Link
               key={href}
               href={href}
+              data-tour-tab={href}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[49px]
                          transition-colors duration-200 ${
                 isActive ? 'text-mytra-purple' : 'text-fg-3'
