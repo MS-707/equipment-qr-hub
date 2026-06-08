@@ -18,9 +18,6 @@ interface SageAssistProps {
   onAddHazards: (hazards: HazardEntry[]) => void
 }
 
-// DORMANT BY DEFAULT. Renders nothing unless the public flag is set. The server
-// route additionally requires ANTHROPIC_API_KEY, so this fails closed to manual
-// entry. See spec §13 (Sage).
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 
 export default function SageAssist({ scopeOfWork, location, onAddHazards }: SageAssistProps) {
