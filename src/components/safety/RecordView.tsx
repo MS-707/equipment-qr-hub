@@ -6,6 +6,7 @@ import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check } from 'luci
 import type {
   SafetyRecord,
   PreTaskPlan,
+  JobHazardAnalysis,
   AnyPermit,
   HeightPermit,
   HotWorkPermit,
@@ -15,7 +16,10 @@ import type {
 } from '@/lib/safety-types'
 import {
   SAFETY_TYPE_LABELS,
+  RISK_COLORS,
+  RISK_LABELS,
   isPTP,
+  isJHA,
   isPermit,
   isIncident,
   INCIDENT_SEVERITY_COLORS,
@@ -186,6 +190,7 @@ export default function RecordView({ id }: { id: string }) {
 
       {/* Type-specific body */}
       {isPTP(r) && <PtpBody ptp={r} sigImages={sigImages} />}
+      {isJHA(r) && <JhaBody jha={r} />}
       {isPermit(r) && <PermitBody permit={r as AnyPermit} sigImages={sigImages} />}
       {isIncident(r) && <IncidentBody incident={r} images={sigImages} />}
 
@@ -367,6 +372,72 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
       <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
+    </>
+  )
+}
+
+function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
+  return (
+    <>
+      <Section title="Job / task">
+        <p className="text-sm text-fg">{jha.jobTitle || '—'}</p>
+        <dl className="grid grid-cols-2 gap-2 mt-2 text-sm">
+          <Field label="Date of analysis" value={jha.dateOfAnalysis} />
+          {jha.department && <Field label="Department / Team" value={jha.department} />}
+          {jha.referenceDoc && <Field label="Reference doc" value={jha.referenceDoc} />}
+        </dl>
+      </Section>
+
+      {jha.ppeRequired.length > 0 && (
+        <Section title="PPE required">
+          <div className="flex flex-wrap gap-1.5">
+            {jha.ppeRequired.map((id) => (
+              <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">
+                {ppeLabel(id)}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      <Section title={`Hazard analysis (${jha.steps.length} steps)`}>
+        <ol className="space-y-3">
+          {jha.steps.map((s, i) => (
+            <li key={s.id} className="border-l-2 border-mytra-border pl-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-fg-3">Step {i + 1}</span>
+                <span
+                  className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                  style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.riskLevel]} 12%, transparent)` }}
+                >
+                  {RISK_LABELS[s.riskLevel]}
+                </span>
+                {s.source === 'sage' && <span className="text-xs text-mytra-purple">✨ Sage</span>}
+              </div>
+              <p className="text-sm text-fg mt-1">{s.taskActivity}</p>
+              {s.hazards && (
+                <p className="text-xs text-fg-2 mt-1 whitespace-pre-line">
+                  <span className="text-fg-3 uppercase tracking-wider">Hazards: </span>{s.hazards}
+                </p>
+              )}
+              {s.controls && (
+                <p className="text-xs text-fg-2 mt-0.5 whitespace-pre-line">
+                  <span className="text-fg-3 uppercase tracking-wider">Controls: </span>{s.controls}
+                </p>
+              )}
+              {s.responsible && (
+                <p className="text-xs text-fg-3 mt-0.5">Responsible: {s.responsible}</p>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {jha.additionalNotes && (
+        <Section title="Additional notes / conditions">
+          <p className="text-sm text-fg-2 whitespace-pre-line">{jha.additionalNotes}</p>
+        </Section>
+      )}
     </>
   )
 }

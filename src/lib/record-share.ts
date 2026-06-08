@@ -9,6 +9,7 @@
 import type {
   SafetyRecord,
   PreTaskPlan,
+  JobHazardAnalysis,
   AnyPermit,
   HeightPermit,
   HotWorkPermit,
@@ -20,6 +21,7 @@ import {
   SAFETY_TYPE_LABELS,
   RISK_LABELS,
   isPTP,
+  isJHA,
   isPermit,
   isIncident,
 } from '@/lib/safety-types'
@@ -90,6 +92,34 @@ function ptpBody(p: PreTaskPlan): string[] {
   lines.push('')
   lines.push(`CREW SIGN-ON (${p.crewSignatures.length})`)
   lines.push(...sigLines(p.crewSignatures))
+  return lines
+}
+
+function jhaBody(j: JobHazardAnalysis): string[] {
+  const lines: string[] = []
+  lines.push(`Job / task: ${j.jobTitle || '—'}`)
+  lines.push(`Date of analysis: ${j.dateOfAnalysis}`)
+  if (j.department) lines.push(`Department / team: ${j.department}`)
+  if (j.referenceDoc) lines.push(`Reference doc: ${j.referenceDoc}`)
+  if (j.ppeRequired.length > 0) {
+    lines.push('')
+    lines.push('PPE REQUIRED')
+    lines.push('  ' + j.ppeRequired.map(ppeLabel).join(', '))
+  }
+  lines.push('')
+  lines.push(`HAZARD ANALYSIS (${j.steps.length} steps)`)
+  j.steps.forEach((s, i) => {
+    lines.push('')
+    lines.push(`  Step ${i + 1} [${RISK_LABELS[s.riskLevel]} risk]: ${s.taskActivity}`)
+    if (s.hazards) lines.push(`    Hazards: ${s.hazards.replace(/\n/g, '; ')}`)
+    if (s.controls) lines.push(`    Controls: ${s.controls.replace(/\n/g, '; ')}`)
+    if (s.responsible) lines.push(`    Responsible: ${s.responsible}`)
+  })
+  if (j.additionalNotes) {
+    lines.push('')
+    lines.push('ADDITIONAL NOTES')
+    lines.push(j.additionalNotes)
+  }
   return lines
 }
 
@@ -190,6 +220,7 @@ export function buildRecordText(r: SafetyRecord): string {
 
   let body: string[] = []
   if (isPTP(r)) body = ptpBody(r)
+  else if (isJHA(r)) body = jhaBody(r)
   else if (isPermit(r)) body = permitBody(r as AnyPermit)
   else if (isIncident(r)) body = incidentBody(r)
 

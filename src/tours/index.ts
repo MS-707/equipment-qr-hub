@@ -15,6 +15,7 @@ import { dashboardTour } from './dashboard.tour'
 import { equipmentDirTour } from './equipment-dir.tour'
 import { equipmentDetailTour } from './equipment-detail.tour'
 import { ptpTour } from './ptp.tour'
+import { jhaTour } from './jha.tour'
 import { inspectionsTour } from './inspections.tour'
 import { workOrdersTour } from './work-orders.tour'
 
@@ -23,6 +24,7 @@ export const MODULE_TOURS: ModuleTour[] = [
   equipmentDirTour,
   equipmentDetailTour,
   ptpTour,
+  jhaTour,
   inspectionsTour,
   workOrdersTour,
 ]

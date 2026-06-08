@@ -12,6 +12,7 @@ import PullToRefresh from '@/components/PullToRefresh'
 const TYPE_FILTERS: { key: SafetyRecordType | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'ptp', label: 'PTP' },
+  { key: 'jha', label: 'JHA' },
   { key: 'height-permit', label: 'Height' },
   { key: 'hot-work-permit', label: 'Hot Work' },
   { key: 'confined-space-permit', label: 'Confined' },
