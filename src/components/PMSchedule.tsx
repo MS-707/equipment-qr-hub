@@ -3,19 +3,8 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem, PmType } from '@/lib/types'
+import { stripRegCitations } from '@/lib/strip-citations'
 import CreateWorkOrderButton from '@/components/CreateWorkOrderButton'
-
-function stripRegCitations(text: string): string {
-  return text
-    .replace(/\b(per|per\s+)?(OSHA|Cal[\-\/]?OSHA|Cal\/OSHA)\b[\s\d\w./§\-]*/gi, '')
-    .replace(/\bper\b\s+\d[\d.\-]*/g, '')
-    .replace(/\b(29\s*CFR|T8\s*CCR|CCR|CFR|NFPA|ANSI|ASME)\b[\s\d.§/\-]*/gi, '')
-    .replace(/§\s*\d[\d.\-]*/g, '')
-    .replace(/\([\s,;]*\)/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .replace(/[\s,;.\-]+([.;])/g, '$1')
-    .trim()
-}
 
 interface FrequencyConfig {
   key: keyof EquipmentItem
