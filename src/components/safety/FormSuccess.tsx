@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, WifiOff, Send, Loader2 } from 'lucide-react'
 
@@ -18,6 +18,9 @@ interface FormSuccessProps {
 export default function FormSuccess({ id, title, message, onNew, newLabel = 'New', offline, onSubmitForReview, reviewAutoSubmitted }: FormSuccessProps) {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewDone, setReviewDone] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { headingRef.current?.focus() }, [])
 
   async function handleReviewSubmit() {
     if (!onSubmitForReview) return
@@ -36,7 +39,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
     <div className="animate-fadeIn space-y-4">
       <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-ok mb-1">{title}</h3>
+        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">{title}</h3>
         <p className="text-sm text-ok">
           {message} <span className="font-mono text-fg">{id}</span>.
         </p>

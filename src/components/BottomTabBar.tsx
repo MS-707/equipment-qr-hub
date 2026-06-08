@@ -40,7 +40,7 @@ export default function BottomTabBar() {
                 <Icon className="w-6 h-6" />
                 {badgeCount > 0 && (
                   <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-[11px] font-bold rounded-full bg-mytra-purple text-white">
+                                   px-1 text-xs font-bold rounded-full bg-mytra-purple text-white">
                     {badgeCount}
                   </span>
                 )}
