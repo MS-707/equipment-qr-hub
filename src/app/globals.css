@@ -230,4 +230,99 @@ input[type="datetime-local"] {
     page-break-inside: avoid;
     break-inside: avoid;
   }
+
+  /* ── Formal document layout (matches Mytra PTP / JHA paper template) ── */
+
+  /* Solid black borders read as an official form, not a web card. */
+  section,
+  [class*="shadow-card"] {
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    padding: 10px 12px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Section heading bar, like the gray banner rows on the paper form. */
+  section > h2:first-child,
+  .print-section-title {
+    background-color: #e8e8e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: -10px -12px 8px -12px !important;
+    padding: 4px 12px !important;
+    border-bottom: 1px solid #000000 !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Document title block at the top of a printed record. */
+  .print-doc-header {
+    border: 2px solid #000000 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin-bottom: 10px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .print-doc-title {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 6px 12px !important;
+    font-size: 14pt !important;
+    font-weight: 700 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .print-doc-title * {
+    color: #ffffff !important;
+  }
+  .print-doc-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .print-doc-meta > div {
+    border: 0.5px solid #000000;
+    padding: 4px 8px;
+    font-size: 9.5pt;
+  }
+  .print-doc-meta dt {
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #444444 !important;
+  }
+
+  /* Signature / approval lines for the printed authorization block. */
+  .print-sig-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 28px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .print-sig-line {
+    border-top: 1px solid #000000;
+    padding-top: 3px;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #333333 !important;
+  }
+
+  /* Elements that should appear only on the printed page. */
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Hide print-only elements on screen. */
+.print-only {
+  display: none;
 }

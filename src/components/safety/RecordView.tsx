@@ -148,8 +148,24 @@ export default function RecordView({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Header */}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      {/* Print-only formal document header (matches the paper template) */}
+      <div className="print-only print-doc-header">
+        <div className="print-doc-title">
+          <span>{SAFETY_TYPE_LABELS[r.type]}</span>
+          <span style={{ fontSize: '10pt' }}>{r.id}</span>
+        </div>
+        <dl className="print-doc-meta">
+          <div><dt>Project / Build</dt><dd>{r.projectName || '—'}</dd></div>
+          <div><dt>Location / Area</dt><dd>{r.location || '—'}</dd></div>
+          {isPTP(r) && <div><dt>Date</dt><dd>{r.date} · {r.shift} shift</dd></div>}
+          <div><dt>Prepared by</dt><dd>{r.createdBy}</dd></div>
+          <div><dt>Created</dt><dd>{fmt(r.createdAt)}</dd></div>
+          {r.reviewStatus && <div><dt>EHS review</dt><dd>{r.reviewStatus}</dd></div>}
+        </dl>
+      </div>
+
+      {/* Header — screen only; print uses the formal header above */}
+      <div className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-mono text-fg-3">{r.id}</span>
           <div className="flex items-center gap-1.5">
@@ -215,8 +231,26 @@ export default function RecordView({ id }: { id: string }) {
         onCancel={() => setRevokeOpen(false)}
       />
 
+      {/* Print-only authorization block (matches template Section 5/7) */}
+      <div className="print-only">
+        <p style={{ fontSize: '8.5pt', marginBottom: '4px' }}>
+          By signing, each party confirms they have reviewed this record, understand the identified
+          hazards and controls, and agree the work may proceed under the conditions described.
+        </p>
+        <div className="print-sig-row">
+          <div className="print-sig-line">{isPTP(r) ? 'Build Lead' : 'Prepared By'} — Printed Name &amp; Signature</div>
+          <div className="print-sig-line">Title / Role</div>
+          <div className="print-sig-line">Date</div>
+        </div>
+        <div className="print-sig-row">
+          <div className="print-sig-line">Mytra Representative / EHS — Printed Name &amp; Signature</div>
+          <div className="print-sig-line">Title / Role</div>
+          <div className="print-sig-line">Date</div>
+        </div>
+      </div>
+
       {/* History */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
           {r.events.map((e, i) => (
