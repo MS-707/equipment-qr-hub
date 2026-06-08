@@ -5,6 +5,18 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem, PmType } from '@/lib/types'
 import CreateWorkOrderButton from '@/components/CreateWorkOrderButton'
 
+function stripRegCitations(text: string): string {
+  return text
+    .replace(/\b(per|per\s+)?(OSHA|Cal[\-\/]?OSHA|Cal\/OSHA)\b[\s\d\w./§\-]*/gi, '')
+    .replace(/\bper\b\s+\d[\d.\-]*/g, '')
+    .replace(/\b(29\s*CFR|T8\s*CCR|CCR|CFR|NFPA|ANSI|ASME)\b[\s\d.§/\-]*/gi, '')
+    .replace(/§\s*\d[\d.\-]*/g, '')
+    .replace(/\([\s,;]*\)/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[\s,;.\-]+([.;])/g, '$1')
+    .trim()
+}
+
 interface FrequencyConfig {
   key: keyof EquipmentItem
   label: string
@@ -67,7 +79,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
         <div className="bg-mytra-purple/10 border-l-4 border-mytra-purple rounded-r-lg p-4">
           <h3 className="text-sm font-semibold text-fg mb-1">Key PM Summary</h3>
           <p className="text-fg-2 text-sm leading-relaxed">
-            {equipment.keyPmSummary}
+            {stripRegCitations(equipment.keyPmSummary)}
           </p>
         </div>
       )}
@@ -115,7 +127,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                           className="flex items-start gap-2 text-sm text-fg-2"
                         >
                           <span className="text-fg-4 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-fg-4" />
-                          <span>{task}</span>
+                          <span>{stripRegCitations(task)}</span>
                         </li>
                       ))}
                     </ul>
