@@ -61,14 +61,25 @@ export default function ModuleTourEngine() {
 
   useLayoutEffect(() => {
     if (!active) return
-    const measure = () => {
-      const el = findVisible(steps[stepIndex]?.target ?? '')
-      setRect(el ? el.getBoundingClientRect() : null)
+    const el = findVisible(steps[stepIndex]?.target ?? '')
+    if (el) {
+      // Temporarily allow scrolling so scrollIntoView works
+      document.body.style.overflow = ''
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-    measure()
+    const measure = () => {
+      const target = findVisible(steps[stepIndex]?.target ?? '')
+      setRect(target ? target.getBoundingClientRect() : null)
+    }
+    // Measure after scroll settles
+    const timer = setTimeout(() => {
+      measure()
+      document.body.style.overflow = 'hidden'
+    }, 400)
     window.addEventListener('resize', measure)
     window.addEventListener('orientationchange', measure)
     return () => {
+      clearTimeout(timer)
       window.removeEventListener('resize', measure)
       window.removeEventListener('orientationchange', measure)
     }
@@ -77,7 +88,6 @@ export default function ModuleTourEngine() {
   useEffect(() => {
     if (!active) return
     const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
   }, [active])
 
