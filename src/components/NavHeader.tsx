@@ -4,32 +4,16 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { WifiOff } from 'lucide-react'
-import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
-import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
+import { useLiveCounts } from '@/hooks/useLiveCounts'
 import UserMenu from '@/components/UserMenu'
 
 export default function NavHeader() {
   const pathname = usePathname()
-  const [openCount, setOpenCount] = useState(0)
-  const [safetyCount, setSafetyCount] = useState(0)
+  const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
   useEffect(() => {
-    setOpenCount(getOpenCount())
-    setSafetyCount(getOpenSafetyCount())
-
-    // Listen for same-tab CRUD via pub/sub
-    const unsubscribe = onWorkOrderChange(() => setOpenCount(getOpenCount()))
-    const unsubscribeSafety = onSafetyChange(() => setSafetyCount(getOpenSafetyCount()))
-    // Listen for cross-tab storage changes
-    function handleStorage() {
-      setOpenCount(getOpenCount())
-      setSafetyCount(getOpenSafetyCount())
-    }
-    window.addEventListener('storage', handleStorage)
-
-    // Offline/online status
     setOnline(navigator.onLine)
     const goOnline = () => setOnline(true)
     const goOffline = () => setOnline(false)
@@ -37,17 +21,14 @@ export default function NavHeader() {
     window.addEventListener('offline', goOffline)
 
     return () => {
-      unsubscribe()
-      unsubscribeSafety()
-      window.removeEventListener('storage', handleStorage)
       window.removeEventListener('online', goOnline)
       window.removeEventListener('offline', goOffline)
     }
   }, [])
 
   const badgeCounts: Record<BadgeKey, number> = {
-    safety: safetyCount,
-    orders: openCount,
+    safety: openSafety,
+    orders: openOrders,
   }
 
   return (
