@@ -12,6 +12,12 @@ import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } 
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
   if (!record) return 'fail'
+  // If a previous markSynced call succeeded but the storage write failed, the
+  // notionPageId acts as a tombstone — do not create a duplicate Notion page.
+  if (record.notionPageId) {
+    markSynced(id, record.notionPageId)
+    return 'ok'
+  }
   const res = await fetch('/api/safety/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -29,21 +35,31 @@ async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
+// Tracks records currently being synced to prevent concurrent duplicate POSTs
+// when a page reload or 'online' event fires while a sync is in-flight.
+const inFlight = new Set<string>()
+
 export async function trySyncRecord(id: string): Promise<boolean> {
   if (!getSafetyRecordById(id)) return false
+  if (inFlight.has(id)) return false
+  inFlight.add(id)
   const delays = [1000, 2000, 4000]
-  for (let attempt = 0; attempt <= delays.length; attempt++) {
-    try {
-      const result = await attemptSync(id)
-      if (result === 'ok') return true
-      if (result === 'not-configured') return false
-    } catch {
-      // network/offline — retry if attempts remain
+  try {
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+      try {
+        const result = await attemptSync(id)
+        if (result === 'ok') return true
+        if (result === 'not-configured') return false
+      } catch {
+        // network/offline — retry if attempts remain
+      }
+      if (attempt < delays.length) await wait(delays[attempt])
     }
-    if (attempt < delays.length) await wait(delays[attempt])
+    markSyncFailed(id)
+    return false
+  } finally {
+    inFlight.delete(id)
   }
-  markSyncFailed(id)
-  return false
 }
 
 export async function syncAllPending(): Promise<void> {

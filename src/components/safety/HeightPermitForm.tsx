@@ -250,6 +250,12 @@ export default function HeightPermitForm() {
         />
       </section>
 
+      {saveError && (
+        <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+          <span className="font-semibold shrink-0">Save failed:</span>
+          <span>{saveError}</span>
+        </div>
+      )}
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"

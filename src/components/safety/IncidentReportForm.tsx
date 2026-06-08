@@ -45,6 +45,7 @@ export default function IncidentReportForm() {
   const [reporterSig, setReporterSig] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
 
   const fileRef = useRef<HTMLInputElement>(null)
@@ -97,22 +98,29 @@ export default function IncidentReportForm() {
 
   function submit() {
     if (!canSubmit) return
+    setSaveError(null)
     const reporterSignatureId = reporterSig ? cryptoRandomId() : null
-    const record = createIncidentReport({
-      projectName,
-      location,
-      incidentType,
-      severity,
-      occurredAt: toIso(occurredAt),
-      description,
-      immediateActions,
-      witnesses,
-      rootCause,
-      correctiveActions,
-      reportedToCalOsha,
-      photoSlots: photos.map((p) => p.id),
-      reporterSignatureId,
-    })
+    let record: ReturnType<typeof createIncidentReport>
+    try {
+      record = createIncidentReport({
+        projectName,
+        location,
+        incidentType,
+        severity,
+        occurredAt: toIso(occurredAt),
+        description,
+        immediateActions,
+        witnesses,
+        rootCause,
+        correctiveActions,
+        reportedToCalOsha,
+        photoSlots: photos.map((p) => p.id),
+        reporterSignatureId,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     if (photos.length > 0) savePhotosForRecord(record.id, photos).catch((e) => console.error('photo save failed', e))
     if (reporterSignatureId && reporterSig) {
       saveSignatures(record.id, [{ id: reporterSignatureId, dataUrl: reporterSig }]).catch((e) =>
@@ -358,6 +366,12 @@ export default function IncidentReportForm() {
         </div>
       </section>
 
+      {saveError && (
+        <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+          <span className="font-semibold shrink-0">Save failed:</span>
+          <span>{saveError}</span>
+        </div>
+      )}
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
