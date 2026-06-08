@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { Flame, RotateCcw } from 'lucide-react'
-import { createHotWorkPermit, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
+import { createHotWorkPermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -108,6 +108,11 @@ export default function HotWorkPermitForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
+      const identity = getCurrentIdentity()
+      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) }).catch(() => {})
+    }
     saveLastContext({ projectName, location })
     clearDraft()
     setWasOffline(!navigator.onLine)
@@ -145,12 +150,7 @@ export default function HotWorkPermitForm() {
         onNew={reset}
         newLabel="New permit"
         offline={wasOffline}
-        onSubmitForReview={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' ? async () => {
-          const identity = getCurrentIdentity()
-          markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
-          const rec = getSafetyRecordById(submittedId)
-          if (rec) fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }) }).catch(() => {})
-        } : undefined}
+        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
     )
   }

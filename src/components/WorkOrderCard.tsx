@@ -231,7 +231,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
               <button
                 className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
                            rounded-lg border border-mytra-border text-fg-3
-                           hover:text-fg hover:bg-mytra-card-hover transition-colors"
+                           hover:text-fg hover:bg-mytra-card-hover transition-colors min-h-[44px]"
                 title="Send to Linear (requires Linear integration)"
                 onClick={() => {
                   const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
@@ -249,7 +249,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
               <button
                 className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
                            rounded-lg border border-mytra-border text-fg-3
-                           hover:text-fg hover:bg-mytra-card-hover transition-colors"
+                           hover:text-fg hover:bg-mytra-card-hover transition-colors min-h-[44px]"
                 title="Email work order (requires Gmail integration)"
                 onClick={() => {
                   const subject = `PM Work Order: ${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM [${workOrder.id}]`
@@ -266,7 +266,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 <button
                   onClick={handleDelete}
                   className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                             rounded-lg transition-colors ml-auto ${
+                             rounded-lg transition-colors ml-auto min-h-[44px] ${
                                confirmDelete
                                  ? 'bg-danger/20 text-danger border border-danger/50'
                                  : 'text-fg-4 hover:text-danger'

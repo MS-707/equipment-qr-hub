@@ -34,7 +34,7 @@ export default function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg transition rounded
+        className="flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg transition rounded min-h-[44px]
                    focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         aria-haspopup="menu"
         aria-expanded={open}

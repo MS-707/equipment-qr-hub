@@ -129,7 +129,7 @@ export default function IncidentReportForm() {
     }
     void trySyncRecord(record.id)
     saveLastContext({ projectName, location })
-    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')) {
+    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
       markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
       fetch('/api/safety/review/submit', {
@@ -170,7 +170,7 @@ export default function IncidentReportForm() {
         onNew={reset}
         newLabel="New report"
         offline={wasOffline}
-        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')}
+        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
     )
   }
