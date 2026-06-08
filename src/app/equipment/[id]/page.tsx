@@ -16,11 +16,11 @@ export function generateMetadata({ params }: EquipmentPageProps) {
   const equipment = getEquipmentById(itemNumber)
 
   if (!equipment) {
-    return { title: 'Equipment Not Found | Mytra EHS' }
+    return { title: 'Equipment Not Found | Sage' }
   }
 
   return {
-    title: `${equipment.name} | Mytra EHS`,
+    title: `${equipment.name} | Sage`,
     description: `PM schedule, training, and compliance info for ${equipment.name}`,
   }
 }
