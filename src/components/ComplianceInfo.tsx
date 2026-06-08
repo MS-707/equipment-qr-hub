@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem } from '@/lib/types'
 
 interface ComplianceInfoProps {
@@ -9,13 +7,6 @@ interface ComplianceInfoProps {
 }
 
 export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
-  const [showRegulatory, setShowRegulatory] = useState(false)
-
-  const calOshaSections = equipment.calOshaSections
-    .split(';')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-
   return (
     <div className="space-y-6">
       {/* Maintenance Dates */}
@@ -46,63 +37,6 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
           </div>
         </div>
       </div>
-
-      {/* Regulatory Details (collapsible) */}
-      {(calOshaSections.length > 0 || equipment.calOshaTrainingReq.trim() !== '') && (
-        <div>
-          <button
-            onClick={() => setShowRegulatory(!showRegulatory)}
-            aria-expanded={showRegulatory}
-            className="flex items-center gap-2 text-sm font-semibold text-fg-3
-                       hover:text-fg transition-colors w-full"
-          >
-            {showRegulatory ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-            Regulatory Details
-          </button>
-
-          <div className={`accordion-content ${showRegulatory ? 'open' : ''}`}>
-            <div>
-              <div className="mt-3 space-y-4">
-                {calOshaSections.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-fg-3 mb-2">
-                      Applicable Cal/OSHA Sections
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {calOshaSections.map((section, i) => (
-                        <span
-                          key={i}
-                          className="inline-block bg-mytra-card border border-mytra-border
-                                     rounded-full px-3 py-1 text-xs text-fg-2"
-                        >
-                          {section}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {equipment.calOshaTrainingReq.trim() !== '' && (
-                  <div>
-                    <p className="text-xs font-medium text-fg-3 mb-2">
-                      Regulatory Training Requirements
-                    </p>
-                    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
-                      <p className="text-fg-2 text-sm leading-relaxed">
-                        {equipment.calOshaTrainingReq}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
