@@ -87,6 +87,25 @@ export default function ModuleTourEngine() {
 
   useEffect(() => {
     if (!active) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (stepIndex === steps.length - 1) finish()
+        else setStepIndex((i) => i + 1)
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        if (stepIndex > 0) setStepIndex((i) => i - 1)
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        finish()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [active, stepIndex, steps.length, finish])
+
+  useEffect(() => {
+    if (!active) return
     const prev = document.body.style.overflow
     return () => { document.body.style.overflow = prev }
   }, [active])
