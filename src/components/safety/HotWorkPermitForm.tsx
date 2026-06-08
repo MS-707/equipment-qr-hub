@@ -40,6 +40,7 @@ export default function HotWorkPermitForm() {
   const [issuerId, setIssuerId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
@@ -77,25 +78,32 @@ export default function HotWorkPermitForm() {
 
   function submit() {
     if (!canSubmit) return
-    const record = createHotWorkPermit({
-      projectName,
-      location,
-      workDescription,
-      hotWorkTypes,
-      checklist,
-      fireWatchRequired,
-      fireWatchName,
-      fireWatchPostDurationMin: postDuration,
-      extinguisherLocation,
-      extinguisherType,
-      sprinklerStatus,
-      gasTestRequired,
-      gasTestNotes,
-      validFrom: toIso(validFrom),
-      validUntil: toIso(validUntil),
-      workers: sigData.signatures,
-      issuerSignatureId: issuerId,
-    })
+    setSaveError(null)
+    let record: ReturnType<typeof createHotWorkPermit>
+    try {
+      record = createHotWorkPermit({
+        projectName,
+        location,
+        workDescription,
+        hotWorkTypes,
+        checklist,
+        fireWatchRequired,
+        fireWatchName,
+        fireWatchPostDurationMin: postDuration,
+        extinguisherLocation,
+        extinguisherType,
+        sprinklerStatus,
+        gasTestRequired,
+        gasTestNotes,
+        validFrom: toIso(validFrom),
+        validUntil: toIso(validUntil),
+        workers: sigData.signatures,
+        issuerSignatureId: issuerId,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
