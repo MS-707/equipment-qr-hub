@@ -46,7 +46,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
             type="button"
             onClick={() => addTemplate(t)}
             className="text-xs px-3 py-2 rounded-full bg-mytra-bg border border-mytra-border
-                       text-fg-2 hover:text-fg hover:border-mytra-purple/50 transition-colors"
+                       text-fg-2 hover:text-fg hover:border-mytra-purple/50 transition-colors min-h-[44px] inline-flex items-center"
           >
             + {t.description}
           </button>
@@ -128,7 +128,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
         type="button"
         onClick={addBlank}
         className="inline-flex items-center gap-1.5 text-xs text-fg-2 hover:text-fg
-                   bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 hover:border-mytra-purple/50 transition-colors"
+                   bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 hover:border-mytra-purple/50 transition-colors min-h-[44px]"
       >
         <Plus className="w-3.5 h-3.5" /> Add hazard
       </button>

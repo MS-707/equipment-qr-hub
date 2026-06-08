@@ -432,30 +432,24 @@ export default function JhaForm() {
 }
 
 function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: string; stepCount: number; wasOffline: boolean; onNew: () => void }) {
-  const [reviewSubmitting, setReviewSubmitting] = useState(false)
-  const [reviewDone, setReviewDone] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
-
-  useEffect(() => { headingRef.current?.focus() }, [])
   const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
-  async function handleReviewSubmit() {
-    setReviewSubmitting(true)
+  useEffect(() => { headingRef.current?.focus() }, [])
+
+  useEffect(() => {
+    if (!ehsEnabled) return
     const identity = getCurrentIdentity()
     markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
     const rec = getSafetyRecordById(submittedId)
     if (rec) {
-      try {
-        await fetch('/api/safety/review/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
-        })
-      } catch { /* offline — will retry */ }
+      fetch('/api/safety/review/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
+      }).catch(() => {})
     }
-    setReviewDone(true)
-    setReviewSubmitting(false)
-  }
+  }, [ehsEnabled, submittedId])
 
   return (
     <div className="animate-fadeIn space-y-4">
@@ -473,27 +467,10 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
           <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
         </div>
       )}
-      {ehsEnabled && !reviewDone && (
-        <button
-          type="button"
-          onClick={handleReviewSubmit}
-          disabled={reviewSubmitting}
-          className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium
-                     bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple
-                     hover:border-mytra-purple/60 transition-colors
-                     disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {reviewSubmitting ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Submitting for review…</>
-          ) : (
-            <><Send className="w-4 h-4" /> Submit for EHS Review</>
-          )}
-        </button>
-      )}
-      {reviewDone && (
+      {ehsEnabled && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Submitted for EHS review — your manager will be notified</p>
+          <p className="text-xs text-mytra-purple">Automatically submitted for EHS review</p>
         </div>
       )}
       <Link
