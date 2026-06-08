@@ -55,7 +55,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
 
       {/* Rows */}
       {hazards.length === 0 ? (
-        <p className="text-xs text-fg-4 py-2">No hazards yet — tap a chip above or add one.</p>
+        <p className="text-xs text-fg-4 py-2">No hazards yet — tap a common hazard above to add it, or use &ldquo;+ Add hazard&rdquo; for a custom entry.</p>
       ) : (
         <div className="space-y-2">
           {hazards.map((h) => (

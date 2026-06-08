@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban } from 'lucide-react'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
+  JobHazardAnalysis,
   AnyPermit,
   HeightPermit,
   HotWorkPermit,
@@ -15,7 +16,10 @@ import type {
 } from '@/lib/safety-types'
 import {
   SAFETY_TYPE_LABELS,
+  RISK_COLORS,
+  RISK_LABELS,
   isPTP,
+  isJHA,
   isPermit,
   isIncident,
   INCIDENT_SEVERITY_COLORS,
@@ -29,6 +33,7 @@ import {
   permitDisplayStatus,
 } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { shareRecord } from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
 import PermitStatusBadge from './PermitStatusBadge'
@@ -52,6 +57,7 @@ export default function RecordView({ id }: { id: string }) {
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
+  const [shared, setShared] = useState(false)
 
   useReviewPoller()
 
@@ -102,6 +108,13 @@ export default function RecordView({ id }: { id: string }) {
     revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
     setRevokeOpen(false)
   }
+  async function handleShare() {
+    const outcome = await shareRecord(r)
+    if (outcome === 'shared' || outcome === 'mailto') {
+      setShared(true)
+      setTimeout(() => setShared(false), 2500)
+    }
+  }
 
   const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
 
@@ -123,6 +136,14 @@ export default function RecordView({ id }: { id: string }) {
           )}
           <button
             type="button"
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+          >
+            {shared ? <Check className="w-3.5 h-3.5 text-ok" /> : <Share2 className="w-3.5 h-3.5" />}
+            {shared ? 'Shared' : 'Share'}
+          </button>
+          <button
+            type="button"
             onClick={() => window.print()}
             className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
           >
@@ -131,8 +152,24 @@ export default function RecordView({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Header */}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      {/* Print-only formal document header (matches the paper template) */}
+      <div className="print-only print-doc-header">
+        <div className="print-doc-title">
+          <span>{SAFETY_TYPE_LABELS[r.type]}</span>
+          <span style={{ fontSize: '10pt' }}>{r.id}</span>
+        </div>
+        <dl className="print-doc-meta">
+          <div><dt>Project / Build</dt><dd>{r.projectName || '—'}</dd></div>
+          <div><dt>Location / Area</dt><dd>{r.location || '—'}</dd></div>
+          {isPTP(r) && <div><dt>Date</dt><dd>{r.date} · {r.shift} shift</dd></div>}
+          <div><dt>Prepared by</dt><dd>{r.createdBy}</dd></div>
+          <div><dt>Created</dt><dd>{fmt(r.createdAt)}</dd></div>
+          {r.reviewStatus && <div><dt>EHS review</dt><dd>{r.reviewStatus}</dd></div>}
+        </dl>
+      </div>
+
+      {/* Header — screen only; print uses the formal header above */}
+      <div className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-mono text-fg-3">{r.id}</span>
           <div className="flex items-center gap-1.5">
@@ -153,6 +190,7 @@ export default function RecordView({ id }: { id: string }) {
 
       {/* Type-specific body */}
       {isPTP(r) && <PtpBody ptp={r} sigImages={sigImages} />}
+      {isJHA(r) && <JhaBody jha={r} />}
       {isPermit(r) && <PermitBody permit={r as AnyPermit} sigImages={sigImages} />}
       {isIncident(r) && <IncidentBody incident={r} images={sigImages} />}
 
@@ -198,8 +236,26 @@ export default function RecordView({ id }: { id: string }) {
         onCancel={() => setRevokeOpen(false)}
       />
 
+      {/* Print-only authorization block (matches template Section 5/7) */}
+      <div className="print-only">
+        <p style={{ fontSize: '8.5pt', marginBottom: '4px' }}>
+          By signing, each party confirms they have reviewed this record, understand the identified
+          hazards and controls, and agree the work may proceed under the conditions described.
+        </p>
+        <div className="print-sig-row">
+          <div className="print-sig-line">{isPTP(r) ? 'Build Lead' : 'Prepared By'} — Printed Name &amp; Signature</div>
+          <div className="print-sig-line">Title / Role</div>
+          <div className="print-sig-line">Date</div>
+        </div>
+        <div className="print-sig-row">
+          <div className="print-sig-line">Mytra Representative / EHS — Printed Name &amp; Signature</div>
+          <div className="print-sig-line">Title / Role</div>
+          <div className="print-sig-line">Date</div>
+        </div>
+      </div>
+
       {/* History */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
           {r.events.map((e, i) => (
@@ -316,6 +372,72 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
       <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
+    </>
+  )
+}
+
+function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
+  return (
+    <>
+      <Section title="Job / task">
+        <p className="text-sm text-fg">{jha.jobTitle || '—'}</p>
+        <dl className="grid grid-cols-2 gap-2 mt-2 text-sm">
+          <Field label="Date of analysis" value={jha.dateOfAnalysis} />
+          {jha.department && <Field label="Department / Team" value={jha.department} />}
+          {jha.referenceDoc && <Field label="Reference doc" value={jha.referenceDoc} />}
+        </dl>
+      </Section>
+
+      {jha.ppeRequired.length > 0 && (
+        <Section title="PPE required">
+          <div className="flex flex-wrap gap-1.5">
+            {jha.ppeRequired.map((id) => (
+              <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">
+                {ppeLabel(id)}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      <Section title={`Hazard analysis (${jha.steps.length} steps)`}>
+        <ol className="space-y-3">
+          {jha.steps.map((s, i) => (
+            <li key={s.id} className="border-l-2 border-mytra-border pl-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-fg-3">Step {i + 1}</span>
+                <span
+                  className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                  style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.riskLevel]} 12%, transparent)` }}
+                >
+                  {RISK_LABELS[s.riskLevel]}
+                </span>
+                {s.source === 'sage' && <span className="text-xs text-mytra-purple">✨ Sage</span>}
+              </div>
+              <p className="text-sm text-fg mt-1">{s.taskActivity}</p>
+              {s.hazards && (
+                <p className="text-xs text-fg-2 mt-1 whitespace-pre-line">
+                  <span className="text-fg-3 uppercase tracking-wider">Hazards: </span>{s.hazards}
+                </p>
+              )}
+              {s.controls && (
+                <p className="text-xs text-fg-2 mt-0.5 whitespace-pre-line">
+                  <span className="text-fg-3 uppercase tracking-wider">Controls: </span>{s.controls}
+                </p>
+              )}
+              {s.responsible && (
+                <p className="text-xs text-fg-3 mt-0.5">Responsible: {s.responsible}</p>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {jha.additionalNotes && (
+        <Section title="Additional notes / conditions">
+          <p className="text-sm text-fg-2 whitespace-pre-line">{jha.additionalNotes}</p>
+        </Section>
+      )}
     </>
   )
 }

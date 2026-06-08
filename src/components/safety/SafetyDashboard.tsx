@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ClipboardList,
+  ListChecks,
   ArrowUpFromLine,
   Flame,
   PackageOpen,
@@ -38,6 +39,7 @@ function today(): string {
 
 const QUICK_ACTIONS = [
   { href: '/safety/ptp', label: 'Start PTP', icon: ClipboardList, primary: true },
+  { href: '/safety/jha', label: 'Job Hazard Analysis', icon: ListChecks },
   { href: '/safety/permits/height', label: 'Work-at-Height', icon: ArrowUpFromLine },
   { href: '/safety/permits/hot-work', label: 'Hot Work', icon: Flame },
   { href: '/safety/permits/confined-space', label: 'Confined Space', icon: PackageOpen },
