@@ -1,0 +1,517 @@
+'use client'
+
+import { useState, useCallback, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import {
+  ListChecks,
+  CheckCircle2,
+  RotateCcw,
+  WifiOff,
+  Send,
+  Loader2,
+  Plus,
+  Trash2,
+  Sparkles,
+} from 'lucide-react'
+import type { JhaStep, RiskLevel } from '@/lib/safety-types'
+import { RISK_COLORS, RISK_LABELS } from '@/lib/safety-types'
+import {
+  createJobHazardAnalysis,
+  cryptoRandomId,
+  markSubmittedForReview,
+  getSafetyRecordById,
+} from '@/lib/safety-records'
+import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
+import { getCurrentIdentity } from '@/lib/identity'
+import PPESelector from './PPESelector'
+
+const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
+
+const labelCls = 'block text-xs text-fg-2 mb-1'
+const inputCls =
+  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
+
+const RISK_ORDER: RiskLevel[] = ['low', 'medium', 'high', 'critical']
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function blankStep(): JhaStep {
+  return {
+    id: cryptoRandomId(),
+    taskActivity: '',
+    hazards: '',
+    riskLevel: 'low',
+    controls: '',
+    responsible: '',
+    source: 'manual',
+  }
+}
+
+export default function JhaForm() {
+  const [jobTitle, setJobTitle] = useState('')
+  const [dateOfAnalysis, setDateOfAnalysis] = useState(todayStr())
+  const [department, setDepartment] = useState('')
+  const [location, setLocation] = useState('')
+  const [referenceDoc, setReferenceDoc] = useState('')
+  const [ppe, setPpe] = useState<string[]>([])
+  const [steps, setSteps] = useState<JhaStep[]>([blankStep()])
+  const [additionalNotes, setAdditionalNotes] = useState('')
+
+  const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const [sageLoading, setSageLoading] = useState(false)
+  const [sageError, setSageError] = useState<string | null>(null)
+
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.jobTitle === 'string') setJobTitle(d.jobTitle)
+    if (typeof d.dateOfAnalysis === 'string') setDateOfAnalysis(d.dateOfAnalysis)
+    if (typeof d.department === 'string') setDepartment(d.department)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.referenceDoc === 'string') setReferenceDoc(d.referenceDoc)
+    if (Array.isArray(d.ppe)) setPpe(d.ppe as string[])
+    if (Array.isArray(d.steps) && d.steps.length > 0) setSteps(d.steps as JhaStep[])
+    if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'jha',
+    () => ({ jobTitle, dateOfAnalysis, department, location, referenceDoc, ppe, steps, additionalNotes }),
+    restore
+  )
+
+  const filledSteps = steps.filter((s) => s.taskActivity.trim().length > 0)
+  const canSubmit = jobTitle.trim().length > 0 && filledSteps.length > 0
+  const canAskSage = filledSteps.length > 0
+
+  function updateStep(id: string, patch: Partial<JhaStep>) {
+    setSteps((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
+  }
+
+  function addStep() {
+    setSteps((prev) => [...prev, blankStep()])
+  }
+
+  function removeStep(id: string) {
+    setSteps((prev) => (prev.length === 1 ? [blankStep()] : prev.filter((s) => s.id !== id)))
+  }
+
+  async function askSage() {
+    setSageLoading(true)
+    setSageError(null)
+    try {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 28000)
+      // Only analyse steps that have a task activity, preserving their order.
+      const indexed = steps
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => s.taskActivity.trim().length > 0)
+      const res = await fetch('/api/safety/suggest-jha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobTitle, steps: indexed.map(({ s }) => s.taskActivity) }),
+        signal: ctrl.signal,
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (data?.error) {
+        setSageError(data.error)
+        return
+      }
+      const analysed: { hazards: string; riskLevel: RiskLevel; controls: string }[] = Array.isArray(data?.steps)
+        ? data.steps
+        : []
+      setSteps((prev) => {
+        const next = [...prev]
+        indexed.forEach(({ i }, k) => {
+          const a = analysed[k]
+          if (!a) return
+          // Don't overwrite content the user already typed in those cells.
+          next[i] = {
+            ...next[i],
+            hazards: next[i].hazards.trim() ? next[i].hazards : a.hazards,
+            riskLevel: a.riskLevel ?? next[i].riskLevel,
+            controls: next[i].controls.trim() ? next[i].controls : a.controls,
+            source: 'sage',
+          }
+        })
+        return next
+      })
+    } catch (err) {
+      setSageError(
+        err instanceof DOMException && err.name === 'AbortError'
+          ? 'Request timed out — try again'
+          : 'Network error — check your connection'
+      )
+    } finally {
+      setSageLoading(false)
+    }
+  }
+
+  function handleSubmit() {
+    if (!canSubmit) return
+    setSaveError(null)
+    let record: ReturnType<typeof createJobHazardAnalysis>
+    try {
+      record = createJobHazardAnalysis({
+        jobTitle,
+        dateOfAnalysis,
+        department,
+        location,
+        projectName: jobTitle,
+        referenceDoc,
+        ppeRequired: ppe,
+        steps: filledSteps,
+        additionalNotes,
+        signatures: [],
+        preparedBySignatureId: null,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save — device storage may be full.')
+      return
+    }
+    void trySyncRecord(record.id)
+    clearDraft()
+    setWasOffline(!navigator.onLine)
+    setSubmittedId(record.id)
+  }
+
+  function resetNew() {
+    clearDraft()
+    setWasOffline(false)
+    setJobTitle('')
+    setDepartment('')
+    setLocation('')
+    setReferenceDoc('')
+    setPpe([])
+    setSteps([blankStep()])
+    setAdditionalNotes('')
+    setSubmittedId(null)
+  }
+
+  // ── DONE ──────────────────────────────────────────────────
+  if (submittedId) {
+    return <JhaDone submittedId={submittedId} stepCount={filledSteps.length} wasOffline={wasOffline} onNew={resetNew} />
+  }
+
+  return (
+    <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Job / task information */}
+      <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+        <div className="flex items-center gap-2">
+          <ListChecks className="w-5 h-5 text-mytra-purple" />
+          <h3 className="text-sm font-semibold text-fg">Job / Task Information</h3>
+        </div>
+        <div>
+          <label htmlFor="jha-title" className={labelCls}>Job / Task title</label>
+          <input id="jha-title" type="text" maxLength={200} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g. Install conveyor drive unit on Line 3" className={inputCls} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="jha-date" className={labelCls}>Date of analysis</label>
+            <input id="jha-date" type="date" value={dateOfAnalysis} onChange={(e) => setDateOfAnalysis(e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label htmlFor="jha-dept" className={labelCls}>Department / Team</label>
+            <input id="jha-dept" type="text" maxLength={120} value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="e.g. Field Install" className={inputCls} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="jha-location" className={labelCls}>Location / Area</label>
+            <input id="jha-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bay 4, grid C2" className={inputCls} />
+          </div>
+          <div>
+            <label htmlFor="jha-ref" className={labelCls}>Reference doc (WO, drawing #)</label>
+            <input id="jha-ref" type="text" maxLength={120} value={referenceDoc} onChange={(e) => setReferenceDoc(e.target.value)} placeholder="Optional" className={inputCls} />
+          </div>
+        </div>
+      </div>
+
+      {/* PPE */}
+      <section className="space-y-2">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">PPE Required</h4>
+        <PPESelector selected={ppe} onChange={setPpe} />
+      </section>
+
+      {/* Task steps */}
+      <section data-tour-module="jha-steps" className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Task Steps</h4>
+          <span className="text-xs text-fg-4">{filledSteps.length} step{filledSteps.length === 1 ? '' : 's'}</span>
+        </div>
+        <p className="text-xs text-fg-4 px-1">
+          Break the job into the order you&apos;ll actually do it. List each step first — then let Sage
+          help identify the hazards and controls for every step.
+        </p>
+
+        {steps.map((step, i) => (
+          <div key={step.id} className="bg-mytra-card border border-mytra-border rounded-lg p-3 space-y-3 shadow-card">
+            <div className="flex items-start gap-2">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-mytra-purple/15 text-mytra-purple text-xs font-semibold flex items-center justify-center mt-0.5">
+                {i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <textarea
+                  rows={2}
+                  maxLength={300}
+                  value={step.taskActivity}
+                  onChange={(e) => updateStep(step.id, { taskActivity: e.target.value })}
+                  placeholder={`Step ${i + 1} — what is done in this part of the job?`}
+                  aria-label={`Step ${i + 1} task or activity`}
+                  className={`${inputCls} resize-none`}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => removeStep(step.id)}
+                aria-label={`Remove step ${i + 1}`}
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-fg-4 hover:text-danger hover:bg-danger/10 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Hazard / risk / control detail — populated by Sage or by hand */}
+            {(step.hazards || step.controls || step.responsible || step.source === 'sage') && (
+              <div className="pl-8 space-y-3 animate-fadeIn">
+                <div>
+                  <label className={labelCls}>
+                    Hazard(s) identified
+                    {step.source === 'sage' && <span className="text-mytra-purple ml-1">✨ Sage</span>}
+                  </label>
+                  <textarea
+                    rows={2}
+                    maxLength={600}
+                    value={step.hazards}
+                    onChange={(e) => updateStep(step.id, { hazards: e.target.value, source: 'manual' })}
+                    placeholder="One hazard per line"
+                    className={`${inputCls} resize-none`}
+                  />
+                </div>
+                <div>
+                  <span className={labelCls}>Risk (before controls)</span>
+                  <div className="flex gap-1.5" role="radiogroup" aria-label={`Step ${i + 1} risk level`}>
+                    {RISK_ORDER.map((lvl) => {
+                      const on = step.riskLevel === lvl
+                      return (
+                        <button
+                          key={lvl}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => updateStep(step.id, { riskLevel: lvl })}
+                          className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors"
+                          style={
+                            on
+                              ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
+                              : undefined
+                          }
+                        >
+                          {RISK_LABELS[lvl]}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Controls / mitigations</label>
+                  <textarea
+                    rows={2}
+                    maxLength={600}
+                    value={step.controls}
+                    onChange={(e) => updateStep(step.id, { controls: e.target.value, source: 'manual' })}
+                    placeholder="Specific controls; note residual risk"
+                    className={`${inputCls} resize-none`}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Responsible (DRI)</label>
+                  <input
+                    type="text"
+                    maxLength={120}
+                    value={step.responsible}
+                    onChange={(e) => updateStep(step.id, { responsible: e.target.value })}
+                    placeholder="Who owns this control?"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={addStep}
+          className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium
+                     bg-mytra-card border border-mytra-border text-fg-2 hover:text-fg hover:bg-mytra-card-hover transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Add step
+        </button>
+
+        {/* Sage analysis */}
+        {SAGE_ENABLED && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={askSage}
+              disabled={!canAskSage || sageLoading}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium
+                         bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
+                         hover:border-mytra-purple/60 transition-colors
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {sageLoading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Sage is analyzing each step…</>
+              ) : (
+                <><Sparkles className="w-4 h-4" /> Ask Sage to analyze steps</>
+              )}
+            </button>
+            {!canAskSage && !sageLoading && (
+              <p className="text-xs text-fg-4 mt-1 text-center">List at least one task step first</p>
+            )}
+            {sageError && <p className="text-xs text-danger mt-1 text-center">{sageError}</p>}
+            {filledSteps.some((s) => s.source === 'sage') && (
+              <p className="text-xs text-fg-4 mt-2 text-center">
+                AI analysis is a starting point — review and edit before submitting for EHS review.
+              </p>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Additional notes */}
+      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Additional Notes / Conditions</h4>
+        <textarea
+          rows={2}
+          maxLength={2000}
+          value={additionalNotes}
+          onChange={(e) => setAdditionalNotes(e.target.value)}
+          placeholder="Context from any meetings, special conditions, etc."
+          className={`${inputCls} resize-none`}
+        />
+      </section>
+
+      {saveError && (
+        <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+          <span className="font-semibold shrink-0">Save failed:</span>
+          <span>{saveError}</span>
+        </div>
+      )}
+
+      <div className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {canSubmit ? 'Save Job Hazard Analysis' : 'Add a job title and at least one step'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: string; stepCount: number; wasOffline: boolean; onNew: () => void }) {
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewDone, setReviewDone] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { headingRef.current?.focus() }, [])
+  const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
+
+  async function handleReviewSubmit() {
+    setReviewSubmitting(true)
+    const identity = getCurrentIdentity()
+    markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+    const rec = getSafetyRecordById(submittedId)
+    if (rec) {
+      try {
+        await fetch('/api/safety/review/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
+        })
+      } catch { /* offline — will retry */ }
+    }
+    setReviewDone(true)
+    setReviewSubmitting(false)
+  }
+
+  return (
+    <div className="animate-fadeIn space-y-4">
+      <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
+        <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
+        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">JHA Saved</h3>
+        <p className="text-sm text-ok">
+          {stepCount} step{stepCount === 1 ? '' : 's'} analyzed. Recorded as{' '}
+          <span className="font-mono text-fg">{submittedId}</span>.
+        </p>
+      </div>
+      {wasOffline && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+          <WifiOff className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+        </div>
+      )}
+      {ehsEnabled && !reviewDone && (
+        <button
+          type="button"
+          onClick={handleReviewSubmit}
+          disabled={reviewSubmitting}
+          className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium
+                     bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple
+                     hover:border-mytra-purple/60 transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {reviewSubmitting ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Submitting for review…</>
+          ) : (
+            <><Send className="w-4 h-4" /> Submit for EHS Review</>
+          )}
+        </button>
+      )}
+      {reviewDone && (
+        <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
+          <Send className="w-4 h-4 text-mytra-purple shrink-0" />
+          <p className="text-xs text-mytra-purple">Submitted for EHS review — your manager will be notified</p>
+        </div>
+      )}
+      <Link
+        href={`/safety/record/${submittedId}`}
+        className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+      >
+        View / Print
+      </Link>
+      <button
+        type="button"
+        onClick={onNew}
+        className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
+      >
+        New JHA
+      </button>
+      <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
+        Back to Safety Hub
+      </Link>
+    </div>
+  )
+}
