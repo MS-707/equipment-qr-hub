@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { ClipboardCheck } from 'lucide-react'
+import Link from 'next/link'
+import { ClipboardCheck, BookOpen } from 'lucide-react'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { getAllEquipment } from '@/lib/equipment'
 import { getLastEquipmentId } from '@/lib/inspections'
@@ -76,6 +77,20 @@ export default function InspectionsPage() {
           ))}
         </select>
       </div>
+
+      {/* Operator manual link */}
+      {selectedEquipment && (
+        <Link
+          href={`/equipment/${selectedEquipment.itemNumber}?tab=training`}
+          data-tour-module="equip-manuals"
+          className="flex items-center gap-2 mb-6 px-3 py-2.5 rounded-lg text-xs text-fg-3
+                     bg-mytra-card border border-mytra-border hover:text-fg hover:bg-mytra-card-hover
+                     transition-colors"
+        >
+          <BookOpen className="w-4 h-4 shrink-0" />
+          <span>View operator manual & training info for <span className="text-fg font-medium">{selectedEquipment.name}</span></span>
+        </Link>
+      )}
 
       {/* Inspection form */}
       {selectedEquipment && (
