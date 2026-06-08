@@ -165,7 +165,7 @@ export default function PreTaskPlanForm() {
         <button
           type="button"
           onClick={() => setStep('plan')}
-          className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg"
+          className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" /> Back to plan
         </button>
@@ -244,7 +244,7 @@ export default function PreTaskPlanForm() {
                   role="radio"
                   aria-checked={shift === s}
                   onClick={() => setShift(s)}
-                  className={`flex-1 text-xs font-medium py-2.5 rounded-lg transition-colors ${
+                  className={`flex-1 text-xs font-medium py-2.5 rounded-lg transition-colors min-h-[44px] inline-flex items-center justify-center ${
                     shift === s
                       ? 'bg-mytra-purple text-white'
                       : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
@@ -325,7 +325,7 @@ export default function PreTaskPlanForm() {
           type="button"
           onClick={() => setHeatOpen((v) => !v)}
           aria-expanded={heatOpen}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors"
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors min-h-[44px]"
         >
           <div>
             <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
@@ -344,7 +344,7 @@ export default function PreTaskPlanForm() {
                 ['restBreaks', 'Rest breaks'],
                 ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
               ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
-                <label key={key} className="flex items-center gap-2 text-sm text-fg-2">
+                <label key={key} className="flex items-center gap-2 text-sm text-fg-2 min-h-[44px] cursor-pointer">
                   <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-5 h-5" />
                   {lbl}
                 </label>
@@ -360,7 +360,7 @@ export default function PreTaskPlanForm() {
           type="button"
           onClick={() => setToolboxOpen((v) => !v)}
           aria-expanded={toolboxOpen}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors"
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors min-h-[44px]"
         >
           <div>
             <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>

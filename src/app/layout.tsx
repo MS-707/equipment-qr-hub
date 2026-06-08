@@ -48,7 +48,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1668x2388.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1640x2360.png" />
       </head>
-      <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-16 sm:pb-0">
+      <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-16 md:pb-0">
         <AuthProvider>
           <NavHeader />
           {children}

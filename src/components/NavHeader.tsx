@@ -61,7 +61,7 @@ export default function NavHeader() {
                 key={href}
                 href={href}
                 data-tour-tab={href}
-                className={`relative hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
+                className={`relative hidden md:inline-flex items-center gap-1.5 text-sm transition-colors duration-200 rounded px-2 min-h-[44px]
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
@@ -70,7 +70,7 @@ export default function NavHeader() {
                   }`}
               >
                 <Icon size={16} />
-                <span className="hidden sm:inline">{longLabel}</span>
+                <span className="hidden md:inline">{longLabel}</span>
                 {badgeCount > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
                                    px-1 text-xs font-bold rounded-full
