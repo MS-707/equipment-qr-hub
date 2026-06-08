@@ -28,6 +28,7 @@ import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
 
 const STORAGE_KEY = 'eqr-safety-records'
+const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
 const COUNTER_KEY = 'eqr-safety-counters'
 
 const ID_PREFIX: Record<SafetyRecordType, string> = {
@@ -105,18 +106,42 @@ export async function getBlobs(recordId: string, slotIds: string[]): Promise<Rec
 
 function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as SafetyRecord[]) : []
-  } catch {
+    return JSON.parse(raw) as SafetyRecord[]
+  } catch (primaryErr) {
+    // Primary store is corrupted (truncated write, partial setItem, etc.).
+    // Attempt recovery from the last known-good backup before giving up.
+    console.error('[safety-records] Primary store corrupt — attempting backup restore:', primaryErr)
+    const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
+    if (backup) {
+      try {
+        const recovered = JSON.parse(backup) as SafetyRecord[]
+        console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+        // Promote the backup back to primary so subsequent reads succeed.
+        try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+        return recovered
+      } catch {
+        console.error('[safety-records] Backup also corrupt. Returning empty store.')
+      }
+    }
+    // Emit a detectable event so an error boundary / Sentry hook can alert.
+    try {
+      window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
+    } catch { /* SSR guard */ }
     return []
   }
 }
 
 function writeAll(records: SafetyRecord[]): void {
   if (typeof window === 'undefined') return
+  const serialized = JSON.stringify(records)
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+    // Write backup first so the last known-good copy is never newer than primary.
+    // Ignore quota errors on the backup — it is best-effort.
+    try { localStorage.setItem(STORAGE_KEY_BACKUP, serialized) } catch { /* non-fatal */ }
+    localStorage.setItem(STORAGE_KEY, serialized)
   } catch (e) {
     // Re-throw so callers (createBase, closePermit, etc.) can surface the
     // failure to the UI instead of silently losing data.
