@@ -14,6 +14,13 @@ const SEEN_KEY = 'sage-fab-seen'
 const LAUNCH_KEY = 'sage-fab-launches'
 const MAX_HINT_LAUNCHES = 3
 const IDLE_MS = 15 * 60 * 1000
+const FAB_Y_KEY = 'sage-fab-y'
+
+/** Keep the draggable FAB clear of the header (top) and bottom tab bar (bottom). */
+function clampFabTop(y: number): number {
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+  return Math.max(72, Math.min(y, vh - 96))
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -63,9 +70,12 @@ function SageTriageInner() {
   const [loading, setLoading] = useState(false)
   const [showPulse, setShowPulse] = useState(false)
   const [online, setOnline] = useState(true)
+  const [fabTop, setFabTop] = useState<number | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dragRef = useRef<{ startY: number; startTop: number; moved: boolean; lastTop: number } | null>(null)
+  const justDraggedRef = useRef(false)
 
   useEffect(() => {
     setMessages(loadHistory())
@@ -78,13 +88,19 @@ function SageTriageInner() {
       }
     }
     setOnline(navigator.onLine)
+    // Restore the FAB's vertical position, or default to near the bottom.
+    const storedY = Number(localStorage.getItem(FAB_Y_KEY))
+    setFabTop(Number.isFinite(storedY) && storedY > 0 ? clampFabTop(storedY) : clampFabTop(window.innerHeight - 160))
     const goOn = () => setOnline(true)
     const goOff = () => setOnline(false)
+    const reclamp = () => setFabTop((t) => (t == null ? t : clampFabTop(t)))
     window.addEventListener('online', goOn)
     window.addEventListener('offline', goOff)
+    window.addEventListener('resize', reclamp)
     return () => {
       window.removeEventListener('online', goOn)
       window.removeEventListener('offline', goOff)
+      window.removeEventListener('resize', reclamp)
     }
   }, [])
 
@@ -100,12 +116,43 @@ function SageTriageInner() {
   }, [messages, loading])
 
   function handleOpen() {
+    if (justDraggedRef.current) return // ignore the click that ends a drag
     setOpen(true)
     if (showPulse) {
       setShowPulse(false)
       localStorage.setItem(SEEN_KEY, '1')
     }
     setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  // Tap-hold and slide the FAB up/down the right edge to move it clear of content.
+  function onFabPointerDown(e: React.PointerEvent) {
+    if (fabTop == null) return
+    dragRef.current = { startY: e.clientY, startTop: fabTop, moved: false, lastTop: fabTop }
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+  }
+  function onFabPointerMove(e: React.PointerEvent) {
+    const d = dragRef.current
+    if (!d) return
+    const dy = e.clientY - d.startY
+    if (Math.abs(dy) > 6) d.moved = true
+    if (d.moved) {
+      const t = clampFabTop(d.startTop + dy)
+      d.lastTop = t
+      setFabTop(t)
+    }
+  }
+  function onFabPointerUp(e: React.PointerEvent) {
+    const d = dragRef.current
+    dragRef.current = null
+    if (!d) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    if (d.moved) {
+      justDraggedRef.current = true
+      try { localStorage.setItem(FAB_Y_KEY, String(Math.round(d.lastTop))) } catch { /* non-fatal */ }
+      // Clear on next tick so the synthetic click fired after pointerup is suppressed.
+      setTimeout(() => { justDraggedRef.current = false }, 0)
+    }
   }
 
   const sendMessage = useCallback(async (text: string) => {
@@ -150,9 +197,14 @@ function SageTriageInner() {
       clearTimeout(timer)
 
       const data = await res.json()
+      let replyText = data.reply
+      if (!res.ok || !replyText) {
+        const faqAnswer = matchFaq(trimmed)
+        replyText = faqAnswer ?? 'Sorry, I couldn\'t process that right now. Try again or check the FAQ chips above.'
+      }
       const reply: ChatMessage = {
         role: 'assistant',
-        content: data.reply || data.error || 'Sorry, I couldn\'t process that. Try again.',
+        content: replyText,
       }
       const updated = [...next, reply]
       setMessages(updated)
@@ -185,9 +237,13 @@ function SageTriageInner() {
 
   return (
     <>
-      {/* FAB */}
+      {/* FAB — draggable vertically along the right edge */}
       {!open && (
-        <div data-tour="sage-fab" className="no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] flex items-center gap-2">
+        <div
+          data-tour="sage-fab"
+          className={`no-print fixed right-4 z-[41] flex items-center gap-2 ${fabTop == null ? 'bottom-20 sm:bottom-6' : ''}`}
+          style={fabTop == null ? undefined : { top: fabTop }}
+        >
           {showPulse && (
             <button
               onClick={handleOpen}
@@ -200,13 +256,16 @@ function SageTriageInner() {
           )}
           <button
             onClick={handleOpen}
-            aria-label="Open safety assistant"
-            className={`w-12 h-12 rounded-full
+            onPointerDown={onFabPointerDown}
+            onPointerMove={onFabPointerMove}
+            onPointerUp={onFabPointerUp}
+            aria-label="Open safety assistant (drag to move)"
+            className={`w-12 h-12 rounded-full touch-none select-none cursor-grab active:cursor-grabbing
                        bg-mytra-purple text-white shadow-pop flex items-center justify-center
-                       hover:bg-mytra-purple-hover active:scale-95 transition-all
+                       hover:bg-mytra-purple-hover transition-colors
                        ${showPulse ? 'animate-pulse' : ''}`}
           >
-            <MessageCircle className="w-5 h-5" />
+            <MessageCircle className="w-5 h-5 pointer-events-none" />
           </button>
         </div>
       )}

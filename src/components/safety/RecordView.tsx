@@ -495,7 +495,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
           </p>
         )}
         {incident.reportedToCalOsha && (
-          <p className="text-xs text-warn mt-1">Reported to Cal/OSHA</p>
+          <p className="text-xs text-warn mt-1">Reported to authorities</p>
         )}
       </Section>
 

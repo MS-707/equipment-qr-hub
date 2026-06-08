@@ -33,7 +33,7 @@ const STEPS: TourStep[] = [
   {
     target: '[data-tour="sage-fab"]',
     title: 'Ask Sage',
-    body: 'Tap Sage anytime for OSHA guidance, to review your PTP for gaps, or to find where something lives. Works offline too.',
+    body: 'Tap Sage anytime for safety guidance, to review your PTP for gaps, or to find where something lives. Works offline too.',
   },
 ]
 
@@ -134,7 +134,7 @@ export default function OnboardingTour() {
           <h2 className="text-xl font-bold text-fg">Welcome to Sage</h2>
           <p className="text-sm text-fg-2 mt-2 leading-relaxed">
             Your AI-assisted safety companion for the field. Log Pre-Task Plans, pull permits,
-            report incidents, and get instant OSHA guidance — online or off.
+            report incidents, and get instant safety guidance — online or off.
           </p>
           <div className="mt-6 flex flex-col gap-2">
             <button

@@ -312,7 +312,7 @@ export default function PreTaskPlanForm() {
       {/* Heat illness (T8 §3395) */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-          Heat Illness Prevention <span className="text-fg-4 normal-case">· Cal-OSHA T8 §3395</span>
+          Heat Illness Prevention
         </h4>
         <div className="grid grid-cols-2 gap-2">
           {([

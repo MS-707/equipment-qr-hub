@@ -8,7 +8,7 @@ import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
 import LastUsedChip from './LastUsedChip'
 import { getCurrentIdentity } from '@/lib/identity'
-import { buildPermitItems, getPermitChecklistDef, HOT_WORK_TYPES } from '@/data/safety-checklists'
+import { buildPermitItems, HOT_WORK_TYPES } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso } from '@/lib/datetime'
 import PermitChecklist, { criticalRemaining } from './PermitChecklist'
@@ -155,8 +155,6 @@ export default function HotWorkPermitForm() {
     )
   }
 
-  const regRef = getPermitChecklistDef('hot-work').regRef
-
   return (
     <div className="animate-fadeIn space-y-4">
       {hasDraft && (
@@ -252,7 +250,6 @@ export default function HotWorkPermitForm() {
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">

@@ -54,7 +54,7 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
           <span
             className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5
                        rounded-full bg-warn/10 text-warn"
-            title="Machine guarding required per Cal/OSHA T8 CCR 3556 or 3577"
+            title="Machine guarding required"
           >
             <Shield className="w-3 h-3" />
             Guarded

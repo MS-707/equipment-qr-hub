@@ -5,23 +5,23 @@ const SAGE_FAQ: Array<{ patterns: string[]; answer: string }> = [
   },
   {
     patterns: ['incident', 'report', 'injury', 'accident', 'hurt', 'near miss'],
-    answer: 'Go to Safety → Incident Report. For serious injuries, call 911 first, then report in the app. Cal/OSHA requires notification within 8 hours for serious injuries — call 1-866-627-3233.',
+    answer: 'Go to Safety → Incident Report. For serious injuries, call 911 first, then report in the app. Most jurisdictions require prompt notification for serious injuries — check with your safety officer for local reporting requirements.',
   },
   {
     patterns: ['permit', 'height', 'fall', 'harness', 'tie-off', 'anchor'],
-    answer: 'For work above 6 feet, you need a Work-at-Height Permit. Go to Safety → Permits → Height. Anchor points must be rated ≥5,000 lb per worker (29 CFR 1926.502).',
+    answer: 'For work above 6 feet, you need a Work-at-Height Permit. Go to Safety → Permits → Height. Anchor points must be rated for the load — check your company\'s fall protection plan for requirements.',
   },
   {
     patterns: ['hot work', 'weld', 'grind', 'cut', 'torch', 'fire watch'],
-    answer: 'Hot work requires a Hot Work Permit. Go to Safety → Permits → Hot Work. Clear combustibles 35 feet around the work area (NFPA 51B). A fire watch must remain 30 minutes after work ends.',
+    answer: 'Hot work requires a Hot Work Permit. Go to Safety → Permits → Hot Work. Clear combustibles from around the work area. A fire watch must remain after work ends per your site plan.',
   },
   {
     patterns: ['confined', 'space', 'entry', 'entrant', 'attendant'],
-    answer: 'Confined space entry requires a permit. Go to Safety → Permits → Confined Space. Test atmosphere before entry: O₂ must be 19.5–23.5%. Never enter alone — you need an entrant, attendant, and rescue plan.',
+    answer: 'Confined space entry requires a permit. Go to Safety → Permits → Confined Space. Test the atmosphere before entry: oxygen must be in safe range (19.5–23.5%). Never enter alone — you need an entrant, attendant, and rescue plan.',
   },
   {
     patterns: ['loto', 'lockout', 'tagout', 'lock out', 'tag out', 'energized'],
-    answer: 'LOTO (Lock-Out/Tag-Out): De-energize equipment, apply your personal lock and tag, verify zero energy before work. Never remove another worker\'s lock. See 29 CFR 1910.147.',
+    answer: 'LOTO (Lock-Out/Tag-Out): De-energize equipment, apply your personal lock and tag, verify zero energy before work. Never remove another worker\'s lock.',
   },
   {
     patterns: ['ppe', 'protection', 'glasses', 'gloves', 'hard hat', 'helmet', 'boots'],
