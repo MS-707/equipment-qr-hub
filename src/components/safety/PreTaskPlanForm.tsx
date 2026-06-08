@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, Loader2 } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
@@ -49,6 +49,8 @@ export default function PreTaskPlanForm() {
   })
   const [toolboxTopic, setToolboxTopic] = useState('')
   const [toolboxNotes, setToolboxNotes] = useState('')
+  const [heatOpen, setHeatOpen] = useState(false)
+  const [toolboxOpen, setToolboxOpen] = useState(false)
 
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
@@ -70,9 +72,17 @@ export default function PreTaskPlanForm() {
     if (typeof d.firstAid === 'string') setFirstAid(d.firstAid)
     if (typeof d.weather === 'string') setWeather(d.weather)
     if (typeof d.wind === 'string') setWind(d.wind)
-    if (d.heat && typeof d.heat === 'object') setHeat(d.heat as HeatIllnessPlan)
+    if (d.heat && typeof d.heat === 'object') {
+      const h = d.heat as HeatIllnessPlan
+      setHeat(h)
+      // Auto-expand collapsed sections so restored data isn't hidden.
+      if (Object.values(h).some(Boolean)) setHeatOpen(true)
+    }
     if (typeof d.toolboxTopic === 'string') setToolboxTopic(d.toolboxTopic)
     if (typeof d.toolboxNotes === 'string') setToolboxNotes(d.toolboxNotes)
+    if ((typeof d.toolboxTopic === 'string' && d.toolboxTopic) || (typeof d.toolboxNotes === 'string' && d.toolboxNotes)) {
+      setToolboxOpen(true)
+    }
   }, [])
 
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
@@ -309,37 +319,67 @@ export default function PreTaskPlanForm() {
         </div>
       </section>
 
-      {/* Heat illness (T8 §3395) */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-          Heat Illness Prevention
-        </h4>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            ['water', 'Water available'],
-            ['shade', 'Shade available'],
-            ['restBreaks', 'Rest breaks'],
-            ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
-          ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
-            <label key={key} className="flex items-center gap-2 text-sm text-fg-2">
-              <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-5 h-5" />
-              {lbl}
-            </label>
-          ))}
-        </div>
+      {/* Heat illness (T8 §3395) — collapsible for indoor work */}
+      <section className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setHeatOpen((v) => !v)}
+          aria-expanded={heatOpen}
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors"
+        >
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
+              Heat Illness Prevention
+            </h4>
+            {!heatOpen && <p className="text-xs text-fg-4 mt-0.5">Outdoor / high-temp work — tap to expand</p>}
+          </div>
+          {heatOpen ? <ChevronUp className="w-4 h-4 text-fg-4 shrink-0" /> : <ChevronDown className="w-4 h-4 text-fg-4 shrink-0" />}
+        </button>
+        {heatOpen && (
+          <div className="px-4 pb-4 animate-fadeIn">
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ['water', 'Water available'],
+                ['shade', 'Shade available'],
+                ['restBreaks', 'Rest breaks'],
+                ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
+              ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
+                <label key={key} className="flex items-center gap-2 text-sm text-fg-2">
+                  <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-5 h-5" />
+                  {lbl}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Toolbox talk */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>
-        <div>
-          <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
-          <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
-        </div>
-        <div>
-          <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
-          <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
-        </div>
+      {/* Toolbox talk — collapsible for solo work */}
+      <section className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setToolboxOpen((v) => !v)}
+          aria-expanded={toolboxOpen}
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors"
+        >
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>
+            {!toolboxOpen && <p className="text-xs text-fg-4 mt-0.5">Optional — tap to add a safety topic</p>}
+          </div>
+          {toolboxOpen ? <ChevronUp className="w-4 h-4 text-fg-4 shrink-0" /> : <ChevronDown className="w-4 h-4 text-fg-4 shrink-0" />}
+        </button>
+        {toolboxOpen && (
+          <div className="px-4 pb-4 space-y-3 animate-fadeIn">
+            <div>
+              <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
+              <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
+            </div>
+            <div>
+              <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
+              <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
+            </div>
+          </div>
+        )}
       </section>
 
       <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent">
