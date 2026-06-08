@@ -1,4 +1,5 @@
 const NOTION_VERSION = '2022-06-28'
+const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
 
 interface NotionProperty {
   type: string
@@ -25,6 +26,7 @@ export async function GET(req: Request) {
   }
 
   const pageIds = pagesParam.split(',').filter(Boolean).slice(0, 20)
+    .filter((id) => NOTION_ID_RE.test(id))
   if (pageIds.length === 0) {
     return Response.json({ decisions: {} })
   }

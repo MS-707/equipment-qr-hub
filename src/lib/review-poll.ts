@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import {
   getReviewPendingRecords,
   markReviewApproved,
@@ -28,9 +28,21 @@ interface ReviewResult {
   reviewNote?: string
 }
 
+let polling = false
+
 async function pollReviewStatus(): Promise<void> {
   if (typeof window === 'undefined') return
   if (!navigator.onLine) return
+  if (polling) return
+  polling = true
+  try {
+    await doPoll()
+  } finally {
+    polling = false
+  }
+}
+
+async function doPoll(): Promise<void> {
 
   const pending = getReviewPendingRecords()
   if (pending.length === 0) return
@@ -73,24 +85,40 @@ async function pollReviewStatus(): Promise<void> {
 }
 
 export function useReviewPoller(): void {
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
   useEffect(() => {
-    const isStale = Date.now() - getLastPollTime() > STALE_THRESHOLD_MS
-    if (isStale) {
-      void pollReviewStatus()
+    let timer: ReturnType<typeof setInterval> | null = null
+
+    function startTimer() {
+      stopTimer()
+      timer = setInterval(() => void pollReviewStatus(), POLL_INTERVAL_MS)
     }
 
-    timerRef.current = setInterval(() => {
-      void pollReviewStatus()
-    }, POLL_INTERVAL_MS)
+    function stopTimer() {
+      if (timer) { clearInterval(timer); timer = null }
+    }
+
+    const isStale = Date.now() - getLastPollTime() > STALE_THRESHOLD_MS
+    if (isStale) void pollReviewStatus()
+
+    startTimer()
 
     const onOnline = () => void pollReviewStatus()
     window.addEventListener('online', onOnline)
 
+    const onVisibility = () => {
+      if (document.hidden) {
+        stopTimer()
+      } else {
+        void pollReviewStatus()
+        startTimer()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      stopTimer()
       window.removeEventListener('online', onOnline)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 }

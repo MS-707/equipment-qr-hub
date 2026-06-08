@@ -38,7 +38,17 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
       const res = await fetch('/api/safety/review/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ record, notionPageId: record.notionPageId }),
+        body: JSON.stringify({
+          record: {
+            id: record.id,
+            type: record.type,
+            projectName: record.projectName,
+            location: record.location,
+            createdBy: record.createdBy,
+            createdAt: record.createdAt,
+          },
+          notionPageId: record.notionPageId,
+        }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

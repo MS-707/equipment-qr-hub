@@ -23,7 +23,6 @@ import type {
   ConfinedSpacePermit,
   IncidentReport,
   CrewSignature,
-  ReviewStatus,
 } from '@/lib/safety-types'
 import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
@@ -505,7 +504,7 @@ export function markSubmittedForReview(
   const at = nowIso()
   all[idx] = {
     ...rec,
-    reviewStatus: 'submitted' as ReviewStatus,
+    reviewStatus: 'submitted',
     events: [...rec.events, { action: 'submitted-for-review', by: by.name, byEmail: by.email, at }],
   }
   writeAll(all)
@@ -526,7 +525,7 @@ export function markReviewApproved(
   const at = nowIso()
   all[idx] = {
     ...rec,
-    reviewStatus: 'approved' as ReviewStatus,
+    reviewStatus: 'approved',
     reviewerName: decision.reviewerName,
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
@@ -556,7 +555,7 @@ export function markReviewRejected(
   const at = nowIso()
   all[idx] = {
     ...rec,
-    reviewStatus: 'rejected' as ReviewStatus,
+    reviewStatus: 'rejected',
     reviewerName: decision.reviewerName,
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
@@ -586,7 +585,7 @@ export function markReviewRecalled(
   const at = nowIso()
   all[idx] = {
     ...rec,
-    reviewStatus: 'recalled' as ReviewStatus,
+    reviewStatus: 'recalled',
     reviewerName: undefined,
     reviewerEmail: undefined,
     reviewNote: undefined,
@@ -634,9 +633,9 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
       statusOrResult = (r as IncidentReport).severity
     }
     return [
-      r.id, r.type, csvCell(r.projectName), csvCell(r.location),
-      csvCell(r.createdBy), r.createdAt, statusOrResult, sigCount, r.syncStatus,
-      r.reviewStatus ?? '', csvCell(r.reviewerName ?? ''), r.reviewDecidedAt ?? '',
+      csvCell(r.id), csvCell(r.type), csvCell(r.projectName), csvCell(r.location),
+      csvCell(r.createdBy), csvCell(r.createdAt), csvCell(statusOrResult), csvCell(sigCount), csvCell(r.syncStatus),
+      csvCell(r.reviewStatus ?? ''), csvCell(r.reviewerName ?? ''), csvCell(r.reviewDecidedAt ?? ''),
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')
