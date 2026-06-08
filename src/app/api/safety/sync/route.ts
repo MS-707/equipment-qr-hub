@@ -36,7 +36,17 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (record.createdBy && session!.user!.email) {
+  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
+    return Response.json({ error: 'Invalid record id' }, { status: 400 })
+  }
+  if (!record?.type || typeof record.type !== 'string' || !DB_MAP[record.type]) {
+    return Response.json({ error: 'Invalid record type' }, { status: 400 })
+  }
+  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
+    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
+  }
+
+  if (session!.user!.email) {
     const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
     if (recordEmail && recordEmail !== session!.user!.email) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })

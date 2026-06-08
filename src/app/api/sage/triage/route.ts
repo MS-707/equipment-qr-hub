@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety mentor embedded in Equipment QR Hub — a field safety app used by construction crews.
 
@@ -44,6 +45,11 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const rl = rateLimit(`sage:${session.user.email}`, 20, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
   const key = process.env.ANTHROPIC_API_KEY
