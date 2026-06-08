@@ -39,14 +39,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          record: {
-            id: record.id,
-            type: record.type,
-            projectName: record.projectName,
-            location: record.location,
-            createdBy: record.createdBy,
-            createdAt: record.createdAt,
-          },
+          record,
           notionPageId: record.notionPageId,
         }),
       })
