@@ -124,7 +124,19 @@ export default function SafetyHistory() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-fg-3 text-center py-10">No records match.</p>
+        records.length === 0 ? (
+          <div className="text-center py-10 space-y-3">
+            <p className="text-sm text-fg-3">No safety records yet.</p>
+            <Link
+              href="/safety/ptp"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-mytra-purple hover:text-mytra-purple-hover"
+            >
+              Create your first Pre-Task Plan &rarr;
+            </Link>
+          </div>
+        ) : (
+          <p className="text-sm text-fg-3 text-center py-10">No records match your search.</p>
+        )
       ) : (
         <div className="space-y-2">
           {filtered.map((r) => (

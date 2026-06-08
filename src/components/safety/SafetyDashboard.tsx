@@ -170,7 +170,7 @@ export default function SafetyDashboard() {
               href={href}
               className={`flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                          transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
-                         active:scale-[0.97] ${
+                         press-scale ${
                 primary
                   ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
                   : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
@@ -185,7 +185,7 @@ export default function SafetyDashboard() {
             className="flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                        transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
                        bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover
-                       hover:shadow-card active:scale-[0.97]"
+                       hover:shadow-card press-scale"
           >
             <Truck className="w-4 h-4 shrink-0" />
             Pre-Trip Inspection
