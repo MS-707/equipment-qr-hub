@@ -38,7 +38,7 @@ export default function NavHeader() {
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-bold text-fg">Sage</span>
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
-            Mytra EHS
+            EHS
           </span>
         </Link>
 
