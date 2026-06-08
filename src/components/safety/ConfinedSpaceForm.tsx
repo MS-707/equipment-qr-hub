@@ -8,7 +8,7 @@ import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
 import LastUsedChip from './LastUsedChip'
 import { getCurrentIdentity } from '@/lib/identity'
-import { buildPermitItems, getPermitChecklistDef, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
+import { buildPermitItems, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso, toLocalInput } from '@/lib/datetime'
 import PermitChecklist, { criticalRemaining } from './PermitChecklist'
@@ -178,8 +178,6 @@ export default function ConfinedSpaceForm() {
     )
   }
 
-  const regRef = getPermitChecklistDef('confined-space').regRef
-
   const atmoFields: { label: string; value: string; set: (v: string) => void; hint: string; range: { min?: number; max?: number } }[] = [
     { label: 'O₂ %', value: oxygen, set: setOxygen, hint: '19.5–23.5%', range: { min: 19.5, max: 23.5 } },
     { label: 'LEL %', value: lel, set: setLel, hint: '< 10%', range: { max: 10 } },
@@ -298,7 +296,6 @@ export default function ConfinedSpaceForm() {
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">

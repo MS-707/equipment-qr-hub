@@ -12,6 +12,7 @@ import {
   onShopMgmtChange,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
+import { isAdmin } from '@/lib/admin'
 import { formatDate } from '@/lib/datetime'
 
 const PM_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual'] as const
@@ -45,6 +46,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
   }, [equipment.itemNumber])
 
   const identity = getCurrentIdentity()
+  const canManageDri = isAdmin(identity?.email)
 
   const activeFreqs = PM_FREQUENCIES.filter(
     (f) => ((equipment[FREQ_KEYS[f]] as string) ?? '').trim() !== ''
@@ -93,24 +95,28 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
               {assignment.driEmail && <p className="text-xs text-fg-3">{assignment.driEmail}</p>}
               <p className="text-xs text-fg-4 mt-0.5">Assigned {formatDate(assignment.assignedAt)}</p>
             </div>
-            <button
-              onClick={() => setAssigning(true)}
-              className="text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors"
-            >
-              Reassign
-            </button>
+            {canManageDri && (
+              <button
+                onClick={() => setAssigning(true)}
+                className="text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors"
+              >
+                Reassign
+              </button>
+            )}
           </div>
         ) : (
           <div>
             {assigning ? null : (
               <div className="flex items-center gap-2">
                 <p className="text-xs text-fg-3 italic flex-1">No DRI assigned</p>
-                <button
-                  onClick={() => setAssigning(true)}
-                  className="text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover transition-colors"
-                >
-                  Assign DRI
-                </button>
+                {canManageDri && (
+                  <button
+                    onClick={() => setAssigning(true)}
+                    className="text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover transition-colors"
+                  >
+                    Assign DRI
+                  </button>
+                )}
               </div>
             )}
           </div>

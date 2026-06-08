@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem, PmType } from '@/lib/types'
+import { stripRegCitations } from '@/lib/strip-citations'
 import CreateWorkOrderButton from '@/components/CreateWorkOrderButton'
 
 interface FrequencyConfig {
@@ -67,7 +68,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
         <div className="bg-mytra-purple/10 border-l-4 border-mytra-purple rounded-r-lg p-4">
           <h3 className="text-sm font-semibold text-fg mb-1">Key PM Summary</h3>
           <p className="text-fg-2 text-sm leading-relaxed">
-            {equipment.keyPmSummary}
+            {stripRegCitations(equipment.keyPmSummary)}
           </p>
         </div>
       )}
@@ -115,7 +116,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
                           className="flex items-start gap-2 text-sm text-fg-2"
                         >
                           <span className="text-fg-4 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-fg-4" />
-                          <span>{task}</span>
+                          <span>{stripRegCitations(task)}</span>
                         </li>
                       ))}
                     </ul>

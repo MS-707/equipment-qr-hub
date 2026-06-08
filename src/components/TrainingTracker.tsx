@@ -24,6 +24,40 @@ function parseTrainingTopics(raw: string): string[] {
     .filter((t) => t.length > 0)
 }
 
+/**
+ * Map a raw training requirement to a clean, worker-friendly EHS program title.
+ * Workers see the program name, not regulatory citations ("per 3314", "29 CFR…").
+ * Display-only — the raw `topic` string stays the key for training records.
+ */
+const PROGRAM_LABELS: { match: RegExp; title: string }[] = [
+  { match: /loto|lockout/i, title: 'Lockout/Tagout (LOTO)' },
+  { match: /abrasive|grinder|ring test/i, title: 'Abrasive Wheel & Grinder Safety' },
+  { match: /crane/i, title: 'Overhead Crane Operation' },
+  { match: /scissor|aerial|mewp/i, title: 'Scissor Lift / Aerial Platform' },
+  { match: /weld|hot ?work/i, title: 'Welding & Hot Work Safety' },
+  { match: /ladder/i, title: 'Ladder Safety' },
+  { match: /extinguisher/i, title: 'Fire Extinguisher Use' },
+  { match: /electrical/i, title: 'Electrical Safety Awareness' },
+  { match: /fume|solder|3d ?print/i, title: 'Soldering & Fume Awareness' },
+  { match: /machine guard/i, title: 'Machine Guarding Awareness' },
+  { match: /\bppe\b/i, title: 'PPE Use & Care' },
+  { match: /iipp|injury.*illness/i, title: 'Injury & Illness Prevention' },
+]
+
+function friendlyTrainingLabel(topic: string): string {
+  for (const p of PROGRAM_LABELS) if (p.match.test(topic)) return p.title
+  // Fallback: strip regulatory citations and tidy whatever remains.
+  const cleaned = topic
+    .replace(/\bper\b[^;,]*$/i, '')
+    .replace(/\b(29\s*CFR|T8\s*CCR|CCR|CFR|NFPA|ANSI|ASME|OSHA)\b[\s\d.§/\-]*/gi, '')
+    .replace(/§\s*\d[\d.\-]*/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[\s,;.\-]+$/, '')
+    .trim()
+  if (!cleaned) return topic
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
+}
+
 export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
   const [, setTick] = useState(0)
   const [addingTopic, setAddingTopic] = useState<string | null>(null)
@@ -100,7 +134,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                 ) : (
                   <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
                 )}
-                <span className="text-sm text-fg flex-1 min-w-0">{topic}</span>
+                <span className="text-sm text-fg flex-1 min-w-0">{friendlyTrainingLabel(topic)}</span>
                 <span className="text-xs text-fg-4 shrink-0">
                   {records.length} {records.length === 1 ? 'record' : 'records'}
                 </span>

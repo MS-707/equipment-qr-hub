@@ -157,8 +157,8 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           )}
           {activeTab === 'training' && (
             <div className="space-y-6">
-              <TrainingTracker equipment={equipment} />
               <TrainingInfo equipment={equipment} />
+              <TrainingTracker equipment={equipment} />
             </div>
           )}
           {activeTab === 'pm-schedule' && (
