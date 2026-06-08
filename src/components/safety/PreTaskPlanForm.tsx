@@ -2,10 +2,10 @@
 
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, Loader2 } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures } from '@/lib/safety-records'
+import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -14,6 +14,7 @@ import HazardTable from './HazardTable'
 import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
+import { getCurrentIdentity } from '@/lib/identity'
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
@@ -144,40 +145,7 @@ export default function PreTaskPlanForm() {
 
   // ── DONE ──────────────────────────────────────────────────
   if (step === 'done' && submittedId) {
-    return (
-      <div className="animate-fadeIn space-y-4">
-        <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
-          <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-ok mb-1">PTP Logged</h3>
-          <p className="text-sm text-ok">
-            {sigData.signatures.length} crew signed on. Recorded as{' '}
-            <span className="font-mono text-fg">{submittedId}</span>.
-          </p>
-        </div>
-        {wasOffline && (
-          <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
-            <WifiOff className="w-4 h-4 text-warn shrink-0" />
-            <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
-          </div>
-        )}
-        <Link
-          href={`/safety/record/${submittedId}`}
-          className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
-        >
-          View / Print
-        </Link>
-        <button
-          type="button"
-          onClick={resetNew}
-          className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
-        >
-          New Plan
-        </button>
-        <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
-          Back to Safety Hub
-        </Link>
-      </div>
-    )
+    return <PtpDone submittedId={submittedId} sigCount={sigData.signatures.length} wasOffline={wasOffline} onNew={resetNew} />
   }
 
   // ── SIGN-ON ───────────────────────────────────────────────
@@ -384,6 +352,88 @@ export default function PreTaskPlanForm() {
           {canContinue ? 'Continue to crew sign-on' : 'Add scope and location'}
         </button>
       </div>
+    </div>
+  )
+}
+
+function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: string; sigCount: number; wasOffline: boolean; onNew: () => void }) {
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewDone, setReviewDone] = useState(false)
+  const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
+
+  async function handleReviewSubmit() {
+    setReviewSubmitting(true)
+    const identity = getCurrentIdentity()
+    markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+    const rec = getSafetyRecordById(submittedId)
+    if (rec) {
+      try {
+        await fetch('/api/safety/review/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
+        })
+      } catch { /* offline — will retry */ }
+    }
+    setReviewDone(true)
+    setReviewSubmitting(false)
+  }
+
+  return (
+    <div className="animate-fadeIn space-y-4">
+      <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
+        <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
+        <h3 className="text-lg font-semibold text-ok mb-1">PTP Logged</h3>
+        <p className="text-sm text-ok">
+          {sigCount} crew signed on. Recorded as{' '}
+          <span className="font-mono text-fg">{submittedId}</span>.
+        </p>
+      </div>
+      {wasOffline && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
+          <WifiOff className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+        </div>
+      )}
+      {ehsEnabled && !reviewDone && (
+        <button
+          type="button"
+          onClick={handleReviewSubmit}
+          disabled={reviewSubmitting}
+          className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium
+                     bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple
+                     hover:border-mytra-purple/60 transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {reviewSubmitting ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Submitting for review…</>
+          ) : (
+            <><Send className="w-4 h-4" /> Submit for EHS Review</>
+          )}
+        </button>
+      )}
+      {reviewDone && (
+        <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
+          <Send className="w-4 h-4 text-mytra-purple shrink-0" />
+          <p className="text-xs text-mytra-purple">Submitted for EHS review — your manager will be notified</p>
+        </div>
+      )}
+      <Link
+        href={`/safety/record/${submittedId}`}
+        className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+      >
+        View / Print
+      </Link>
+      <button
+        type="button"
+        onClick={onNew}
+        className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
+      >
+        New Plan
+      </button>
+      <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
+        Back to Safety Hub
+      </Link>
     </div>
   )
 }

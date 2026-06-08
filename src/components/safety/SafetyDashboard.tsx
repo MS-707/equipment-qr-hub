@@ -18,8 +18,10 @@ import {
   getActivePermits,
   getAllSafetyRecords,
   onSafetyChange,
+  getReviewActionableRecords,
 } from '@/lib/safety-records'
 import { installSyncListeners } from '@/lib/safety-sync'
+import { useReviewPoller } from '@/lib/review-poll'
 import { getCurrentIdentity } from '@/lib/identity'
 import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
 import SafetyRecordCard from './SafetyRecordCard'
@@ -44,8 +46,12 @@ export default function SafetyDashboard() {
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
   const [pendingSyncCount, setPendingSyncCount] = useState(0)
+  const [reviewApprovedCount, setReviewApprovedCount] = useState(0)
+  const [reviewRejectedCount, setReviewRejectedCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
   const [firstName, setFirstName] = useState('')
+
+  useReviewPoller()
 
   const load = useCallback(() => {
     setPtp(getPtpForDate(today()))
@@ -58,6 +64,9 @@ export default function SafetyDashboard() {
     setPendingSyncCount(
       all.filter((r) => r.syncStatus === 'pending' || r.syncStatus === 'offline' || r.syncStatus === 'failed').length
     )
+    const reviewItems = getReviewActionableRecords()
+    setReviewApprovedCount(reviewItems.approved.length)
+    setReviewRejectedCount(reviewItems.rejected.length)
     setRecent(all.slice(0, 5))
   }, [])
 
@@ -108,6 +117,32 @@ export default function SafetyDashboard() {
             {pendingSyncCount} record{pendingSyncCount !== 1 ? 's' : ''} waiting to sync
           </p>
         </div>
+      )}
+
+      {/* EHS review banners */}
+      {reviewRejectedCount > 0 && (
+        <Link
+          href="/safety/history"
+          className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-lg px-4 py-2.5 hover:bg-danger/15 transition-colors"
+        >
+          <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+          <p className="text-xs text-danger flex-1">
+            {reviewRejectedCount} record{reviewRejectedCount !== 1 ? 's' : ''} need{reviewRejectedCount === 1 ? 's' : ''} revision — rejected by EHS
+          </p>
+          <ChevronRight className="w-3.5 h-3.5 text-danger shrink-0" />
+        </Link>
+      )}
+      {reviewApprovedCount > 0 && (
+        <Link
+          href="/safety/history"
+          className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 hover:bg-ok/15 transition-colors"
+        >
+          <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
+          <p className="text-xs text-ok flex-1">
+            {reviewApprovedCount} record{reviewApprovedCount !== 1 ? 's' : ''} approved by EHS
+          </p>
+          <ChevronRight className="w-3.5 h-3.5 text-ok shrink-0" />
+        </Link>
       )}
 
       {/* Quick actions */}

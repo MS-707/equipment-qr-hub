@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { AlertTriangle, Camera, X, Plus, RotateCcw } from 'lucide-react'
 import type { IncidentType, IncidentSeverity } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
-import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId } from '@/lib/safety-records'
+import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -129,6 +129,15 @@ export default function IncidentReportForm() {
     }
     void trySyncRecord(record.id)
     saveLastContext({ projectName, location })
+    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')) {
+      const identity = getCurrentIdentity()
+      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+      fetch('/api/safety/review/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record, notionPageId: record.notionPageId }),
+      }).catch(() => {})
+    }
     clearDraft()
     setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
@@ -161,6 +170,7 @@ export default function IncidentReportForm() {
         onNew={reset}
         newLabel="New report"
         offline={wasOffline}
+        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')}
       />
     )
   }

@@ -32,7 +32,10 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
 import PermitStatusBadge from './PermitStatusBadge'
+import ReviewStatusBadge from './ReviewStatusBadge'
+import ReviewStatusSection from './ReviewStatusSection'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { useReviewPoller } from '@/lib/review-poll'
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -49,6 +52,8 @@ export default function RecordView({ id }: { id: string }) {
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
+
+  useReviewPoller()
 
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
@@ -130,7 +135,10 @@ export default function RecordView({ id }: { id: string }) {
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-mono text-fg-3">{r.id}</span>
-          {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
+          <div className="flex items-center gap-1.5">
+            {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
+            <ReviewStatusBadge record={r} />
+          </div>
         </div>
         <h1 className="text-lg font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
         <dl className="grid grid-cols-2 gap-2 mt-3 text-sm">
@@ -147,6 +155,9 @@ export default function RecordView({ id }: { id: string }) {
       {isPTP(r) && <PtpBody ptp={r} sigImages={sigImages} />}
       {isPermit(r) && <PermitBody permit={r as AnyPermit} sigImages={sigImages} />}
       {isIncident(r) && <IncidentBody incident={r} images={sigImages} />}
+
+      {/* EHS Review */}
+      <ReviewStatusSection record={r} />
 
       {/* Permit actions */}
       {isPermit(r) && permitOpen && (
