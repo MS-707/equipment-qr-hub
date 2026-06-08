@@ -183,7 +183,7 @@ export default function IncidentReportForm() {
             <RotateCcw className="w-4 h-4" />
             <span>Draft restored</span>
           </div>
-          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2">
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
             Dismiss
           </button>
         </div>
@@ -335,7 +335,7 @@ export default function IncidentReportForm() {
             className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
-            <span className="text-[9px]">Add</span>
+            <span className="text-[11px]">Add</span>
           </button>
         </div>
         <input

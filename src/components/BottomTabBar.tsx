@@ -70,13 +70,13 @@ export default function BottomTabBar() {
               <span className="relative">
                 <Icon className="w-6 h-6" />
                 {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[16px] h-[16px]
-                                   px-1 text-[10px] font-bold rounded-full bg-mytra-purple text-white">
+                  <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px]
+                                   px-1 text-[11px] font-bold rounded-full bg-mytra-purple text-white">
                     {badge}
                   </span>
                 )}
               </span>
-              <span className="text-[10px] font-medium leading-tight">{label}</span>
+              <span className="text-xs font-medium leading-tight">{label}</span>
             </Link>
           )
         })}

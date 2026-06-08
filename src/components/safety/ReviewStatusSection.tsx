@@ -99,7 +99,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
         <button
           type="button"
           onClick={() => setRecallOpen(true)}
-          className="no-print mt-3 inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg-2 transition-colors"
+          className="no-print mt-3 inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg-2 transition-colors min-h-[44px] px-3"
         >
           <RotateCcw className="w-3.5 h-3.5" /> Recall submission
         </button>
