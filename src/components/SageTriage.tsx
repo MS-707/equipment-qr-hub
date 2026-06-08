@@ -368,8 +368,13 @@ function SageTriageInner() {
             )}
           </div>
 
-          {/* Input */}
-          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2 shrink-0">
+          {/* Disclaimer + Input */}
+          <div className="px-3 pt-1.5 shrink-0">
+            <p className="text-center text-xs text-fg-4 leading-tight">
+              Sage is an AI assistant, not a substitute for a competent safety professional.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2 shrink-0 mt-0">
             <input
               ref={inputRef}
               type="text"

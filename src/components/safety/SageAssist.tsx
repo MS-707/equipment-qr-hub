@@ -182,6 +182,9 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
               Dismiss
             </button>
           </div>
+          <p className="text-xs text-fg-4 mt-2 text-center">
+            AI suggestions are not a substitute for a competent safety assessment.
+          </p>
         </div>
       )}
     </div>
