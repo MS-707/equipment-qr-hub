@@ -12,6 +12,16 @@ export function toIso(local: string): string {
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString()
 }
 
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  })
+}
+
 /** Now and now+`hours`, as datetime-local input values — convenient permit defaults. */
 export function defaultValidityWindow(hours = 8): { from: string; until: string } {
   const now = new Date()

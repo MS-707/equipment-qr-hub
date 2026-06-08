@@ -10,6 +10,7 @@ import {
 } from '@/lib/work-orders'
 import { getAllEquipment } from '@/lib/equipment'
 import WorkOrderCard from '@/components/WorkOrderCard'
+import PullToRefresh from '@/components/PullToRefresh'
 
 const STATUSES: WorkOrderStatus[] = ['Not Started', 'In Progress', 'Complete']
 const PM_TYPES: PmType[] = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual']
@@ -83,10 +84,11 @@ export default function WorkOrderBoard() {
   }
 
   return (
+    <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Filter className="w-4 h-4 text-gray-500 shrink-0" />
+      <div className="no-print flex flex-wrap items-center gap-2">
+        <Filter className="w-4 h-4 text-fg-4 shrink-0" />
 
         <select
           value={filterEquipment}
@@ -94,9 +96,9 @@ export default function WorkOrderBoard() {
             setFilterEquipment(e.target.value === 'all' ? 'all' : Number(e.target.value))
           }
           aria-label="Filter by equipment"
-          className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
-                     text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple
-                     max-w-[200px]"
+          className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
+                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                     max-w-[200px] min-h-[44px]"
         >
           <option value="all">All Equipment</option>
           {equipment.map((e) => (
@@ -112,8 +114,9 @@ export default function WorkOrderBoard() {
             setFilterPmType(e.target.value === 'all' ? 'all' : (e.target.value as PmType))
           }
           aria-label="Filter by PM type"
-          className="bg-mytra-input border border-mytra-border rounded-lg py-1.5 px-2.5
-                     text-xs text-white focus:outline-none focus:ring-1 focus:ring-mytra-purple"
+          className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
+                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                     min-h-[44px]"
         >
           <option value="all">All PM Types</option>
           {PM_TYPES.map((t) => (
@@ -126,11 +129,11 @@ export default function WorkOrderBoard() {
         {overdueOrders.length > 0 && (
           <button
             onClick={() => setShowOverdueOnly(!showOverdueOnly)}
-            className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                       rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2.5
+                       rounded-lg transition-colors min-h-[44px] ${
                          showOverdueOnly
-                           ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-                           : 'text-red-400 border border-mytra-border hover:bg-red-500/10'
+                           ? 'bg-danger/20 text-danger border border-danger/50'
+                           : 'text-danger border border-mytra-border hover:bg-danger/10'
                        }`}
           >
             <AlertTriangle className="w-3 h-3" />
@@ -140,9 +143,9 @@ export default function WorkOrderBoard() {
 
         <button
           onClick={handleExport}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
-                     rounded-lg border border-mytra-border text-gray-400
-                     hover:text-white hover:bg-mytra-card-hover transition-colors ml-auto"
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2.5
+                     rounded-lg border border-mytra-border text-fg-3 min-h-[44px]
+                     hover:text-fg hover:bg-mytra-card-hover transition-colors ml-auto"
         >
           <Download className="w-3 h-3" />
           Export CSV
@@ -154,10 +157,10 @@ export default function WorkOrderBoard() {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-12 h-12 rounded-full bg-mytra-card border border-mytra-border
                           flex items-center justify-center mb-3">
-            <Filter className="w-5 h-5 text-gray-600" />
+            <Filter className="w-5 h-5 text-fg-4" />
           </div>
-          <p className="text-gray-400 text-sm font-medium">No work orders yet</p>
-          <p className="text-gray-600 text-xs mt-1 max-w-sm">
+          <p className="text-fg-3 text-sm font-medium">No work orders yet</p>
+          <p className="text-fg-4 text-xs mt-1 max-w-sm">
             Create work orders from equipment profile pages. Go to any equipment item,
             open the PM Schedule tab, and click &quot;+ Work Order&quot; next to a PM type.
           </p>
@@ -173,7 +176,7 @@ export default function WorkOrderBoard() {
                 {/* Column header */}
                 <div className="flex items-center gap-2 mb-3 pl-3 border-l-[3px]"
                      style={{ borderColor: statusColor }}>
-                  <h2 className="text-sm font-semibold text-white">{status}</h2>
+                  <h2 className="text-sm font-semibold text-fg">{status}</h2>
                   <span
                     className="text-xs font-medium px-2 py-0.5 rounded-full"
                     style={{
@@ -193,7 +196,7 @@ export default function WorkOrderBoard() {
                   {items.length === 0 && (
                     <div className="bg-mytra-card border border-dashed border-mytra-border
                                     rounded-lg p-6 text-center">
-                      <p className="text-gray-600 text-xs">No work orders</p>
+                      <p className="text-fg-4 text-xs">No work orders</p>
                     </div>
                   )}
                 </div>
@@ -203,5 +206,6 @@ export default function WorkOrderBoard() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   )
 }

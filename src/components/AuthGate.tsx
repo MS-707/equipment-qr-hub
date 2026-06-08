@@ -71,8 +71,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (!online && cached) {
     return (
       <>
-        <div className="no-print bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center">
-          <p className="text-xs text-amber-300 inline-flex items-center gap-1.5">
+        <div className="no-print bg-warn/10 border-b border-warn/20 px-4 py-2 text-center">
+          <p className="text-xs text-warn/80 inline-flex items-center gap-1.5">
             <WifiOff className="w-3.5 h-3.5" />
             Offline — signed in as {cached.name}. Records will sync when you reconnect.
           </p>
@@ -126,8 +126,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         </p>
 
         {authError && (
-          <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-            <p className="text-xs text-red-300">
+          <div className="mb-4 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">
+            <p className="text-xs text-danger/80">
               {authError === 'AccessDenied'
                 ? "That account isn't on the Mytra domain. Use your @mytra.ai email."
                 : 'Sign-in failed. Please try again.'}
@@ -149,7 +149,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         {hasGoogle && hasDev && (
           <div className="flex items-center gap-3 my-4">
             <div className="h-px bg-mytra-border flex-1" />
-            <span className="text-[10px] uppercase tracking-wider text-fg-4">or</span>
+            <span className="text-xs uppercase tracking-wider text-fg-4">or</span>
             <div className="h-px bg-mytra-border flex-1" />
           </div>
         )}
@@ -196,7 +196,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>
             {!hasGoogle && (
-              <p className="text-[11px] text-fg-4 text-center">
+              <p className="text-xs text-fg-4 text-center">
                 Dev sign-in (Google not configured yet). Restricted to the Mytra email domain.
               </p>
             )}

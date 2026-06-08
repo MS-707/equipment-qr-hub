@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
 
@@ -16,15 +18,25 @@ Base risk levels on OSHA severity × probability. Reference:
 Respond ONLY with a JSON object: { "hazards": [...] }
 No markdown, no explanation, no preamble. Just the JSON object.`
 
-// Allow the Claude call enough headroom; Vercel's default function timeout is
-// 10s which can cut off generation. 30s is well within Hobby plan limits.
 export const maxDuration = 30
 
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {
+    return Response.json({ hazards: [], error: 'AI assist is not enabled' }, { status: 404 })
+  }
+
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const rl = rateLimit(`hazards:${session!.user!.email}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ hazards: [], error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
+
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
     return Response.json(
-      { hazards: [], error: 'ANTHROPIC_API_KEY not configured' },
+      { hazards: [], error: 'AI assistant not configured' },
       { status: 503 }
     )
   }
@@ -36,14 +48,16 @@ export async function POST(req: Request) {
     return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim()
+  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
   if (!scopeOfWork) {
     return Response.json({ hazards: [], error: 'No scope of work provided' })
   }
 
+  const location = (body.location ?? '').trim().slice(0, 200)
+
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
-    body.location ? `Location: ${body.location}` : null,
+    location ? `Location: ${location}` : null,
   ]
     .filter(Boolean)
     .join('\n')
@@ -57,8 +71,10 @@ export async function POST(req: Request) {
       messages: [{ role: 'user', content: userMessage }],
     })
 
-    const text =
+    const raw =
       message.content[0]?.type === 'text' ? message.content[0].text : ''
+
+    const text = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
 
     const parsed = JSON.parse(text)
     const hazards = Array.isArray(parsed?.hazards) ? parsed.hazards : []
@@ -74,8 +90,11 @@ export async function POST(req: Request) {
 
     return Response.json({ hazards: valid })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[sage] suggest-hazards failed:', msg)
-    return Response.json({ hazards: [], error: msg }, { status: 502 })
+    console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
+    const isSyntax = err instanceof SyntaxError
+    return Response.json(
+      { hazards: [], error: isSyntax ? 'Sage returned an unexpected format — try again' : 'Sage is temporarily unavailable' },
+      { status: 502 }
+    )
   }
 }

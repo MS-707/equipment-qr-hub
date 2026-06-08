@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { PackageOpen } from 'lucide-react'
-import { createConfinedSpacePermit, saveSignatures } from '@/lib/safety-records'
+import { useState, useCallback } from 'react'
+import { PackageOpen, RotateCcw } from 'lucide-react'
+import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
+import { getLastContext, saveLastContext } from '@/lib/use-last-context'
+import LastUsedChip from './LastUsedChip'
+import { getCurrentIdentity } from '@/lib/identity'
 import { buildPermitItems, getPermitChecklistDef, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso, toLocalInput } from '@/lib/datetime'
@@ -47,50 +51,93 @@ export default function ConfinedSpaceForm() {
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [lastCtx] = useState(getLastContext)
+
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.spaceDescription === 'string') setSpaceDescription(d.spaceDescription)
+    if (Array.isArray(d.hazards)) setHazards(d.hazards)
+    if (typeof d.oxygen === 'string') setOxygen(d.oxygen)
+    if (typeof d.lel === 'string') setLel(d.lel)
+    if (typeof d.co === 'string') setCo(d.co)
+    if (typeof d.h2s === 'string') setH2s(d.h2s)
+    if (typeof d.testedBy === 'string') setTestedBy(d.testedBy)
+    if (typeof d.continuousMonitoring === 'boolean') setContinuousMonitoring(d.continuousMonitoring)
+    if (typeof d.ventilationInUse === 'boolean') setVentilationInUse(d.ventilationInUse)
+    if (typeof d.rescuePlan === 'string') setRescuePlan(d.rescuePlan)
+    if (typeof d.attendantName === 'string') setAttendantName(d.attendantName)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'confined-space-permit',
+    () => ({ projectName, location, spaceDescription, hazards, oxygen, lel, co, h2s, testedBy, continuousMonitoring, ventilationInUse, rescuePlan, attendantName }),
+    restore
+  )
 
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const atmoUnsafe =
+    outOfRange(oxygen, { min: 19.5, max: 23.5 }) ||
+    outOfRange(lel, { max: 10 }) ||
+    outOfRange(co, { max: 35 }) ||
+    outOfRange(h2s, { max: 10 })
   const canSubmit =
     spaceDescription.trim().length > 0 &&
     location.trim().length > 0 &&
     attendantName.trim().length > 0 &&
     critLeft === 0 &&
+    !atmoUnsafe &&
     sigData.signatures.length >= 1 &&
     supervisorId !== null &&
     validWindowOk
 
   function submit() {
     if (!canSubmit) return
-    const record = createConfinedSpacePermit({
-      projectName,
-      location,
-      spaceDescription,
-      hazards,
-      atmospheric: {
-        oxygenPct: oxygen,
-        lelPct: lel,
-        coPpm: co,
-        h2sPpm: h2s,
-        testedBy,
-        testedAt: toIso(testedAt),
-      },
-      continuousMonitoring,
-      ventilationInUse,
-      rescuePlan,
-      checklist,
-      entrySupervisorSignatureId: supervisorId,
-      attendantName,
-      entrants: sigData.signatures,
-      validFrom: toIso(validFrom),
-      validUntil: toIso(validUntil),
-    })
+    setSaveError(null)
+    let record: ReturnType<typeof createConfinedSpacePermit>
+    try {
+      record = createConfinedSpacePermit({
+        projectName,
+        location,
+        spaceDescription,
+        hazards,
+        atmospheric: {
+          oxygenPct: oxygen,
+          lelPct: lel,
+          coPpm: co,
+          h2sPpm: h2s,
+          testedBy,
+          testedAt: toIso(testedAt),
+        },
+        continuousMonitoring,
+        ventilationInUse,
+        rescuePlan,
+        checklist,
+        entrySupervisorSignatureId: supervisorId,
+        attendantName,
+        entrants: sigData.signatures,
+        validFrom: toIso(validFrom),
+        validUntil: toIso(validUntil),
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
+    saveLastContext({ projectName, location })
+    clearDraft()
+    setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
+    setWasOffline(false)
     const w = defaultValidityWindow(4)
     setSpaceDescription('')
     setHazards([])
@@ -120,6 +167,13 @@ export default function ConfinedSpaceForm() {
         message="Confined Space Entry permit is active, logged as"
         onNew={reset}
         newLabel="New permit"
+        offline={wasOffline}
+        onSubmitForReview={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' ? async () => {
+          const identity = getCurrentIdentity()
+          markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+          const rec = getSafetyRecordById(submittedId)
+          if (rec) fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }) }).catch(() => {})
+        } : undefined}
       />
     )
   }
@@ -135,6 +189,17 @@ export default function ConfinedSpaceForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
@@ -143,16 +208,18 @@ export default function ConfinedSpaceForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
           <label className={labelCls}>Space description</label>
-          <textarea rows={2} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -180,7 +247,7 @@ export default function ConfinedSpaceForm() {
                   onChange={(e) => f.set(e.target.value)}
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : ''}`}
                 />
-                {bad && <p className="text-[10px] text-danger mt-0.5">Out of acceptable range</p>}
+                {bad && <p className="text-xs text-danger mt-0.5">Out of acceptable range</p>}
               </div>
             )
           })}
@@ -188,7 +255,7 @@ export default function ConfinedSpaceForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Tested by</label>
-            <input type="text" value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={100} value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Tested at</label>
@@ -197,11 +264,11 @@ export default function ConfinedSpaceForm() {
         </div>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 text-sm text-fg-2">
-            <input type="checkbox" checked={continuousMonitoring} onChange={() => setContinuousMonitoring((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+            <input type="checkbox" checked={continuousMonitoring} onChange={() => setContinuousMonitoring((v) => !v)} className="accent-mytra-purple w-5 h-5" />
             Continuous monitoring
           </label>
           <label className="flex items-center gap-2 text-sm text-fg-2">
-            <input type="checkbox" checked={ventilationInUse} onChange={() => setVentilationInUse((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+            <input type="checkbox" checked={ventilationInUse} onChange={() => setVentilationInUse((v) => !v)} className="accent-mytra-purple w-5 h-5" />
             Ventilation in use
           </label>
         </div>
@@ -213,6 +280,7 @@ export default function ConfinedSpaceForm() {
           <input
             type="text"
             value={attendantName}
+            maxLength={100}
             onChange={(e) => setAttendantName(e.target.value)}
             placeholder="Name"
             className={`${inputCls} ${!attendantName.trim() ? 'border-warn/60' : ''}`}
@@ -220,17 +288,17 @@ export default function ConfinedSpaceForm() {
         </div>
         <div>
           <label className={labelCls}>Rescue plan</label>
-          <textarea rows={2} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services" className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-entry checklist</h4>
-          {critLeft > 0 && <span className="text-[10px] text-warn">{critLeft} required left</span>}
+          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
-        <p className="text-[10px] text-fg-4 px-1">{regRef}</p>
+        <p className="text-xs text-fg-4 px-1">{regRef}</p>
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
@@ -264,6 +332,12 @@ export default function ConfinedSpaceForm() {
         />
       </section>
 
+      {saveError && (
+        <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+          <span className="font-semibold shrink-0">Save failed:</span>
+          <span>{saveError}</span>
+        </div>
+      )}
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
@@ -273,15 +347,17 @@ export default function ConfinedSpaceForm() {
         >
           {critLeft > 0
             ? `Check ${critLeft} required item${critLeft === 1 ? '' : 's'}`
-            : !attendantName.trim()
-              ? 'Assign an attendant'
-              : sigData.signatures.length === 0
-                ? 'Add entrant sign-on'
-                : supervisorId === null
-                  ? 'Mark the entry supervisor'
-                  : !validWindowOk
-                    ? 'Fix validity window'
-                    : 'Issue Permit'}
+            : atmoUnsafe
+              ? 'Atmosphere out of range'
+              : !attendantName.trim()
+                ? 'Assign an attendant'
+                : sigData.signatures.length === 0
+                  ? 'Add entrant sign-on'
+                  : supervisorId === null
+                    ? 'Mark the entry supervisor'
+                    : !validWindowOk
+                      ? 'Fix validity window'
+                      : 'Issue Permit'}
         </button>
       </div>
     </div>

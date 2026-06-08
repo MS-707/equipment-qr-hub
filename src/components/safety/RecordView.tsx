@@ -7,6 +7,9 @@ import type {
   SafetyRecord,
   PreTaskPlan,
   AnyPermit,
+  HeightPermit,
+  HotWorkPermit,
+  ConfinedSpacePermit,
   IncidentReport,
   CrewSignature,
 } from '@/lib/safety-types'
@@ -29,6 +32,10 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
 import PermitStatusBadge from './PermitStatusBadge'
+import ReviewStatusBadge from './ReviewStatusBadge'
+import ReviewStatusSection from './ReviewStatusSection'
+import ConfirmDialog from '@/components/ConfirmDialog'
+import { useReviewPoller } from '@/lib/review-poll'
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -43,6 +50,10 @@ function fmt(iso: string): string {
 export default function RecordView({ id }: { id: string }) {
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
+  const [revokeOpen, setRevokeOpen] = useState(false)
+  const [closeOpen, setCloseOpen] = useState(false)
+
+  useReviewPoller()
 
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
@@ -66,7 +77,7 @@ export default function RecordView({ id }: { id: string }) {
         r.photoSlots.forEach((slot) => slots.push(slot))
         if (r.reporterSignatureId) slots.push(r.reporterSignatureId)
       }
-      if (slots.length > 0) getBlobs(r.id, slots).then(setSigImages)
+      if (slots.length > 0) getBlobs(r.id, slots).then(setSigImages).catch(() => {})
     }
     return unsub
   }, [id, load])
@@ -83,12 +94,13 @@ export default function RecordView({ id }: { id: string }) {
   const r = record
   const identity = getCurrentIdentity()
 
-  function handleClose() {
-    closePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+  function handleClose(note?: string) {
+    closePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
+    setCloseOpen(false)
   }
-  function handleRevoke() {
-    const note = window.prompt('Reason for revoking this permit?') ?? ''
-    revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note)
+  function handleRevoke(note?: string) {
+    revokePermit(r.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }, note ?? '')
+    setRevokeOpen(false)
   }
 
   const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
@@ -122,8 +134,11 @@ export default function RecordView({ id }: { id: string }) {
       {/* Header */}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono text-fg-3">{r.id}</span>
-          {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
+          <span className="text-xs font-mono text-fg-3">{r.id}</span>
+          <div className="flex items-center gap-1.5">
+            {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
+            <ReviewStatusBadge record={r} />
+          </div>
         </div>
         <h1 className="text-lg font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
         <dl className="grid grid-cols-2 gap-2 mt-3 text-sm">
@@ -141,25 +156,47 @@ export default function RecordView({ id }: { id: string }) {
       {isPermit(r) && <PermitBody permit={r as AnyPermit} sigImages={sigImages} />}
       {isIncident(r) && <IncidentBody incident={r} images={sigImages} />}
 
+      {/* EHS Review */}
+      <ReviewStatusSection record={r} />
+
       {/* Permit actions */}
       {isPermit(r) && permitOpen && (
         <div className="no-print flex gap-2">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={() => setCloseOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover"
           >
             <XCircle className="w-4 h-4" /> Close permit
           </button>
           <button
             type="button"
-            onClick={handleRevoke}
+            onClick={() => setRevokeOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-danger/10 border border-danger/30 text-danger hover:bg-danger/20"
           >
             <Ban className="w-4 h-4" /> Revoke
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={closeOpen}
+        title="Close Permit"
+        message="Mark this permit as closed. This will be recorded in the audit trail."
+        confirmLabel="Close permit"
+        inputPrompt="Closing note (optional)"
+        onConfirm={handleClose}
+        onCancel={() => setCloseOpen(false)}
+      />
+      <ConfirmDialog
+        open={revokeOpen}
+        title="Revoke Permit"
+        message="This action is recorded in the audit trail and cannot be undone."
+        confirmLabel="Revoke"
+        variant="danger"
+        inputPrompt="Reason for revoking this permit"
+        onConfirm={handleRevoke}
+        onCancel={() => setRevokeOpen(false)}
+      />
 
       {/* Audit trail */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
@@ -183,7 +220,7 @@ export default function RecordView({ id }: { id: string }) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-wider text-fg-3">{label}</dt>
+      <dt className="text-xs uppercase tracking-wider text-fg-3">{label}</dt>
       <dd className="text-sm text-fg break-words">{value || '—'}</dd>
     </div>
   )
@@ -199,10 +236,10 @@ function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record
             // eslint-disable-next-line @next/next/no-img-element
             <img src={images[s.id]} alt={`${s.name} signature`} className="w-full h-12 object-contain" />
           ) : (
-            <div className="h-12 flex items-center justify-center text-[10px] text-fg-4">signature on device</div>
+            <div className="h-12 flex items-center justify-center text-xs text-fg-4">signature on device</div>
           )}
           <p className="text-xs text-fg mt-1 truncate">{s.name}</p>
-          <p className="text-[10px] text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+          <p className="text-xs text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
         </div>
       ))}
     </div>
@@ -225,8 +262,8 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
             {ptp.hazards.map((h) => (
               <li key={h.id} className="text-sm">
                 <span className="text-fg">{h.description}</span>
-                <span className="text-[10px] text-fg-3 ml-1">({h.riskLevel})</span>
-                {h.source === 'sage' && <span className="text-[10px] text-mytra-purple ml-1">✨ Sage</span>}
+                <span className="text-xs text-fg-3 ml-1">({h.riskLevel})</span>
+                {h.source === 'sage' && <span className="text-xs text-mytra-purple ml-1">✨ Sage</span>}
                 <p className="text-xs text-fg-2">{h.controlMeasure}</p>
               </li>
             ))}
@@ -242,6 +279,29 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
                 {ppeLabel(id)}
               </span>
             ))}
+          </div>
+        </Section>
+      )}
+
+      {(ptp.emergencyMusterPoint || ptp.nearestHospital || ptp.firstAidEyewashLocation || ptp.weatherNotes || ptp.windSpeed) && (
+        <Section title="Site conditions & emergency">
+          <dl className="grid grid-cols-2 gap-2 text-sm">
+            {ptp.emergencyMusterPoint && <Field label="Muster point" value={ptp.emergencyMusterPoint} />}
+            {ptp.nearestHospital && <Field label="Nearest hospital" value={ptp.nearestHospital} />}
+            {ptp.firstAidEyewashLocation && <Field label="First aid / eyewash" value={ptp.firstAidEyewashLocation} />}
+            {ptp.weatherNotes && <Field label="Weather" value={ptp.weatherNotes} />}
+            {ptp.windSpeed && <Field label="Wind speed" value={ptp.windSpeed} />}
+          </dl>
+        </Section>
+      )}
+
+      {Object.values(ptp.heatIllnessPlan).some(Boolean) && (
+        <Section title="Heat illness prevention">
+          <div className="flex flex-wrap gap-2">
+            {ptp.heatIllnessPlan.water && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Water available</span>}
+            {ptp.heatIllnessPlan.shade && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Shade available</span>}
+            {ptp.heatIllnessPlan.restBreaks && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Rest breaks</span>}
+            {ptp.heatIllnessPlan.highHeatProcedures && <span className="text-xs px-2 py-1 rounded-full bg-warn/10 border border-warn/20 text-warn">High-heat procedures</span>}
           </div>
         </Section>
       )}
@@ -273,6 +333,11 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
           {'workDescription' in permit && <Field label="Work" value={(permit as { workDescription: string }).workDescription} />}
         </dl>
       </Section>
+
+      {permit.type === 'height-permit' && <HeightDetails permit={permit as HeightPermit} />}
+      {permit.type === 'hot-work-permit' && <HotWorkDetails permit={permit as HotWorkPermit} />}
+      {permit.type === 'confined-space-permit' && <ConfinedSpaceDetails permit={permit as ConfinedSpacePermit} />}
+
       <Section title="Checklist">
         <ul className="space-y-1">
           {permit.checklist.map((c) => (
@@ -293,13 +358,122 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
   )
 }
 
+function HeightDetails({ permit }: { permit: HeightPermit }) {
+  return (
+    <Section title="Height work details">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        {permit.workingHeight && <Field label="Working height" value={permit.workingHeight} />}
+        {permit.anchorPoints && <Field label="Anchor points" value={permit.anchorPoints} />}
+      </dl>
+      {permit.accessMethod.length > 0 && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Access method</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.accessMethod.map((m) => (
+              <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {permit.fallProtection.length > 0 && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Fall protection</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.fallProtection.map((m) => (
+              <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {permit.rescuePlan && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function HotWorkDetails({ permit }: { permit: HotWorkPermit }) {
+  return (
+    <Section title="Hot work details">
+      {permit.hotWorkTypes.length > 0 && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Type of work</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.hotWorkTypes.map((t) => (
+              <span key={t} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{t}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        <Field label="Fire watch" value={permit.fireWatchRequired ? `Yes — ${permit.fireWatchName || 'unassigned'}` : 'No'} />
+        {permit.fireWatchRequired && <Field label="Post-work monitoring" value={`${permit.fireWatchPostDurationMin} min`} />}
+        {permit.extinguisherLocation && <Field label="Extinguisher" value={`${permit.extinguisherType} at ${permit.extinguisherLocation}`} />}
+        {permit.sprinklerStatus && <Field label="Sprinkler status" value={permit.sprinklerStatus} />}
+      </dl>
+      {permit.gasTestRequired && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Atmosphere test</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.gasTestNotes || 'Required — no notes'}</dd>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
+  const atmo = permit.atmospheric
+  return (
+    <Section title="Confined space details">
+      {permit.spaceDescription && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Space description</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.spaceDescription}</dd>
+        </div>
+      )}
+      {permit.hazards.length > 0 && (
+        <div className="mb-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Hazards present</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {permit.hazards.map((h) => (
+              <span key={h} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{h}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      <dl className="grid grid-cols-2 gap-2 text-sm mb-2">
+        <Field label="O₂ %" value={atmo.oxygenPct || '—'} />
+        <Field label="LEL %" value={atmo.lelPct || '—'} />
+        <Field label="CO ppm" value={atmo.coPpm || '—'} />
+        <Field label="H₂S ppm" value={atmo.h2sPpm || '—'} />
+        {atmo.testedBy && <Field label="Tested by" value={atmo.testedBy} />}
+        {atmo.testedAt && <Field label="Tested at" value={fmt(atmo.testedAt)} />}
+      </dl>
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        <Field label="Attendant" value={permit.attendantName || '—'} />
+        <Field label="Continuous monitoring" value={permit.continuousMonitoring ? 'Yes' : 'No'} />
+        <Field label="Ventilation" value={permit.ventilationInUse ? 'In use' : 'No'} />
+      </dl>
+      {permit.rescuePlan && (
+        <div className="mt-2">
+          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
+        </div>
+      )}
+    </Section>
+  )
+}
+
 function IncidentBody({ incident, images }: { incident: IncidentReport; images: Record<string, string> }) {
   return (
     <>
       <Section title="Incident">
         <div className="flex items-center gap-2 mb-2">
           <span
-            className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
+            className="text-xs font-semibold uppercase px-2 py-0.5 rounded"
             style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity], backgroundColor: INCIDENT_SEVERITY_COLORS[incident.severity] + '1A' }}
           >
             {incident.severity}
@@ -333,7 +507,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={slot} src={images[slot]} alt="Incident photo" className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
               ) : (
-                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-[10px] text-fg-4">
+                <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-xs text-fg-4">
                   on device
                 </div>
               )

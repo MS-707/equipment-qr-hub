@@ -25,7 +25,11 @@ function readAll(): WorkOrder[] {
 
 function writeAll(orders: WorkOrder[]): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+  } catch {
+    console.error('Failed to save work orders — storage may be full')
+  }
 }
 
 function nextNumber(): string {
@@ -41,7 +45,7 @@ function nextNumber(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
   return `WO-${year}-${String(stored.count).padStart(4, '0')}`
 }
 
@@ -166,6 +170,12 @@ export function isOverdue(wo: WorkOrder): boolean {
 
 // ── Export helpers ────────────────────────────────────────
 
+function csvCell(v: unknown): string {
+  let s = v == null ? '' : String(v)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
+  return `"${s.replace(/"/g, '""')}"`
+}
+
 export function exportToCsv(orders: WorkOrder[]): string {
   const headers = [
     'WO_Number', 'Equipment_ID', 'PM_Type', 'Tasks', 'Status',
@@ -174,12 +184,11 @@ export function exportToCsv(orders: WorkOrder[]): string {
   ]
   const rows = orders.map((wo) =>
     [
-      wo.id, wo.equipmentId, wo.pmType,
-      `"${wo.tasks.replace(/"/g, '""')}"`,
-      wo.status, wo.dueDate || '', wo.completedDate || '',
-      `"${(wo.assignedTo || '').replace(/"/g, '""')}"`,
-      `"${wo.completionNotes.replace(/"/g, '""')}"`,
-      wo.linearIssueId || '', wo.gmailDraftId || '', wo.createdAt,
+      csvCell(wo.id), csvCell(wo.equipmentId), csvCell(wo.pmType),
+      csvCell(wo.tasks), csvCell(wo.status), csvCell(wo.dueDate || ''),
+      csvCell(wo.completedDate || ''), csvCell(wo.assignedTo || ''),
+      csvCell(wo.completionNotes), csvCell(wo.linearIssueId || ''),
+      csvCell(wo.gmailDraftId || ''), csvCell(wo.createdAt),
     ].join(',')
   )
   return [headers.join(','), ...rows].join('\n')

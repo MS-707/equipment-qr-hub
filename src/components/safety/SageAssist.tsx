@@ -114,7 +114,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
         </button>
       )}
       {!suggestions && !canAsk && !loading && (
-        <p className="text-[11px] text-fg-4 mt-1 text-center">Add a scope of work first</p>
+        <p className="text-xs text-fg-4 mt-1 text-center">Add a scope of work first</p>
       )}
 
       {suggestions && (
@@ -122,7 +122,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">Sage suggests</span>
-            <span className="text-[10px] text-mytra-purple">— review before signing</span>
+            <span className="text-xs text-mytra-purple">— review before signing</span>
           </div>
 
           {suggestions.length === 0 ? (
@@ -145,7 +145,7 @@ export default function SageAssist({ scopeOfWork, location, onAddHazards }: Sage
                   <span className="min-w-0">
                     <span className="flex items-center gap-1.5">
                       <span
-                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                        className="text-xs font-semibold px-1.5 py-0.5 rounded"
                         style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.riskLevel]} 10%, transparent)` }}
                       >
                         {RISK_LABELS[s.riskLevel]}

@@ -4,8 +4,11 @@
   "description": "Equipment profiles, PM schedules, and QR code labels for shop floor equipment",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "background_color": "#0A0A0A",
   "theme_color": "#0A0A0A",
+  "categories": ["business", "utilities"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -22,6 +25,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start PTP",
+      "short_name": "PTP",
+      "description": "Create a new Pre-Task Plan",
+      "url": "/safety/ptp",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Report Incident",
+      "short_name": "Incident",
+      "description": "Report a safety incident or near-miss",
+      "url": "/safety/incident",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

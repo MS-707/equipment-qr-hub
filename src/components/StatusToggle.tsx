@@ -27,7 +27,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full transition-colors"
+        className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full transition-colors min-h-[44px]"
         style={{
           backgroundColor: `${color}18`,
           color: color,
@@ -59,7 +59,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelect(status)}
-                  className={`w-full text-left px-3 py-2 text-xs font-medium flex items-center gap-2
+                  className={`w-full text-left px-3 py-2.5 text-xs font-medium flex items-center gap-2 min-h-[44px]
                              transition-colors hover:bg-mytra-card-hover ${
                                isSelected ? 'bg-mytra-card-hover' : ''
                              }`}

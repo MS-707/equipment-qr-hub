@@ -88,7 +88,7 @@ export default function CrewSignatureBlock({
                   type="button"
                   onClick={() => onSupervisorChange(supervisorId === s.id ? null : s.id)}
                   title={`Mark as ${supervisorLabel.toLowerCase()}`}
-                  className={`shrink-0 inline-flex items-center gap-1 text-[10px] px-1.5 py-1 rounded border transition-colors ${
+                  className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] ${
                     supervisorId === s.id
                       ? 'bg-mytra-purple/20 text-mytra-purple border-mytra-purple/40'
                       : 'bg-mytra-bg text-fg-3 border-mytra-border hover:text-fg'
@@ -102,7 +102,7 @@ export default function CrewSignatureBlock({
                 type="button"
                 onClick={() => remove(s.id)}
                 aria-label="Remove signature"
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
+                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

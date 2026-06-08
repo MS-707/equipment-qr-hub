@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck } from 'lucide-react'
+import { LayoutGrid, ClipboardCheck, ClipboardList, QrCode, ShieldCheck, WifiOff } from 'lucide-react'
 import { getOpenCount, onWorkOrderChange } from '@/lib/work-orders'
 import { getOpenSafetyCount, onSafetyChange } from '@/lib/safety-records'
 import UserMenu from '@/components/UserMenu'
@@ -12,6 +12,7 @@ export default function NavHeader() {
   const pathname = usePathname()
   const [openCount, setOpenCount] = useState(0)
   const [safetyCount, setSafetyCount] = useState(0)
+  const [online, setOnline] = useState(true)
 
   useEffect(() => {
     setOpenCount(getOpenCount())
@@ -26,10 +27,20 @@ export default function NavHeader() {
       setSafetyCount(getOpenSafetyCount())
     }
     window.addEventListener('storage', handleStorage)
+
+    // Offline/online status
+    setOnline(navigator.onLine)
+    const goOnline = () => setOnline(true)
+    const goOffline = () => setOnline(false)
+    window.addEventListener('online', goOnline)
+    window.addEventListener('offline', goOffline)
+
     return () => {
       unsubscribe()
       unsubscribeSafety()
       window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('online', goOnline)
+      window.removeEventListener('offline', goOffline)
     }
   }, [])
 
@@ -54,7 +65,14 @@ export default function NavHeader() {
 
         {/* Right: Nav Links */}
         <nav className="flex items-center gap-3 sm:gap-5">
+          {!online && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
+              <WifiOff className="w-3 h-3" />
+              <span className="hidden sm:inline">Offline</span>
+            </span>
+          )}
           {navLinks.map(({ href, label, icon: Icon, badge }) => {
+            /* Nav links are hidden on mobile — BottomTabBar handles them */
             const isActive =
               href === '/'
                 ? pathname === '/'
@@ -64,7 +82,7 @@ export default function NavHeader() {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-1.5 text-sm transition rounded
+                className={`relative hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
                     isActive
@@ -76,10 +94,13 @@ export default function NavHeader() {
                 <span className="hidden sm:inline">{label}</span>
                 {badge > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-[10px] font-bold rounded-full
+                                   px-1 text-xs font-bold rounded-full
                                    bg-mytra-purple text-white">
                     {badge}
                   </span>
+                )}
+                {isActive && (
+                  <span className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-mytra-purple" />
                 )}
               </Link>
             )

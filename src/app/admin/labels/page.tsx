@@ -45,15 +45,15 @@ export default function LabelsPage() {
           <div className="mb-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-1.5 text-sm text-fg-3 hover:text-fg transition-colors mb-4"
             >
               <ArrowLeft size={16} />
               Back to Directory
             </Link>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-fg">
               QR Label Generator
             </h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-fg-3 mt-1">
               Generate and print QR code labels for equipment
             </p>
           </div>
@@ -63,7 +63,7 @@ export default function LabelsPage() {
             <div className="flex-1 w-full sm:w-auto">
               <label
                 htmlFor="base-url"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-fg-3 mb-1.5"
               >
                 Base URL
               </label>
@@ -73,7 +73,7 @@ export default function LabelsPage() {
                 value={baseUrl}
                 onChange={e => setBaseUrl(e.target.value)}
                 placeholder="https://your-domain.com"
-                className="w-full bg-mytra-input border border-mytra-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
+                className="w-full bg-mytra-input border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
               />
             </div>
             <button
@@ -98,10 +98,10 @@ export default function LabelsPage() {
                     className="flex items-center gap-3 mb-4 pl-3"
                     style={{ borderLeft: `3px solid ${categoryColor}` }}
                   >
-                    <h2 className="text-lg font-semibold text-white">
+                    <h2 className="text-lg font-semibold text-fg">
                       {category}
                     </h2>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-fg-4">
                       {items.length} item{items.length !== 1 ? 's' : ''}
                     </span>
                   </div>

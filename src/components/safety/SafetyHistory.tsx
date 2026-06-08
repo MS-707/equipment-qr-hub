@@ -4,8 +4,10 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search } from 'lucide-react'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
+import { isPTP, isPermit, isIncident } from '@/lib/safety-types'
 import { getAllSafetyRecords, onSafetyChange, exportSafetyToCsv } from '@/lib/safety-records'
 import SafetyRecordCard from './SafetyRecordCard'
+import PullToRefresh from '@/components/PullToRefresh'
 
 const TYPE_FILTERS: { key: SafetyRecordType | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -39,14 +41,21 @@ export default function SafetyHistory() {
     return records.filter((r) => {
       if (filter !== 'all' && r.type !== filter) return false
       if (!q) return true
-      return (
-        r.id.toLowerCase().includes(q) ||
-        r.location.toLowerCase().includes(q) ||
-        r.projectName.toLowerCase().includes(q) ||
-        r.createdBy.toLowerCase().includes(q)
-      )
+      const searchable = [r.id, r.location, r.projectName, r.createdBy]
+      if (isPTP(r)) searchable.push(r.scopeOfWork)
+      if (isPermit(r) && 'workDescription' in r) searchable.push((r as { workDescription: string }).workDescription)
+      if (isIncident(r)) searchable.push(r.description)
+      return searchable.some((s) => s.toLowerCase().includes(q))
     })
   }, [records, filter, query])
+
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const r of records) {
+      counts[r.type] = (counts[r.type] || 0) + 1
+    }
+    return counts
+  }, [records])
 
   function downloadCsv() {
     const csv = exportSafetyToCsv(filtered)
@@ -60,16 +69,17 @@ export default function SafetyHistory() {
   }
 
   return (
+    <PullToRefresh onRefresh={load}>
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
-        <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg">
+        <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
           <ArrowLeft className="w-4 h-4" /> Safety Hub
         </Link>
         <button
           type="button"
           onClick={downloadCsv}
           disabled={filtered.length === 0}
-          className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2.5 min-h-[44px] hover:bg-mytra-card-hover disabled:opacity-40"
         >
           <Download className="w-3.5 h-3.5" /> Export CSV
         </button>
@@ -82,8 +92,11 @@ export default function SafetyHistory() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
         <input
           type="text"
+          inputMode="search"
+          enterKeyHint="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search safety records"
           placeholder="Search id, location, project, person…"
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-9 pr-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         />
@@ -91,20 +104,23 @@ export default function SafetyHistory() {
 
       {/* Type filter pills */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1">
-        {TYPE_FILTERS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setFilter(t.key)}
-            className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-              filter === t.key
-                ? 'bg-mytra-purple text-white border-mytra-purple'
-                : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TYPE_FILTERS.map((t) => {
+          const count = t.key === 'all' ? records.length : (typeCounts[t.key] || 0)
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setFilter(t.key)}
+              className={`shrink-0 text-xs font-medium px-3 py-2.5 rounded-full border transition-colors min-h-[44px] ${
+                filter === t.key
+                  ? 'bg-mytra-purple text-white border-mytra-purple'
+                  : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
+              }`}
+            >
+              {t.label}{count > 0 ? ` (${count})` : ''}
+            </button>
+          )
+        })}
       </div>
 
       {filtered.length === 0 ? (
@@ -117,5 +133,6 @@ export default function SafetyHistory() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   )
 }

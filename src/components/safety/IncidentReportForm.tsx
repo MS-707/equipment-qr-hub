@@ -1,11 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { AlertTriangle, Camera, X, Plus } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { AlertTriangle, Camera, X, Plus, RotateCcw } from 'lucide-react'
 import type { IncidentType, IncidentSeverity } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
-import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId } from '@/lib/safety-records'
+import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { useFormDraft } from '@/lib/use-draft'
+import { getLastContext, saveLastContext } from '@/lib/use-last-context'
+import LastUsedChip from './LastUsedChip'
 import { compressPhoto } from '@/lib/media'
 import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
@@ -41,8 +44,32 @@ export default function IncidentReportForm() {
   const [reporterName, setReporterName] = useState('')
   const [reporterSig, setReporterSig] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [wasOffline, setWasOffline] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [lastCtx] = useState(getLastContext)
 
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const restore = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.projectName === 'string') setProjectName(d.projectName)
+    if (typeof d.location === 'string') setLocation(d.location)
+    if (typeof d.incidentType === 'string') setIncidentType(d.incidentType as IncidentType)
+    if (typeof d.severity === 'string') setSeverity(d.severity as IncidentSeverity)
+    if (typeof d.occurredAt === 'string') setOccurredAt(d.occurredAt)
+    if (typeof d.description === 'string') setDescription(d.description)
+    if (typeof d.immediateActions === 'string') setImmediateActions(d.immediateActions)
+    if (Array.isArray(d.witnesses)) setWitnesses(d.witnesses)
+    if (typeof d.rootCause === 'string') setRootCause(d.rootCause)
+    if (typeof d.correctiveActions === 'string') setCorrectiveActions(d.correctiveActions)
+    if (typeof d.reportedToCalOsha === 'boolean') setReportedToCalOsha(d.reportedToCalOsha)
+    if (typeof d.reporterName === 'string') setReporterName(d.reporterName)
+  }, [])
+
+  const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
+    'incident',
+    () => ({ projectName, location, incidentType, severity, occurredAt, description, immediateActions, witnesses, rootCause, correctiveActions, reportedToCalOsha, reporterName }),
+    restore
+  )
 
   useEffect(() => {
     const id = getCurrentIdentity()
@@ -71,22 +98,29 @@ export default function IncidentReportForm() {
 
   function submit() {
     if (!canSubmit) return
+    setSaveError(null)
     const reporterSignatureId = reporterSig ? cryptoRandomId() : null
-    const record = createIncidentReport({
-      projectName,
-      location,
-      incidentType,
-      severity,
-      occurredAt: toIso(occurredAt),
-      description,
-      immediateActions,
-      witnesses,
-      rootCause,
-      correctiveActions,
-      reportedToCalOsha,
-      photoSlots: photos.map((p) => p.id),
-      reporterSignatureId,
-    })
+    let record: ReturnType<typeof createIncidentReport>
+    try {
+      record = createIncidentReport({
+        projectName,
+        location,
+        incidentType,
+        severity,
+        occurredAt: toIso(occurredAt),
+        description,
+        immediateActions,
+        witnesses,
+        rootCause,
+        correctiveActions,
+        reportedToCalOsha,
+        photoSlots: photos.map((p) => p.id),
+        reporterSignatureId,
+      })
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      return
+    }
     if (photos.length > 0) savePhotosForRecord(record.id, photos).catch((e) => console.error('photo save failed', e))
     if (reporterSignatureId && reporterSig) {
       saveSignatures(record.id, [{ id: reporterSignatureId, dataUrl: reporterSig }]).catch((e) =>
@@ -94,10 +128,24 @@ export default function IncidentReportForm() {
       )
     }
     void trySyncRecord(record.id)
+    saveLastContext({ projectName, location })
+    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')) {
+      const identity = getCurrentIdentity()
+      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+      fetch('/api/safety/review/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record, notionPageId: record.notionPageId }),
+      }).catch(() => {})
+    }
+    clearDraft()
+    setWasOffline(!navigator.onLine)
     setSubmittedId(record.id)
   }
 
   function reset() {
+    clearDraft()
+    setWasOffline(false)
     setIncidentType('near-miss')
     setSeverity('minor')
     setOccurredAt(toLocalInput(new Date()))
@@ -121,12 +169,25 @@ export default function IncidentReportForm() {
         message="Incident report recorded as"
         onNew={reset}
         newLabel="New report"
+        offline={wasOffline}
+        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1' && (severity === 'serious' || severity === 'critical')}
       />
     )
   }
 
   return (
     <div className="animate-fadeIn space-y-4">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex items-center gap-2 text-sm text-mytra-purple">
+            <RotateCcw className="w-4 h-4" />
+            <span>Draft restored</span>
+          </div>
+          <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
@@ -183,7 +244,7 @@ export default function IncidentReportForm() {
             <div className="text-xs text-warn leading-relaxed">
               Serious injuries must be reported to Cal/OSHA within 8 hours (T8 §342 / LC §6409.1).
               <label className="flex items-center gap-2 mt-1.5 text-fg-2">
-                <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-4 h-4" />
+                <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
                 Reported to Cal/OSHA
               </label>
             </div>
@@ -193,11 +254,13 @@ export default function IncidentReportForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} />
+            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
@@ -206,11 +269,11 @@ export default function IncidentReportForm() {
         </div>
         <div>
           <label className={labelCls}>What happened?</label>
-          <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
+          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Immediate actions taken</label>
-          <textarea rows={2} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -221,6 +284,7 @@ export default function IncidentReportForm() {
           <input
             type="text"
             value={witnessInput}
+            maxLength={100}
             onChange={(e) => setWitnessInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -272,14 +336,13 @@ export default function IncidentReportForm() {
             className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
-            <span className="text-[9px]">Add</span>
+            <span className="text-[11px]">Add</span>
           </button>
         </div>
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
-          capture="environment"
           className="hidden"
           onChange={(e) => {
             onFile(e.target.files?.[0] ?? null)
@@ -293,11 +356,11 @@ export default function IncidentReportForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label className={labelCls}>Root cause</label>
-          <textarea rows={2} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Corrective actions</label>
-          <textarea rows={2} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </section>
 
@@ -306,7 +369,7 @@ export default function IncidentReportForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
           <label className={labelCls}>Name</label>
-          <input type="text" value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
+          <input type="text" maxLength={100} value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Signature (optional)</label>
@@ -314,6 +377,12 @@ export default function IncidentReportForm() {
         </div>
       </section>
 
+      {saveError && (
+        <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+          <span className="font-semibold shrink-0">Save failed:</span>
+          <span>{saveError}</span>
+        </div>
+      )}
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"

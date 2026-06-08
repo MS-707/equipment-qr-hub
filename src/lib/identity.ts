@@ -34,11 +34,19 @@ export function setCurrentIdentity(id: { name: string; email?: string | null; im
   }
 }
 
+const IDENTITY_TTL_MS = 72 * 60 * 60 * 1000
+
 export function getCurrentIdentity(): Identity | null {
   if (typeof window === 'undefined') return null
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY)
-    return raw ? (JSON.parse(raw) as Identity) : null
+    if (!raw) return null
+    const id = JSON.parse(raw) as Identity
+    if (id.verifiedAt && Date.now() - new Date(id.verifiedAt).getTime() > IDENTITY_TTL_MS) {
+      localStorage.removeItem(CURRENT_USER_KEY)
+      return null
+    }
+    return id
   } catch {
     return null
   }
