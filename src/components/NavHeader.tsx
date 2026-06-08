@@ -7,6 +7,7 @@ import { WifiOff } from 'lucide-react'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 import UserMenu from '@/components/UserMenu'
+import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
@@ -59,6 +60,7 @@ export default function NavHeader() {
               <Link
                 key={href}
                 href={href}
+                data-tour-tab={href}
                 className={`relative hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-200 rounded py-1
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
@@ -82,6 +84,7 @@ export default function NavHeader() {
               </Link>
             )
           })}
+          <HelpButton />
           <UserMenu />
         </nav>
       </div>
