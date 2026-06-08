@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Calendar, ClipboardCheck, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
+import { useSwipe } from '@/hooks/useSwipe'
 import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding, requiresPreTrip } from '@/lib/types'
 import { getEquipmentById } from '@/lib/equipment'
 import TabNav from '@/components/TabNav'
@@ -75,6 +76,20 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
     window.history.replaceState(null, '', url.toString())
   }
 
+  const goNext = useCallback(() => {
+    const idx = TAB_IDS.indexOf(activeTab)
+    if (idx < TAB_IDS.length - 1) handleTabChange(TAB_IDS[idx + 1])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, TAB_IDS])
+
+  const goPrev = useCallback(() => {
+    const idx = TAB_IDS.indexOf(activeTab)
+    if (idx > 0) handleTabChange(TAB_IDS[idx - 1])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, TAB_IDS])
+
+  const swipeHandlers = useSwipe(goNext, goPrev)
+
   return (
     <main className="min-h-screen bg-mytra-bg">
       <div className="max-w-2xl mx-auto px-4 py-6">
@@ -132,6 +147,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
           className={`mt-5 ${tabDirection === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}`}
+          {...swipeHandlers}
         >
           {activeTab === 'pre-trip' && (
             <PreTripInspection
