@@ -9,6 +9,7 @@ import {
 } from '@/lib/equipment'
 import { EquipmentCategory, CATEGORY_COLORS } from '@/lib/types'
 import EquipmentCard from '@/components/EquipmentCard'
+import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 
 type FilterCategory = EquipmentCategory | 'all'
 
@@ -69,11 +70,12 @@ export default function EquipmentDirectory() {
           <span className="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-mytra-purple/20 text-mytra-purple">
             {allEquipment.length} items
           </span>
+          <ModuleTourButton tourId="equipment-dir" />
         </div>
       </header>
 
       {/* ── Search ──────────────────────────────────── */}
-      <div className="relative mb-4">
+      <div data-tour-module="equip-search" className="relative mb-4">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-4 pointer-events-none"
           size={18}
@@ -104,7 +106,7 @@ export default function EquipmentDirectory() {
       </div>
 
       {/* ── Category Filter Pills ───────────────────── */}
-      <div className="flex flex-wrap gap-2 pb-4 mb-6">
+      <div data-tour-module="category-pills" className="flex flex-wrap gap-2 pb-4 mb-6">
         {/* "All" pill */}
         <button
           onClick={() => setSelectedCategory('all')}
@@ -170,6 +172,7 @@ export default function EquipmentDirectory() {
               key={item.itemNumber}
               className="animate-fadeInUp"
               style={i < 12 ? { animationDelay: `${i * 30}ms` } : undefined}
+              {...(i === 0 ? { 'data-tour-module': 'equip-card' } : {})}
             >
               <EquipmentCard equipment={item} />
             </div>
@@ -180,7 +183,7 @@ export default function EquipmentDirectory() {
         <div className="space-y-6">
           {Object.entries(groupedEquipment)
             .sort((a, b) => b[1]!.length - a[1]!.length)
-            .map(([category, items]) => {
+            .map(([category, items], groupIndex) => {
             const color = CATEGORY_COLORS[category as EquipmentCategory]
             const isCollapsed = collapsedCategories.has(category)
             return (
@@ -218,6 +221,7 @@ export default function EquipmentDirectory() {
                         key={item.itemNumber}
                         className="animate-fadeInUp"
                         style={i < 12 ? { animationDelay: `${i * 30}ms` } : undefined}
+                        {...(groupIndex === 0 && i === 0 ? { 'data-tour-module': 'equip-card' } : {})}
                       >
                         <EquipmentCard equipment={item} showCategory={false} />
                       </div>

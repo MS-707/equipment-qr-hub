@@ -87,7 +87,7 @@ export default function WorkOrderBoard() {
     <PullToRefresh onRefresh={refresh}>
     <div className="space-y-4">
       {/* Filters */}
-      <div className="no-print flex flex-wrap items-center gap-2">
+      <div data-tour-module="wo-filters" className="no-print flex flex-wrap items-center gap-2">
         <Filter className="w-4 h-4 text-fg-4 shrink-0" />
 
         <select
@@ -190,8 +190,10 @@ export default function WorkOrderBoard() {
 
                 {/* Cards */}
                 <div className="space-y-2">
-                  {items.map((wo) => (
-                    <WorkOrderCard key={wo.id} workOrder={wo} onUpdate={refresh} />
+                  {items.map((wo, i) => (
+                    <div key={wo.id} {...(i === 0 && status === 'Not Started' ? { 'data-tour-module': 'wo-card' } : {})}>
+                      <WorkOrderCard workOrder={wo} onUpdate={refresh} />
+                    </div>
                   ))}
                   {items.length === 0 && (
                     <div className="bg-mytra-card border border-dashed border-mytra-border

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Calendar, ClipboardCheck, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
+import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { useSwipe } from '@/hooks/useSwipe'
 import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding, requiresPreTrip } from '@/lib/types'
 import { getEquipmentById } from '@/lib/equipment'
@@ -105,7 +106,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
 
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div data-tour-module="status-badge" className="flex items-center gap-2 mb-2 flex-wrap">
             <span
               className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
               style={{
@@ -127,18 +128,23 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
               </span>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-fg leading-tight">
-            {equipment.name}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-fg leading-tight">
+              {equipment.name}
+            </h1>
+            <ModuleTourButton tourId="equipment-detail" />
+          </div>
         </div>
 
         {/* Authorization */}
-        <div className="mb-6">
+        <div data-tour-module="authorized-users" className="mb-6">
           <AuthorizedUsers itemNumber={equipment.itemNumber} />
         </div>
 
         {/* Tab Navigation */}
-        <TabNav tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        <div data-tour-module="detail-tabs">
+          <TabNav tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
 
         {/* Tab Content */}
         <div

@@ -140,7 +140,7 @@ function ChecklistItemRow({
           />
 
           {/* Photo capture or thumbnail */}
-          <div className="flex items-center gap-2">
+          <div data-tour-module="inspection-photo" className="flex items-center gap-2">
             {state.photo ? (
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -594,7 +594,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <h4 className="text-xs uppercase tracking-wider text-fg-4 font-semibold mb-2 px-1">
                 {section.category}
               </h4>
-              <div className="space-y-2">
+              <div data-tour-module="checklist-items" className="space-y-2">
                 {section.items.map((checkItem) => {
                   const itemState = items.find((it) => it.id === checkItem.id)
                   if (!itemState) return null
@@ -632,7 +632,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
           ))}
 
           {/* Sticky submit button */}
-          <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+          <div data-tour-module="inspection-submit" className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
             <button
               type="button"
               onClick={handleSubmit}
