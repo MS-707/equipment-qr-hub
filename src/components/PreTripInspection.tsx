@@ -128,6 +128,7 @@ function ChecklistItemRow({
           {/* Notes input */}
           <textarea
             rows={2}
+            maxLength={2000}
             value={state.notes}
             onChange={(e) => onNotes(e.target.value)}
             placeholder="Describe the issue..."
@@ -465,6 +466,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <input
                 id="inspector-name"
                 type="text"
+                maxLength={100}
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}
                 placeholder="Your name"

@@ -485,7 +485,8 @@ export function cryptoRandomId(): string {
 // ── CSV export ────────────────────────────────────────────────
 
 function csvCell(v: unknown): string {
-  const s = v == null ? '' : String(v)
+  let s = v == null ? '' : String(v)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
   return `"${s.replace(/"/g, '""')}"`
 }
 

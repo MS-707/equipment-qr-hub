@@ -169,22 +169,22 @@ export default function HeightPermitForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Project / Structure</label>
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
             <label className={labelCls}>Location / Area</label>
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
           <label className={labelCls}>Work description</label>
-          <textarea rows={2} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={`${inputCls} resize-none`} />
+          <textarea rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={`${inputCls} resize-none`} />
         </div>
         <div>
           <label className={labelCls}>Working height</label>
-          <input type="text" inputMode="decimal" value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder="e.g. 8 m / 26 ft" className={inputCls} />
+          <input type="text" inputMode="decimal" maxLength={50} value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder="e.g. 8 m / 26 ft" className={inputCls} />
         </div>
       </div>
 
@@ -201,7 +201,7 @@ export default function HeightPermitForm() {
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <div>
           <label className={labelCls}>Anchor points (location + rating)</label>
-          <input type="text" value={anchorPoints} onChange={(e) => setAnchorPoints(e.target.value)} placeholder="≥5,000 lb / engineered" className={inputCls} />
+          <input type="text" maxLength={200} value={anchorPoints} onChange={(e) => setAnchorPoints(e.target.value)} placeholder="≥5,000 lb / engineered" className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>
@@ -210,6 +210,7 @@ export default function HeightPermitForm() {
           <textarea
             rows={2}
             value={rescuePlan}
+            maxLength={2000}
             onChange={(e) => setRescuePlan(e.target.value)}
             placeholder="Suspension-trauma rescue / prompt rescue means"
             className={`${inputCls} resize-none ${pfasSelected && !rescuePlan.trim() ? 'border-warn/60' : ''}`}

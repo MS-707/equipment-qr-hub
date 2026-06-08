@@ -1,5 +1,6 @@
 import type { SafetyRecord } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
+import { requireSession } from '@/lib/api-auth'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
@@ -8,7 +9,22 @@ function escapeSlack(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+const DB_MAP: Record<string, string | undefined> = {
+  'ptp': process.env.NOTION_PTP_DB_ID,
+  'incident-report': process.env.NOTION_INCIDENTS_DB_ID,
+  'height-permit': process.env.NOTION_PERMITS_DB_ID,
+  'hot-work-permit': process.env.NOTION_PERMITS_DB_ID,
+  'confined-space-permit': process.env.NOTION_PERMITS_DB_ID,
+}
+
+function dbForType(type: string): string | undefined {
+  return DB_MAP[type]
+}
+
 export async function POST(req: Request) {
+  const { error } = await requireSession()
+  if (error) return error
+
   const notionKey = process.env.NOTION_API_KEY
   if (!notionKey) {
     return Response.json(
@@ -17,7 +33,7 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { record: SafetyRecord; notionPageId: string | null }
+  let body: { record: Pick<SafetyRecord, 'id' | 'type' | 'projectName' | 'location' | 'createdBy' | 'createdAt'>; notionPageId: string | null }
   try {
     body = await req.json()
   } catch {
@@ -36,10 +52,10 @@ export async function POST(req: Request) {
 
   let pageId = notionPageId
   if (!pageId) {
-    const syncResult = await syncToNotion(notionKey, record)
+    const syncResult = await syncToNotion(notionKey, record as SafetyRecord)
     if (!syncResult.ok) {
       return Response.json(
-        { error: 'Notion sync failed', detail: syncResult.error },
+        { error: 'Notion sync failed' },
         { status: 502 }
       )
     }
@@ -62,11 +78,12 @@ export async function POST(req: Request) {
     })
 
     if (!res.ok) {
-      const detail = await res.text()
-      return Response.json({ error: 'Failed to set review property', detail }, { status: 502 })
+      console.error('[review/submit] Notion PATCH error:', await res.text())
+      return Response.json({ error: 'Failed to set review property' }, { status: 502 })
     }
   } catch (e) {
-    return Response.json({ error: 'Notion API error', detail: String(e) }, { status: 500 })
+    console.error('[review/submit] unexpected error:', e instanceof Error ? e.message : e)
+    return Response.json({ error: 'Review submission failed' }, { status: 500 })
   }
 
   const slackUrl = process.env.SLACK_EHS_WEBHOOK_URL
@@ -81,18 +98,11 @@ export async function POST(req: Request) {
         }),
       })
     } catch {
-      // Slack is best-effort; don't fail the submission
+      // Slack is best-effort
     }
   }
 
   return Response.json({ ok: true, notionPageId: pageId })
-}
-
-function dbForType(type: string): string | undefined {
-  if (type === 'ptp') return process.env.NOTION_PTP_DB_ID
-  if (type === 'incident-report') return process.env.NOTION_INCIDENTS_DB_ID
-  if (type.endsWith('-permit')) return process.env.NOTION_PERMITS_DB_ID
-  return undefined
 }
 
 async function syncToNotion(
@@ -137,13 +147,14 @@ async function syncToNotion(
     })
 
     if (!res.ok) {
-      const detail = await res.text()
-      return { ok: false, error: detail }
+      console.error('[review/submit] Notion create error:', await res.text())
+      return { ok: false, error: 'Notion API error' }
     }
 
     const page = (await res.json()) as { id: string }
     return { ok: true, pageId: page.id }
   } catch (e) {
-    return { ok: false, error: String(e) }
+    console.error('[review/submit] sync error:', e instanceof Error ? e.message : e)
+    return { ok: false, error: 'Sync failed' }
   }
 }

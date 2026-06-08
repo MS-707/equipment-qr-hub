@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 
 const SYSTEM_PROMPT = `You are Sage, an OSHA-trained construction safety mentor embedded in Equipment QR Hub — a field safety app used by construction crews.
 
@@ -39,12 +41,17 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Sage is not enabled' }, { status: 404 })
   }
 
-  const key = process.env.ANTHROPIC_API_KEY
-  if (!key) {
-    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { message?: string; context?: string; history?: Message[] }
+  const key = process.env.ANTHROPIC_API_KEY
+  if (!key) {
+    return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
+  }
+
+  let body: { message?: string; history?: Message[] }
   try {
     body = await req.json()
   } catch {
@@ -56,14 +63,16 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Message required (max 500 chars)' }, { status: 400 })
   }
 
-  const contextBlock = body.context ? `\n\nCURRENT CONTEXT:\n${body.context}` : ''
+  const userName = session.user.name ?? session.user.email.split('@')[0]
+  const contextBlock = `\n\nCURRENT CONTEXT:\nWorker: ${userName}\nTime: ${timeOfDay()}`
   const systemPrompt = SYSTEM_PROMPT + contextBlock
 
   const history: Message[] = Array.isArray(body.history)
     ? body.history.slice(-10).filter(
         (m) =>
           (m.role === 'user' || m.role === 'assistant') &&
-          typeof m.content === 'string'
+          typeof m.content === 'string' &&
+          m.content.length <= 2000
       )
     : []
 
@@ -84,8 +93,15 @@ export async function POST(req: Request) {
 
     return Response.json({ reply: text })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[sage] triage failed:', msg)
-    return Response.json({ error: msg }, { status: 502 })
+    console.error('[sage] triage failed:', err instanceof Error ? err.message : err)
+    return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
+}
+
+function timeOfDay(): string {
+  const h = new Date().getHours()
+  if (h < 6) return 'early morning'
+  if (h < 12) return 'morning'
+  if (h < 17) return 'afternoon'
+  return 'evening'
 }
