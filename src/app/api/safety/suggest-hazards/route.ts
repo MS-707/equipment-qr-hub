@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
+import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -13,10 +15,20 @@ Base risk levels on OSHA severity × probability. Reference:
 - 29 CFR 1926 (Construction)
 - 29 CFR 1910 (General Industry)
 - Cal/OSHA Title 8
-- NFPA 51B (Hot Work)
+- NFPA 51B (Hot Work)`
 
-Respond ONLY with a JSON object: { "hazards": [...] }
-No markdown, no explanation, no preamble. Just the JSON object.`
+// Structured-output schema — the model is constrained to this shape, so there is
+// no parse-failure path to handle. enum + (implicit) additionalProperties:false
+// are fully supported by structured outputs on claude-sonnet-4-6.
+const HazardsSchema = z.object({
+  hazards: z.array(
+    z.object({
+      description: z.string(),
+      riskLevel: z.enum(['low', 'medium', 'high', 'critical']),
+      controlMeasure: z.string(),
+    })
+  ),
+})
 
 export const maxDuration = 30
 
@@ -64,36 +76,21 @@ export async function POST(req: Request) {
 
   try {
     const client = new Anthropic({ apiKey: key })
-    const message = await client.messages.create({
+    const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
+      output_config: { format: zodOutputFormat(HazardsSchema) },
     })
 
-    const raw =
-      message.content[0]?.type === 'text' ? message.content[0].text : ''
-
-    const text = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
-
-    const parsed = JSON.parse(text)
-    const hazards = Array.isArray(parsed?.hazards) ? parsed.hazards : []
-
-    const valid = hazards
-      .filter(
-        (h: Record<string, unknown>) =>
-          typeof h.description === 'string' &&
-          typeof h.controlMeasure === 'string' &&
-          ['low', 'medium', 'high', 'critical'].includes(h.riskLevel as string)
-      )
-      .slice(0, 8)
-
-    return Response.json({ hazards: valid })
+    // parsed_output is null on refusal or max_tokens truncation — degrade gracefully.
+    const hazards = message.parsed_output?.hazards ?? []
+    return Response.json({ hazards: hazards.slice(0, 8) })
   } catch (err) {
     console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
-    const isSyntax = err instanceof SyntaxError
     return Response.json(
-      { hazards: [], error: isSyntax ? 'Sage returned an unexpected format — try again' : 'Sage is temporarily unavailable' },
+      { hazards: [], error: 'Sage is temporarily unavailable' },
       { status: 502 }
     )
   }

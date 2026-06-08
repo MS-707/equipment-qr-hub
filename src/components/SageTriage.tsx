@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, Loader2, WifiOff } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
+import { buildSageContext, contextToPrompt } from '@/lib/sage-context'
 import { matchFaq } from '@/lib/sage-faq'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 const HISTORY_KEY = 'sage-triage-history'
 const TS_KEY = 'sage-triage-ts'
 const SEEN_KEY = 'sage-fab-seen'
+const LAUNCH_KEY = 'sage-fab-launches'
+const MAX_HINT_LAUNCHES = 3
 const IDLE_MS = 15 * 60 * 1000
 
 interface ChatMessage {
@@ -17,6 +21,7 @@ interface ChatMessage {
 }
 
 const QUICK_CHIPS = [
+  { label: 'Review my PTP', q: 'Can you review my Pre-Task Plan for today and flag anything missing?' },
   { label: 'Start PTP', q: 'How do I start a Pre-Task Plan?' },
   { label: 'Report incident', q: 'I need to report a safety incident' },
   { label: 'Active permits', q: 'What permits are currently active?' },
@@ -51,6 +56,7 @@ export default function SageTriage() {
 }
 
 function SageTriageInner() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -63,7 +69,14 @@ function SageTriageInner() {
 
   useEffect(() => {
     setMessages(loadHistory())
-    setShowPulse(!localStorage.getItem(SEEN_KEY))
+    // Show the discovery hint for the first few app launches until Sage is opened.
+    if (!localStorage.getItem(SEEN_KEY)) {
+      const launches = Number(localStorage.getItem(LAUNCH_KEY) || '0')
+      if (launches < MAX_HINT_LAUNCHES) {
+        setShowPulse(true)
+        localStorage.setItem(LAUNCH_KEY, String(launches + 1))
+      }
+    }
     setOnline(navigator.onLine)
     const goOn = () => setOnline(true)
     const goOff = () => setOnline(false)
@@ -109,7 +122,7 @@ function SageTriageInner() {
       const faqAnswer = matchFaq(trimmed)
       const reply: ChatMessage = {
         role: 'assistant',
-        content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can navigate the app using the bottom tabs — Safety, Work Orders, and Equipment Directory are all available offline.",
+        content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can still use the app offline — the bottom tabs (Home, Pre-Trip, Assets, Orders) all work without a connection.",
       }
       const updated = [...next, reply]
       setMessages(updated)
@@ -119,6 +132,8 @@ function SageTriageInner() {
     }
 
     try {
+      const identity = getCurrentIdentity()
+      const ctx = buildSageContext(pathname, identity?.name ?? null)
       const ctrl = new AbortController()
       const timer = setTimeout(() => ctrl.abort(), 28000)
 
@@ -127,6 +142,7 @@ function SageTriageInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
+          context: contextToPrompt(ctx),
           history: messages.slice(-10),
         }),
         signal: ctrl.signal,
@@ -155,7 +171,7 @@ function SageTriageInner() {
     } finally {
       setLoading(false)
     }
-  }, [messages, loading, online])
+  }, [messages, loading, online, pathname])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -171,16 +187,28 @@ function SageTriageInner() {
     <>
       {/* FAB */}
       {!open && (
-        <button
-          onClick={handleOpen}
-          aria-label="Open safety assistant"
-          className={`no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] w-12 h-12 rounded-full
-                     bg-mytra-purple text-white shadow-pop flex items-center justify-center
-                     hover:bg-mytra-purple-hover active:scale-95 transition-all
-                     ${showPulse ? 'animate-pulse' : ''}`}
-        >
-          <MessageCircle className="w-5 h-5" />
-        </button>
+        <div data-tour="sage-fab" className="no-print fixed bottom-20 right-4 sm:bottom-6 z-[41] flex items-center gap-2">
+          {showPulse && (
+            <button
+              onClick={handleOpen}
+              className="animate-fadeIn bg-mytra-card border border-mytra-border text-fg
+                         text-xs font-medium px-3 py-2 rounded-full shadow-pop min-h-[44px]
+                         hover:bg-mytra-card-hover transition-colors"
+            >
+              Ask Sage
+            </button>
+          )}
+          <button
+            onClick={handleOpen}
+            aria-label="Open safety assistant"
+            className={`w-12 h-12 rounded-full
+                       bg-mytra-purple text-white shadow-pop flex items-center justify-center
+                       hover:bg-mytra-purple-hover active:scale-95 transition-all
+                       ${showPulse ? 'animate-pulse' : ''}`}
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
+        </div>
       )}
 
       {/* Chat dialog */}
@@ -190,12 +218,14 @@ function SageTriageInner() {
         className="backdrop:bg-black/50 bg-transparent p-0 m-0
                    fixed inset-0 sm:inset-auto sm:right-4 sm:bottom-4 sm:top-auto sm:left-auto
                    w-full sm:w-[360px] h-full sm:h-[min(600px,85vh)]
+                   max-w-full max-h-full
                    outline-none animate-fadeIn"
       >
         <div className="flex flex-col h-full sm:rounded-2xl overflow-hidden
-                        bg-mytra-card border border-mytra-border shadow-pop">
+                        bg-mytra-card border border-mytra-border shadow-pop
+                        pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-mytra-border">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-mytra-border shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold">
                 S
@@ -280,7 +310,7 @@ function SageTriageInner() {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2">
+          <form onSubmit={handleSubmit} className="px-3 py-2 border-t border-mytra-border flex gap-2 shrink-0">
             <input
               ref={inputRef}
               type="text"
@@ -288,6 +318,7 @@ function SageTriageInner() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Sage a question..."
               disabled={loading}
+              maxLength={500}
               inputMode="text"
               enterKeyHint="send"
               className="flex-1 bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3

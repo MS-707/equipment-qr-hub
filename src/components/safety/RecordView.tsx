@@ -181,7 +181,7 @@ export default function RecordView({ id }: { id: string }) {
       <ConfirmDialog
         open={closeOpen}
         title="Close Permit"
-        message="Mark this permit as closed. This will be recorded in the audit trail."
+        message="Mark this permit as closed. The date and time will be recorded."
         confirmLabel="Close permit"
         inputPrompt="Closing note (optional)"
         onConfirm={handleClose}
@@ -190,7 +190,7 @@ export default function RecordView({ id }: { id: string }) {
       <ConfirmDialog
         open={revokeOpen}
         title="Revoke Permit"
-        message="This action is recorded in the audit trail and cannot be undone."
+        message="This action is recorded with a timestamp and cannot be undone."
         confirmLabel="Revoke"
         variant="danger"
         inputPrompt="Reason for revoking this permit"
@@ -198,9 +198,9 @@ export default function RecordView({ id }: { id: string }) {
         onCancel={() => setRevokeOpen(false)}
       />
 
-      {/* Audit trail */}
+      {/* History */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">Audit trail</h2>
+        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
           {r.events.map((e, i) => (
             <li key={i} className="text-xs text-fg-2 flex items-start gap-2">

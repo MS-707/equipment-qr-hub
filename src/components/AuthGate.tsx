@@ -88,7 +88,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         <WifiOff className="w-8 h-8 text-fg-3" />
         <h2 className="text-base font-semibold text-fg mt-3">Sign in once to work offline</h2>
         <p className="text-sm text-fg-2 mt-1 max-w-xs">
-          Connect to the internet and sign in with your Mytra account. After that, the Safety Hub
+          Connect to the internet and sign in with your company account. After that, Sage
           works offline on this device.
         </p>
       </Centered>
@@ -118,10 +118,13 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-sm bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="w-6 h-6 text-mytra-purple" />
-          <span className="text-lg font-bold text-fg">Safety Hub</span>
+          <span className="text-lg font-bold text-fg">Sage</span>
+          <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
+            EHS
+          </span>
         </div>
         <p className="text-sm text-fg-2 mb-5">
-          Sign in with your Mytra account to access safety forms. Your identity is recorded on every
+          Sign in with your company account to access safety forms. Your identity is recorded on every
           plan, permit, and signature.
         </p>
 
@@ -129,7 +132,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="mb-4 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">
             <p className="text-xs text-danger/80">
               {authError === 'AccessDenied'
-                ? "That account isn't on the Mytra domain. Use your @mytra.ai email."
+                ? "That account isn't on an approved domain. Use your @mytra.ai email."
                 : 'Sign-in failed. Please try again.'}
             </p>
           </div>
@@ -197,7 +200,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             </button>
             {!hasGoogle && (
               <p className="text-xs text-fg-4 text-center">
-                Dev sign-in (Google not configured yet). Restricted to the Mytra email domain.
+                Dev sign-in (Google not configured yet). Restricted to the approved email domain.
               </p>
             )}
           </form>
