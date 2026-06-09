@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Sparkles } from 'lucide-react'
 import { findTourForRoute } from '@/tours'
 import { isTourSeen, markTourSeen } from '@/lib/tourState'
@@ -9,6 +10,7 @@ import { MODULE_TOUR_EVENT, TOUR_ACTIVE_EVENT } from './ModuleTourEngine'
 
 export default function TourAutoPrompt() {
   const pathname = usePathname()
+  const { status } = useSession()
   const [visible, setVisible] = useState(false)
   const [tourId, setTourId] = useState<string | null>(null)
 
@@ -16,6 +18,8 @@ export default function TourAutoPrompt() {
     // Reset on route change
     setVisible(false)
     setTourId(null)
+
+    if (status !== 'authenticated') return
 
     const tour = findTourForRoute(pathname)
     if (!tour || isTourSeen(tour.id)) return
@@ -28,7 +32,7 @@ export default function TourAutoPrompt() {
     }, 1500)
 
     return () => clearTimeout(showTimer)
-  }, [pathname])
+  }, [pathname, status])
 
   // Auto-dismiss after 20 seconds (field workers may be looking at the jobsite)
   useEffect(() => {

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#0A0A0A"/>
+
+  <!-- Body: chunky squircle — robot face + creature body combined -->
+  <rect x="96" y="120" width="320" height="300" rx="80" ry="80" fill="#572DFF"/>
+
+  <!-- Visor stripe: a dark horizontal band across the eye zone, reads as robot visor/HUD -->
+  <rect x="96" y="208" width="320" height="88" rx="0" ry="0" fill="#0A0A0A" opacity="0.35"/>
+
+  <!-- Left eye: cutout circle -->
+  <circle cx="186" cy="252" r="38" fill="#0A0A0A"/>
+
+  <!-- Right eye: cutout circle -->
+  <circle cx="326" cy="252" r="38" fill="#0A0A0A"/>
+
+  <!-- Eye glint — tiny highlight dot, gives life -->
+  <circle cx="198" cy="240" r="10" fill="#572DFF" opacity="0.7"/>
+  <circle cx="338" cy="240" r="10" fill="#572DFF" opacity="0.7"/>
+
+  <!-- Antenna: short stubby nub on top center — the key robot signal -->
+  <rect x="240" y="76" width="32" height="52" rx="16" ry="16" fill="#572DFF"/>
+  <!-- Antenna tip dot: sensor/LED -->
+  <circle cx="256" cy="68" r="18" fill="#572DFF"/>
+  <circle cx="256" cy="68" r="9" fill="#0A0A0A" opacity="0.5"/>
+</svg>
