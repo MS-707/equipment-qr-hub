@@ -312,11 +312,13 @@ export default function JhaForm() {
                   />
                 </div>
                 <div>
-                  <span className={labelCls}>Risk before controls</span>
-                  <RiskSelector
-                    value={step.riskLevel}
-                    onChange={(lvl) => updateStep(step.id, { riskLevel: lvl })}
-                    label={`Step ${i + 1} risk before controls`}
+                  <span className={labelCls}>Risk level</span>
+                  <RiskPillRow
+                    before={step.riskLevel}
+                    after={step.residualRiskLevel ?? 'low'}
+                    onBeforeChange={(lvl) => updateStep(step.id, { riskLevel: lvl })}
+                    onAfterChange={(lvl) => updateStep(step.id, { residualRiskLevel: lvl })}
+                    stepLabel={`Step ${i + 1}`}
                   />
                 </div>
                 <div>
@@ -328,14 +330,6 @@ export default function JhaForm() {
                     onChange={(e) => updateStep(step.id, { controls: e.target.value, source: 'manual' })}
                     placeholder="Specific controls to reduce risk"
                     className={`${inputCls} resize-none`}
-                  />
-                </div>
-                <div>
-                  <span className={labelCls}>Risk after controls (residual)</span>
-                  <RiskSelector
-                    value={step.residualRiskLevel ?? 'low'}
-                    onChange={(lvl) => updateStep(step.id, { residualRiskLevel: lvl })}
-                    label={`Step ${i + 1} residual risk after controls`}
                   />
                 </div>
                 <div>
@@ -428,30 +422,105 @@ export default function JhaForm() {
   )
 }
 
-function RiskSelector({ value, onChange, label }: { value: RiskLevel; onChange: (lvl: RiskLevel) => void; label: string }) {
+function RiskPillRow({
+  before,
+  after,
+  onBeforeChange,
+  onAfterChange,
+  stepLabel,
+}: {
+  before: RiskLevel
+  after: RiskLevel
+  onBeforeChange: (lvl: RiskLevel) => void
+  onAfterChange: (lvl: RiskLevel) => void
+  stepLabel: string
+}) {
+  const [openPicker, setOpenPicker] = useState<'before' | 'after' | null>(null)
+
   return (
-    <div className="flex gap-1.5" role="radiogroup" aria-label={label}>
-      {RISK_ORDER.map((lvl) => {
-        const on = value === lvl
-        return (
-          <button
-            key={lvl}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => onChange(lvl)}
-            className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors min-h-[44px]"
-            style={
-              on
-                ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
-                : undefined
-            }
-          >
-            {RISK_LABELS[lvl]}
-          </button>
-        )
-      })}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <RiskPill
+          label="Before"
+          value={before}
+          open={openPicker === 'before'}
+          onToggle={() => setOpenPicker(openPicker === 'before' ? null : 'before')}
+          ariaLabel={`${stepLabel} risk before controls`}
+        />
+        <span className="text-fg-4 text-xs">→</span>
+        <RiskPill
+          label="After"
+          value={after}
+          open={openPicker === 'after'}
+          onToggle={() => setOpenPicker(openPicker === 'after' ? null : 'after')}
+          ariaLabel={`${stepLabel} residual risk after controls`}
+        />
+      </div>
+      {openPicker && (
+        <div className="flex gap-1.5 animate-fadeIn" role="radiogroup" aria-label={openPicker === 'before' ? `${stepLabel} risk before controls` : `${stepLabel} risk after controls`}>
+          {RISK_ORDER.map((lvl) => {
+            const current = openPicker === 'before' ? before : after
+            const on = current === lvl
+            return (
+              <button
+                key={lvl}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => {
+                  if (openPicker === 'before') onBeforeChange(lvl)
+                  else onAfterChange(lvl)
+                  setOpenPicker(null)
+                }}
+                className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors min-h-[44px]"
+                style={
+                  on
+                    ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
+                    : undefined
+                }
+              >
+                {RISK_LABELS[lvl]}
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
+  )
+}
+
+function RiskPill({
+  label,
+  value,
+  open,
+  onToggle,
+  ariaLabel,
+}: {
+  label: string
+  value: RiskLevel
+  open: boolean
+  onToggle: () => void
+  ariaLabel: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={ariaLabel}
+      aria-expanded={open}
+      className="flex-1 flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-lg border transition-colors"
+      style={{
+        backgroundColor: `color-mix(in srgb, ${RISK_COLORS[value]} 12%, transparent)`,
+        borderColor: `color-mix(in srgb, ${RISK_COLORS[value]} 40%, transparent)`,
+      }}
+    >
+      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: RISK_COLORS[value] }} />
+      <span className="text-xs text-fg-3">{label}:</span>
+      <span className="text-xs font-semibold" style={{ color: RISK_COLORS[value] }}>
+        {RISK_LABELS[value]}
+      </span>
+      <ChevronDown className={`w-3 h-3 text-fg-4 ml-auto transition-transform ${open ? 'rotate-180' : ''}`} />
+    </button>
   )
 }
 
