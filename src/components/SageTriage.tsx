@@ -68,6 +68,7 @@ function SageTriageInner() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [followUps, setFollowUps] = useState<string[]>([])
   const [showPulse, setShowPulse] = useState(false)
   const [online, setOnline] = useState(true)
   const [fabTop, setFabTop] = useState<number | null>(null)
@@ -176,6 +177,7 @@ function SageTriageInner() {
     setMessages(next)
     setInput('')
     setLoading(true)
+    setFollowUps([])
 
     if (!online) {
       const faqAnswer = matchFaq(trimmed)
@@ -186,6 +188,7 @@ function SageTriageInner() {
       const updated = [...next, reply]
       setMessages(updated)
       saveHistory(updated)
+      setFollowUps(faqAnswer ? ['Start a PTP', 'What PPE do I need?', 'Report an incident'] : [])
       setLoading(false)
       return
     }
@@ -210,9 +213,12 @@ function SageTriageInner() {
 
       const data = await res.json()
       let replyText = data.reply
+      let suggestions: string[] = []
       if (!res.ok || !replyText) {
         const faqAnswer = matchFaq(trimmed)
         replyText = faqAnswer ?? 'Sorry, I couldn\'t process that right now. Try again or check the FAQ chips above.'
+      } else {
+        suggestions = Array.isArray(data.followUps) ? data.followUps.slice(0, 3) : []
       }
       const reply: ChatMessage = {
         role: 'assistant',
@@ -221,6 +227,7 @@ function SageTriageInner() {
       const updated = [...next, reply]
       setMessages(updated)
       saveHistory(updated)
+      setFollowUps(suggestions)
     } catch (err) {
       const isTimeout = err instanceof DOMException && err.name === 'AbortError'
       const reply: ChatMessage = {
@@ -366,6 +373,23 @@ function SageTriageInner() {
                 </div>
               </div>
             ))}
+
+            {/* Follow-up suggestion chips */}
+            {followUps.length > 0 && !loading && (
+              <div className="flex flex-wrap gap-1.5 pl-8 animate-fadeIn">
+                {followUps.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => sendMessage(suggestion)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-mytra-purple/30
+                               text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Typing indicator */}
             {loading && (
