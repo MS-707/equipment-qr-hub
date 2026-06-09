@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'id and status (approved|rejected) required' }, { status: 400 })
   }
 
-  const signup = updateSignupStatus(id, status)
+  const signup = await updateSignupStatus(id, status)
   if (!signup) {
     return Response.json({ error: 'Signup not found' }, { status: 404 })
   }
@@ -39,5 +39,5 @@ export async function GET() {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  return Response.json({ signups: getAllSignups() })
+  return Response.json({ signups: await getAllSignups() })
 }
