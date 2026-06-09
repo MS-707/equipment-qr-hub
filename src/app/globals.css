@@ -90,6 +90,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* iOS Safari auto-zooms inputs below 16px — force 16px on touch devices to prevent it */
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 /* ── View Transitions (progressive — ignored by unsupporting browsers) ── */
 @view-transition {
   navigation: auto;
