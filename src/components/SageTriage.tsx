@@ -207,7 +207,7 @@ function SageTriageInner() {
       const identity = getCurrentIdentity()
       const ctx = buildSageContext(pathname, identity?.name ?? null)
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 28000)
+      const timer = setTimeout(() => ctrl.abort(), 55000)
 
       const res = await fetch('/api/sage/triage', {
         method: 'POST',

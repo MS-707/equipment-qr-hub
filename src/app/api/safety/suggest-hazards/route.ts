@@ -26,7 +26,7 @@ const HazardsSchema = z.object({
 
 type Hazard = z.infer<typeof HazardsSchema>['hazards'][number]
 
-export const maxDuration = 45
+export const maxDuration = 60
 
 async function generate(
   client: Anthropic,

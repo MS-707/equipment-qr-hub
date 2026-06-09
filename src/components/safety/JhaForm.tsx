@@ -108,7 +108,7 @@ export default function JhaForm() {
     setSageError(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 40000)
+      const timer = setTimeout(() => ctrl.abort(), 55000)
       // Only analyse steps that have a task activity, preserving their order.
       const indexed = steps
         .map((s, i) => ({ s, i }))
