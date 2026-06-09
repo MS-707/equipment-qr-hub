@@ -126,9 +126,9 @@ export default function BetaPage() {
         {submitted ? (
           <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-8 text-center">
             <CheckCircle2 className="w-12 h-12 text-[#34C172] mx-auto mb-3" />
-            <h2 className="text-lg font-semibold mb-1">You're on the list</h2>
+            <h2 className="text-lg font-semibold mb-1">You are on the list</h2>
             <p className="text-sm text-[#9A9A9A]">
-              We'll review your application and send next steps to <span className="text-white">{email}</span>.
+              We will review your application and send next steps to <span className="text-white">{email}</span>.
               Most approvals go out within 24 hours.
             </p>
           </div>
@@ -137,7 +137,7 @@ export default function BetaPage() {
             <div>
               <h2 className="text-lg font-semibold mb-0.5">Request beta access</h2>
               <p className="text-xs text-[#9A9A9A]">
-                We're onboarding crews in small batches. Fill this out and we'll get back to you fast.
+                We are onboarding crews in small batches. Fill this out and we will get back to you fast.
               </p>
             </div>
 

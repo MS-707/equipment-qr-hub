@@ -4,6 +4,8 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
 import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
+import { createReviewToken } from '@/lib/review-token'
+import { storeReviewSubmission } from '@/lib/review-store'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
@@ -95,12 +97,44 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── Store submission for email-based decisions ────────────────
+  const submitterEmail = record.createdByEmail || session!.user!.email || ''
+  storeReviewSubmission({
+    recordId: record.id,
+    recordType: record.type,
+    projectName: record.projectName || '',
+    location: record.location || '',
+    submitterName: record.createdBy || 'Unknown',
+    submitterEmail,
+  })
+
   // ── Email notification (primary EHS channel) ─────────────────
   let emailed = false
   if (emailConfigured) {
+    const appUrl = process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'
+    const approveToken = createReviewToken(record.id, 'approve')
+    const rejectToken = createReviewToken(record.id, 'reject')
+    const approveUrl = `${appUrl}/safety/review/action?token=${approveToken}`
+    const rejectUrl = `${appUrl}/safety/review/action?token=${rejectToken}`
+
+    const actionBlock = [
+      '',
+      '────────────────────',
+      'QUICK ACTIONS',
+      '',
+      `  APPROVE: ${approveUrl}`,
+      '',
+      `  DENY:    ${rejectUrl}`,
+      '',
+      'Click a link above to approve or deny this record.',
+      'The employee will be notified by email automatically.',
+      'Links expire after 7 days.',
+      '────────────────────',
+    ].join('\n')
+
     const outcome = await sendEhsNotification({
       subject: `EHS Review Requested — ${buildRecordSubject(record)}`,
-      text: buildRecordText(record),
+      text: buildRecordText(record) + '\n' + actionBlock,
     })
     emailed = outcome === 'sent'
   }

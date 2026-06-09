@@ -1,4 +1,4 @@
-import { addSignup, getSignup, type BetaSignup } from '@/lib/beta'
+import { addSignup, type BetaSignup } from '@/lib/beta'
 import { sendEhsNotification } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
 
