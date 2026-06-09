@@ -97,7 +97,7 @@ export default function WorkOrderBoard() {
           }
           aria-label="Filter by equipment"
           className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
-                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                     text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                      max-w-[200px] min-h-[44px]"
         >
           <option value="all">All Equipment</option>
@@ -115,7 +115,7 @@ export default function WorkOrderBoard() {
           }
           aria-label="Filter by PM type"
           className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
-                     text-xs text-fg focus:outline-none focus:ring-1 focus:ring-mytra-purple
+                     text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                      min-h-[44px]"
         >
           <option value="all">All PM Types</option>

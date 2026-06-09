@@ -232,6 +232,13 @@ export interface ConfinedSpacePermit extends SafetyRecordBase {
 export type IncidentType = 'injury' | 'near-miss' | 'property-damage' | 'environmental'
 export type IncidentSeverity = 'minor' | 'moderate' | 'serious' | 'critical'
 
+export interface InjuredPerson {
+  name: string
+  jobTitle: string
+  employer: string
+  bodyPartAffected: string
+}
+
 export interface IncidentReport extends SafetyRecordBase {
   type: 'incident-report'
   incidentType: IncidentType
@@ -243,6 +250,7 @@ export interface IncidentReport extends SafetyRecordBase {
   rootCause: string
   correctiveActions: string
   reportedToCalOsha: boolean
+  injuredPerson?: InjuredPerson
   photoSlots: string[]
   reporterSignatureId: string | null
 }

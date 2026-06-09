@@ -88,6 +88,7 @@ export default function ConfinedSpaceForm() {
     spaceDescription.trim().length > 0 &&
     location.trim().length > 0 &&
     attendantName.trim().length > 0 &&
+    rescuePlan.trim().length > 0 &&
     critLeft === 0 &&
     !atmoUnsafe &&
     sigData.signatures.length >= 1 &&
@@ -285,8 +286,8 @@ export default function ConfinedSpaceForm() {
           />
         </div>
         <div>
-          <label className={labelCls}>Rescue plan</label>
-          <textarea rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services" className={`${inputCls} resize-none`} />
+          <label className={labelCls}>Rescue plan <span className="text-danger">*</span></label>
+          <textarea rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${inputCls} resize-none ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
         </div>
       </div>
 
@@ -348,13 +349,15 @@ export default function ConfinedSpaceForm() {
               ? 'Atmosphere out of range'
               : !attendantName.trim()
                 ? 'Assign an attendant'
-                : sigData.signatures.length === 0
-                  ? 'Add entrant sign-on'
-                  : supervisorId === null
-                    ? 'Mark the entry supervisor'
-                    : !validWindowOk
-                      ? 'Fix validity window'
-                      : 'Issue Permit'}
+                : !rescuePlan.trim()
+                  ? 'Add a rescue plan'
+                  : sigData.signatures.length === 0
+                    ? 'Add entrant sign-on'
+                    : supervisorId === null
+                      ? 'Mark the entry supervisor'
+                      : !validWindowOk
+                        ? 'Fix validity window'
+                        : 'Issue Permit'}
         </button>
       </div>
     </div>

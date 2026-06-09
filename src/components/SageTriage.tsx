@@ -211,6 +211,7 @@ function SageTriageInner() {
           message: trimmed,
           context: contextToPrompt(ctx),
           history: messagesRef.current.slice(-10),
+          localHour: new Date().getHours(),
         }),
         signal: ctrl.signal,
       })

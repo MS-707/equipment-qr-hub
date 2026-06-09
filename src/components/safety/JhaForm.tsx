@@ -440,7 +440,7 @@ function RiskSelector({ value, onChange, label }: { value: RiskLevel; onChange: 
             role="radio"
             aria-checked={on}
             onClick={() => onChange(lvl)}
-            className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors min-h-[36px]"
+            className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors min-h-[44px]"
             style={
               on
                 ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
