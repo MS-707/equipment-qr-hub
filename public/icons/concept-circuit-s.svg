@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <!-- Circuit S: two counter-rotating arcs with horizontal bridge -->
+  <!-- Top arc: sweeps from center-left up and right -->
+  <path
+    d="M 190 256
+       C 190 140, 322 120, 322 176"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="40"
+    stroke-linecap="square"
+  />
+  <!-- Bottom arc: sweeps from center-right down and left -->
+  <path
+    d="M 322 256
+       C 322 372, 190 392, 190 336"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="40"
+    stroke-linecap="square"
+  />
+  <!-- Bridge: horizontal crossbar at midpoint -->
+  <line x1="190" y1="256" x2="322" y2="256" stroke="#572DFF" stroke-width="18" stroke-linecap="square"/>
+</svg>
