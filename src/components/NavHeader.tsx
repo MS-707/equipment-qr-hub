@@ -11,6 +11,7 @@ import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
+  if (pathname.startsWith('/beta')) return null
   const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
