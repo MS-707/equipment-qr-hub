@@ -12,7 +12,7 @@ const ToolboxTalkSchema = z.object({
   discussion_question: z.string(),
 })
 
-export const maxDuration = 30
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {

@@ -66,7 +66,7 @@ APP NAVIGATION:
 - Work Orders: /work-orders
 - QR Labels: /admin/labels`
 
-export const maxDuration = 30
+export const maxDuration = 60
 
 interface Message {
   role: 'user' | 'assistant'

@@ -30,7 +30,7 @@ const StepAnalysisSchema = z.object({
   ),
 })
 
-export const maxDuration = 45
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {

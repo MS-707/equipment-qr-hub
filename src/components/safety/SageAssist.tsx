@@ -108,7 +108,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
     setFollowUpMode(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 40000)
+      const timer = setTimeout(() => ctrl.abort(), 55000)
       const res = await fetch('/api/safety/suggest-hazards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,7 +173,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
     setSuggestions(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 40000)
+      const timer = setTimeout(() => ctrl.abort(), 55000)
       const res = await fetch('/api/safety/suggest-hazards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -236,7 +236,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
     setPermitGaps([])
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 40000)
+      const timer = setTimeout(() => ctrl.abort(), 55000)
       const res = await fetch('/api/safety/check-permits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
