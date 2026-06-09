@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Dark background -->
+  <rect width="512" height="512" fill="#0A0A0A" rx="112"/>
+
+  <!-- Antenna nub (small, rounded-rect, centered, stubby) -->
+  <rect x="234" y="82" width="44" height="54" rx="14" fill="#572DFF"/>
+
+  <!-- Body: asymmetric bean — wider at bottom, slight leftward lean -->
+  <path d="
+    M 172 210
+    C 158 170, 190 118, 248 120
+    C 306 118, 355 162, 358 210
+    C 375 258, 372 330, 358 368
+    C 338 416, 290 435, 248 434
+    C 206 435, 162 418, 148 372
+    C 132 326, 152 262, 172 210
+    Z
+  " fill="#572DFF"/>
+
+  <!-- Visor eyes: two small horizontal rectangles, robot HUD style -->
+  <!-- Left eye -->
+  <rect x="192" y="264" width="46" height="20" rx="6" fill="#0A0A0A"/>
+  <!-- Right eye -->
+  <rect x="274" y="264" width="46" height="20" rx="6" fill="#0A0A0A"/>
+</svg>
