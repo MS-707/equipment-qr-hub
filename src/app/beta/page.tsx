@@ -82,7 +82,7 @@ export default function BetaPage() {
       <header className="max-w-3xl mx-auto px-4 pt-16 pb-12 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/20 text-[#572DFF] text-xs font-medium mb-6">
           <Shield className="w-3.5 h-3.5" />
-          Early Access — Engineering Teams
+          Early Access
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
           Build right.
