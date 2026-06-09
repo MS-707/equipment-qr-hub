@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { AlertTriangle, Camera, X, Plus, RotateCcw } from 'lucide-react'
-import type { IncidentType, IncidentSeverity } from '@/lib/safety-types'
+import type { IncidentType, IncidentSeverity, InjuredPerson } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
 import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
@@ -40,6 +40,7 @@ export default function IncidentReportForm() {
   const [rootCause, setRootCause] = useState('')
   const [correctiveActions, setCorrectiveActions] = useState('')
   const [reportedToCalOsha, setReportedToCalOsha] = useState(false)
+  const [injuredPerson, setInjuredPerson] = useState<InjuredPerson>({ name: '', jobTitle: '', employer: '', bodyPartAffected: '' })
   const [photos, setPhotos] = useState<{ id: string; dataUrl: string }[]>([])
   const [reporterName, setReporterName] = useState('')
   const [reporterSig, setReporterSig] = useState<string | null>(null)
@@ -62,12 +63,16 @@ export default function IncidentReportForm() {
     if (typeof d.rootCause === 'string') setRootCause(d.rootCause)
     if (typeof d.correctiveActions === 'string') setCorrectiveActions(d.correctiveActions)
     if (typeof d.reportedToCalOsha === 'boolean') setReportedToCalOsha(d.reportedToCalOsha)
+    if (d.injuredPerson && typeof d.injuredPerson === 'object') {
+      const ip = d.injuredPerson as InjuredPerson
+      setInjuredPerson({ name: ip.name ?? '', jobTitle: ip.jobTitle ?? '', employer: ip.employer ?? '', bodyPartAffected: ip.bodyPartAffected ?? '' })
+    }
     if (typeof d.reporterName === 'string') setReporterName(d.reporterName)
   }, [])
 
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'incident',
-    () => ({ projectName, location, incidentType, severity, occurredAt, description, immediateActions, witnesses, rootCause, correctiveActions, reportedToCalOsha, reporterName }),
+    () => ({ projectName, location, incidentType, severity, occurredAt, description, immediateActions, witnesses, rootCause, correctiveActions, reportedToCalOsha, injuredPerson, reporterName }),
     restore
   )
 
@@ -102,6 +107,7 @@ export default function IncidentReportForm() {
     const reporterSignatureId = reporterSig ? cryptoRandomId() : null
     let record: ReturnType<typeof createIncidentReport>
     try {
+      const hasInjured = injuredPerson.name.trim().length > 0
       record = createIncidentReport({
         projectName,
         location,
@@ -114,6 +120,7 @@ export default function IncidentReportForm() {
         rootCause,
         correctiveActions,
         reportedToCalOsha,
+        injuredPerson: hasInjured ? injuredPerson : undefined,
         photoSlots: photos.map((p) => p.id),
         reporterSignatureId,
       })
@@ -196,13 +203,13 @@ export default function IncidentReportForm() {
 
         <div>
           <label className={labelCls}>Type</label>
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             {TYPES.map((t) => (
               <button
                 key={t.value}
                 type="button"
                 onClick={() => setIncidentType(t.value)}
-                className={`text-xs font-medium py-2 rounded-lg transition-colors ${
+                className={`text-xs font-medium py-2 rounded-lg transition-colors min-h-[44px] ${
                   incidentType === t.value
                     ? 'bg-mytra-purple text-white'
                     : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
@@ -216,7 +223,7 @@ export default function IncidentReportForm() {
 
         <div>
           <label className={labelCls}>Severity</label>
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             {SEVERITIES.map((s) => {
               const on = severity === s
               return (
@@ -224,7 +231,7 @@ export default function IncidentReportForm() {
                   key={s}
                   type="button"
                   onClick={() => setSeverity(s)}
-                  className="text-xs font-medium py-2 rounded-lg border capitalize transition-colors"
+                  className="text-xs font-medium py-2 rounded-lg border capitalize transition-colors min-h-[44px]"
                   style={
                     on
                       ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: '#fff', borderColor: INCIDENT_SEVERITY_COLORS[s] }
@@ -241,12 +248,39 @@ export default function IncidentReportForm() {
         {isSerious && (
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
-            <div className="text-xs text-warn leading-relaxed">
+            <p className="text-xs text-warn leading-relaxed">
               Serious injuries must be reported to your safety officer promptly. Check your local reporting requirements.
-              <label className="flex items-center gap-2 mt-1.5 text-fg-2">
-                <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-                Reported to authorities
-              </label>
+            </p>
+          </div>
+        )}
+
+        <label className="flex items-center gap-2 text-sm text-fg-2 min-h-[44px] cursor-pointer">
+          <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
+          Reported to regulatory authority
+        </label>
+
+        {incidentType === 'injury' && (
+          <div className="space-y-3 border-t border-mytra-border pt-3">
+            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Injured person</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Name</label>
+                <input type="text" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Job title</label>
+                <input type="text" maxLength={100} value={injuredPerson.jobTitle} onChange={(e) => setInjuredPerson((p) => ({ ...p, jobTitle: e.target.value }))} placeholder="e.g. Ironworker" className={inputCls} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Employer</label>
+                <input type="text" maxLength={200} value={injuredPerson.employer} onChange={(e) => setInjuredPerson((p) => ({ ...p, employer: e.target.value }))} placeholder="Company name" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Body part affected</label>
+                <input type="text" maxLength={200} value={injuredPerson.bodyPartAffected} onChange={(e) => setInjuredPerson((p) => ({ ...p, bodyPartAffected: e.target.value }))} placeholder="e.g. Left hand" className={inputCls} />
+              </div>
             </div>
           </div>
         )}

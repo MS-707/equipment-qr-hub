@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { message?: string; context?: string; history?: Message[] }
+  let body: { message?: string; context?: string; history?: Message[]; localHour?: number }
   try {
     body = await req.json()
   } catch {
@@ -107,7 +107,8 @@ export async function POST(req: Request) {
 
   const userName = session.user.name ?? session.user.email.split('@')[0]
   const clientContext = typeof body.context === 'string' ? body.context.slice(0, 2000) : ''
-  const fallbackContext = `Worker: ${userName}\nTime: ${timeOfDay()}`
+  const clientHour = typeof body.localHour === 'number' ? body.localHour : undefined
+  const fallbackContext = `Worker: ${userName}\nTime: ${timeOfDay(clientHour)}`
   const contextBlock = `\n\nCURRENT CONTEXT:\n${clientContext || fallbackContext}`
   const systemPrompt = SYSTEM_PROMPT + contextBlock
 
@@ -151,8 +152,8 @@ export async function POST(req: Request) {
   }
 }
 
-function timeOfDay(): string {
-  const h = new Date().getHours()
+function timeOfDay(clientHour?: number): string {
+  const h = clientHour ?? new Date().getHours()
   if (h < 6) return 'early morning'
   if (h < 12) return 'morning'
   if (h < 17) return 'afternoon'

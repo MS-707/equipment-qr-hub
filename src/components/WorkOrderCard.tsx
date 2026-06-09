@@ -140,16 +140,16 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
             style={{
               backgroundColor:
                 workOrder.status === 'Complete'
-                  ? '#22C55E18'
+                  ? 'color-mix(in srgb, var(--ok) 10%, transparent)'
                   : workOrder.status === 'In Progress'
-                  ? '#3B82F618'
-                  : '#6B728018',
+                  ? 'color-mix(in srgb, var(--accent) 10%, transparent)'
+                  : 'color-mix(in srgb, var(--fg-4) 10%, transparent)',
               color:
                 workOrder.status === 'Complete'
-                  ? '#22C55E'
+                  ? 'var(--ok)'
                   : workOrder.status === 'In Progress'
-                  ? '#3B82F6'
-                  : '#6B7280',
+                  ? 'var(--accent)'
+                  : 'var(--fg-4)',
             }}
             title="Click to change status"
           >
@@ -221,7 +221,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 placeholder="Issues found, parts replaced, observations..."
                 className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-3
                            text-xs text-fg placeholder:text-fg-4 resize-none
-                           focus:outline-none focus:ring-1 focus:ring-mytra-purple"
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
             </div>
 
