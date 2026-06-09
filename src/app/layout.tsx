@@ -10,6 +10,7 @@ import AuthProvider from '@/components/providers/AuthProvider'
 const SageTriage = dynamic(() => import('@/components/SageTriage'), { ssr: false })
 const OnboardingTour = dynamic(() => import('@/components/onboarding/OnboardingTour'), { ssr: false })
 const ModuleTourEngine = dynamic(() => import('@/components/onboarding/ModuleTourEngine'), { ssr: false })
+const TourAutoPrompt = dynamic(() => import('@/components/onboarding/TourAutoPrompt'), { ssr: false })
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
@@ -59,6 +60,7 @@ export default function RootLayout({
           <SageTriage />
           <OnboardingTour />
           <ModuleTourEngine />
+          <TourAutoPrompt />
           <StorageAlert />
         </AuthProvider>
       </body>
