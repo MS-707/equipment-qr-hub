@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { findTourForRoute, type ModuleTourStep } from '@/tours'
@@ -53,9 +53,13 @@ export default function ModuleTourEngine() {
     return () => window.removeEventListener(MODULE_TOUR_EVENT, onStart)
   }, [pathname])
 
-  // Auto-dismiss on route change
+  // Auto-dismiss on route change (only when pathname actually changes)
+  const prevPathRef = useRef(pathname)
   useEffect(() => {
-    if (active) finish()
+    if (prevPathRef.current !== pathname && active) {
+      finish()
+    }
+    prevPathRef.current = pathname
   }, [pathname, active, finish])
 
   useLayoutEffect(() => {
