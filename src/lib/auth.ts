@@ -15,6 +15,8 @@
 import type { NextAuthOptions } from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
+import { isFirstLogin } from '@/lib/user-tracker'
+import { sendSlackMessage } from '@/lib/slack-notify'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
   .split(',')
@@ -67,13 +69,22 @@ export const authOptions: NextAuthOptions = {
   providers,
   session: { strategy: 'jwt', maxAge: 12 * 60 * 60 },
   callbacks: {
-    async signIn({ account, profile }) {
-      // Google: enforce verified email + allowed domain.
-      // Credentials: already validated in authorize().
+    async signIn({ account, profile, user }) {
       if (account?.provider === 'google') {
         const p = profile as { email?: string; email_verified?: boolean } | undefined
-        return emailAllowed(p?.email) && p?.email_verified === true
+        if (!emailAllowed(p?.email) || p?.email_verified !== true) return false
       }
+
+      const email = user.email ?? (profile as { email?: string } | undefined)?.email
+      if (email) {
+        isFirstLogin(email).then((first) => {
+          if (first) {
+            const name = user.name || email.split('@')[0]
+            sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
+          }
+        }).catch(() => {})
+      }
+
       return true
     },
     async jwt({ token, profile }) {

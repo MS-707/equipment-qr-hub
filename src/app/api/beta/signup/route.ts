@@ -1,5 +1,6 @@
 import { addSignup, type BetaSignup } from '@/lib/beta'
 import { sendEhsNotification } from '@/lib/email-notify'
+import { sendSlackMessage } from '@/lib/slack-notify'
 import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
@@ -48,23 +49,33 @@ export async function POST(req: Request) {
 
   await addSignup(signup)
 
-  await sendEhsNotification({
-    subject: `[Sage Beta] New signup: ${name} — ${company}`,
-    text: [
-      `New beta tester signup for Sage EHS`,
-      ``,
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Company: ${company}`,
-      `Role: ${role}`,
-      `Crew size: ${crewSize || 'Not specified'}`,
-      `Why they want access: ${reason || 'Not specified'}`,
-      ``,
-      `Submitted: ${new Date().toLocaleString()}`,
-      ``,
-      `Review and approve at: ${process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'}/admin/beta`,
-    ].join('\n'),
-  })
+  const appUrl = process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'
+
+  await Promise.all([
+    sendEhsNotification({
+      subject: `[Sage Beta] New signup: ${name} — ${company}`,
+      text: [
+        `New beta tester signup for Sage EHS`,
+        ``,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Company: ${company}`,
+        `Role: ${role}`,
+        `Team size: ${crewSize || 'Not specified'}`,
+        `Why they want access: ${reason || 'Not specified'}`,
+        ``,
+        `Submitted: ${new Date().toLocaleString()}`,
+        ``,
+        `Review and approve at: ${appUrl}/admin/beta`,
+      ].join('\n'),
+    }),
+    sendSlackMessage(
+      `📋 *Beta signup:* ${name} (${email})\n` +
+      `${company} · ${role}${crewSize ? ` · ${crewSize}` : ''}\n` +
+      `${reason ? `> ${reason}\n` : ''}` +
+      `<${appUrl}/admin/beta|Review in admin>`
+    ),
+  ])
 
   return Response.json({ ok: true, id })
 }
