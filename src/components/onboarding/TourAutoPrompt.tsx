@@ -12,13 +12,14 @@ const DISMISS_KEY = 'sage-tour-prompt-dismissed'
 const ONBOARDING_SEEN_KEY = 'sage-onboarding-seen'
 
 /**
- * Desktop-only "First time here?" prompt for pages that have a module tour.
+ * "First time here?" prompt for pages that have a module tour.
+ * Desktop: small card bottom-left. Mobile: slim one-line pill above the tab
+ * bar — deliberately quiet so a first open doesn't feel overwhelming.
  *
  * Guard rails (each fixed a real complaint from the first iteration):
  * - Only after sign-in — never on the auth screen.
- * - Desktop only (>= 768px); mobile keeps just the header Tour button.
  * - Waits until the welcome onboarding has been seen, so the two never stack.
- * - "No thanks" dismisses globally, not per page.
+ * - "No thanks" / ✕ dismisses globally, not per page.
  * - A page's prompt disappears for good once its tour is taken.
  */
 export default function TourAutoPrompt() {
@@ -30,7 +31,6 @@ export default function TourAutoPrompt() {
   useEffect(() => {
     setVisible(false)
     if (status !== 'authenticated') return
-    if (!window.matchMedia('(min-width: 768px)').matches) return
     try {
       if (localStorage.getItem(DISMISS_KEY) === '1') return
       if (localStorage.getItem(ONBOARDING_SEEN_KEY) !== '1') return
@@ -67,7 +67,36 @@ export default function TourAutoPrompt() {
   if (!visible || !tour) return null
 
   return (
-    <div className="hidden md:block fixed bottom-6 left-6 z-[60] animate-fadeInUp">
+    <>
+      {/* Mobile: slim pill above the bottom tab bar */}
+      <div
+        className="md:hidden no-print fixed left-3 right-3 z-[60] animate-fadeInUp"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)' }}
+      >
+        <div className="flex items-center gap-2 bg-mytra-card border border-mytra-border rounded-full shadow-pop pl-3 pr-1.5 py-1.5">
+          <GraduationCap className="w-4 h-4 text-mytra-purple shrink-0" />
+          <p className="text-xs text-fg-2 flex-1 truncate">First time here? Take a quick tour</p>
+          <button
+            type="button"
+            onClick={takeTour}
+            className="shrink-0 min-h-[36px] px-3.5 rounded-full text-xs font-semibold bg-mytra-purple text-white
+                       hover:bg-mytra-purple-hover transition-colors"
+          >
+            Tour
+          </button>
+          <button
+            type="button"
+            onClick={dismissForever}
+            aria-label="Dismiss tour prompts"
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-fg-3 hover:text-fg transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: card bottom-left */}
+      <div className="hidden md:block fixed bottom-6 left-6 z-[60] animate-fadeInUp">
       <div className="w-72 bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -106,6 +135,7 @@ export default function TourAutoPrompt() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
