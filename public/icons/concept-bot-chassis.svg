@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <!-- Antenna -->
+  <line x1="256" y1="160" x2="256" y2="102" stroke="#572DFF" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="92" r="14" fill="#572DFF"/>
+  <!-- Hexagonal helmet plate (outline only) -->
+  <path
+    d="M 152 160 L 360 160 L 390 210 L 390 350 L 122 350 L 122 210 Z"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="18"
+    stroke-linejoin="round"
+  />
+  <!-- Single visor bar -->
+  <rect x="168" y="240" width="176" height="46" rx="6" fill="#572DFF"/>
+  <!-- Visor highlight -->
+  <rect x="168" y="240" width="176" height="14" rx="6" fill="#FFFFFF" opacity="0.15"/>
+</svg>

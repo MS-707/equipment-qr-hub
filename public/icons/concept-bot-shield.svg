@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <!-- Shield body -->
+  <path
+    d="M 256,68 C 340,68 424,100 424,180 L 424,300 C 424,390 256,454 256,454 C 256,454 88,390 88,300 L 88,180 C 88,100 172,68 256,68 Z"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="24"
+    stroke-linejoin="round"
+  />
+  <!-- Visor slit / emblem band -->
+  <rect x="156" y="208" width="200" height="44" rx="22" fill="#572DFF"/>
+  <!-- Eye nodes punched out of visor -->
+  <circle cx="196" cy="230" r="14" fill="#0A0A0A"/>
+  <circle cx="316" cy="230" r="14" fill="#0A0A0A"/>
+  <!-- Chin plate line -->
+  <line x1="176" y1="300" x2="336" y2="300" stroke="#572DFF" stroke-width="10" stroke-linecap="round"/>
+</svg>
