@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 
-const SYSTEM_PROMPT = `You are Sage, an experienced construction safety advisor. Generate a concise 2-minute toolbox talk for a construction crew based on today's job scope, hazards, and conditions. The talk should be practical, plain-language, and ready to read aloud on-site. Keep talking points to 3-4 bullet points. End with one discussion question to engage the crew.`
+const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. Generate a concise 2-minute toolbox talk for a team based on today's job scope, hazards, and conditions. The talk should be practical, plain-language, and ready to read aloud at a team meeting. Keep talking points to 3-4 bullet points. End with one discussion question to engage the team.`
 
 const ToolboxTalkSchema = z.object({
   title: z.string(),

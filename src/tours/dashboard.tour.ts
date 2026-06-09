@@ -8,7 +8,7 @@ export const dashboardTour: ModuleTour = {
     {
       target: '[data-tour-module="ptp-status"]',
       title: "Today's PTP",
-      body: "Shows whether your crew has a Pre-Task Plan for today. If it says 'Not started,' tap Start PTP to begin one.",
+      body: "Shows whether your team has a Pre-Task Plan for today. If it says 'Not started,' tap Start PTP to begin one.",
     },
     {
       target: '[data-tour-module="quick-actions"]',

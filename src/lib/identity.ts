@@ -3,7 +3,7 @@
  *
  * On a successful sign-in, AuthGate persists a minimal identity snapshot here.
  * This is the OFFLINE IDENTITY CACHE: after one verified login, the device
- * remembers who is signed in so crews can complete and attribute safety records
+ * remembers who is signed in so users can complete and attribute safety records
  * with no network. Records created offline carry this identity and sync later.
  *
  * Kept separate from lib/auth.ts so client bundles never pull in next-auth's

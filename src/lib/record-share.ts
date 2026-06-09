@@ -1,8 +1,8 @@
 /**
  * Record sharing — turns a safety record into a plain-text summary and shares
  * it via the native share sheet (iOS/Android) with a mailto: fallback for
- * desktop. Field crews most often need to email a completed PTP or permit to a
- * GC or client rep; on iPhone the Web Share API surfaces Mail, Messages, and
+ * desktop. Teams often need to email a completed PTP or permit to a manager
+ * or client rep; on iPhone the Web Share API surfaces Mail, Messages, and
  * AirDrop in one tap.
  */
 

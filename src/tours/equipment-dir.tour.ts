@@ -8,7 +8,7 @@ export const equipmentDirTour: ModuleTour = {
     {
       target: '[data-tour-module="equip-search"]',
       title: 'Search Equipment',
-      body: 'Type a name or number to find any piece of equipment on site.',
+      body: 'Type a name or number to find any piece of equipment.',
     },
     {
       target: '[data-tour-module="category-pills"]',

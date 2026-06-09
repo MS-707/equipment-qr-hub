@@ -42,7 +42,7 @@ export async function sendBetaEmail(signup: BetaSignup, status: BetaStatus): Pro
           `Your data stays on your device during the beta (offline-first PWA).`,
           `Nothing leaves your phone unless you explicitly sync.`,
           ``,
-          `Thanks for helping us build safer jobsites.`,
+          `Thanks for helping us build safer workplaces.`,
           ``,
           `— The Sage EHS Team`,
         ].join('\n'),
