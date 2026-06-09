@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { scopeOfWork?: string; location?: string }
+  let body: { scopeOfWork?: string; location?: string; followUp?: boolean; existingHazards?: string[] }
   try {
     body = await req.json()
   } catch {
@@ -82,10 +82,17 @@ export async function POST(req: Request) {
   }
 
   const location = (body.location ?? '').trim().slice(0, 200)
+  const followUp = body.followUp === true
+  const existingHazards = Array.isArray(body.existingHazards)
+    ? body.existingHazards.map((h) => String(h).slice(0, 200))
+    : []
 
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
     location ? `Location: ${location}` : null,
+    followUp && existingHazards.length > 0
+      ? `\n\nThe following hazards are already identified — do NOT repeat them. Instead, focus on gaps and hazards not yet covered:\n${existingHazards.map((h) => `- ${h}`).join('\n')}`
+      : null,
   ]
     .filter(Boolean)
     .join('\n')
