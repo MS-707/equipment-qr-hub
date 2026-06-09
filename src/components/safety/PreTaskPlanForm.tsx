@@ -91,7 +91,8 @@ export default function PreTaskPlanForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'ptp',
     () => ({ date, shift, projectName, location, scopeOfWork, hazards, ppe, musterPoint, hospital, firstAid, weather, wind, heat, toolboxTopic, toolboxNotes }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0 && musterPoint.trim().length > 0

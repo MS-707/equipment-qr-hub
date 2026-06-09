@@ -24,7 +24,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<string | null>(null)
   const [devName, setDevName] = useState('')
   const [devEmail, setDevEmail] = useState('')
+  const [devCode, setDevCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // In production builds, email login requires the shared access code
+  // (EMAIL_LOGIN_CODE) — the provider is only registered when one is set.
+  const needsCode = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
     getProviders()
@@ -103,7 +108,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     e.preventDefault()
     setAuthError(null)
     setSubmitting(true)
-    const res = await signIn('dev', { redirect: false, name: devName, email: devEmail })
+    const res = await signIn('dev', { redirect: false, name: devName, email: devEmail, code: devCode })
     setSubmitting(false)
     if (res?.error) {
       setAuthError('AccessDenied')
@@ -189,9 +194,26 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
             </div>
+            {needsCode && (
+              <div>
+                <label htmlFor="dev-code" className="block text-xs text-fg-2 mb-1">
+                  Access code
+                </label>
+                <input
+                  id="dev-code"
+                  type="password"
+                  value={devCode}
+                  onChange={(e) => setDevCode(e.target.value)}
+                  placeholder="Shared access code"
+                  className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
+                             text-sm text-fg placeholder:text-fg-4
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
+                />
+              </div>
+            )}
             <button
               type="submit"
-              disabled={submitting || !devEmail.trim()}
+              disabled={submitting || !devEmail.trim() || (needsCode && !devCode.trim())}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-colors
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover
                          disabled:opacity-40 disabled:cursor-not-allowed"
