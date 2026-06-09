@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Sparkles } from 'lucide-react'
 import { findTourForRoute } from '@/tours'
-import { isTourSeen, markTourSeen } from '@/lib/tourState'
+import { isTourSeen, markTourSeen, isAutoPromptDismissed, dismissAutoPrompt } from '@/lib/tourState'
 import { MODULE_TOUR_EVENT, TOUR_ACTIVE_EVENT } from './ModuleTourEngine'
 
 export default function TourAutoPrompt() {
@@ -20,13 +20,14 @@ export default function TourAutoPrompt() {
     setTourId(null)
 
     if (status !== 'authenticated') return
+    if (isAutoPromptDismissed()) return
 
     const tour = findTourForRoute(pathname)
     if (!tour || isTourSeen(tour.id)) return
 
     const showTimer = setTimeout(() => {
       // Re-check in case tour was started/seen during the delay
-      if (isTourSeen(tour.id)) return
+      if (isTourSeen(tour.id) || isAutoPromptDismissed()) return
       setTourId(tour.id)
       setVisible(true)
     }, 1500)
@@ -59,6 +60,7 @@ export default function TourAutoPrompt() {
 
   const handleSkip = () => {
     markTourSeen(tourId)
+    dismissAutoPrompt()
     setVisible(false)
   }
 
