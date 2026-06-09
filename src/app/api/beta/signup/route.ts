@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   }
 
-  addSignup(signup)
+  await addSignup(signup)
 
   await sendEhsNotification({
     subject: `[Sage Beta] New signup: ${name} — ${company}`,

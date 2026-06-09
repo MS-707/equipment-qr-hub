@@ -1,3 +1,4 @@
+import { kv } from '@vercel/kv'
 import { SAFETY_TYPE_LABELS, type SafetyRecordType } from '@/lib/safety-types'
 
 export interface ReviewSubmission {
@@ -15,42 +16,63 @@ export interface ReviewSubmission {
   note?: string
 }
 
-const store = new Map<string, ReviewSubmission>()
+const KV_PREFIX = 'review:'
 
-export function storeReviewSubmission(data: {
+function kvEnabled(): boolean {
+  return !!process.env.KV_REST_API_URL
+}
+
+const memStore = new Map<string, ReviewSubmission>()
+
+export async function storeReviewSubmission(data: {
   recordId: string
   recordType: SafetyRecordType
   projectName: string
   location: string
   submitterName: string
   submitterEmail: string
-}): ReviewSubmission {
+}): Promise<ReviewSubmission> {
   const submission: ReviewSubmission = {
     ...data,
     recordLabel: SAFETY_TYPE_LABELS[data.recordType] ?? data.recordType,
     submittedAt: new Date().toISOString(),
     status: 'pending',
   }
-  store.set(data.recordId, submission)
+  if (kvEnabled()) {
+    await kv.set(`${KV_PREFIX}${data.recordId}`, submission, { ex: 60 * 60 * 24 * 7 })
+  } else {
+    memStore.set(data.recordId, submission)
+  }
   return submission
 }
 
-export function getReviewSubmission(recordId: string): ReviewSubmission | undefined {
-  return store.get(recordId)
+export async function getReviewSubmission(recordId: string): Promise<ReviewSubmission | undefined> {
+  if (kvEnabled()) {
+    return await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`) ?? undefined
+  }
+  return memStore.get(recordId)
 }
 
-export function decideReview(
+export async function decideReview(
   recordId: string,
   action: 'approved' | 'rejected',
   decidedBy: string,
   note?: string
-): ReviewSubmission | undefined {
-  const sub = store.get(recordId)
+): Promise<ReviewSubmission | undefined> {
+  let sub: ReviewSubmission | undefined | null
+  if (kvEnabled()) {
+    sub = await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`)
+  } else {
+    sub = memStore.get(recordId)
+  }
   if (!sub) return undefined
   if (sub.status !== 'pending') return sub
   sub.status = action
   sub.decidedAt = new Date().toISOString()
   sub.decidedBy = decidedBy
   sub.note = note
+  if (kvEnabled()) {
+    await kv.set(`${KV_PREFIX}${recordId}`, sub, { ex: 60 * 60 * 24 * 30 })
+  }
   return sub
 }

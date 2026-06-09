@@ -26,9 +26,9 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid or expired link. Review links expire after 7 days.' }, { status: 403 })
   }
 
-  const submission = getReviewSubmission(parsed.recordId)
+  const submission = await getReviewSubmission(parsed.recordId)
   if (!submission) {
-    return Response.json({ error: 'Review submission not found. It may have expired from server memory.' }, { status: 404 })
+    return Response.json({ error: 'Review submission not found. It may have expired.' }, { status: 404 })
   }
 
   if (submission.status !== 'pending') {
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const adminEmail = process.env.EHS_NOTIFY_EMAIL || 'mark.starr@mytra.ai'
   const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
-  const decided = decideReview(parsed.recordId, status, adminEmail, note)
+  const decided = await decideReview(parsed.recordId, status, adminEmail, note)
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
@@ -79,7 +79,7 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Invalid or expired link' }, { status: 403 })
   }
 
-  const submission = getReviewSubmission(parsed.recordId)
+  const submission = await getReviewSubmission(parsed.recordId)
   if (!submission) {
     return Response.json({ error: 'Submission not found' }, { status: 404 })
   }
