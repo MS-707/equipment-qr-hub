@@ -25,7 +25,7 @@ const SAGE_FAQ: Array<{ patterns: string[]; answer: string }> = [
   },
   {
     patterns: ['ppe', 'protection', 'glasses', 'gloves', 'hard hat', 'helmet', 'boots'],
-    answer: 'PPE requirements depend on the task. At minimum: hard hat, safety glasses, steel-toe boots, hi-vis vest. Check your PTP hazard assessment for additional requirements (gloves, hearing protection, respirator, etc.).',
+    answer: 'PPE requirements depend on the task and your work area. Check your PTP hazard assessment for specific requirements (safety glasses, gloves, hearing protection, respirator, steel-toe boots, etc.). When in doubt, ask your safety officer.',
   },
   {
     patterns: ['emergency', '911', 'fire', 'evacuation', 'muster'],
@@ -37,7 +37,7 @@ const SAGE_FAQ: Array<{ patterns: string[]; answer: string }> = [
   },
   {
     patterns: ['fatigue', 'tired', 'overtime', 'hours', 'break', 'rest'],
-    answer: 'Fatigue increases injury risk. Take breaks every 2 hours, stay hydrated, and alert your crew if you\'re feeling slow. Shifts over 10 hours require extra vigilance. Talk to your foreman about rest scheduling.',
+    answer: 'Fatigue increases injury risk. Take breaks every 2 hours, stay hydrated, and alert your team if you\'re feeling slow. Shifts over 10 hours require extra vigilance. Talk to your supervisor about rest scheduling.',
   },
   {
     patterns: ['training', 'certified', 'qualification', 'authorized'],

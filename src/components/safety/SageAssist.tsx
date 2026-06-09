@@ -47,7 +47,7 @@ const PPE_KEYWORD_MAP: { keywords: string[]; ppeId: string; reason: string }[] =
   { keywords: ['traffic', 'vehicle', 'public', 'roadway', 'pedestrian'], ppeId: 'hi-vis', reason: 'Vehicle / traffic interface detected' },
   { keywords: ['overhead', 'falling object', 'dropped', 'crane', 'rigging'], ppeId: 'hard-hat', reason: 'Overhead / falling object risk' },
   { keywords: ['splash', 'chemical', 'grind', 'chip', 'flying'], ppeId: 'face-shield', reason: 'Face / eye splash risk' },
-  { keywords: ['construction', 'site', 'steel', 'formwork', 'demolition'], ppeId: 'boots', reason: 'General construction site' },
+  { keywords: ['construction', 'site', 'steel', 'formwork', 'demolition'], ppeId: 'boots', reason: 'General worksite safety' },
   { keywords: ['impact', 'debris', 'drill', 'saw', 'grinder'], ppeId: 'safety-glasses', reason: 'Eye hazard from debris / impact' },
 ]
 

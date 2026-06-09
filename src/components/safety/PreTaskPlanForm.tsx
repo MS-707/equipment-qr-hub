@@ -318,7 +318,7 @@ export default function PreTaskPlanForm() {
         </div>
         <div data-tour-module="scope-of-work">
           <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
-          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the crew building/commissioning today?" className={`${inputCls} resize-none`} />
+          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the team working on today?" className={`${inputCls} resize-none`} />
         </div>
       </div>
 

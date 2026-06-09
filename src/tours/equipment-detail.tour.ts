@@ -18,7 +18,7 @@ export const equipmentDetailTour: ModuleTour = {
     {
       target: '[data-tour-module="authorized-users"]',
       title: 'Who Can Operate',
-      body: 'Crew members cleared to use this equipment are listed here. Talk to your supervisor if your name is missing.',
+      body: 'Team members cleared to use this equipment are listed here. Talk to your supervisor if your name is missing.',
     },
   ],
 }

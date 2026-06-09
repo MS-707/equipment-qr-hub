@@ -6,7 +6,7 @@ import BottomTabBar from '@/components/BottomTabBar'
 import SageTriage from '@/components/SageTriage'
 import OnboardingTour from '@/components/onboarding/OnboardingTour'
 import ModuleTourEngine from '@/components/onboarding/ModuleTourEngine'
-import TourAutoPrompt from '@/components/onboarding/TourAutoPrompt'
+
 import AuthProvider from '@/components/providers/AuthProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mon
 
 export const metadata: Metadata = {
   title: 'Sage | EHS',
-  description: 'AI-assisted construction safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for the field',
+  description: 'AI-powered EHS safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for teams of every size',
   applicationName: 'Sage',
   manifest: '/manifest.json',
   appleWebApp: {
@@ -57,7 +57,6 @@ export default function RootLayout({
           <SageTriage />
           <OnboardingTour />
           <ModuleTourEngine />
-          <TourAutoPrompt />
         </AuthProvider>
       </body>
     </html>

@@ -18,12 +18,12 @@ export const ptpTour: ModuleTour = {
     {
       target: '[data-tour-module="ppe-selector"]',
       title: 'PPE Selection',
-      body: 'Check off the protective equipment your crew needs for this job.',
+      body: 'Check off the protective equipment your team needs for this task.',
     },
     {
       target: '[data-tour-module="crew-signon"]',
-      title: 'Crew Sign-On',
-      body: 'When the plan is ready, tap here to pass the device around for crew signatures.',
+      title: 'Team Sign-On',
+      body: 'When the plan is ready, tap here to pass the device around for team signatures.',
     },
   ],
 }

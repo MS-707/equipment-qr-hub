@@ -1,6 +1,6 @@
 # Sage EHS — Equipment QR Hub
 
-Construction safety and equipment management PWA for field crews on iPhone and iPad. Replaces paper-based inspection workflows, pre-task plans, permits, and job hazard analyses with a searchable, offline-capable, QR-accessible web application.
+AI-powered EHS safety and equipment management PWA for R&D, manufacturing, and engineering teams. Replaces paper-based inspection workflows, pre-task plans, permits, and job hazard analyses with a searchable, offline-capable, QR-accessible web application.
 
 **Live:** [equipment-qr-hub.vercel.app](https://equipment-qr-hub.vercel.app)
 
