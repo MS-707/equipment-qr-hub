@@ -10,40 +10,40 @@ Legend: 🔴 P0 = fix before beta invites · 🟡 P1 = fix during beta · ⚪ P2
 
 ## 🔴 P0 — Launch gates
 
-- [ ] **1. Block passwordless admin impersonation in production**
+- [x] **1. Block passwordless admin impersonation in production**
   `src/lib/auth.ts:33` — `ALLOW_EMAIL_LOGIN=1` enables the no-password
   Credentials provider in production (only `ALLOW_DEV_LOGIN` is NODE_ENV-gated,
   contradicting the file header). Anyone typing an admin email becomes admin.
   Fix: gate `allowEmailLogin` behind `!isProduction` as well.
 
-- [ ] **2. Back the rate limiter with KV** *(flagged by all 3 teams)*
+- [x] **2. Back the rate limiter with KV** *(flagged by all 3 teams)*
   `src/lib/rate-limit.ts` — module-scope `Map` is per-lambda and resets on cold
   start; all 9 protected routes are effectively unlimited (Anthropic cost burn,
   Slack/Resend flooding). Also `api/beta/signup/route.ts:6` keys on raw
   `x-forwarded-for` (client-spoofable — use the platform-appended last hop).
   Fix: `kv.incr` + `kv.expire` when `KV_REST_API_URL` is set; Map fallback for dev.
 
-- [ ] **3. Remove the forgeable review-token fallback secret**
+- [x] **3. Remove the forgeable review-token fallback secret**
   `src/lib/review-token.ts:3` — falls back to a hard-coded string, making
   approve/reject tokens forgeable on the unauthenticated `/api/safety/review/decide`
   route (forged token = forged EHS approval). Comparison is also truncated and
   non-constant-time. Fix: throw at module load if no secret; full HMAC digest +
   `crypto.timingSafeEqual`.
 
-- [ ] **4. Fix invisible printed signatures (compliance bug)**
+- [x] **4. Fix invisible printed signatures (compliance bug)**
   `src/components/SignaturePad.tsx:21` — pen color is hard-coded `#FFFFFF` on a
   transparent PNG; print CSS forces white backgrounds, so signed PTPs/permits
   print with blank signature boxes. Fix: export strokes in a dark color (recolor
   at export) and derive pen color from theme.
 
-- [ ] **5. Stop drafts resurrecting after submission (duplicate-record bug)**
+- [x] **5. Stop drafts resurrecting after submission (duplicate-record bug)**
   `src/lib/use-draft.ts:40` — the debounced save runs on every render with no
   enabled flag; after submit + `clearDraft()`, the timer re-writes the draft with
   submitted values. Next visit shows "Draft restored" with stale data → invites
   duplicate permits/PTPs. Affects all five forms. Fix: add a `disabled` param to
   `useFormDraft`, set on submit.
 
-- [ ] **6. Fix beta signup index race (silently hidden signups)**
+- [x] **6. Fix beta signup index race (silently hidden signups)**
   `src/lib/beta.ts:31` — `get` → `push` → `set` on `beta:_index`; concurrent
   signups lose an index entry, making a signup invisible in `/admin/beta`
   forever. Fix: `kv.sadd`/`kv.smembers` instead of an array.
