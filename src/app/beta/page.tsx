@@ -12,17 +12,17 @@ import {
   CheckCircle2,
   ArrowRight,
   Loader2,
-  Brain,
-  Cpu,
+  Lightbulb,
+  PenLine,
 } from 'lucide-react'
 
 const FEATURES = [
-  { icon: MessageCircle, title: 'Sage AI Assistant', desc: 'On-device safety advisor with context from your PTPs, permits, and facility procedures.' },
-  { icon: ListChecks, title: 'Job Hazard Analysis', desc: '5x5 risk matrix with before/after controls. Sage AI drafts steps for experiments, equipment, and deployments.' },
-  { icon: Shield, title: 'Specialized Work Permits', desc: 'Laser, high-voltage, chemical, and confined space permits with live timers and safety checklists.' },
-  { icon: ClipboardList, title: 'Pre-Task Plans', desc: 'Digital PTP with AI-suggested hazards, PPE requirements, and team sign-off before lab or field work.' },
-  { icon: AlertTriangle, title: 'Incident Reporting', desc: 'Log near-misses and injuries with photos, witnesses, and root cause analysis — from the bench or the field.' },
-  { icon: WifiOff, title: 'Offline-First', desc: 'Works without Wi-Fi at remote deployment sites. Syncs automatically when back in range.' },
+  { icon: ClipboardList, title: 'Pre-Task Plans', desc: 'Digital PTP with suggested hazards, recommended PPE, and team sign-off before work starts.' },
+  { icon: Shield, title: 'Work Permits', desc: 'Work-at-height, hot work, and confined-space permits with checklists that gate issuance and live expiry countdowns.' },
+  { icon: AlertTriangle, title: 'Incident Reporting', desc: 'Log near-misses and injuries with photos, witnesses, and root-cause notes — from the bench or the field.' },
+  { icon: WifiOff, title: 'Offline-First', desc: 'Works without Wi-Fi at remote sites. Records save to your device and sync automatically when you reconnect.' },
+  { icon: ListChecks, title: 'Job Hazard Analysis', desc: '5×5 risk matrix with before- and after-control ratings. Sage drafts hazards and controls for each step you enter.' },
+  { icon: MessageCircle, title: 'Sage Assistant', desc: 'Context-aware help that reads today’s plan, your open permits, and recent incidents. Works offline with a built-in safety FAQ.' },
 ]
 
 const ROLES = [
@@ -110,40 +110,56 @@ export default function BetaPage() {
         </div>
       </section>
 
-      {/* Sage AI / Digital Twin spotlight */}
+      {/* Roadmap */}
+      <section className="max-w-3xl mx-auto px-4 pb-12">
+        <div className="border border-dashed border-[#1F1F1F] rounded-lg p-4">
+          <p className="text-xs font-semibold text-[#9A9A9A] mb-1.5 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#572DFF]" />
+            On the roadmap
+          </p>
+          <p className="text-xs text-[#9A9A9A] leading-relaxed">
+            Custom safety knowledge base — upload your SOPs, policies, and site procedures so Sage answers from your rules, not just general guidance · Laser, high-voltage, and chemical work permits · photo &amp; signature sync · role-aware guidance
+          </p>
+        </div>
+      </section>
+
+      {/* Mindfulness / ease-of-use spotlight */}
       <section className="max-w-3xl mx-auto px-4 pb-12">
         <div className="bg-gradient-to-br from-[#572DFF]/5 to-[#141414] border border-[#572DFF]/20 rounded-lg p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#572DFF]/10 flex items-center justify-center shrink-0">
-              <Brain className="w-5 h-5 text-[#572DFF]" />
+              <Lightbulb className="w-5 h-5 text-[#572DFF]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Powered by a custom Anthropic agent</h3>
-              <p className="text-xs text-[#9A9A9A]">Built on the Claude API with structured tool use</p>
+              <h3 className="text-sm font-semibold">Built to build awareness</h3>
+              <p className="text-xs text-[#9A9A9A]">Quick to complete, hard to get wrong</p>
             </div>
           </div>
           <p className="text-sm text-[#CCCCCC] leading-relaxed">
-            Sage is not a chatbot bolted onto a form builder. It is a purpose-built AI agent
-            that understands your facility, your active permits, and your operational context.
+            Safety documentation only works when people actually engage with it. Sage makes
+            pre-task plans, permits, and hazard analyses fast enough to do every time — and
+            structured enough that completing one walks your team through the risks before
+            the work starts.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-start gap-2.5">
-              <Cpu className="w-4 h-4 text-[#572DFF] mt-0.5 shrink-0" />
+              <PenLine className="w-4 h-4 text-[#572DFF] mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-white">Digital twin hazard identification</p>
+                <p className="text-xs font-semibold text-white">A draft, not a blank page</p>
                 <p className="text-xs text-[#9A9A9A]">
-                  Sage models your workspace and equipment to surface hazards before work begins —
-                  factoring in active permits, recent incidents, and environmental conditions.
+                  Describe the work and Sage suggests the likely hazards, risk ratings, and
+                  control measures — so your team starts by sharpening a draft instead of
+                  staring at empty fields.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
               <MessageCircle className="w-4 h-4 text-[#572DFF] mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-white">Intelligent triage</p>
+                <p className="text-xs font-semibold text-white">Help in context</p>
                 <p className="text-xs text-[#9A9A9A]">
-                  New to the app? Sage reads the room — time of day, your role, what is open —
-                  and guides you to the right form, the right permit, the right next step.
+                  Stuck mid-task? The Sage assistant reads today’s plan, your open permits, and
+                  recent incidents, and points you to the right form or permit. Works offline, too.
                 </p>
               </div>
             </div>
