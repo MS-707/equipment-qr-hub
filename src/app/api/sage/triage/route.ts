@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const rl = rateLimit(`sage:${session.user.email}`, 20, 60_000)
+  const rl = await rateLimit(`sage:${session.user.email}`, 20, 60_000)
   if (!rl.ok) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
