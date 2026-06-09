@@ -85,13 +85,13 @@ export default function BetaPage() {
           Early Access — Engineering Teams
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-          Build fast.
+          Build right.
           <br />
-          <span className="text-[#572DFF]">Work safe.</span>
+          <span className="text-[#572DFF]">Start safe.</span>
         </h1>
         <p className="text-base sm:text-lg text-[#9A9A9A] max-w-xl mx-auto leading-relaxed">
-          Sage EHS handles the safety documentation so your team stays focused on
-          what they are building — not the paperwork required to build it.
+          Safety documentation is how your team builds awareness before the work begins.
+          Sage makes that process faster, sharper, and harder to get wrong.
         </p>
       </header>
 
