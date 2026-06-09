@@ -32,6 +32,8 @@ export default function NavHeader() {
     orders: openOrders,
   }
 
+  if (pathname.startsWith('/beta')) return null
+
   return (
     <header className="no-print sticky top-0 z-50 bg-mytra-bg/95 backdrop-blur-sm border-b border-mytra-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">

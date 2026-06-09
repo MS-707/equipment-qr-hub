@@ -60,7 +60,12 @@ function saveHistory(msgs: ChatMessage[]) {
 
 export default function SageTriage() {
   if (!SAGE_ENABLED) return null
+  return <SageTriageGate />
+}
 
+function SageTriageGate() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/beta')) return null
   return <SageTriageInner />
 }
 
