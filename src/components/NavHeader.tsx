@@ -11,7 +11,6 @@ import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
-  if (pathname.startsWith('/beta')) return null
   const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
@@ -32,6 +31,8 @@ export default function NavHeader() {
     safety: openSafety,
     orders: openOrders,
   }
+
+  if (pathname.startsWith('/beta')) return null
 
   return (
     <header className="no-print sticky top-0 z-50 bg-mytra-bg/95 backdrop-blur-sm border-b border-mytra-border">

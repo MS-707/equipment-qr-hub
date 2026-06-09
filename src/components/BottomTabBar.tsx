@@ -7,8 +7,8 @@ import { useLiveCounts } from '@/hooks/useLiveCounts'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
-  if (pathname.startsWith('/beta')) return null
   const { openOrders, openSafety } = useLiveCounts()
+  if (pathname.startsWith('/beta')) return null
 
   const badgeCounts: Record<BadgeKey, number> = {
     safety: openSafety,

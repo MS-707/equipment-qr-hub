@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { isAdmin } from '@/lib/admin'
-import { updateSignupStatus, getSignup, getAllSignups, type BetaStatus } from '@/lib/beta'
+import { updateSignupStatus, getAllSignups, type BetaStatus } from '@/lib/beta'
 import { sendBetaEmail } from './email'
 
 export async function POST(req: Request) {
