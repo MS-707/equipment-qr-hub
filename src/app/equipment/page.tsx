@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Search, X, ChevronDown, ChevronRight } from 'lucide-react'
 import {
   getAllEquipment,
@@ -9,6 +9,7 @@ import {
 } from '@/lib/equipment'
 import { EquipmentCategory, CATEGORY_COLORS } from '@/lib/types'
 import EquipmentCard from '@/components/EquipmentCard'
+import { EquipmentCardSkeleton } from '@/components/Skeleton'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 
 type FilterCategory = EquipmentCategory | 'all'
@@ -17,6 +18,11 @@ export default function EquipmentDirectory() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all')
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    setLoaded(true)
+  }, [])
 
   const toggleCategory = useCallback((category: string) => {
     setCollapsedCategories((prev) => {
@@ -155,7 +161,16 @@ export default function EquipmentDirectory() {
       </div>
 
       {/* ── Equipment Grid ──────────────────────────── */}
-      {filteredEquipment.length === 0 ? (
+      {!loaded ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <EquipmentCardSkeleton />
+          <EquipmentCardSkeleton />
+          <EquipmentCardSkeleton />
+          <EquipmentCardSkeleton />
+          <EquipmentCardSkeleton />
+          <EquipmentCardSkeleton />
+        </div>
+      ) : filteredEquipment.length === 0 ? (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Search className="text-fg-4 mb-3" size={40} />

@@ -7,6 +7,7 @@ import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
 import { isPTP, isPermit, isIncident } from '@/lib/safety-types'
 import { getAllSafetyRecords, onSafetyChange, exportSafetyToCsv } from '@/lib/safety-records'
 import SafetyRecordCard from './SafetyRecordCard'
+import { RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
 
 const TYPE_FILTERS: { key: SafetyRecordType | 'all'; label: string }[] = [
@@ -23,8 +24,12 @@ export default function SafetyHistory() {
   const [records, setRecords] = useState<SafetyRecord[]>([])
   const [filter, setFilter] = useState<SafetyRecordType | 'all'>('all')
   const [query, setQuery] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
-  const load = useCallback(() => setRecords(getAllSafetyRecords()), [])
+  const load = useCallback(() => {
+    setRecords(getAllSafetyRecords())
+    setLoaded(true)
+  }, [])
 
   useEffect(() => {
     load()
@@ -124,7 +129,15 @@ export default function SafetyHistory() {
         })}
       </div>
 
-      {filtered.length === 0 ? (
+      {!loaded ? (
+        <div className="space-y-2">
+          <RecordCardSkeleton />
+          <RecordCardSkeleton />
+          <RecordCardSkeleton />
+          <RecordCardSkeleton />
+          <RecordCardSkeleton />
+        </div>
+      ) : filtered.length === 0 ? (
         records.length === 0 ? (
           <div className="text-center py-10 space-y-3">
             <p className="text-sm text-fg-3">No safety records yet.</p>
