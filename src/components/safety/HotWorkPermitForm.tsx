@@ -29,7 +29,7 @@ export default function HotWorkPermitForm() {
   const [checklist, setChecklist] = useState<PermitCheckItem[]>(() => buildPermitItems('hot-work'))
   const [fireWatchRequired, setFireWatchRequired] = useState(true)
   const [fireWatchName, setFireWatchName] = useState('')
-  const [postDuration, setPostDuration] = useState(30)
+  const [postDuration, setPostDuration] = useState(60)
   const [extinguisherLocation, setExtinguisherLocation] = useState('')
   const [extinguisherType, setExtinguisherType] = useState('ABC')
   const [sprinklerStatus, setSprinklerStatus] = useState('In service')
@@ -128,7 +128,7 @@ export default function HotWorkPermitForm() {
     setChecklist(buildPermitItems('hot-work'))
     setFireWatchRequired(true)
     setFireWatchName('')
-    setPostDuration(30)
+    setPostDuration(60)
     setExtinguisherLocation('')
     setExtinguisherType('ABC')
     setSprinklerStatus('In service')
@@ -217,7 +217,10 @@ export default function HotWorkPermitForm() {
             </div>
             <div>
               <label className={labelCls}>Post-work monitoring (min)</label>
-              <input type="number" inputMode="decimal" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={inputCls} />
+              <input type="number" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
+              {postDuration < 60 && (
+                <p className="text-xs text-warn mt-0.5">NFPA 51B requires minimum 60-minute fire watch</p>
+              )}
             </div>
           </div>
         )}

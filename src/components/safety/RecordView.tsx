@@ -630,6 +630,15 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
         {incident.reportedToCalOsha && (
           <p className="text-xs text-warn mt-1">Reported to authorities</p>
         )}
+        {incident.injuredPerson && (
+          <div className="mt-3 pt-3 border-t border-mytra-border space-y-1">
+            <p className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Injured person</p>
+            <p className="text-sm text-fg-2">{incident.injuredPerson.name}</p>
+            {incident.injuredPerson.jobTitle && <p className="text-xs text-fg-3">Title: {incident.injuredPerson.jobTitle}</p>}
+            {incident.injuredPerson.employer && <p className="text-xs text-fg-3">Employer: {incident.injuredPerson.employer}</p>}
+            {incident.injuredPerson.bodyPartAffected && <p className="text-xs text-fg-3">Body part: {incident.injuredPerson.bodyPartAffected}</p>}
+          </div>
+        )}
       </Section>
 
       {incident.photoSlots.length > 0 && (

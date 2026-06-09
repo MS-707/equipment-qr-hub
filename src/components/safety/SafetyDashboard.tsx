@@ -100,10 +100,12 @@ export default function SafetyDashboard() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
       <div className="flex items-start justify-between">
-        <h1 className="text-xl font-bold text-fg">
-          {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
-        </h1>
-        <ModuleTourButton tourId="dashboard" />
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold text-fg">
+            {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
+          </h1>
+          <ModuleTourButton tourId="dashboard" />
+        </div>
         <p className="text-sm text-fg-2">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>

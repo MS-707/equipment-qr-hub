@@ -30,10 +30,10 @@ export default function TourAutoPrompt() {
     return () => clearTimeout(showTimer)
   }, [pathname])
 
-  // Auto-dismiss after 8 seconds
+  // Auto-dismiss after 20 seconds (field workers may be looking at the jobsite)
   useEffect(() => {
     if (!visible) return
-    const timer = setTimeout(() => setVisible(false), 8000)
+    const timer = setTimeout(() => setVisible(false), 20000)
     return () => clearTimeout(timer)
   }, [visible])
 
