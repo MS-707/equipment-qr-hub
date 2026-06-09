@@ -134,8 +134,7 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
         `Location: ${sub.location || '—'}`,
         sub.note ? `Reviewer note: ${sub.note}` : null,
         ``,
-        `Please reach out to your supervisor for more information.`,
-        `Contact: ${adminEmail}`,
+        `Please reach out to EHS for more information (${adminEmail}).`,
         ``,
         `— Sage EHS`,
       ]
