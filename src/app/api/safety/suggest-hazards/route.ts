@@ -26,7 +26,7 @@ const HazardsSchema = z.object({
 
 type Hazard = z.infer<typeof HazardsSchema>['hazards'][number]
 
-export const maxDuration = 30
+export const maxDuration = 45
 
 async function generate(
   client: Anthropic,
@@ -104,9 +104,9 @@ export async function POST(req: Request) {
     // Phase 1: generate initial suggestions
     let hazards = await generate(client, userMessage)
 
-    // Phase 2: critique and refine (one iteration, within 30s budget)
+    // Phase 2: critique and refine (one iteration, only if time permits)
     const elapsed = Date.now() - startMs
-    if (hazards.length > 0 && elapsed < 18_000) {
+    if (hazards.length > 0 && elapsed < 10_000) {
       const { hints } = critique(hazards)
       if (hints.length > 0) {
         const descriptions = hintDescriptions(hints)
