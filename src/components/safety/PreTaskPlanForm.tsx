@@ -94,7 +94,7 @@ export default function PreTaskPlanForm() {
     restore
   )
 
-  const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0
+  const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0 && musterPoint.trim().length > 0
   const canSubmit = sigData.signatures.length >= 1 && supervisorId !== null
 
   function toggleHeat(key: keyof HeatIllnessPlan) {
@@ -345,8 +345,8 @@ export default function PreTaskPlanForm() {
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Site Conditions & Emergency</h4>
         <div>
-          <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point</label>
-          <input id="ptp-muster" type="text" maxLength={200} value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} className={inputCls} />
+          <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point <span className="text-danger">*</span></label>
+          <input id="ptp-muster" type="text" maxLength={200} value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} placeholder="Required" className={`${inputCls} ${!musterPoint.trim() ? 'border-warn/60' : ''}`} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -469,7 +469,7 @@ export default function PreTaskPlanForm() {
           disabled={!canContinue}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canContinue ? 'Continue to crew sign-on' : 'Fill in scope and location to continue'}
+          {canContinue ? 'Continue to crew sign-on' : 'Fill in scope, location & muster point'}
         </button>
       </div>
     </div>

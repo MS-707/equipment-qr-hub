@@ -91,10 +91,10 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
                       role="radio"
                       aria-checked={on}
                       onClick={() => update(h.id, { riskLevel: lvl })}
-                      className="flex-1 text-xs font-medium py-2.5 rounded-md border transition-colors min-h-[44px]"
+                      className="flex-1 text-xs font-medium py-2.5 rounded-lg border transition-colors min-h-[44px]"
                       style={
                         on
-                          ? { backgroundColor: RISK_COLORS[lvl], color: '#fff', borderColor: RISK_COLORS[lvl] }
+                          ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
                           : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                       }
                     >

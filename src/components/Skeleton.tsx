@@ -17,15 +17,6 @@ export function SkeletonCard() {
   )
 }
 
-export function SkeletonStatCard() {
-  return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2">
-      <Skeleton className="h-3 w-1/3" />
-      <Skeleton className="h-8 w-1/2" />
-    </div>
-  )
-}
-
 export function StatCardSkeleton() {
   return (
     <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-2">
