@@ -10,6 +10,21 @@ export const MODULE_TOUR_EVENT = 'sage:start-module-tour'
 export const TOUR_ACTIVE_EVENT = 'sage:tour-active'
 export const TOUR_ENDED_EVENT = 'sage:tour-ended'
 
+// The engine is lazy-loaded (ssr: false), so a Tour click can land before the
+// listener exists and vanish. Callers go through requestModuleTour(); if the
+// engine isn't mounted yet the request is parked here and replayed on mount
+// (button and engine share this module instance).
+let pendingTourId: string | null = null
+let engineMounted = false
+
+export function requestModuleTour(tourId: string) {
+  if (engineMounted) {
+    window.dispatchEvent(new CustomEvent(MODULE_TOUR_EVENT, { detail: { tourId } }))
+  } else {
+    pendingTourId = tourId
+  }
+}
+
 const GAP = 12
 const PAD = 6
 
@@ -34,24 +49,39 @@ export default function ModuleTourEngine() {
     window.dispatchEvent(new Event(TOUR_ENDED_EVENT))
   }, [tourId])
 
+  const startTour = useCallback((id: string, attempt = 0) => {
+    const tour = findTourForRoute(pathname)
+    if (!tour || tour.id !== id) return
+    const available = tour.steps.filter((s) => findVisible(s.target))
+    if (available.length === 0) {
+      // Targets may not have rendered yet (data still loading) — retry briefly.
+      if (attempt < 3) setTimeout(() => startTour(id, attempt + 1), 400 * (attempt + 1))
+      return
+    }
+    setSteps(available)
+    setTourId(id)
+    setStepIndex(0)
+    setActive(true)
+    window.dispatchEvent(new Event(TOUR_ACTIVE_EVENT))
+  }, [pathname])
+
   useEffect(() => {
+    engineMounted = true
     const onStart = (e: Event) => {
-      const detail = (e as CustomEvent).detail
-      const id = detail?.tourId as string | undefined
-      if (!id) return
-      const tour = findTourForRoute(pathname)
-      if (!tour || tour.id !== id) return
-      const available = tour.steps.filter((s) => findVisible(s.target))
-      if (available.length === 0) return
-      setSteps(available)
-      setTourId(id)
-      setStepIndex(0)
-      setActive(true)
-      window.dispatchEvent(new Event(TOUR_ACTIVE_EVENT))
+      const id = (e as CustomEvent).detail?.tourId as string | undefined
+      if (id) startTour(id)
     }
     window.addEventListener(MODULE_TOUR_EVENT, onStart)
-    return () => window.removeEventListener(MODULE_TOUR_EVENT, onStart)
-  }, [pathname])
+    if (pendingTourId) {
+      const id = pendingTourId
+      pendingTourId = null
+      startTour(id)
+    }
+    return () => {
+      engineMounted = false
+      window.removeEventListener(MODULE_TOUR_EVENT, onStart)
+    }
+  }, [startTour])
 
   // Auto-dismiss on route change (only when pathname actually changes)
   const prevPathRef = useRef(pathname)
