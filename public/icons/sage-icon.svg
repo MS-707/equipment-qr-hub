@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <!-- 270° arc, opening at bottom center, radius 160, stroke 38 -->
+  <path
+    d="M 143 369 A 160 160 0 1 1 369 369"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="38"
+    stroke-linecap="round"
+  />
+  <!-- Upward triangle centered in the arc -->
+  <polygon
+    points="256,178 206,280 306,280"
+    fill="#572DFF"
+  />
+</svg>
