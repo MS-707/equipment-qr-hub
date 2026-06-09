@@ -1,7 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
+import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
+
+const TriageSchema = z.object({
+  reply: z.string(),
+  followUps: z.array(z.string()),
+})
 
 const SYSTEM_PROMPT = `You are Sage, an experienced construction safety mentor embedded in a field safety app used by construction crews.
 
@@ -44,6 +51,8 @@ RULES:
 6. Do not cite specific regulatory codes (e.g., CFR, CCR, OSHA numbers). Give practical guidance instead.
 
 IMPORTANT: You are a safety assistant, not a regulatory advisor. Never claim to provide "OSHA guidance" or represent any regulatory body. Focus on keeping workers safe.
+
+FOLLOW-UP SUGGESTIONS: After every reply, include 2-3 short follow-up questions (under 8 words each) the worker might naturally ask next. Make them contextually relevant to what you just discussed — not generic. Examples: "What PPE do I need?", "How do I close this permit?", "Should I add more hazards?"
 
 APP NAVIGATION:
 - Safety Dashboard (home): /
@@ -115,18 +124,20 @@ export async function POST(req: Request) {
 
   try {
     const client = new Anthropic({ apiKey: key })
-    const response = await client.messages.create({
+    const response = await client.messages.parse({
       model: 'claude-sonnet-4-6',
-      max_tokens: 512,
+      max_tokens: 1024,
       temperature: 0.3,
       system: systemPrompt,
       messages,
+      output_config: { format: zodOutputFormat(TriageSchema) },
     })
 
-    const text =
-      response.content[0]?.type === 'text' ? response.content[0].text : ''
-
-    return Response.json({ reply: text })
+    const parsed = response.parsed_output
+    return Response.json({
+      reply: parsed?.reply ?? '',
+      followUps: parsed?.followUps?.slice(0, 3) ?? [],
+    })
   } catch (err) {
     console.error('[sage] triage failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
