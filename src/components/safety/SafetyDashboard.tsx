@@ -10,6 +10,7 @@ import {
   PackageOpen,
   AlertTriangle,
   Truck,
+  FlaskConical,
   CheckCircle2,
   ChevronRight,
   RefreshCw,
@@ -37,13 +38,15 @@ function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: { href: string; label: string; icon: typeof ClipboardList; primary?: boolean; external?: boolean }[] = [
   { href: '/safety/ptp', label: 'Start PTP', icon: ClipboardList, primary: true },
   { href: '/safety/jha', label: 'Job Hazard Analysis', icon: ListChecks },
   { href: '/safety/permits/height', label: 'Work-at-Height', icon: ArrowUpFromLine },
   { href: '/safety/permits/hot-work', label: 'Hot Work', icon: Flame },
   { href: '/safety/permits/confined-space', label: 'Confined Space', icon: PackageOpen },
   { href: '/safety/incident', label: 'Report Incident', icon: AlertTriangle },
+  { href: '/inspections', label: 'Pre-Trip Inspection', icon: Truck },
+  { href: 'https://sds-five-beta.vercel.app', label: 'SDS Binder', icon: FlaskConical, external: true },
 ]
 
 export default function SafetyDashboard() {
@@ -168,32 +171,29 @@ export default function SafetyDashboard() {
       <section data-tour-module="quick-actions">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Quick actions</h2>
         <div className="grid grid-cols-2 gap-2">
-          {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
+          {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary, external }) => {
+            const cls = `flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                          transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
                          press-scale ${
-                primary
-                  ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
-                  : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              {label}
-            </Link>
-          ))}
-          <Link
-            href="/inspections"
-            className="flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
-                       transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
-                       bg-mytra-card text-fg-2 border border-mytra-border hover:bg-mytra-card-hover
-                       hover:shadow-card press-scale"
-          >
-            <Truck className="w-4 h-4 shrink-0" />
-            Pre-Trip Inspection
-          </Link>
+              primary
+                ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
+                : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
+            }`
+            if (external) {
+              return (
+                <a key={href} href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {label}
+                </a>
+              )
+            }
+            return (
+              <Link key={href} href={href} className={cls}>
+                <Icon className="w-4 h-4 shrink-0" />
+                {label}
+              </Link>
+            )
+          })}
         </div>
       </section>
 
