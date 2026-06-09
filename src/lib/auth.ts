@@ -83,14 +83,19 @@ export const authOptions: NextAuthOptions = {
         if (!emailAllowed(p?.email) || p?.email_verified !== true) return false
       }
 
+      // Awaited deliberately: fire-and-forget promises freeze with the lambda
+      // when the response is sent and only complete on the next invocation
+      // (notifications arrived a page-refresh late). Failures never block sign-in.
       const email = user.email ?? (profile as { email?: string } | undefined)?.email
       if (email) {
-        isFirstLogin(email).then((first) => {
-          if (first) {
+        try {
+          if (await isFirstLogin(email)) {
             const name = user.name || email.split('@')[0]
-            sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
+            await sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
           }
-        }).catch(() => {})
+        } catch {
+          // notification is best-effort
+        }
       }
 
       return true
