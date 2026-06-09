@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <!-- Sage Lattice: nested hexagons + spokes + center diamond -->
+  <!-- Outer hexagon (flat-top, r=180) -->
+  <polygon
+    points="436,256 346,412 166,412 76,256 166,100 346,100"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="12"
+    stroke-linejoin="round"
+  />
+  <!-- Inner hexagon (pointy-top, r=108, rotated 30°) -->
+  <polygon
+    points="256,148 349.6,202 349.6,310 256,364 162.4,310 162.4,202"
+    fill="none"
+    stroke="#572DFF"
+    stroke-width="6"
+    opacity="0.4"
+    stroke-linejoin="round"
+  />
+  <!-- Diagonal spokes connecting outer to inner vertices -->
+  <line x1="346" y1="100" x2="256" y2="148" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <line x1="436" y1="256" x2="349.6" y2="202" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <line x1="346" y1="412" x2="349.6" y2="310" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <line x1="166" y1="412" x2="256" y2="364" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <line x1="76" y1="256" x2="162.4" y2="310" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <line x1="166" y1="100" x2="162.4" y2="202" stroke="#572DFF" stroke-width="4" opacity="0.6"/>
+  <!-- Center diamond -->
+  <polygon
+    points="256,234 274,256 256,278 238,256"
+    fill="#572DFF"
+  />
+</svg>
