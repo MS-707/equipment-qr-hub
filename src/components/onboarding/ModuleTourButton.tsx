@@ -21,11 +21,14 @@ export default function ModuleTourButton({ tourId }: ModuleTourButtonProps) {
           new CustomEvent(MODULE_TOUR_EVENT, { detail: { tourId } })
         )
       }
-      className="inline-flex items-center gap-1 text-xs font-medium text-fg-3
-                 hover:text-fg hover:bg-mytra-card-hover rounded-lg px-2 py-1.5
-                 transition-colors min-h-[32px]"
+      className={`inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1.5
+                 transition-colors min-h-[32px] ${
+        !seen
+          ? 'text-mytra-purple animate-pulse'
+          : 'text-fg-3 hover:text-fg hover:bg-mytra-card-hover'
+      }`}
     >
-      <GraduationCap className={`w-4 h-4 ${!seen ? 'animate-pulse text-mytra-purple' : ''}`} />
+      <GraduationCap className="w-4 h-4" />
       <span className="hidden sm:inline">Tour</span>
     </button>
   )
