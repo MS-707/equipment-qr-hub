@@ -95,23 +95,54 @@ export default function ModuleTourEngine() {
   useLayoutEffect(() => {
     if (!active) return
     const prevOverflow = document.body.style.overflow
-    const el = findVisible(steps[stepIndex]?.target ?? '')
+    const selector = steps[stepIndex]?.target ?? ''
+    const el = findVisible(selector)
     if (el) {
       document.body.style.overflow = ''
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
+
+    // Track the target every frame until it stops moving (smooth scroll, late
+    // layout), then lock scroll. A single delayed measure used to snapshot
+    // mid-scroll coordinates, parking the spotlight on the wrong content.
+    let raf = 0
+    let last: DOMRect | null = null
+    let stableFrames = 0
+    const startedAt = Date.now()
+    const track = () => {
+      const target = findVisible(selector)
+      const r = target ? target.getBoundingClientRect() : null
+      if (r) {
+        const moved =
+          !last ||
+          Math.abs(r.top - last.top) > 0.5 ||
+          Math.abs(r.left - last.left) > 0.5 ||
+          Math.abs(r.height - last.height) > 0.5
+        if (moved) {
+          stableFrames = 0
+          setRect(r)
+        } else {
+          stableFrames++
+        }
+        last = r
+      }
+      if ((stableFrames >= 6 && r) || Date.now() - startedAt > 1500) {
+        if (r) setRect(r)
+        document.body.style.overflow = 'hidden'
+        return
+      }
+      raf = requestAnimationFrame(track)
+    }
+    raf = requestAnimationFrame(track)
+
     const measure = () => {
-      const target = findVisible(steps[stepIndex]?.target ?? '')
+      const target = findVisible(selector)
       setRect(target ? target.getBoundingClientRect() : null)
     }
-    const timer = setTimeout(() => {
-      measure()
-      document.body.style.overflow = 'hidden'
-    }, 400)
     window.addEventListener('resize', measure)
     window.addEventListener('orientationchange', measure)
     return () => {
-      clearTimeout(timer)
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
       window.removeEventListener('orientationchange', measure)
       document.body.style.overflow = prevOverflow
