@@ -6,7 +6,10 @@ const SAVE_DELAY = 2000
 export function useFormDraft<T extends Record<string, unknown>>(
   formKey: string,
   getState: () => T,
-  restoreState: (draft: T) => void
+  restoreState: (draft: T) => void,
+  // Suspends auto-save while true (e.g. after submit) so the debounced timer
+  // can't re-write a draft from already-submitted values.
+  disabled = false
 ): { hasDraft: boolean; clearDraft: () => void; dismissDraft: () => void } {
   const [hasDraft, setHasDraft] = useState(false)
   const didRestore = useRef(false)
@@ -39,6 +42,7 @@ export function useFormDraft<T extends Record<string, unknown>>(
 
   useEffect(() => {
     clearTimeout(saveTimer.current)
+    if (disabled) return
     saveTimer.current = setTimeout(() => {
       try {
         const state = getStateRef.current()
