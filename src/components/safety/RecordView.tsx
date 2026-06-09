@@ -369,7 +369,7 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </Section>
       )}
 
-      <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
+      <Section title={`Team sign-on (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
     </>

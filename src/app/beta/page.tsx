@@ -212,7 +212,7 @@ export default function BetaPage() {
 
             <div>
               <label className="block text-xs text-[#9A9A9A] mb-1">Team size (approximate)</label>
-              <input type="text" maxLength={50} value={crewSize} onChange={(e) => setCrewSize(e.target.value)} placeholder="e.g. 8 engineers, 4 field ops" className={inputCls} />
+              <input type="text" maxLength={50} value={crewSize} onChange={(e) => setCrewSize(e.target.value)} placeholder="e.g. 8 engineers, 4 lab technicians" className={inputCls} />
             </div>
 
             <div>

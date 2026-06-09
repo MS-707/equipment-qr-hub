@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import NavHeader from '@/components/NavHeader'
 import BottomTabBar from '@/components/BottomTabBar'
-import SageTriage from '@/components/SageTriage'
-import OnboardingTour from '@/components/onboarding/OnboardingTour'
-import ModuleTourEngine from '@/components/onboarding/ModuleTourEngine'
-
+import StorageAlert from '@/components/StorageAlert'
 import AuthProvider from '@/components/providers/AuthProvider'
+
+const SageTriage = dynamic(() => import('@/components/SageTriage'), { ssr: false })
+const OnboardingTour = dynamic(() => import('@/components/onboarding/OnboardingTour'), { ssr: false })
+const ModuleTourEngine = dynamic(() => import('@/components/onboarding/ModuleTourEngine'), { ssr: false })
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
@@ -57,6 +59,7 @@ export default function RootLayout({
           <SageTriage />
           <OnboardingTour />
           <ModuleTourEngine />
+          <StorageAlert />
         </AuthProvider>
       </body>
     </html>

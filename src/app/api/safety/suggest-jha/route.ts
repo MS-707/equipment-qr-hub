@@ -4,10 +4,10 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 
-const SYSTEM_PROMPT = `You are Sage, an experienced construction safety advisor embedded in a Job Hazard Analysis (JHA) tool used by structural engineers and build crews.
+const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Job Hazard Analysis (JHA) tool used by engineers and operations teams.
 
 You are given a job title and an ordered list of task STEPS the worker has written. For EACH step, analyse the work and return:
-- hazards: the hazard(s) a crew should consider for that specific step, as a short newline-separated list (1-3 hazards). Be specific to the activity, not generic.
+- hazards: the hazard(s) the team should consider for that specific step, as a short newline-separated list (1-3 hazards). Be specific to the activity, not generic.
 - riskLevel: one of "low", "medium", "high", "critical", rated BEFORE controls using a standard 5×5 risk matrix (severity × likelihood).
 - controls: specific, actionable mitigations for those hazards (not generic advice).
 - residualRiskLevel: the risk level AFTER the controls you specified are properly applied. This should typically be lower than riskLevel, unless the hazard cannot be effectively mitigated.
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     : []
 
   if (steps.length === 0) {
-    return Response.json({ steps: [], error: 'No task steps provided' })
+    return Response.json({ steps: [], error: 'No task steps provided' }, { status: 400 })
   }
   // Keep the request bounded — a JHA rarely exceeds a dozen steps.
   const boundedSteps = steps.slice(0, 15)

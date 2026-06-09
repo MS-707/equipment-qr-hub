@@ -5,9 +5,9 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { critique, hintDescriptions } from '@/lib/hazard-critic'
 
-const SYSTEM_PROMPT = `You are Sage, an experienced construction safety advisor embedded in a Pre-Task Plan (PTP) tool used by structural engineers and build crews.
+const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Pre-Task Plan (PTP) tool used by engineers and operations teams.
 
-Given a scope of work and optional location, suggest 3-6 hazards the crew should address. For each hazard, provide:
+Given a scope of work and optional location, suggest 3-6 hazards the team should address. For each hazard, provide:
 - description: concise hazard name (e.g. "Overhead power lines", "Silica dust exposure")
 - riskLevel: one of "low", "medium", "high", "critical"
 - controlMeasure: a specific, actionable mitigation (not generic advice)
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
   const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
   if (!scopeOfWork) {
-    return Response.json({ hazards: [], error: 'No scope of work provided' })
+    return Response.json({ hazards: [], error: 'No scope of work provided' }, { status: 400 })
   }
 
   const location = (body.location ?? '').trim().slice(0, 200)

@@ -124,7 +124,7 @@ export default function SafetyDashboard() {
         <StatCard
           label="Today's PTP"
           value={ptp ? 'Logged' : 'Not started'}
-          sub={ptp ? `${ptp.crewSignatures.length} crew` : 'tap Start PTP'}
+          sub={ptp ? `${ptp.crewSignatures.length} signed` : 'tap Start PTP'}
           tone={ptp ? 'good' : 'warn'}
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" />
