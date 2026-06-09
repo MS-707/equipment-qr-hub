@@ -7,6 +7,25 @@ export function Skeleton({ className = '' }: { className?: string }) {
   )
 }
 
+export function SkeletonCard() {
+  return (
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-3 w-2/3" />
+    </div>
+  )
+}
+
+export function SkeletonStatCard() {
+  return (
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2">
+      <Skeleton className="h-3 w-1/3" />
+      <Skeleton className="h-8 w-1/2" />
+    </div>
+  )
+}
+
 export function StatCardSkeleton() {
   return (
     <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-2">
@@ -26,6 +45,23 @@ export function RecordCardSkeleton() {
         <Skeleton className="h-3 w-32" />
       </div>
       <Skeleton className="h-6 w-16 rounded-full shrink-0" />
+    </div>
+  )
+}
+
+export function EquipmentCardSkeleton() {
+  return (
+    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-3">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-2/5" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </div>
+      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+      <div className="flex gap-2 pt-1">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-14 rounded-full" />
+      </div>
     </div>
   )
 }

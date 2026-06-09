@@ -217,7 +217,7 @@ export default function HotWorkPermitForm() {
             </div>
             <div>
               <label className={labelCls}>Post-work monitoring (min)</label>
-              <input type="number" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={inputCls} />
+              <input type="number" inputMode="decimal" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={inputCls} />
             </div>
           </div>
         )}
