@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
   const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
   if (!scopeOfWork) {
-    return Response.json({ error: 'No scope of work provided' })
+    return Response.json({ error: 'No scope of work provided' }, { status: 400 })
   }
 
   const location = (body.location ?? '').trim().slice(0, 200)

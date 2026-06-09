@@ -133,7 +133,7 @@ export default function OnboardingTour() {
           </div>
           <h2 className="text-xl font-bold text-fg">Welcome to Sage</h2>
           <p className="text-sm text-fg-2 mt-2 leading-relaxed">
-            Your AI-assisted safety companion for the field. Log Pre-Task Plans, pull permits,
+            Your AI-assisted safety companion for any workplace. Log Pre-Task Plans, pull permits,
             report incidents, and get instant safety guidance — online or off.
           </p>
           <div className="mt-6 flex flex-col gap-2">

@@ -220,9 +220,9 @@ export default function PreTaskPlanForm() {
         </button>
 
         <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
+          <h3 className="text-sm font-semibold text-fg mb-1">Team sign-on</h3>
           <p className="text-xs text-fg-2 mb-3">
-            Pass the device around — each crew member signs to acknowledge the plan. Mark one as
+            Pass the device around — each team member signs to acknowledge the plan. Mark one as
             supervisor.
           </p>
           <CrewSignatureBlock

@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 
-const SYSTEM_PROMPT = `You are Sage, a construction safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
+const SYSTEM_PROMPT = `You are Sage, an EHS safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
 
 const PermitGapSchema = z.object({
   missing_permits: z.array(z.object({
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
   const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
   if (!scopeOfWork) {
-    return Response.json({ missing_permits: [], error: 'No scope of work provided' })
+    return Response.json({ missing_permits: [], error: 'No scope of work provided' }, { status: 400 })
   }
 
   const location = (body.location ?? '').trim().slice(0, 200)
