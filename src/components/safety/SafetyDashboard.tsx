@@ -27,6 +27,7 @@ import { getCurrentIdentity } from '@/lib/identity'
 import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
 import SafetyRecordCard from './SafetyRecordCard'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
+import TourProgressCard from '@/components/onboarding/TourProgressCard'
 import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
@@ -105,6 +106,9 @@ export default function SafetyDashboard() {
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
+
+      {/* Getting Started progress */}
+      <TourProgressCard />
 
       {/* Status row */}
       <div data-tour-module="ptp-status" className="grid grid-cols-3 gap-3">

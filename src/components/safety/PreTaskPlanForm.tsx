@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
@@ -52,6 +52,9 @@ export default function PreTaskPlanForm() {
   const [heatOpen, setHeatOpen] = useState(false)
   const [toolboxOpen, setToolboxOpen] = useState(false)
 
+  const [toolboxLoading, setToolboxLoading] = useState(false)
+  const [toolboxError, setToolboxError] = useState<string | null>(null)
+
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
@@ -96,6 +99,52 @@ export default function PreTaskPlanForm() {
 
   function toggleHeat(key: keyof HeatIllnessPlan) {
     setHeat((h) => ({ ...h, [key]: !h[key] }))
+  }
+
+  const sageEnabled = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
+  const canGenerateTalk = scopeOfWork.trim().split(/\s+/).filter(Boolean).length >= 3
+
+  async function generateToolboxTalk() {
+    setToolboxLoading(true)
+    setToolboxError(null)
+    setToolboxOpen(true)
+    try {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 28000)
+      const res = await fetch('/api/safety/suggest-toolbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scopeOfWork,
+          location,
+          hazards: hazards.map((h) => h.description),
+          weather: weather || undefined,
+        }),
+        signal: ctrl.signal,
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (data?.error) {
+        setToolboxError(data.error)
+      } else {
+        setToolboxTopic(data.title ?? '')
+        const points = Array.isArray(data.talking_points)
+          ? data.talking_points.map((p: string) => `• ${p}`).join('\n')
+          : ''
+        const question = data.discussion_question
+          ? `\nDiscussion: ${data.discussion_question}`
+          : ''
+        setToolboxNotes(points + question)
+      }
+    } catch (err) {
+      const msg =
+        err instanceof DOMException && err.name === 'AbortError'
+          ? 'Request timed out — try again'
+          : 'Network error — check your connection'
+      setToolboxError(msg)
+    } finally {
+      setToolboxLoading(false)
+    }
   }
 
   function handleSubmit() {
@@ -279,7 +328,9 @@ export default function PreTaskPlanForm() {
         <SageAssist
           scopeOfWork={scopeOfWork}
           location={location}
+          existingHazards={hazards}
           onAddHazards={(h) => setHazards((prev) => [...prev, ...h])}
+          onAddPpe={(ids) => setPpe((prev) => Array.from(new Set([...prev, ...ids])))}
         />
         <HazardTable hazards={hazards} onChange={setHazards} />
       </section>
@@ -374,6 +425,35 @@ export default function PreTaskPlanForm() {
               <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
               <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
             </div>
+            {sageEnabled && (
+              <div>
+                <button
+                  type="button"
+                  onClick={generateToolboxTalk}
+                  disabled={!canGenerateTalk || toolboxLoading}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium
+                             bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
+                             hover:border-mytra-purple/60 transition-colors
+                             disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {toolboxLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sage is thinking…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" /> Generate toolbox talk
+                    </>
+                  )}
+                </button>
+                {!canGenerateTalk && !toolboxLoading && (
+                  <p className="text-xs text-fg-4 mt-1 text-center">Add a scope of work first</p>
+                )}
+                {toolboxError && (
+                  <p className="text-xs text-danger mt-1 text-center">{toolboxError}</p>
+                )}
+              </div>
+            )}
             <div>
               <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
               <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
