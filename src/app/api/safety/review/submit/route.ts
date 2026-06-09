@@ -99,7 +99,7 @@ export async function POST(req: Request) {
 
   // ── Store submission for email-based decisions ────────────────
   const submitterEmail = record.createdByEmail || session!.user!.email || ''
-  storeReviewSubmission({
+  await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
     projectName: record.projectName || '',
