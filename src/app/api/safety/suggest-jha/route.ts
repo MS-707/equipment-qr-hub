@@ -8,8 +8,14 @@ const SYSTEM_PROMPT = `You are Sage, an experienced construction safety advisor 
 
 You are given a job title and an ordered list of task STEPS the worker has written. For EACH step, analyse the work and return:
 - hazards: the hazard(s) a crew should consider for that specific step, as a short newline-separated list (1-3 hazards). Be specific to the activity, not generic.
-- riskLevel: one of "low", "medium", "high", "critical", rated BEFORE controls (severity × likelihood).
-- controls: specific, actionable mitigations for those hazards (not generic advice). Note residual risk if relevant.
+- riskLevel: one of "low", "medium", "high", "critical", rated BEFORE controls using a standard 5×5 risk matrix (severity × likelihood).
+- controls: specific, actionable mitigations for those hazards (not generic advice).
+- residualRiskLevel: the risk level AFTER the controls you specified are properly applied. This should typically be lower than riskLevel, unless the hazard cannot be effectively mitigated.
+
+RISK MATRIX REFERENCE (Severity × Likelihood):
+  Severity: 1 Negligible, 2 Minor, 3 Moderate, 4 Major, 5 Catastrophic
+  Likelihood: 1 Rare, 2 Unlikely, 3 Possible, 4 Likely, 5 Almost Certain
+  Score = Severity × Likelihood → low (1-4), medium (5-9), high (10-15), critical (16-25)
 
 Return exactly one analysis object per input step, in the same order. Do not cite specific regulatory codes in the output. Base your analysis on standard construction and industrial safety practice.`
 
@@ -19,11 +25,12 @@ const StepAnalysisSchema = z.object({
       hazards: z.string(),
       riskLevel: z.enum(['low', 'medium', 'high', 'critical']),
       controls: z.string(),
+      residualRiskLevel: z.enum(['low', 'medium', 'high', 'critical']),
     })
   ),
 })
 
-export const maxDuration = 30
+export const maxDuration = 45
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {

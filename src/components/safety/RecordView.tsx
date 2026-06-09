@@ -404,7 +404,7 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
         <ol className="space-y-3">
           {jha.steps.map((s, i) => (
             <li key={s.id} className="border-l-2 border-mytra-border pl-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-semibold text-fg-3">Step {i + 1}</span>
                 <span
                   className="text-xs font-semibold px-1.5 py-0.5 rounded"
@@ -412,6 +412,17 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
                 >
                   {RISK_LABELS[s.riskLevel]}
                 </span>
+                {s.residualRiskLevel && (
+                  <span className="text-xs text-fg-4">→</span>
+                )}
+                {s.residualRiskLevel && (
+                  <span
+                    className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                    style={{ color: RISK_COLORS[s.residualRiskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.residualRiskLevel]} 12%, transparent)` }}
+                  >
+                    {RISK_LABELS[s.residualRiskLevel]}
+                  </span>
+                )}
                 {s.source === 'sage' && <span className="text-xs text-mytra-purple">✨ Sage</span>}
               </div>
               <p className="text-sm text-fg mt-1">{s.taskActivity}</p>

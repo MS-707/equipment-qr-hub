@@ -12,6 +12,8 @@ import {
   Plus,
   Trash2,
   Sparkles,
+  ChevronDown,
+  Info,
 } from 'lucide-react'
 import type { JhaStep, RiskLevel } from '@/lib/safety-types'
 import { RISK_COLORS, RISK_LABELS } from '@/lib/safety-types'
@@ -45,6 +47,7 @@ function blankStep(): JhaStep {
     hazards: '',
     riskLevel: 'low',
     controls: '',
+    residualRiskLevel: 'low',
     responsible: '',
     source: 'manual',
   }
@@ -105,7 +108,7 @@ export default function JhaForm() {
     setSageError(null)
     try {
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 28000)
+      const timer = setTimeout(() => ctrl.abort(), 40000)
       // Only analyse steps that have a task activity, preserving their order.
       const indexed = steps
         .map((s, i) => ({ s, i }))
@@ -122,7 +125,7 @@ export default function JhaForm() {
         setSageError(data.error)
         return
       }
-      const analysed: { hazards: string; riskLevel: RiskLevel; controls: string }[] = Array.isArray(data?.steps)
+      const analysed: { hazards: string; riskLevel: RiskLevel; controls: string; residualRiskLevel?: RiskLevel }[] = Array.isArray(data?.steps)
         ? data.steps
         : []
       setSteps((prev) => {
@@ -130,12 +133,12 @@ export default function JhaForm() {
         indexed.forEach(({ i }, k) => {
           const a = analysed[k]
           if (!a) return
-          // Don't overwrite content the user already typed in those cells.
           next[i] = {
             ...next[i],
             hazards: next[i].hazards.trim() ? next[i].hazards : a.hazards,
             riskLevel: a.riskLevel ?? next[i].riskLevel,
             controls: next[i].controls.trim() ? next[i].controls : a.controls,
+            residualRiskLevel: a.residualRiskLevel ?? next[i].residualRiskLevel,
             source: 'sage',
           }
         })
@@ -250,6 +253,9 @@ export default function JhaForm() {
         <PPESelector selected={ppe} onChange={setPpe} />
       </section>
 
+      {/* Risk matrix guide */}
+      <RiskMatrixGuide />
+
       {/* Task steps */}
       <section data-tour-module="jha-steps" className="space-y-2">
         <div className="flex items-center justify-between px-1">
@@ -306,29 +312,12 @@ export default function JhaForm() {
                   />
                 </div>
                 <div>
-                  <span className={labelCls}>Risk (before controls)</span>
-                  <div className="flex gap-1.5" role="radiogroup" aria-label={`Step ${i + 1} risk level`}>
-                    {RISK_ORDER.map((lvl) => {
-                      const on = step.riskLevel === lvl
-                      return (
-                        <button
-                          key={lvl}
-                          type="button"
-                          role="radio"
-                          aria-checked={on}
-                          onClick={() => updateStep(step.id, { riskLevel: lvl })}
-                          className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors"
-                          style={
-                            on
-                              ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
-                              : undefined
-                          }
-                        >
-                          {RISK_LABELS[lvl]}
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <span className={labelCls}>Risk before controls</span>
+                  <RiskSelector
+                    value={step.riskLevel}
+                    onChange={(lvl) => updateStep(step.id, { riskLevel: lvl })}
+                    label={`Step ${i + 1} risk before controls`}
+                  />
                 </div>
                 <div>
                   <label className={labelCls}>Controls / mitigations</label>
@@ -337,8 +326,16 @@ export default function JhaForm() {
                     maxLength={600}
                     value={step.controls}
                     onChange={(e) => updateStep(step.id, { controls: e.target.value, source: 'manual' })}
-                    placeholder="Specific controls; note residual risk"
+                    placeholder="Specific controls to reduce risk"
                     className={`${inputCls} resize-none`}
+                  />
+                </div>
+                <div>
+                  <span className={labelCls}>Risk after controls (residual)</span>
+                  <RiskSelector
+                    value={step.residualRiskLevel ?? 'low'}
+                    onChange={(lvl) => updateStep(step.id, { residualRiskLevel: lvl })}
+                    label={`Step ${i + 1} residual risk after controls`}
                   />
                 </div>
                 <div>
@@ -427,6 +424,126 @@ export default function JhaForm() {
           {canSubmit ? 'Save Job Hazard Analysis' : 'Add a job title and at least one step'}
         </button>
       </div>
+    </div>
+  )
+}
+
+function RiskSelector({ value, onChange, label }: { value: RiskLevel; onChange: (lvl: RiskLevel) => void; label: string }) {
+  return (
+    <div className="flex gap-1.5" role="radiogroup" aria-label={label}>
+      {RISK_ORDER.map((lvl) => {
+        const on = value === lvl
+        return (
+          <button
+            key={lvl}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(lvl)}
+            className="flex-1 text-xs font-medium py-2 rounded-lg border transition-colors min-h-[36px]"
+            style={
+              on
+                ? { backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`, borderColor: RISK_COLORS[lvl], color: RISK_COLORS[lvl] }
+                : undefined
+            }
+          >
+            {RISK_LABELS[lvl]}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+const SEVERITY = ['Negligible', 'Minor', 'Moderate', 'Major', 'Catastrophic'] as const
+const LIKELIHOOD = ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'] as const
+
+function matrixLevel(s: number, l: number): RiskLevel {
+  const score = (s + 1) * (l + 1)
+  if (score >= 16) return 'critical'
+  if (score >= 10) return 'high'
+  if (score >= 5) return 'medium'
+  return 'low'
+}
+
+function RiskMatrixGuide() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-fg hover:bg-mytra-card-hover transition-colors min-h-[44px]"
+      >
+        <span className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-mytra-purple" />
+          Risk Matrix Guide
+        </span>
+        <ChevronDown className={`w-4 h-4 text-fg-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 animate-fadeIn space-y-3">
+          <p className="text-xs text-fg-3">
+            Rate risk by multiplying <strong>Severity</strong> (how bad) by <strong>Likelihood</strong> (how
+            probable). Rate <em>before</em> controls to show inherent risk, then <em>after</em> controls to show
+            residual risk.
+          </p>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <table className="w-full text-xs border-collapse min-w-[320px]">
+              <thead>
+                <tr>
+                  <th className="p-1.5 text-left text-fg-4 font-normal" />
+                  {SEVERITY.map((s) => (
+                    <th key={s} className="p-1.5 text-center text-fg-3 font-medium">{s}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {LIKELIHOOD.map((l, li) => (
+                  <tr key={l}>
+                    <td className="p-1.5 text-fg-3 font-medium whitespace-nowrap">{l}</td>
+                    {SEVERITY.map((_, si) => {
+                      const level = matrixLevel(si, li)
+                      return (
+                        <td key={si} className="p-1">
+                          <div
+                            className="rounded text-center py-1 font-semibold"
+                            style={{
+                              backgroundColor: `color-mix(in srgb, ${RISK_COLORS[level]} 20%, transparent)`,
+                              color: RISK_COLORS[level],
+                            }}
+                          >
+                            {(si + 1) * (li + 1)}
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {RISK_ORDER.map((lvl) => (
+              <span
+                key={lvl}
+                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${RISK_COLORS[lvl]} 18%, transparent)`,
+                  color: RISK_COLORS[lvl],
+                }}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: RISK_COLORS[lvl] }} />
+                {RISK_LABELS[lvl]}
+                {lvl === 'low' && ' (1–4)'}
+                {lvl === 'medium' && ' (5–9)'}
+                {lvl === 'high' && ' (10–15)'}
+                {lvl === 'critical' && ' (16–25)'}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

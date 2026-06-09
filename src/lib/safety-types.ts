@@ -132,6 +132,8 @@ export interface JhaStep {
   riskLevel: RiskLevel
   /** Controls / mitigations; note residual risk here. */
   controls: string
+  /** Risk rated AFTER controls are applied. */
+  residualRiskLevel?: RiskLevel
   /** Person responsible for the control (DRI). */
   responsible: string
   /** Provenance of the hazard/control content for this step. */
