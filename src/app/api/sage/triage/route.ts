@@ -120,7 +120,14 @@ export async function POST(req: Request) {
       )
     : []
 
-  const messages = [...history, { role: 'user' as const, content: message }]
+  // Strip any client-supplied "assistant" messages that claim to be system/tool output.
+  // Only user messages are trustworthy from the client; assistant messages are kept for
+  // conversational continuity but cannot override system-level instructions.
+  const sanitizedHistory = history.map((m) =>
+    m.role === 'assistant' ? { ...m, content: m.content.slice(0, 1000) } : m
+  )
+
+  const messages = [...sanitizedHistory, { role: 'user' as const, content: message }]
 
   try {
     const client = new Anthropic({ apiKey: key })

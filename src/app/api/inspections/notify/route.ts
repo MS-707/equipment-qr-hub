@@ -8,6 +8,7 @@
 
 import type { InspectionRecord } from '@/lib/types'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
 
 function fmt(iso: string): string {
@@ -67,8 +68,13 @@ function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } 
 }
 
 export async function POST(req: Request) {
-  const { error } = await requireSession()
+  const { session, error } = await requireSession()
   if (error) return error
+
+  const rl = rateLimit(`notify:${session!.user!.email}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   if (!isEmailConfigured()) {
     return Response.json({ emailed: false, reason: 'not-configured' })

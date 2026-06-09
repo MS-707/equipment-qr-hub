@@ -56,14 +56,13 @@ export default function ModuleTourEngine() {
   // Auto-dismiss on route change
   useEffect(() => {
     if (active) finish()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname])
+  }, [pathname, active, finish])
 
   useLayoutEffect(() => {
     if (!active) return
+    const prevOverflow = document.body.style.overflow
     const el = findVisible(steps[stepIndex]?.target ?? '')
     if (el) {
-      // Temporarily allow scrolling so scrollIntoView works
       document.body.style.overflow = ''
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -71,7 +70,6 @@ export default function ModuleTourEngine() {
       const target = findVisible(steps[stepIndex]?.target ?? '')
       setRect(target ? target.getBoundingClientRect() : null)
     }
-    // Measure after scroll settles
     const timer = setTimeout(() => {
       measure()
       document.body.style.overflow = 'hidden'
@@ -82,6 +80,7 @@ export default function ModuleTourEngine() {
       clearTimeout(timer)
       window.removeEventListener('resize', measure)
       window.removeEventListener('orientationchange', measure)
+      document.body.style.overflow = prevOverflow
     }
   }, [active, stepIndex, steps])
 
@@ -103,12 +102,6 @@ export default function ModuleTourEngine() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [active, stepIndex, steps.length, finish])
-
-  useEffect(() => {
-    if (!active) return
-    const prev = document.body.style.overflow
-    return () => { document.body.style.overflow = prev }
-  }, [active])
 
   if (!active || steps.length === 0) return null
 

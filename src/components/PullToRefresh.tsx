@@ -17,6 +17,8 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
   const [refreshing, setRefreshing] = useState(false)
   const startY = useRef(0)
   const pulling = useRef(false)
+  const pullDistRef = useRef(0)
+  pullDistRef.current = pullDistance
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (refreshing) return
@@ -39,7 +41,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
   const onTouchEnd = useCallback(async () => {
     if (!pulling.current) return
     pulling.current = false
-    if (pullDistance >= THRESHOLD && !refreshing) {
+    if (pullDistRef.current >= THRESHOLD && !refreshing) {
       setRefreshing(true)
       setPullDistance(THRESHOLD * 0.6)
       try {
@@ -51,7 +53,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
     } else {
       setPullDistance(0)
     }
-  }, [pullDistance, refreshing, onRefresh])
+  }, [refreshing, onRefresh])
 
   const active = pullDistance > 0 || refreshing
   const ready = pullDistance >= THRESHOLD

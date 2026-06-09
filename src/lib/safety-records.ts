@@ -32,6 +32,12 @@ const STORAGE_KEY = 'eqr-safety-records'
 const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
 const COUNTER_KEY = 'eqr-safety-counters'
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) notify()
+  })
+}
+
 const ID_PREFIX: Record<SafetyRecordType, string> = {
   'ptp': 'PTP',
   'jha': 'JHA',
@@ -66,9 +72,9 @@ async function putBlobs(recordId: string, blobs: { id: string; dataUrl: string }
   const tx = db.transaction(PHOTO_STORE, 'readwrite')
   const store = tx.objectStore(PHOTO_STORE)
   for (const b of blobs) store.put(b.dataUrl, `${recordId}:${b.id}`)
-  await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve()
-    tx.onerror = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
   })
   db.close()
 }
@@ -176,8 +182,17 @@ function nextId(type: SafetyRecordType): string {
   if (!c || c.year !== year) c = { year, count: 0 }
   c.count += 1
   counters[prefix] = c
-  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(counters)) } catch { /* non-fatal */ }
-  return `${prefix}-${year}-${String(c.count).padStart(4, '0')}`
+  let persisted = false
+  try {
+    localStorage.setItem(COUNTER_KEY, JSON.stringify(counters))
+    persisted = true
+  } catch { /* quota — use fallback suffix below */ }
+  const seq = String(c.count).padStart(4, '0')
+  if (!persisted) {
+    const rand = Math.random().toString(36).slice(2, 6)
+    return `${prefix}-${year}-${seq}-${rand}`
+  }
+  return `${prefix}-${year}-${seq}`
 }
 
 function identityStamp(): { createdBy: string; createdByEmail: string | null } {

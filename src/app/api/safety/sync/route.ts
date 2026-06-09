@@ -66,6 +66,26 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Dedup: check if this record was already synced (retry-safe)
+    const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Notion-Version': NOTION_VERSION,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        filter: { property: 'ID', title: { equals: record.id } },
+        page_size: 1,
+      }),
+    })
+    if (existingCheck.ok) {
+      const existing = (await existingCheck.json()) as { results: { id: string }[] }
+      if (existing.results.length > 0) {
+        return Response.json({ ok: true, notionPageId: existing.results[0].id })
+      }
+    }
+
     const properties: Record<string, unknown> = {
       ID: { title: [{ text: { content: record.id } }] },
       Type: { select: { name: record.type } },
