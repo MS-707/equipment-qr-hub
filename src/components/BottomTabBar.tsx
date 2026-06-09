@@ -18,7 +18,7 @@ export default function BottomTabBar() {
     <nav
       className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-mytra-card border-t border-mytra-border no-print"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      role="tabbar"
+      role="tablist"
       aria-label="Main navigation"
     >
       <div className="flex items-stretch">

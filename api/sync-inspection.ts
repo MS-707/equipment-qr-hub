@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Notion sync stub — not yet implemented',
       recordId: record.id,
     })
-  } catch (error) {
-    return res.status(500).json({ error: 'Sync failed', details: String(error) })
+  } catch {
+    return res.status(500).json({ error: 'Sync failed' })
   }
 }

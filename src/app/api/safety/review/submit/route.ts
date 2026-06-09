@@ -1,6 +1,7 @@
 import type { SafetyRecord } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
 import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 
@@ -29,8 +30,13 @@ export async function POST(req: Request) {
     return Response.json({ error: 'EHS review is not enabled' }, { status: 404 })
   }
 
-  const { error } = await requireSession()
+  const { session, error } = await requireSession()
   if (error) return error
+
+  const rl = rateLimit(`review:${session!.user!.email}`, 5, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const notionKey = process.env.NOTION_API_KEY
   const emailConfigured = isEmailConfigured()
@@ -100,16 +106,18 @@ export async function POST(req: Request) {
   }
 
   // ── Slack (best-effort) ──────────────────────────────────────
+  let slackOk = false
   if (slackUrl) {
     const label = SAFETY_TYPE_LABELS[record.type] ?? record.type
     try {
-      await fetch(slackUrl, {
+      const slackRes = await fetch(slackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: `📋 *EHS Review Requested*\n*${escapeSlack(label)}* — ${escapeSlack(record.id)}\n*Project:* ${escapeSlack(record.projectName || '')}\n*Location:* ${escapeSlack(record.location || '')}\n*Submitted by:* ${escapeSlack(record.createdBy || '')}`,
         }),
       })
+      slackOk = slackRes.ok
     } catch {
       // Slack is best-effort
     }
@@ -117,7 +125,7 @@ export async function POST(req: Request) {
 
   // Succeed if any channel delivered. If every configured channel failed,
   // surface an error so the client can let the user retry.
-  if (!notionOk && !emailed && !slackUrl) {
+  if (!notionOk && !emailed && !slackOk) {
     return Response.json({ error: 'Failed to deliver EHS submission' }, { status: 502 })
   }
 

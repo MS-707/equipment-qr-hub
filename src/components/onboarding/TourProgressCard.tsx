@@ -24,7 +24,7 @@ export default function TourProgressCard() {
   }
 
   useEffect(() => {
-    setDismissed(localStorage.getItem(DISMISSED_KEY) === 'true')
+    try { setDismissed(localStorage.getItem(DISMISSED_KEY) === 'true') } catch { /* default dismissed */ }
     refresh()
   }, [])
 

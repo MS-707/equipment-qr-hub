@@ -51,9 +51,11 @@ function loadHistory(): ChatMessage[] {
 }
 
 function saveHistory(msgs: ChatMessage[]) {
-  const trimmed = msgs.slice(-10)
-  sessionStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
-  sessionStorage.setItem(TS_KEY, String(Date.now()))
+  try {
+    const trimmed = msgs.slice(-10)
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
+    sessionStorage.setItem(TS_KEY, String(Date.now()))
+  } catch { /* private browsing or full storage */ }
 }
 
 export default function SageTriage() {
@@ -89,6 +91,8 @@ function SageTriageInner() {
   const inputRef = useRef<HTMLInputElement>(null)
   const dragRef = useRef<{ startY: number; startTop: number; moved: boolean; lastTop: number } | null>(null)
   const justDraggedRef = useRef(false)
+  const messagesRef = useRef<ChatMessage[]>(messages)
+  messagesRef.current = messages
 
   useEffect(() => {
     setMessages(loadHistory())
@@ -173,8 +177,7 @@ function SageTriageInner() {
     if (!trimmed || loading) return
 
     const userMsg: ChatMessage = { role: 'user', content: trimmed }
-    const next = [...messages, userMsg]
-    setMessages(next)
+    setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
     setFollowUps([])
@@ -185,9 +188,11 @@ function SageTriageInner() {
         role: 'assistant',
         content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can still use the app offline — the bottom tabs (Home, Pre-Trip, Assets, Orders) all work without a connection.",
       }
-      const updated = [...next, reply]
-      setMessages(updated)
-      saveHistory(updated)
+      setMessages(prev => {
+        const updated = [...prev, reply]
+        saveHistory(updated)
+        return updated
+      })
       setFollowUps(faqAnswer ? ['Start a PTP', 'What PPE do I need?', 'Report an incident'] : [])
       setLoading(false)
       return
@@ -205,7 +210,7 @@ function SageTriageInner() {
         body: JSON.stringify({
           message: trimmed,
           context: contextToPrompt(ctx),
-          history: messages.slice(-10),
+          history: messagesRef.current.slice(-10),
         }),
         signal: ctrl.signal,
       })
@@ -224,9 +229,11 @@ function SageTriageInner() {
         role: 'assistant',
         content: replyText,
       }
-      const updated = [...next, reply]
-      setMessages(updated)
-      saveHistory(updated)
+      setMessages(prev => {
+        const updated = [...prev, reply]
+        saveHistory(updated)
+        return updated
+      })
       setFollowUps(suggestions)
     } catch (err) {
       const isTimeout = err instanceof DOMException && err.name === 'AbortError'
@@ -236,13 +243,15 @@ function SageTriageInner() {
           ? 'Request timed out — try a shorter question.'
           : 'Network error — check your connection and try again.',
       }
-      const updated = [...next, reply]
-      setMessages(updated)
-      saveHistory(updated)
+      setMessages(prev => {
+        const updated = [...prev, reply]
+        saveHistory(updated)
+        return updated
+      })
     } finally {
       setLoading(false)
     }
-  }, [messages, loading, online, pathname])
+  }, [loading, online, pathname])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -326,7 +335,7 @@ function SageTriageInner() {
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" role="log">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" role="log" aria-live="polite">
             {/* Greeting */}
             <div className="flex gap-2">
               <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
