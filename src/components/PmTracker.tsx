@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { User, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
 import { EquipmentItem } from '@/lib/types'
 import {
@@ -12,7 +13,6 @@ import {
   onShopMgmtChange,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
-import { isAdmin } from '@/lib/admin'
 import { formatDate } from '@/lib/datetime'
 
 const PM_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual'] as const
@@ -45,8 +45,9 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
     })
   }, [equipment.itemNumber])
 
+  const { data: session } = useSession()
   const identity = getCurrentIdentity()
-  const canManageDri = isAdmin(identity?.email)
+  const canManageDri = session?.user?.isAdmin === true
 
   const activeFreqs = PM_FREQUENCIES.filter(
     (f) => ((equipment[FREQ_KEYS[f]] as string) ?? '').trim() !== ''

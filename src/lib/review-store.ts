@@ -59,20 +59,30 @@ export async function decideReview(
   decidedBy: string,
   note?: string
 ): Promise<ReviewSubmission | undefined> {
-  let sub: ReviewSubmission | undefined | null
+  const cappedNote = note ? note.slice(0, 500) : undefined
+
   if (kvEnabled()) {
-    sub = await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`)
-  } else {
-    sub = memStore.get(recordId)
+    const lockKey = `${KV_PREFIX}${recordId}:decided`
+    const locked = await kv.set(lockKey, action, { nx: true, ex: 60 * 60 * 24 * 30 })
+    if (!locked) {
+      return await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`) ?? undefined
+    }
+    const sub = await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`)
+    if (!sub) return undefined
+    sub.status = action
+    sub.decidedAt = new Date().toISOString()
+    sub.decidedBy = decidedBy
+    sub.note = cappedNote
+    await kv.set(`${KV_PREFIX}${recordId}`, sub, { ex: 60 * 60 * 24 * 30 })
+    return sub
   }
+
+  const sub = memStore.get(recordId)
   if (!sub) return undefined
   if (sub.status !== 'pending') return sub
   sub.status = action
   sub.decidedAt = new Date().toISOString()
   sub.decidedBy = decidedBy
-  sub.note = note
-  if (kvEnabled()) {
-    await kv.set(`${KV_PREFIX}${recordId}`, sub, { ex: 60 * 60 * 24 * 30 })
-  }
+  sub.note = cappedNote
   return sub
 }

@@ -41,9 +41,8 @@ export async function POST(req: Request) {
     })
   }
 
-  const adminEmail = process.env.EHS_NOTIFY_EMAIL || 'mark.starr@mytra.ai'
   const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
-  const decided = await decideReview(parsed.recordId, status, adminEmail, note)
+  const decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', typeof note === 'string' ? note.slice(0, 500) : undefined)
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }

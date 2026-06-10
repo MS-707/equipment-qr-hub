@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { ShieldAlert, ShieldCheck, UserPlus, X, Lock, Unlock } from 'lucide-react'
 import {
   getAuthorization,
@@ -12,7 +13,6 @@ import {
   EMAIL_RE,
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
-import { isAdmin } from '@/lib/admin'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface AuthorizedUsersProps {
@@ -29,9 +29,10 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
     return onShopMgmtChange(() => setAuth(getAuthorization(itemNumber)))
   }, [itemNumber])
 
+  const { data: session } = useSession()
   const identity = getCurrentIdentity()
   const currentUserAuthorized = isUserAuthorized(itemNumber, identity?.email ?? null)
-  const canManage = isAdmin(identity?.email)
+  const canManage = session?.user?.isAdmin === true
 
   function handleToggleRestricted() {
     if (!canManage) return
