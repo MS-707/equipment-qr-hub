@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = rateLimit(`jha:${session!.user!.email}`, 10, 60_000)
+  const rl = await rateLimit(`jha:${session!.user!.email}`, 10, 60_000)
   if (!rl.ok) {
     return Response.json(
       { steps: [], error: 'Too many requests' },
