@@ -4,8 +4,13 @@ import { sendSlackMessage } from '@/lib/slack-notify'
 import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
-  const rl = rateLimit(`beta-signup:${ip}`, 5, 60_000)
+  // x-real-ip is set by Vercel; the last x-forwarded-for hop is the one the
+  // platform appended (earlier hops are client-supplied and spoofable).
+  const ip =
+    req.headers.get('x-real-ip') ??
+    req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean).pop() ??
+    'unknown'
+  const rl = await rateLimit(`beta-signup:${ip}`, 5, 60_000)
   if (!rl.ok) {
     return Response.json({ error: 'Too many requests' }, { status: 429 })
   }

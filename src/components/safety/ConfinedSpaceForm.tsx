@@ -74,7 +74,8 @@ export default function ConfinedSpaceForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'confined-space-permit',
     () => ({ projectName, location, spaceDescription, hazards, oxygen, lel, co, h2s, testedBy, continuousMonitoring, ventilationInUse, rescuePlan, attendantName }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   const critLeft = criticalRemaining(checklist)

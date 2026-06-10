@@ -118,7 +118,7 @@ export default function BetaPage() {
             On the roadmap
           </p>
           <p className="text-xs text-[#9A9A9A] leading-relaxed">
-            Laser, high-voltage, and chemical work permits · photo &amp; signature sync · role-aware guidance
+            Custom safety knowledge base — upload your SOPs, policies, and site procedures so Sage answers from your rules, not just general guidance · Laser, high-voltage, and chemical work permits · photo &amp; signature sync · role-aware guidance
           </p>
         </div>
       </section>

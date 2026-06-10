@@ -16,7 +16,11 @@ export interface BetaSignup {
 }
 
 const KV_PREFIX = 'beta:'
-const KV_INDEX = 'beta:_index'
+// Set of signup ids, maintained with atomic SADD — a read-modify-write array
+// here loses entries under concurrent signups (signup saved but never listed).
+const KV_INDEX_SET = 'beta:_ids'
+// Pre-migration array index; merged on read so older signups stay visible.
+const KV_INDEX_LEGACY = 'beta:_index'
 
 function kvEnabled(): boolean {
   return !!process.env.KV_REST_API_URL
@@ -28,12 +32,21 @@ const memStore = new Map<string, BetaSignup>()
 export async function addSignup(signup: BetaSignup): Promise<void> {
   if (kvEnabled()) {
     await kv.set(`${KV_PREFIX}${signup.id}`, signup)
-    const index = await kv.get<string[]>(KV_INDEX) ?? []
-    index.push(signup.id)
-    await kv.set(KV_INDEX, index)
+    await kv.sadd(KV_INDEX_SET, signup.id)
   } else {
     memStore.set(signup.id, signup)
   }
+}
+
+async function getAllIds(): Promise<string[]> {
+  const ids = new Set<string>((await kv.smembers(KV_INDEX_SET) ?? []).map(String))
+  try {
+    const legacy = await kv.get<string[]>(KV_INDEX_LEGACY)
+    if (Array.isArray(legacy)) legacy.forEach((id) => ids.add(id))
+  } catch {
+    // legacy key absent or wrong type — nothing to merge
+  }
+  return Array.from(ids)
 }
 
 export async function getSignup(id: string): Promise<BetaSignup | undefined> {
@@ -45,7 +58,7 @@ export async function getSignup(id: string): Promise<BetaSignup | undefined> {
 
 export async function getAllSignups(): Promise<BetaSignup[]> {
   if (kvEnabled()) {
-    const index = await kv.get<string[]>(KV_INDEX) ?? []
+    const index = await getAllIds()
     const signups = await Promise.all(
       index.map((id) => kv.get<BetaSignup>(`${KV_PREFIX}${id}`))
     )

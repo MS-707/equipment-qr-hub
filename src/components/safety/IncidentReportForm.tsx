@@ -73,7 +73,8 @@ export default function IncidentReportForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'incident',
     () => ({ projectName, location, incidentType, severity, occurredAt, description, immediateActions, witnesses, rootCause, correctiveActions, reportedToCalOsha, injuredPerson, reporterName }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   useEffect(() => {
