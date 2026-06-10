@@ -265,22 +265,22 @@ export default function IncidentReportForm() {
             <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Injured person</h4>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Name</label>
-                <input type="text" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
+                <label htmlFor="ir-name" className={labelCls}>Name</label>
+                <input id="ir-name" type="text" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Job title</label>
-                <input type="text" maxLength={100} value={injuredPerson.jobTitle} onChange={(e) => setInjuredPerson((p) => ({ ...p, jobTitle: e.target.value }))} placeholder="e.g. Ironworker" className={inputCls} />
+                <label htmlFor="ir-job-title" className={labelCls}>Job title</label>
+                <input id="ir-job-title" type="text" maxLength={100} value={injuredPerson.jobTitle} onChange={(e) => setInjuredPerson((p) => ({ ...p, jobTitle: e.target.value }))} placeholder="e.g. Ironworker" className={inputCls} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Employer</label>
-                <input type="text" maxLength={200} value={injuredPerson.employer} onChange={(e) => setInjuredPerson((p) => ({ ...p, employer: e.target.value }))} placeholder="Company name" className={inputCls} />
+                <label htmlFor="ir-employer" className={labelCls}>Employer</label>
+                <input id="ir-employer" type="text" maxLength={200} value={injuredPerson.employer} onChange={(e) => setInjuredPerson((p) => ({ ...p, employer: e.target.value }))} placeholder="Company name" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Body part affected</label>
-                <input type="text" maxLength={200} value={injuredPerson.bodyPartAffected} onChange={(e) => setInjuredPerson((p) => ({ ...p, bodyPartAffected: e.target.value }))} placeholder="e.g. Left hand" className={inputCls} />
+                <label htmlFor="ir-body-part" className={labelCls}>Body part affected</label>
+                <input id="ir-body-part" type="text" maxLength={200} value={injuredPerson.bodyPartAffected} onChange={(e) => setInjuredPerson((p) => ({ ...p, bodyPartAffected: e.target.value }))} placeholder="e.g. Left hand" className={inputCls} />
               </div>
             </div>
           </div>
@@ -288,27 +288,27 @@ export default function IncidentReportForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Project / Structure</label>
-            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <label htmlFor="ir-project" className={labelCls}>Project / Structure</label>
+            <input id="ir-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label className={labelCls}>Location / Area</label>
-            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <label htmlFor="ir-location" className={labelCls}>Location / Area</label>
+            <input id="ir-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label className={labelCls}>When did it occur?</label>
-          <input type="datetime-local" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} className={inputCls} />
+          <label htmlFor="ir-when" className={labelCls}>When did it occur?</label>
+          <input id="ir-when" type="datetime-local" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>What happened?</label>
-          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
+          <label htmlFor="ir-what" className={labelCls}>What happened?</label>
+          <textarea id="ir-what" rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
         </div>
         <div>
-          <label className={labelCls}>Immediate actions taken</label>
-          <textarea rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <label htmlFor="ir-actions" className={labelCls}>Immediate actions taken</label>
+          <textarea id="ir-actions" rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -390,12 +390,12 @@ export default function IncidentReportForm() {
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
-          <label className={labelCls}>Root cause</label>
-          <textarea rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
+          <label htmlFor="ir-root-cause" className={labelCls}>Root cause</label>
+          <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
         <div>
-          <label className={labelCls}>Corrective actions</label>
-          <textarea rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions</label>
+          <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
         </div>
       </section>
 
@@ -403,8 +403,8 @@ export default function IncidentReportForm() {
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
-          <label className={labelCls}>Name</label>
-          <input type="text" maxLength={100} value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
+          <label htmlFor="ir-reporter-name" className={labelCls}>Name</label>
+          <input id="ir-reporter-name" type="text" maxLength={100} value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Signature (optional)</label>

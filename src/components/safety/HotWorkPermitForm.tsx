@@ -176,19 +176,19 @@ export default function HotWorkPermitForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Project / Structure</label>
-            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <label htmlFor="hw-project" className={labelCls}>Project / Structure</label>
+            <input id="hw-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label className={labelCls}>Location / Area</label>
-            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <label htmlFor="hw-location" className={labelCls}>Location / Area</label>
+            <input id="hw-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label className={labelCls}>Work description</label>
-          <textarea rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={`${inputCls} resize-none`} />
+          <label htmlFor="hw-description" className={labelCls}>Work description</label>
+          <textarea id="hw-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -206,8 +206,9 @@ export default function HotWorkPermitForm() {
         {fireWatchRequired && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Fire watch assigned</label>
+              <label htmlFor="hw-fire-watch" className={labelCls}>Fire watch assigned</label>
               <input
+                id="hw-fire-watch"
                 type="text"
                 value={fireWatchName}
                 maxLength={100}
@@ -217,8 +218,8 @@ export default function HotWorkPermitForm() {
               />
             </div>
             <div>
-              <label className={labelCls}>Post-work monitoring (min)</label>
-              <input type="number" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
+              <label htmlFor="hw-post-duration" className={labelCls}>Post-work monitoring (min)</label>
+              <input id="hw-post-duration" type="number" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
               {postDuration < 60 && (
                 <p className="text-xs text-warn mt-0.5">NFPA 51B requires minimum 60-minute fire watch</p>
               )}
@@ -227,24 +228,27 @@ export default function HotWorkPermitForm() {
         )}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Extinguisher location</label>
-            <input type="text" maxLength={200} value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} placeholder="Nearest station / bay" className={inputCls} />
+            <label htmlFor="hw-extinguisher-loc" className={labelCls}>Extinguisher location</label>
+            <input id="hw-extinguisher-loc" type="text" maxLength={200} value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} placeholder="Nearest station / bay" className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Extinguisher type</label>
-            <input type="text" maxLength={100} value={extinguisherType} onChange={(e) => setExtinguisherType(e.target.value)} placeholder="ABC / CO₂" className={inputCls} />
+            <label htmlFor="hw-extinguisher-type" className={labelCls}>Extinguisher type</label>
+            <input id="hw-extinguisher-type" type="text" maxLength={100} value={extinguisherType} onChange={(e) => setExtinguisherType(e.target.value)} placeholder="ABC / CO₂" className={inputCls} />
           </div>
         </div>
         <div>
-          <label className={labelCls}>Sprinkler status</label>
-          <input type="text" maxLength={100} value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder="In service / impaired / N/A" className={inputCls} />
+          <label htmlFor="hw-sprinkler" className={labelCls}>Sprinkler status</label>
+          <input id="hw-sprinkler" type="text" maxLength={100} value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder="In service / impaired / N/A" className={inputCls} />
         </div>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={gasTestRequired} onChange={() => setGasTestRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
           Atmosphere / gas test required
         </label>
         {gasTestRequired && (
-          <input type="text" maxLength={500} value={gasTestNotes} onChange={(e) => setGasTestNotes(e.target.value)} placeholder="LEL reading / notes" className={inputCls} />
+          <div>
+            <label htmlFor="hw-gas-notes" className={`${labelCls} sr-only`}>Gas test notes</label>
+            <input id="hw-gas-notes" type="text" maxLength={500} value={gasTestNotes} onChange={(e) => setGasTestNotes(e.target.value)} placeholder="LEL reading / notes" className={inputCls} />
+          </div>
         )}
       </div>
 
@@ -260,12 +264,13 @@ export default function HotWorkPermitForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Valid from</label>
-            <input type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
+            <label htmlFor="hw-valid-from" className={labelCls}>Valid from</label>
+            <input id="hw-valid-from" type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Valid until</label>
+            <label htmlFor="hw-valid-until" className={labelCls}>Valid until</label>
             <input
+              id="hw-valid-until"
               type="datetime-local"
               value={validUntil}
               onChange={(e) => setValidUntil(e.target.value)}

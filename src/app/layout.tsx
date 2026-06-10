@@ -6,6 +6,7 @@ import NavHeader from '@/components/NavHeader'
 import BottomTabBar from '@/components/BottomTabBar'
 import StorageAlert from '@/components/StorageAlert'
 import AuthProvider from '@/components/providers/AuthProvider'
+import SyncProvider from '@/components/providers/SyncProvider'
 
 const SageTriage = dynamic(() => import('@/components/SageTriage'), { ssr: false })
 const OnboardingTour = dynamic(() => import('@/components/onboarding/OnboardingTour'), { ssr: false })
@@ -54,14 +55,16 @@ export default function RootLayout({
       </head>
       <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-16 md:pb-0">
         <AuthProvider>
-          <NavHeader />
-          {children}
-          <BottomTabBar />
-          <SageTriage />
-          <OnboardingTour />
-          <ModuleTourEngine />
-          <TourAutoPrompt />
-          <StorageAlert />
+          <SyncProvider>
+            <NavHeader />
+            {children}
+            <BottomTabBar />
+            <SageTriage />
+            <OnboardingTour />
+            <ModuleTourEngine />
+            <TourAutoPrompt />
+            <StorageAlert />
+          </SyncProvider>
         </AuthProvider>
       </body>
     </html>

@@ -207,19 +207,19 @@ export default function ConfinedSpaceForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Project / Structure</label>
-            <input type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
+            <label htmlFor="cs-project" className={labelCls}>Project / Structure</label>
+            <input id="cs-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
             {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label className={labelCls}>Location / Area</label>
-            <input type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
+            <label htmlFor="cs-location" className={labelCls}>Location / Area</label>
+            <input id="cs-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
             {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label className={labelCls}>Space description</label>
-          <textarea rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
+          <label htmlFor="cs-description" className={labelCls}>Space description</label>
+          <textarea id="cs-description" rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
         </div>
       </div>
 
@@ -235,12 +235,14 @@ export default function ConfinedSpaceForm() {
         <div className="grid grid-cols-2 gap-3">
           {atmoFields.map((f) => {
             const bad = outOfRange(f.value, f.range)
+            const fieldId = `cs-atmo-${f.label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`
             return (
               <div key={f.label}>
-                <label className={labelCls}>
+                <label htmlFor={fieldId} className={labelCls}>
                   {f.label} <span className="text-fg-4">({f.hint})</span>
                 </label>
                 <input
+                  id={fieldId}
                   type="number"
                   inputMode="decimal"
                   value={f.value}
@@ -254,12 +256,12 @@ export default function ConfinedSpaceForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Tested by</label>
-            <input type="text" maxLength={100} value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
+            <label htmlFor="cs-tested-by" className={labelCls}>Tested by</label>
+            <input id="cs-tested-by" type="text" maxLength={100} value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Tested at</label>
-            <input type="datetime-local" value={testedAt} onChange={(e) => setTestedAt(e.target.value)} className={inputCls} />
+            <label htmlFor="cs-tested-at" className={labelCls}>Tested at</label>
+            <input id="cs-tested-at" type="datetime-local" value={testedAt} onChange={(e) => setTestedAt(e.target.value)} className={inputCls} />
           </div>
         </div>
         <div className="flex flex-wrap gap-4">
@@ -276,8 +278,9 @@ export default function ConfinedSpaceForm() {
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <div>
-          <label className={labelCls}>Attendant (stationed outside)</label>
+          <label htmlFor="cs-attendant" className={labelCls}>Attendant (stationed outside)</label>
           <input
+            id="cs-attendant"
             type="text"
             value={attendantName}
             maxLength={100}
@@ -287,8 +290,8 @@ export default function ConfinedSpaceForm() {
           />
         </div>
         <div>
-          <label className={labelCls}>Rescue plan <span className="text-danger">*</span></label>
-          <textarea rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${inputCls} resize-none ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
+          <label htmlFor="cs-rescue" className={labelCls}>Rescue plan <span className="text-danger">*</span></label>
+          <textarea id="cs-rescue" rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${inputCls} resize-none ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
         </div>
       </div>
 
@@ -304,12 +307,13 @@ export default function ConfinedSpaceForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Valid from</label>
-            <input type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
+            <label htmlFor="cs-valid-from" className={labelCls}>Valid from</label>
+            <input id="cs-valid-from" type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Valid until</label>
+            <label htmlFor="cs-valid-until" className={labelCls}>Valid until</label>
             <input
+              id="cs-valid-until"
               type="datetime-local"
               value={validUntil}
               onChange={(e) => setValidUntil(e.target.value)}
