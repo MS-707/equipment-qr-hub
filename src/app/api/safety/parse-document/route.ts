@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = rateLimit(`parse-doc:${session!.user!.email}`, 5, 60_000)
+  const rl = await rateLimit(`parse-doc:${session!.user!.email}`, 5, 60_000)
   if (!rl.ok) {
     return Response.json(
       { error: 'Too many requests' },
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { documentText?: string; fileName?: string }
+  let body: { documentText?: string; documentBase64?: string; fileName?: string }
   try {
     body = await req.json()
   } catch {
@@ -72,15 +72,33 @@ export async function POST(req: Request) {
   }
 
   const documentText = (body.documentText ?? '').trim()
-  if (!documentText) {
-    return Response.json({ error: 'No document text provided' }, { status: 400 })
+  const documentBase64 = (body.documentBase64 ?? '').trim()
+  if (!documentText && !documentBase64) {
+    return Response.json({ error: 'No document provided' }, { status: 400 })
+  }
+  // ~4.2MB of base64 ≈ 3MB PDF — keeps the request under Vercel's body limit
+  if (documentBase64.length > 4_200_000) {
+    return Response.json({ error: 'PDF too large — keep it under 3MB' }, { status: 413 })
   }
 
-  // Cap at ~50k chars to stay within reasonable context usage
-  const bounded = documentText.slice(0, 50_000)
   const fileName = (body.fileName ?? 'uploaded document').slice(0, 200)
+  const instruction = `Extract work steps and hazard analysis from this planning document ("${fileName}").`
 
-  const userMessage = `Here is the planning document "${fileName}":\n\n---\n${bounded}\n---\n\nExtract work steps and hazard analysis from this document.`
+  // PDFs go to Claude natively as a document block; text formats inline.
+  const content: Anthropic.MessageParam['content'] = documentBase64
+    ? [
+        {
+          type: 'document',
+          source: { type: 'base64', media_type: 'application/pdf', data: documentBase64 },
+        },
+        { type: 'text', text: instruction },
+      ]
+    : [
+        {
+          type: 'text',
+          text: `Here is the planning document "${fileName}":\n\n---\n${documentText.slice(0, 50_000)}\n---\n\n${instruction}`,
+        },
+      ]
 
   try {
     const client = new Anthropic({ apiKey: key })
@@ -88,7 +106,7 @@ export async function POST(req: Request) {
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [{ role: 'user', content }],
       output_config: { format: zodOutputFormat(ParsedJhaSchema) },
     })
     const result = message.parsed_output

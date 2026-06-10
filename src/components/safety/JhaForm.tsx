@@ -43,6 +43,19 @@ function todayStr(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+/** Read a file as bare base64 (no data-URL prefix). */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const url = reader.result as string
+      resolve(url.slice(url.indexOf(',') + 1))
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
 function blankStep(): JhaStep {
   return {
     id: cryptoRandomId(),
@@ -118,11 +131,26 @@ export default function JhaForm() {
     setDocName(file.name)
 
     try {
-      const text = await file.text()
-      if (text.trim().length < 20) {
-        setDocError('Document appears empty or too short to extract steps from.')
-        setDocLoading(false)
-        return
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
+      const payload: { documentText?: string; documentBase64?: string; fileName: string } = {
+        fileName: file.name,
+      }
+
+      if (isPdf) {
+        if (file.size > 3 * 1024 * 1024) {
+          setDocError('PDF too large — keep it under 3MB.')
+          setDocLoading(false)
+          return
+        }
+        payload.documentBase64 = await fileToBase64(file)
+      } else {
+        const text = await file.text()
+        if (text.trim().length < 20) {
+          setDocError('Document appears empty or too short to extract steps from.')
+          setDocLoading(false)
+          return
+        }
+        payload.documentText = text.slice(0, 50_000)
       }
 
       const ctrl = new AbortController()
@@ -130,7 +158,7 @@ export default function JhaForm() {
       const res = await fetch('/api/safety/parse-document', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentText: text, fileName: file.name }),
+        body: JSON.stringify(payload),
         signal: ctrl.signal,
       })
       clearTimeout(timer)
@@ -159,8 +187,11 @@ export default function JhaForm() {
           responsible: '',
           source: 'sage' as const,
         }))
-        const hasExistingContent = steps.some((s) => s.taskActivity.trim().length > 0)
-        setSteps(hasExistingContent ? [...steps, ...parsed] : parsed)
+        // Functional update: the parse takes many seconds — don't clobber
+        // steps the user typed while Sage was reading the document.
+        setSteps((prev) =>
+          prev.some((s) => s.taskActivity.trim().length > 0) ? [...prev, ...parsed] : parsed
+        )
       }
     } catch (err) {
       setDocError(
@@ -300,7 +331,7 @@ export default function JhaForm() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".txt,.md,.csv,.tsv,.doc,.docx,.pdf"
+            accept=".txt,.md,.csv,.tsv,.pdf"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
@@ -343,7 +374,7 @@ export default function JhaForm() {
             )}
           </button>
           <p className="text-xs text-fg-4 text-center">
-            Supports .txt, .md, .csv, .doc, .docx, and .pdf
+            Supports .txt, .md, .csv, and .pdf (up to 3MB)
           </p>
         </div>
       )}
