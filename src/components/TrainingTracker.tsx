@@ -205,7 +205,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         </button>
                         <button
                           onClick={() => { setAddingTopic(null); setEmpName(''); setEmpEmail('') }}
-                          className="p-2 text-fg-3 hover:text-fg transition-colors"
+                          className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-fg-3 hover:text-fg transition-colors"
                           aria-label="Cancel"
                         >
                           <X className="w-4 h-4" />

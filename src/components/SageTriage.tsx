@@ -333,7 +333,7 @@ function SageTriageInner() {
             <button
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="w-8 h-8 flex items-center justify-center rounded-lg
+              className="w-11 h-11 flex items-center justify-center rounded-lg
                          text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
             >
               <X className="w-4 h-4" />

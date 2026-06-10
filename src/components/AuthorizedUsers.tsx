@@ -109,7 +109,7 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
                   {canManage && (
                     <button
                       onClick={() => handleRemove(u.email, u.name)}
-                      className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0"
+                      className="text-fg-4 hover:text-danger transition-colors p-2.5 -mr-1.5 shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label={`Remove ${u.name}`}
                     >
                       <X className="w-4 h-4" />
