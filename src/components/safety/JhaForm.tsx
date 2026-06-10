@@ -14,6 +14,9 @@ import {
   Sparkles,
   ChevronDown,
   Info,
+  Upload,
+  FileText,
+  X,
 } from 'lucide-react'
 import type { JhaStep, RiskLevel } from '@/lib/safety-types'
 import { RISK_COLORS, RISK_LABELS } from '@/lib/safety-types'
@@ -70,6 +73,11 @@ export default function JhaForm() {
   const [sageLoading, setSageLoading] = useState(false)
   const [sageError, setSageError] = useState<string | null>(null)
 
+  const [docLoading, setDocLoading] = useState(false)
+  const [docError, setDocError] = useState<string | null>(null)
+  const [docName, setDocName] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.jobTitle === 'string') setJobTitle(d.jobTitle)
     if (typeof d.dateOfAnalysis === 'string') setDateOfAnalysis(d.dateOfAnalysis)
@@ -102,6 +110,67 @@ export default function JhaForm() {
 
   function removeStep(id: string) {
     setSteps((prev) => (prev.length === 1 ? [blankStep()] : prev.filter((s) => s.id !== id)))
+  }
+
+  async function handleDocUpload(file: File) {
+    setDocLoading(true)
+    setDocError(null)
+    setDocName(file.name)
+
+    try {
+      const text = await file.text()
+      if (text.trim().length < 20) {
+        setDocError('Document appears empty or too short to extract steps from.')
+        setDocLoading(false)
+        return
+      }
+
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 55000)
+      const res = await fetch('/api/safety/parse-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentText: text, fileName: file.name }),
+        signal: ctrl.signal,
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (!res.ok) {
+        setDocError(data.error || 'Failed to parse document')
+        return
+      }
+
+      if (data.suggestedTitle && !jobTitle.trim()) setJobTitle(data.suggestedTitle)
+      if (data.suggestedLocation && !location.trim()) setLocation(data.suggestedLocation)
+      if (data.suggestedDepartment && !department.trim()) setDepartment(data.suggestedDepartment)
+      if (Array.isArray(data.suggestedPpe) && data.suggestedPpe.length > 0 && ppe.length === 0) {
+        setPpe(data.suggestedPpe)
+      }
+      if (!referenceDoc.trim()) setReferenceDoc(file.name)
+
+      if (Array.isArray(data.steps) && data.steps.length > 0) {
+        const parsed: JhaStep[] = data.steps.map((s: { taskActivity: string; hazards: string; riskLevel: RiskLevel; controls: string; residualRiskLevel: RiskLevel }) => ({
+          id: cryptoRandomId(),
+          taskActivity: s.taskActivity,
+          hazards: s.hazards,
+          riskLevel: s.riskLevel,
+          controls: s.controls,
+          residualRiskLevel: s.residualRiskLevel,
+          responsible: '',
+          source: 'sage' as const,
+        }))
+        const hasExistingContent = steps.some((s) => s.taskActivity.trim().length > 0)
+        setSteps(hasExistingContent ? [...steps, ...parsed] : parsed)
+      }
+    } catch (err) {
+      setDocError(
+        err instanceof DOMException && err.name === 'AbortError'
+          ? 'Request timed out — try a smaller document'
+          : 'Network error — check your connection'
+      )
+    } finally {
+      setDocLoading(false)
+    }
   }
 
   async function askSage() {
@@ -213,6 +282,69 @@ export default function JhaForm() {
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Document upload */}
+      {SAGE_ENABLED && !submittedId && (
+        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-mytra-purple" />
+            <h3 className="text-sm font-semibold text-fg">Import from document</h3>
+            <span className="text-xs bg-mytra-purple/15 text-mytra-purple px-1.5 py-0.5 rounded font-medium">Optional</span>
+          </div>
+          <p className="text-xs text-fg-3">
+            Upload a task plan, method statement, or scope of work and Sage will extract the steps,
+            hazards, and controls to pre-fill your JHA.
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt,.md,.csv,.tsv,.doc,.docx,.pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleDocUpload(file)
+              e.target.value = ''
+            }}
+          />
+          {docName && !docLoading && !docError && (
+            <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2 animate-fadeIn">
+              <FileText className="w-4 h-4 text-ok shrink-0" />
+              <p className="text-xs text-ok flex-1 truncate">Imported from {docName}</p>
+              <button
+                type="button"
+                onClick={() => setDocName(null)}
+                className="text-ok/60 hover:text-ok"
+                aria-label="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+          {docError && (
+            <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 animate-fadeIn">
+              <span className="text-xs text-danger">{docError}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={docLoading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium
+                       bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
+                       hover:border-mytra-purple/60 transition-colors
+                       disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {docLoading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Sage is reading your document…</>
+            ) : (
+              <><Upload className="w-4 h-4" /> Upload a document</>
+            )}
+          </button>
+          <p className="text-xs text-fg-4 text-center">
+            Supports .txt, .md, .csv, .doc, .docx, and .pdf
+          </p>
         </div>
       )}
 
