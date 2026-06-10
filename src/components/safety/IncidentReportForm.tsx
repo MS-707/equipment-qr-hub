@@ -359,7 +359,7 @@ export default function IncidentReportForm() {
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger rounded-full flex items-center justify-center hover:bg-danger"
+                className="absolute -top-2 -right-2 w-7 h-7 bg-danger rounded-full flex items-center justify-center hover:bg-danger/80 transition-colors"
               >
                 <X className="w-3 h-3 text-white" />
               </button>
