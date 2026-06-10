@@ -62,7 +62,8 @@ export default function HotWorkPermitForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'hot-work-permit',
     () => ({ projectName, location, workDescription, hotWorkTypes, fireWatchRequired, fireWatchName, postDuration, extinguisherLocation, extinguisherType, sprinklerStatus, gasTestRequired, gasTestNotes }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   const critLeft = criticalRemaining(checklist)

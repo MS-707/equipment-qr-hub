@@ -32,7 +32,13 @@ export function emailAllowed(email?: string | null): boolean {
 const hasGoogle = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 const isProduction = process.env.NODE_ENV === 'production'
 const allowDevLogin = process.env.ALLOW_DEV_LOGIN === '1' && !isProduction
-const allowEmailLogin = process.env.ALLOW_EMAIL_LOGIN === '1'
+
+// Email login has no password, so in production it is only available when an
+// EMAIL_LOGIN_CODE is configured and presented at sign-in. Without this gate,
+// anyone could sign in as any allowed-domain address (including admins).
+const emailLoginCode = process.env.EMAIL_LOGIN_CODE ?? ''
+const allowEmailLogin =
+  process.env.ALLOW_EMAIL_LOGIN === '1' && (!isProduction || emailLoginCode.length > 0)
 
 const providers: NextAuthOptions['providers'] = []
 
@@ -54,11 +60,13 @@ if (allowDevLogin || allowEmailLogin) {
       credentials: {
         name: { label: 'Full name', type: 'text' },
         email: { label: 'Company email', type: 'email' },
+        code: { label: 'Access code', type: 'password' },
       },
       async authorize(creds) {
         const email = (creds?.email ?? '').toString().trim().toLowerCase()
         const name = (creds?.name ?? '').toString().trim()
         if (!emailAllowed(email)) return null
+        if (isProduction && (creds?.code ?? '') !== emailLoginCode) return null
         return { id: email, name: name || email.split('@')[0], email }
       },
     })
@@ -75,14 +83,19 @@ export const authOptions: NextAuthOptions = {
         if (!emailAllowed(p?.email) || p?.email_verified !== true) return false
       }
 
+      // Awaited deliberately: fire-and-forget promises freeze with the lambda
+      // when the response is sent and only complete on the next invocation
+      // (notifications arrived a page-refresh late). Failures never block sign-in.
       const email = user.email ?? (profile as { email?: string } | undefined)?.email
       if (email) {
-        isFirstLogin(email).then((first) => {
-          if (first) {
+        try {
+          if (await isFirstLogin(email)) {
             const name = user.name || email.split('@')[0]
-            sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
+            await sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
           }
-        }).catch(() => {})
+        } catch {
+          // notification is best-effort
+        }
       }
 
       return true

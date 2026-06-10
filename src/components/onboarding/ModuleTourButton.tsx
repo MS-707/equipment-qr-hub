@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { GraduationCap } from 'lucide-react'
-import { MODULE_TOUR_EVENT } from './ModuleTourEngine'
+import { requestModuleTour, TOUR_ENDED_EVENT } from './ModuleTourEngine'
 import { isTourSeen } from '@/lib/tourState'
 
 interface ModuleTourButtonProps {
@@ -9,18 +10,23 @@ interface ModuleTourButtonProps {
 }
 
 export default function ModuleTourButton({ tourId }: ModuleTourButtonProps) {
-  const seen = typeof window !== 'undefined' ? isTourSeen(tourId) : true
+  // Resolved post-mount: computing this during render leaves the
+  // server-rendered (always "seen") class stuck after hydration.
+  const [seen, setSeen] = useState(true)
+
+  useEffect(() => {
+    const update = () => setSeen(isTourSeen(tourId))
+    update()
+    window.addEventListener(TOUR_ENDED_EVENT, update)
+    return () => window.removeEventListener(TOUR_ENDED_EVENT, update)
+  }, [tourId])
 
   return (
     <button
       type="button"
       aria-label="Take a tour of this page"
       title="Page tour"
-      onClick={() =>
-        window.dispatchEvent(
-          new CustomEvent(MODULE_TOUR_EVENT, { detail: { tourId } })
-        )
-      }
+      onClick={() => requestModuleTour(tourId)}
       className={`inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1.5
                  transition-colors min-h-[32px] ${
         !seen
