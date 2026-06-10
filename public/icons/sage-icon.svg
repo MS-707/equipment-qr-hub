@@ -1,16 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6B42FF"/>
+      <stop offset="1" stop-color="#572DFF"/>
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" fill="#0A0A0A"/>
-  <!-- 270° arc, opening at bottom center, radius 160, stroke 38 -->
-  <path
-    d="M 143 369 A 160 160 0 1 1 369 369"
-    fill="none"
-    stroke="#572DFF"
-    stroke-width="38"
-    stroke-linecap="round"
-  />
-  <!-- Upward triangle centered in the arc -->
-  <polygon
-    points="256,178 206,280 306,280"
-    fill="#572DFF"
-  />
+  <path d="M116,139 Q116,100 160,100 L352,100 Q396,100 396,139 L396,278 Q396,373 256,420 Q116,373 116,278 Z" fill="url(#sh)"/>
+  <path d="M200,260 L240,300 L320,210" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
