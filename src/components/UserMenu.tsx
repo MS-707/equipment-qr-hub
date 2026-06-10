@@ -21,7 +21,6 @@ export default function UserMenu() {
   if (status !== 'authenticated' || !session?.user) return null
 
   const name = session.user.name || session.user.email || 'User'
-  const firstName = name.split(' ')[0]
   const initials = name
     .split(' ')
     .map((s) => s[0])
@@ -47,7 +46,6 @@ export default function UserMenu() {
             {initials}
           </span>
         )}
-        <span className="hidden sm:inline">{firstName}</span>
         <ChevronDown className="w-3.5 h-3.5" />
       </button>
 
