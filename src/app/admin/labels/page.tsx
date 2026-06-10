@@ -2,16 +2,15 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { Printer, ArrowLeft, ShieldAlert } from 'lucide-react'
 import { getAllEquipment, getCategories } from '@/lib/equipment'
 import { CATEGORY_COLORS, EquipmentCategory } from '@/lib/types'
-import { getCurrentIdentity } from '@/lib/identity'
-import { isAdmin } from '@/lib/admin'
 import QRLabel from '@/components/QRLabel'
 
 export default function LabelsPage() {
-  const identity = getCurrentIdentity()
-  const canAccess = isAdmin(identity?.email)
+  const { data: session } = useSession()
+  const canAccess = session?.user?.isAdmin === true
   const [baseUrl, setBaseUrl] = useState('')
   const categories = useMemo(() => getCategories(), [])
   const allEquipment = useMemo(() => getAllEquipment(), [])

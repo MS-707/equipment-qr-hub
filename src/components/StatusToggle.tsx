@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react'
 import { EquipmentStatus, EQUIPMENT_STATUS_COLORS } from '@/lib/types'
 import { updateEquipmentStatus } from '@/lib/equipment'
-import { getCurrentIdentity } from '@/lib/identity'
-import { isAdmin } from '@/lib/admin'
 
 const STATUSES: EquipmentStatus[] = ['Active', 'Out of Service', 'Pending Repair', 'Retired']
 
@@ -17,9 +16,9 @@ interface StatusToggleProps {
 
 export default function StatusToggle({ itemNumber, currentStatus, onStatusChange }: StatusToggleProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: session } = useSession()
   const color = EQUIPMENT_STATUS_COLORS[currentStatus]
-  const identity = getCurrentIdentity()
-  const canEdit = isAdmin(identity?.email)
+  const canEdit = session?.user?.isAdmin === true
 
   function handleSelect(status: EquipmentStatus) {
     if (!canEdit) return

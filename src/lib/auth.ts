@@ -17,6 +17,7 @@ import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import { isFirstLogin } from '@/lib/user-tracker'
 import { sendSlackMessage } from '@/lib/slack-notify'
+import { isAdmin } from '@/lib/admin'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
   .split(',')
@@ -110,6 +111,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email ?? session.user.email
         session.user.name = token.name ?? session.user.name
         session.user.image = (token.picture as string | undefined) ?? session.user.image
+        session.user.isAdmin = isAdmin(session.user.email)
       }
       return session
     },

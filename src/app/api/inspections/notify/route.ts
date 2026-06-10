@@ -6,7 +6,7 @@
  * so the inspection flow is never blocked. Mirrors the safety review email path.
  */
 
-import type { InspectionRecord } from '@/lib/types'
+import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
@@ -21,11 +21,32 @@ function fmt(iso: string): string {
   })
 }
 
-interface NotifyBody {
-  record: InspectionRecord
-  equipmentName?: string
-  equipmentCategory?: string
-}
+const InspectionItemSchema = z.object({
+  id: z.string().max(100),
+  label: z.string().max(200),
+  result: z.enum(['pass', 'fail', 'na']),
+  critical: z.boolean().optional(),
+  notes: z.string().max(1000).optional(),
+})
+
+const NotifyBodySchema = z.object({
+  record: z.object({
+    id: z.string().max(100),
+    equipmentId: z.string().max(100),
+    inspectorName: z.string().max(200),
+    shift: z.string().max(50),
+    hourMeterReading: z.number().nullable().optional(),
+    createdAt: z.string().max(50),
+    result: z.enum(['pass', 'fail']),
+    hasCriticalFail: z.boolean(),
+    workOrderId: z.string().max(100).optional(),
+    items: z.array(InspectionItemSchema).max(200),
+  }),
+  equipmentName: z.string().max(200).optional(),
+  equipmentCategory: z.string().max(200).optional(),
+})
+
+type NotifyBody = z.infer<typeof NotifyBodySchema>
 
 function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } {
   const r = b.record
@@ -80,16 +101,18 @@ export async function POST(req: Request) {
     return Response.json({ emailed: false, reason: 'not-configured' })
   }
 
-  let body: NotifyBody
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!body?.record?.id || !body.record.items) {
-    return Response.json({ error: 'Missing inspection record' }, { status: 400 })
+  const parsed = NotifyBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid inspection record', details: parsed.error.issues.map((i) => i.message).slice(0, 5) }, { status: 400 })
   }
+  const body = parsed.data
 
   const { subject, text } = buildInspectionEmail(body)
   const outcome = await sendEhsNotification({ subject, text })

@@ -16,8 +16,7 @@ import {
 import { WorkOrder, PM_TYPE_COLORS, WorkOrderStatus } from '@/lib/types'
 import { updateWorkOrder, deleteWorkOrder, isOverdue } from '@/lib/work-orders'
 import { getEquipmentById } from '@/lib/equipment'
-import { getCurrentIdentity } from '@/lib/identity'
-import { isAdmin } from '@/lib/admin'
+import { useSession } from 'next-auth/react'
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder
@@ -38,7 +37,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [copyMsg, setCopyMsg] = useState<string | null>(null)
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>()
-  const canDelete = isAdmin(getCurrentIdentity()?.email)
+  const { data: session } = useSession()
+  const canDelete = session?.user?.isAdmin === true
 
   useEffect(() => {
     return () => { clearTimeout(deleteTimerRef.current) }
