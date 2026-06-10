@@ -27,6 +27,26 @@ export default function SignaturePad({
   const current = useRef<{ x: number; y: number }[]>([])
   const [isEmpty, setIsEmpty] = useState(true)
 
+  const paintStrokes = useCallback((ctx: CanvasRenderingContext2D, color: string) => {
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.lineWidth = 2.5
+    ctx.strokeStyle = color
+    ctx.fillStyle = color
+    for (const stroke of strokes.current) {
+      if (stroke.length === 1) {
+        ctx.beginPath()
+        ctx.arc(stroke[0].x, stroke[0].y, 1.2, 0, Math.PI * 2)
+        ctx.fill()
+        continue
+      }
+      ctx.beginPath()
+      ctx.moveTo(stroke[0].x, stroke[0].y)
+      for (let i = 1; i < stroke.length; i++) ctx.lineTo(stroke[i].x, stroke[i].y)
+      ctx.stroke()
+    }
+  }, [])
+
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -43,24 +63,27 @@ export default function SignaturePad({
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, w, h)
-    ctx.lineJoin = 'round'
-    ctx.lineCap = 'round'
-    ctx.lineWidth = 2.5
-    ctx.strokeStyle = penColor
-    ctx.fillStyle = penColor
-    for (const stroke of strokes.current) {
-      if (stroke.length === 1) {
-        ctx.beginPath()
-        ctx.arc(stroke[0].x, stroke[0].y, 1.2, 0, Math.PI * 2)
-        ctx.fill()
-        continue
-      }
-      ctx.beginPath()
-      ctx.moveTo(stroke[0].x, stroke[0].y)
-      for (let i = 1; i < stroke.length; i++) ctx.lineTo(stroke[i].x, stroke[i].y)
-      ctx.stroke()
-    }
-  }, [height, penColor])
+    paintStrokes(ctx, penColor)
+  }, [height, penColor, paintStrokes])
+
+  // Exported PNG is dark ink on opaque white so signatures stay legible when
+  // records are printed (print CSS forces white paper) or viewed in light theme.
+  // The live pad still draws in penColor over the app's dark input background.
+  const exportPng = useCallback((): string | null => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const out = document.createElement('canvas')
+    out.width = canvas.width
+    out.height = canvas.height
+    const ctx = out.getContext('2d')
+    if (!ctx) return null
+    ctx.fillStyle = '#FFFFFF'
+    ctx.fillRect(0, 0, out.width, out.height)
+    const dpr = window.devicePixelRatio || 1
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    paintStrokes(ctx, '#1A1A1A')
+    return out.toDataURL('image/png')
+  }, [paintStrokes])
 
   useEffect(() => {
     redraw()
@@ -76,10 +99,9 @@ export default function SignaturePad({
   }
 
   function emit() {
-    const canvas = canvasRef.current
     const empty = strokes.current.length === 0
     setIsEmpty(empty)
-    onChange(empty || !canvas ? null : canvas.toDataURL('image/png'), empty)
+    onChange(empty ? null : exportPng(), empty)
   }
 
   function handleDown(e: React.PointerEvent) {
