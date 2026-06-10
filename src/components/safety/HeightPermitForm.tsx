@@ -60,7 +60,8 @@ export default function HeightPermitForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'height-permit',
     () => ({ projectName, location, workDescription, workingHeight, accessMethod, fallProtection, anchorPoints, rescuePlan }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   const pfasSelected = fallProtection.includes(PFAS)
