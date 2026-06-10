@@ -134,6 +134,26 @@ function SageTriageInner() {
   }, [open])
 
   useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv || !open) return
+    function onResize() {
+      const el = dialogRef.current
+      if (!el || !vv) return
+      const offset = window.innerHeight - vv.height
+      el.style.height = offset > 0 ? `${vv.height}px` : ''
+      el.style.transform = offset > 0 ? `translateY(${vv.offsetTop}px)` : ''
+    }
+    vv.addEventListener('resize', onResize)
+    vv.addEventListener('scroll', onResize)
+    return () => {
+      vv.removeEventListener('resize', onResize)
+      vv.removeEventListener('scroll', onResize)
+      const el = dialogRef.current
+      if (el) { el.style.height = ''; el.style.transform = '' }
+    }
+  }, [open])
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, loading])
 
@@ -333,7 +353,7 @@ function SageTriageInner() {
             <button
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="w-8 h-8 flex items-center justify-center rounded-lg
+              className="w-11 h-11 flex items-center justify-center rounded-lg
                          text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
             >
               <X className="w-4 h-4" />

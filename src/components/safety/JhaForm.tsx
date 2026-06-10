@@ -452,7 +452,7 @@ export default function JhaForm() {
                 type="button"
                 onClick={() => removeStep(step.id)}
                 aria-label={`Remove step ${i + 1}`}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-fg-4 hover:text-danger hover:bg-danger/10 transition-colors"
+                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg text-fg-4 hover:text-danger hover:bg-danger/10 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

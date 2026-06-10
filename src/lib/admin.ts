@@ -1,17 +1,17 @@
 /**
- * Admin role check — server and client.
+ * Admin role check — server-side authoritative, client reads from session.
  *
  * Admin users can change equipment status, manage authorized users,
  * delete work orders, record PM completions, and access /admin routes.
  * Regular workers can view everything, submit inspections, and create
  * safety records, but cannot modify system configuration.
  *
- * Admin list is configured via ADMIN_EMAILS env var (comma-separated).
- * Falls back to a hard-coded default for the primary admin.
+ * Server: ADMIN_EMAILS env var (not NEXT_PUBLIC_ — never ships to client).
+ * Client: session.user.isAdmin flag set by the NextAuth session callback.
  */
 
 const ADMIN_EMAILS: Set<string> = new Set(
-  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? 'mark.starr@mytra.ai')
+  (process.env.ADMIN_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? 'mark.starr@mytra.ai')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)

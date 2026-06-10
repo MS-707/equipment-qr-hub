@@ -81,7 +81,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="button"
                         onClick={() => toggleNotes(item.id)}
                         aria-label="Add note"
-                        className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${
+                        className={`shrink-0 w-11 h-11 flex items-center justify-center rounded-lg border transition-colors ${
                           notesOpen || item.notes
                             ? 'bg-mytra-purple/10 border-mytra-purple/40 text-mytra-purple'
                             : 'bg-mytra-bg border-mytra-border text-fg-3 hover:text-fg'
