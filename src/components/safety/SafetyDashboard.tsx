@@ -22,7 +22,6 @@ import {
   onSafetyChange,
   getReviewActionableRecords,
 } from '@/lib/safety-records'
-import { installSyncListeners } from '@/lib/safety-sync'
 import { useReviewPoller } from '@/lib/review-poll'
 import { getCurrentIdentity } from '@/lib/identity'
 import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
@@ -87,11 +86,9 @@ export default function SafetyDashboard() {
     const unsub = onSafetyChange(load)
     const onStorage = () => load()
     window.addEventListener('storage', onStorage)
-    const removeSync = installSyncListeners()
     return () => {
       unsub()
       window.removeEventListener('storage', onStorage)
-      removeSync()
     }
   }, [load])
 
