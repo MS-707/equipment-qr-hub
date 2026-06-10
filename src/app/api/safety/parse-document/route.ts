@@ -21,7 +21,10 @@ Your job:
    - suggestedLocation: work location if mentioned, otherwise empty string
    - suggestedDepartment: department/team if mentioned, otherwise empty string
 
-RISK MATRIX: Severity (1-5) × Likelihood (1-5) → low (1-4), medium (5-9), high (10-15), critical (16-25)
+RISK MATRIX (per EHS-MGT-001, 5×5 Severity × Likelihood):
+  Severity: 1 Negligible (first aid only), 2 Minor (medical treatment, no permanent effects), 3 Moderate (lost-time injury, OSHA recordable), 4 Major (hospitalization, permanent disability), 5 Catastrophic (fatality or multiple severe injuries)
+  Likelihood: 1 Rare (exceptional circumstances only), 2 Unlikely (not expected, controls would need to fail), 3 Possible (has occurred in similar operations), 4 Likely (will probably occur, current controls insufficient), 5 Almost Certain (expected to occur, controls absent or ineffective)
+  Score = Severity × Likelihood → low (1-4), medium (5-9), high (10-16), critical (20-25)
 
 If the document is not a work plan or has no extractable steps, return an empty steps array and set suggestedTitle to "". Do not invent content that isn't supported by the document.`
 

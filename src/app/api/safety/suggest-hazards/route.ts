@@ -12,7 +12,12 @@ Given a scope of work and optional location, suggest 3-6 hazards the team should
 - riskLevel: one of "low", "medium", "high", "critical"
 - controlMeasure: a specific, actionable mitigation (not generic advice)
 
-Base risk levels on severity × probability using standard construction safety practices. Do not cite specific regulatory codes in the output.`
+RISK MATRIX (per EHS-MGT-001, 5×5 Severity × Likelihood):
+  Severity: 1 Negligible (first aid only), 2 Minor (medical treatment, no permanent effects), 3 Moderate (lost-time injury, OSHA recordable), 4 Major (hospitalization, permanent disability), 5 Catastrophic (fatality or multiple severe injuries)
+  Likelihood: 1 Rare (exceptional circumstances only), 2 Unlikely (not expected, controls would need to fail), 3 Possible (has occurred in similar operations), 4 Likely (will probably occur, current controls insufficient), 5 Almost Certain (expected to occur, controls absent or ineffective)
+  Score = Severity × Likelihood → Low (1-4), Medium (5-9), High (10-16), Critical (20-25)
+
+Rate risk BEFORE controls are applied. Do not cite specific regulatory codes in the output.`
 
 const HazardsSchema = z.object({
   hazards: z.array(
