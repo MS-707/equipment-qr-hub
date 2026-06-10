@@ -10,6 +10,21 @@ export const MODULE_TOUR_EVENT = 'sage:start-module-tour'
 export const TOUR_ACTIVE_EVENT = 'sage:tour-active'
 export const TOUR_ENDED_EVENT = 'sage:tour-ended'
 
+// The engine is lazy-loaded (ssr: false), so a Tour click can land before the
+// listener exists and vanish. Callers go through requestModuleTour(); if the
+// engine isn't mounted yet the request is parked here and replayed on mount
+// (button and engine share this module instance).
+let pendingTourId: string | null = null
+let engineMounted = false
+
+export function requestModuleTour(tourId: string) {
+  if (engineMounted) {
+    window.dispatchEvent(new CustomEvent(MODULE_TOUR_EVENT, { detail: { tourId } }))
+  } else {
+    pendingTourId = tourId
+  }
+}
+
 const GAP = 12
 const PAD = 6
 
@@ -34,24 +49,39 @@ export default function ModuleTourEngine() {
     window.dispatchEvent(new Event(TOUR_ENDED_EVENT))
   }, [tourId])
 
+  const startTour = useCallback((id: string, attempt = 0) => {
+    const tour = findTourForRoute(pathname)
+    if (!tour || tour.id !== id) return
+    const available = tour.steps.filter((s) => findVisible(s.target))
+    if (available.length === 0) {
+      // Targets may not have rendered yet (data still loading) — retry briefly.
+      if (attempt < 3) setTimeout(() => startTour(id, attempt + 1), 400 * (attempt + 1))
+      return
+    }
+    setSteps(available)
+    setTourId(id)
+    setStepIndex(0)
+    setActive(true)
+    window.dispatchEvent(new Event(TOUR_ACTIVE_EVENT))
+  }, [pathname])
+
   useEffect(() => {
+    engineMounted = true
     const onStart = (e: Event) => {
-      const detail = (e as CustomEvent).detail
-      const id = detail?.tourId as string | undefined
-      if (!id) return
-      const tour = findTourForRoute(pathname)
-      if (!tour || tour.id !== id) return
-      const available = tour.steps.filter((s) => findVisible(s.target))
-      if (available.length === 0) return
-      setSteps(available)
-      setTourId(id)
-      setStepIndex(0)
-      setActive(true)
-      window.dispatchEvent(new Event(TOUR_ACTIVE_EVENT))
+      const id = (e as CustomEvent).detail?.tourId as string | undefined
+      if (id) startTour(id)
     }
     window.addEventListener(MODULE_TOUR_EVENT, onStart)
-    return () => window.removeEventListener(MODULE_TOUR_EVENT, onStart)
-  }, [pathname])
+    if (pendingTourId) {
+      const id = pendingTourId
+      pendingTourId = null
+      startTour(id)
+    }
+    return () => {
+      engineMounted = false
+      window.removeEventListener(MODULE_TOUR_EVENT, onStart)
+    }
+  }, [startTour])
 
   // Auto-dismiss on route change (only when pathname actually changes)
   const prevPathRef = useRef(pathname)
@@ -65,23 +95,54 @@ export default function ModuleTourEngine() {
   useLayoutEffect(() => {
     if (!active) return
     const prevOverflow = document.body.style.overflow
-    const el = findVisible(steps[stepIndex]?.target ?? '')
+    const selector = steps[stepIndex]?.target ?? ''
+    const el = findVisible(selector)
     if (el) {
       document.body.style.overflow = ''
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
+
+    // Track the target every frame until it stops moving (smooth scroll, late
+    // layout), then lock scroll. A single delayed measure used to snapshot
+    // mid-scroll coordinates, parking the spotlight on the wrong content.
+    let raf = 0
+    let last: DOMRect | null = null
+    let stableFrames = 0
+    const startedAt = Date.now()
+    const track = () => {
+      const target = findVisible(selector)
+      const r = target ? target.getBoundingClientRect() : null
+      if (r) {
+        const moved =
+          !last ||
+          Math.abs(r.top - last.top) > 0.5 ||
+          Math.abs(r.left - last.left) > 0.5 ||
+          Math.abs(r.height - last.height) > 0.5
+        if (moved) {
+          stableFrames = 0
+          setRect(r)
+        } else {
+          stableFrames++
+        }
+        last = r
+      }
+      if ((stableFrames >= 6 && r) || Date.now() - startedAt > 1500) {
+        if (r) setRect(r)
+        document.body.style.overflow = 'hidden'
+        return
+      }
+      raf = requestAnimationFrame(track)
+    }
+    raf = requestAnimationFrame(track)
+
     const measure = () => {
-      const target = findVisible(steps[stepIndex]?.target ?? '')
+      const target = findVisible(selector)
       setRect(target ? target.getBoundingClientRect() : null)
     }
-    const timer = setTimeout(() => {
-      measure()
-      document.body.style.overflow = 'hidden'
-    }, 400)
     window.addEventListener('resize', measure)
     window.addEventListener('orientationchange', measure)
     return () => {
-      clearTimeout(timer)
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
       window.removeEventListener('orientationchange', measure)
       document.body.style.overflow = prevOverflow

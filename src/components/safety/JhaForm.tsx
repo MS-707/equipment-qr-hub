@@ -92,7 +92,8 @@ export default function JhaForm() {
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'jha',
     () => ({ jobTitle, dateOfAnalysis, department, location, referenceDoc, ppe, steps, additionalNotes }),
-    restore
+    restore,
+    submittedId !== null
   )
 
   const filledSteps = steps.filter((s) => s.taskActivity.trim().length > 0)
