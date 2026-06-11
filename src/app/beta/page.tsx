@@ -609,21 +609,6 @@ export default function BetaPage() {
         </div>
       </section>
 
-      <div aria-hidden className="hairline max-w-3xl mx-auto mb-12" />
-
-      {/* Roadmap */}
-      <section className="max-w-3xl mx-auto px-4 pb-12">
-        <div className="border border-dashed border-[#1F1F1F] rounded-lg p-4">
-          <p className="text-xs font-semibold text-[#9A9A9A] mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#572DFF]" />
-            On the roadmap
-          </p>
-          <p className="text-xs text-[#9A9A9A] leading-relaxed">
-            Custom safety knowledge base — upload your SOPs, policies, and site procedures so Sage answers from your rules, not just general guidance · Laser, high-voltage, and chemical work permits · photo &amp; signature sync · role-aware guidance
-          </p>
-        </div>
-      </section>
-
       {/* Mindfulness / ease-of-use spotlight */}
       <section className="max-w-3xl mx-auto px-4 pb-12">
         <div className="bg-gradient-to-br from-[#572DFF]/5 to-[#141414] border border-[#572DFF]/20 rounded-lg p-6 space-y-4">
