@@ -169,7 +169,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           )}
           {activeTab === 'training' && (
             <div className="space-y-6">
-              <TrainingInfo equipment={equipment} />
+              <TrainingInfo />
               <TrainingTracker equipment={equipment} />
             </div>
           )}
