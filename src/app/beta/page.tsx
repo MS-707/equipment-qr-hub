@@ -138,7 +138,7 @@ export default function BetaPage() {
             </a>
           </div>
           <p className="text-xs text-[#666] mt-5 animate-blurIn" style={{ animationDelay: '300ms' }}>
-            Free during beta · Works offline · No app store required
+            Built in-house · Works offline · No app store required
           </p>
         </div>
 
