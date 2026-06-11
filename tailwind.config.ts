@@ -68,6 +68,14 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(12px)', filter: 'blur(8px)' },
           to: { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(-5px)' },
+          '50%': { transform: 'translateY(6px)' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.75', transform: 'translateX(-50%) scale(1)' },
+          '50%': { opacity: '1', transform: 'translateX(-50%) scale(1.05)' },
+        },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
@@ -81,6 +89,9 @@ const config: Config = {
         slideInLeft: 'slideInLeft 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
         scaleIn: 'scaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1)',
         blurIn: 'blurIn 450ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        float: 'float 7s ease-in-out infinite',
+        floatSlow: 'float 10s ease-in-out infinite',
+        glowPulse: 'glowPulse 9s ease-in-out infinite',
         shimmer: 'shimmer 2s linear infinite',
       }
     },
