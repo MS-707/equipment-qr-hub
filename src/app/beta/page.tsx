@@ -90,7 +90,7 @@ export default function BetaPage() {
           <div className="absolute -top-48 left-1/2 w-[880px] h-[880px] rounded-full bg-[#572DFF]/[0.13] blur-3xl animate-glowPulse" />
         </div>
 
-        <div className="relative max-w-3xl mx-auto px-4 pt-16 sm:pt-20 pb-12 text-center">
+        <div className="relative max-w-3xl mx-auto px-4 pt-10 sm:pt-16 md:pt-20 pb-8 sm:pb-12 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/25 text-[#A78BFF] text-xs font-medium mb-6 animate-blurIn">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-[#7C5CFF] opacity-75 animate-ping" />
@@ -99,7 +99,7 @@ export default function BetaPage() {
             Early access — invites rolling out weekly
           </div>
           <h1
-            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-5 animate-blurIn"
+            className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-4 sm:mb-5 animate-blurIn"
             style={{ animationDelay: '80ms' }}
           >
             Build right.
@@ -142,20 +142,22 @@ export default function BetaPage() {
         </div>
 
         {/* Product mockup with floating detail cards */}
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-10 pb-16">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-10 pb-8 md:pb-16">
           <div className="relative">
-            {/* Browser frame, tilted back in perspective — levels out on hover */}
+            {/* Browser frame — capped height on mobile, full on desktop */}
             <div
               aria-hidden
               className="relative animate-blurIn select-none rounded-xl p-px
+                         max-h-[360px] sm:max-h-[420px] md:max-h-none overflow-hidden
                          bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F]
-                         shadow-[0_0_120px_-30px_rgba(87,45,255,0.55),0_30px_60px_-20px_rgba(0,0,0,0.7)]
+                         shadow-[0_0_80px_-20px_rgba(87,45,255,0.45),0_20px_40px_-16px_rgba(0,0,0,0.6)]
+                         md:shadow-[0_0_120px_-30px_rgba(87,45,255,0.55),0_30px_60px_-20px_rgba(0,0,0,0.7)]
                          md:[transform:perspective(1400px)_rotateX(5deg)]
                          md:hover:[transform:perspective(1400px)_rotateX(0deg)]
                          origin-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ animationDelay: '320ms' }}
             >
-              <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
+              <div className="rounded-[11px] bg-[#0A0A0A]">
                 {/* Window chrome */}
                 <div className="flex items-center px-4 py-3 border-b border-[#1F1F1F] bg-[#0D0D0D]">
                   <div className="flex gap-1.5">
@@ -269,10 +271,10 @@ export default function BetaPage() {
               </div>
             </div>
 
-            {/* Bottom fade — mockup melts into the page */}
+            {/* Bottom fade — mockup melts into the page (taller on mobile to cover the cutoff) */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/75 to-transparent"
+              className="pointer-events-none absolute inset-x-0 -bottom-1 h-40 md:h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent"
             />
 
             {/* Floating satellites — absolutely positioned on md+, scroll row on mobile */}
@@ -344,7 +346,7 @@ export default function BetaPage() {
             </div>
 
             {/* Mobile: horizontal scroll row beneath mockup */}
-            <div className="md:hidden relative z-10 -mt-10 pb-2">
+            <div className="md:hidden relative z-10 -mt-6 pb-2">
               <div className="flex gap-3 overflow-x-auto scrollbar-hide px-1 py-3 snap-x snap-mandatory">
                 <div
                   className="snap-center shrink-0 w-64 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] animate-blurIn"
