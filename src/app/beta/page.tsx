@@ -77,19 +77,26 @@ export default function BetaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
       {/* Hero */}
-      <header className="max-w-3xl mx-auto px-4 pt-16 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/20 text-[#572DFF] text-xs font-medium mb-6">
+      <header className="relative max-w-3xl mx-auto px-4 pt-16 pb-12 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-[#572DFF]/[0.08] blur-3xl"
+        />
+        <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/20 text-[#572DFF] text-xs font-medium mb-6 animate-blurIn">
           <Shield className="w-3.5 h-3.5" />
           Early Access
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+        <h1 className="relative text-3xl sm:text-4xl font-bold tracking-tight mb-4 animate-blurIn" style={{ animationDelay: '80ms' }}>
           Build right.
           <br />
           <span className="text-[#572DFF]">Start safe.</span>
         </h1>
-        <p className="text-base sm:text-lg text-[#9A9A9A] max-w-xl mx-auto leading-relaxed">
+        <p
+          className="relative text-base sm:text-lg text-[#9A9A9A] max-w-xl mx-auto leading-relaxed animate-blurIn"
+          style={{ animationDelay: '160ms' }}
+        >
           Safety documentation is how your team builds awareness before the work begins.
           Sage makes that process faster, sharper, and harder to get wrong.
         </p>
@@ -98,8 +105,13 @@ export default function BetaPage() {
       {/* Feature grid */}
       <section className="max-w-3xl mx-auto px-4 pb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-4">
+          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+            <div
+              key={title}
+              style={{ animationDelay: `${200 + i * 60}ms` }}
+              className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-4 animate-blurIn
+                         transition-colors duration-200 hover:border-[#572DFF]/30"
+            >
               <div className="flex items-center gap-2 mb-1.5">
                 <Icon className="w-4 h-4 text-[#572DFF]" />
                 <h3 className="text-sm font-semibold">{title}</h3>
@@ -109,6 +121,8 @@ export default function BetaPage() {
           ))}
         </div>
       </section>
+
+      <div aria-hidden className="hairline max-w-3xl mx-auto mb-12" />
 
       {/* Roadmap */}
       <section className="max-w-3xl mx-auto px-4 pb-12">
@@ -180,6 +194,8 @@ export default function BetaPage() {
           </div>
         </div>
       </section>
+
+      <div aria-hidden className="hairline max-w-3xl mx-auto mb-12" />
 
       {/* Signup form */}
       <section id="signup" className="max-w-xl mx-auto px-4 pb-20">

@@ -96,7 +96,7 @@ export default function SafetyDashboard() {
     <PullToRefresh onRefresh={load}>
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
       {/* Greeting */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between animate-blurIn">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-fg">
             {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
@@ -123,9 +123,10 @@ export default function SafetyDashboard() {
           value={ptp ? 'Logged' : 'Not started'}
           sub={ptp ? `${ptp.crewSignatures.length} signed` : 'tap Start PTP'}
           tone={ptp ? 'good' : 'warn'}
+          delayMs={0}
         />
-        <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" />
-        <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} />
+        <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" delayMs={60} />
+        <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} delayMs={120} />
           </>
         )}
       </div>
@@ -168,26 +169,27 @@ export default function SafetyDashboard() {
 
       {/* Quick actions */}
       <section data-tour-module="quick-actions">
-        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Quick actions</h2>
+        <h2 className="heading-rule text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Quick actions</h2>
         <div className="grid grid-cols-2 gap-2">
-          {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary, external }) => {
+          {QUICK_ACTIONS.map(({ href, label, icon: Icon, primary, external }, i) => {
             const cls = `flex items-center gap-2 rounded-lg px-3 py-4 text-sm font-medium min-h-[44px]
                          transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
-                         press-scale ${
+                         press-scale animate-blurIn ${
               primary
                 ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-lg hover:shadow-mytra-purple/20'
                 : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-card'
             }`
+            const style = { animationDelay: `${100 + i * 40}ms` }
             if (external) {
               return (
-                <a key={href} href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+                <a key={href} href={href} target="_blank" rel="noopener noreferrer" className={cls} style={style}>
                   <Icon className="w-4 h-4 shrink-0" />
                   {label}
                 </a>
               )
             }
             return (
-              <Link key={href} href={href} className={cls}>
+              <Link key={href} href={href} className={cls} style={style}>
                 <Icon className="w-4 h-4 shrink-0" />
                 {label}
               </Link>
@@ -199,7 +201,7 @@ export default function SafetyDashboard() {
       {/* Active permits */}
       {activePermits.length > 0 && (
         <section>
-          <h2 data-tour-module="active-permits" className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Active permits</h2>
+          <h2 data-tour-module="active-permits" className="heading-rule text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">Active permits</h2>
           <div className="space-y-2">
             {activePermits.map((p) => (
               <Link
@@ -228,8 +230,8 @@ export default function SafetyDashboard() {
 
       {/* Recent activity */}
       <section data-tour-module="recent-activity">
-        <div className="flex items-center justify-between mb-2 px-1">
-          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Recent activity</h2>
+        <div className="flex items-center justify-between gap-3 mb-2 px-1">
+          <h2 className="heading-rule flex-1 text-xs uppercase tracking-wider text-fg-3 font-semibold">Recent activity</h2>
           <Link href="/safety/history" className="text-xs text-mytra-purple hover:underline inline-flex items-center gap-0.5">
             View history <ChevronRight className="w-3 h-3" />
           </Link>
@@ -263,16 +265,20 @@ function StatCard({
   value,
   sub,
   tone,
+  delayMs = 0,
 }: {
   label: string
   value: string
   sub: string
   tone: 'good' | 'warn' | 'neutral'
+  delayMs?: number
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
-                    transition-shadow duration-200 hover:shadow-pop">
+    <div
+      style={{ animationDelay: `${delayMs}ms` }}
+      className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
+                    transition-shadow duration-200 hover:shadow-pop animate-blurIn">
       <p className="text-xs uppercase tracking-wider text-fg-3">{label}</p>
       <p className={`text-lg font-semibold mt-0.5 ${valueColor}`}>{value}</p>
       <p className="text-xs text-fg-4">{sub}</p>
