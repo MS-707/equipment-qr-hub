@@ -303,10 +303,10 @@ export default function BetaPage() {
             {/* Desktop: absolute floaters */}
             <div
               aria-hidden
-              className="hidden md:block absolute -right-8 lg:-right-20 top-12 z-10 animate-blurIn"
+              className="hidden md:block absolute -right-8 lg:-right-20 top-12 z-10 rotate-2 animate-blurIn"
               style={{ animationDelay: '600ms' }}
             >
-              <div className="animate-float w-60 rotate-2 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+              <div className="animate-float w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
                   <p className="text-[10px] font-semibold text-white">Sage suggests</p>
@@ -324,11 +324,11 @@ export default function BetaPage() {
 
             <div
               aria-hidden
-              className="hidden md:block absolute -left-8 lg:-left-20 top-48 z-10 animate-blurIn"
+              className="hidden md:block absolute -left-8 lg:-left-20 top-48 z-10 -rotate-2 animate-blurIn"
               style={{ animationDelay: '700ms' }}
             >
               <div
-                className="animate-floatSlow w-52 -rotate-2 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                className="animate-floatSlow w-52 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -351,11 +351,11 @@ export default function BetaPage() {
 
             <div
               aria-hidden
-              className="hidden lg:block absolute -right-12 bottom-28 z-10 animate-blurIn"
+              className="hidden lg:block absolute -right-12 bottom-28 z-10 rotate-1 animate-blurIn"
               style={{ animationDelay: '800ms' }}
             >
               <div
-                className="animate-float w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex items-center gap-2.5"
+                className="animate-float w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex items-center gap-2.5"
                 style={{ animationDelay: '3s' }}
               >
                 <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
@@ -439,11 +439,13 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`absolute -bottom-6 right-2 w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(0)}`}>
-                    <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-semibold text-white">PTP approved</p>
-                      <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                  <div className="absolute -bottom-6 right-2 rotate-1">
+                    <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(0)}`}>
+                      <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-semibold text-white">PTP approved</p>
+                        <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -497,7 +499,8 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`absolute -bottom-6 left-2 w-60 -rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
+                  <div className="absolute -bottom-6 left-2 -rotate-1">
+                    <div className={`w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
                       <p className="text-[10px] font-semibold text-white">Sage suggests</p>
@@ -505,6 +508,7 @@ export default function BetaPage() {
                     <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
                       Drafts the hazards, controls, and risk scores for every step you enter.
                     </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -555,7 +559,8 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`absolute -bottom-6 right-2 w-60 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
+                  <div className="absolute -bottom-6 right-2 rotate-1">
+                    <div className={`w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
                       <p className="text-[10px] font-semibold text-white">Live permits</p>
@@ -563,6 +568,7 @@ export default function BetaPage() {
                     <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
                       Checklists gate issuance — then a live countdown tracks expiry in the field.
                     </p>
+                    </div>
                   </div>
                 </div>
               </div>
