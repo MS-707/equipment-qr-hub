@@ -60,13 +60,20 @@ export default function BetaPage() {
     return () => clearTimeout(t)
   }, [slide])
 
+  // Slide screens glide with an iOS-style ease + soft scale/blur crossfade;
+  // the floating explainer trails 200ms behind for a layered, parallax feel.
   const slideCls = (i: number) =>
-    `absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+    `absolute inset-0 will-change-transform transition-[opacity,transform,filter] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
       i === slide
-        ? 'opacity-100 translate-x-0'
+        ? 'opacity-100 translate-x-0 scale-100 blur-0'
         : i === (slide + 2) % 3
-          ? 'opacity-0 -translate-x-10 pointer-events-none'
-          : 'opacity-0 translate-x-10 pointer-events-none'
+          ? 'opacity-0 -translate-x-14 scale-[0.97] blur-[4px] pointer-events-none'
+          : 'opacity-0 translate-x-14 scale-[0.97] blur-[4px] pointer-events-none'
+    }`
+
+  const explainerCls = (i: number) =>
+    `transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      i === slide ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-3 delay-0'
     }`
 
   const canSubmit = name.trim() && email.trim() && company.trim() && role.trim()
@@ -432,7 +439,7 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute -bottom-6 right-2 w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5">
+                  <div className={`absolute -bottom-6 right-2 w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(0)}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
                     <div>
                       <p className="text-[10px] font-semibold text-white">PTP approved</p>
@@ -490,7 +497,7 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute -bottom-6 left-2 w-60 -rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+                  <div className={`absolute -bottom-6 left-2 w-60 -rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
                       <p className="text-[10px] font-semibold text-white">Sage suggests</p>
@@ -548,7 +555,7 @@ export default function BetaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute -bottom-6 right-2 w-60 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+                  <div className={`absolute -bottom-6 right-2 w-60 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
                       <p className="text-[10px] font-semibold text-white">Live permits</p>
