@@ -120,15 +120,20 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <Centered>
-      <div className="w-full max-w-sm bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="relative w-full max-w-sm">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-16 rounded-full bg-mytra-purple/[0.07] blur-3xl"
+        />
+      <div className="relative w-full bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
+        <div className="flex items-center gap-2 mb-1 animate-blurIn" style={{ animationDelay: '60ms' }}>
           <ShieldCheck className="w-6 h-6 text-mytra-purple" />
           <span className="text-lg font-bold text-fg">Sage</span>
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>
         </div>
-        <p className="text-sm text-fg-2 mb-5">
+        <p className="text-sm text-fg-2 mb-5 animate-blurIn" style={{ animationDelay: '120ms' }}>
           Sign in with your company account to access safety forms. Your identity is recorded on every
           plan, permit, and signature.
         </p>
@@ -243,6 +248,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         )}
+      </div>
       </div>
     </Centered>
   )
