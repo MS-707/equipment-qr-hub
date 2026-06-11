@@ -14,7 +14,6 @@ import {
   ArrowUpFromLine,
   Loader2,
   Lightbulb,
-  Lock,
   PenLine,
   Flame,
   PackageOpen,
@@ -157,20 +156,13 @@ export default function BetaPage() {
               style={{ animationDelay: '320ms' }}
             >
               <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
-                {/* Browser chrome */}
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0D0D0D]">
+                {/* Window chrome */}
+                <div className="flex items-center px-4 py-3 border-b border-[#1F1F1F] bg-[#0D0D0D]">
                   <div className="flex gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#E66A6A]/60" />
                     <span className="w-2.5 h-2.5 rounded-full bg-[#F0B53A]/60" />
                     <span className="w-2.5 h-2.5 rounded-full bg-[#34C172]/60" />
                   </div>
-                  <div className="flex-1 flex justify-center">
-                    <div className="flex items-center gap-1.5 bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-1 text-[10px] text-[#9A9A9A]">
-                      <Lock className="w-2.5 h-2.5" />
-                      sage — equipment-qr-hub.vercel.app
-                    </div>
-                  </div>
-                  <div className="w-12" />
                 </div>
 
                 {/* App nav */}
@@ -187,7 +179,6 @@ export default function BetaPage() {
                     <span>Pre-Trip</span>
                     <span>Equipment</span>
                     <span>Work Orders</span>
-                    <span>QR Labels</span>
                   </div>
                   <div className="w-6 h-6 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[8px] font-semibold text-[#A78BFF]">
                     MS
@@ -464,7 +455,7 @@ export default function BetaPage() {
         ) : (
           <form onSubmit={handleSubmit} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-6 space-y-4">
             <div>
-              <h2 className="text-lg font-semibold mb-0.5">Join the Sage EHS beta</h2>
+              <h2 className="text-lg font-semibold mb-0.5">Join the beta</h2>
               <p className="text-xs text-[#9A9A9A]">
                 We are rolling out access in small cohorts. Tell us about your team and we will be in touch shortly.
               </p>
