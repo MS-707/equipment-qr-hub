@@ -275,7 +275,9 @@ export default function BetaPage() {
               className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/75 to-transparent"
             />
 
-            {/* Floating satellites — Sage AI suggestion */}
+            {/* Floating satellites — absolutely positioned on md+, scroll row on mobile */}
+
+            {/* Desktop: absolute floaters */}
             <div
               aria-hidden
               className="hidden md:block absolute -right-8 lg:-right-20 top-12 z-10 animate-blurIn"
@@ -297,7 +299,6 @@ export default function BetaPage() {
               </div>
             </div>
 
-            {/* Floating satellites — live permit countdown */}
             <div
               aria-hidden
               className="hidden md:block absolute -left-8 lg:-left-20 top-48 z-10 animate-blurIn"
@@ -325,7 +326,6 @@ export default function BetaPage() {
               </div>
             </div>
 
-            {/* Floating satellites — EHS approval toast */}
             <div
               aria-hidden
               className="hidden lg:block absolute -right-12 bottom-28 z-10 animate-blurIn"
@@ -339,6 +339,61 @@ export default function BetaPage() {
                 <div>
                   <p className="text-[10px] font-semibold text-white">PTP approved</p>
                   <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: horizontal scroll row beneath mockup */}
+            <div className="md:hidden relative z-10 -mt-10 pb-2">
+              <div className="flex gap-3 overflow-x-auto scrollbar-hide px-1 py-3 snap-x snap-mandatory">
+                <div
+                  className="snap-center shrink-0 w-64 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] animate-blurIn"
+                  style={{ animationDelay: '500ms' }}
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                    <p className="text-[10px] font-semibold text-white">Sage suggests</p>
+                  </div>
+                  <p className="text-[10px] text-[#C4C4C4] leading-relaxed mb-2.5">
+                    Pinch points during conveyor alignment — add lockout verification and cut-resistant gloves.
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[9px] font-mono">
+                    <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
+                    <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
+                    <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
+                  </div>
+                </div>
+
+                <div
+                  className="snap-center shrink-0 w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] animate-blurIn"
+                  style={{ animationDelay: '600ms' }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
+                      <p className="text-[10px] font-semibold text-white">Hot Work</p>
+                    </div>
+                    <span className="flex items-center gap-1 text-[9px] text-[#34C172]">
+                      <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-[9px] font-mono text-[#9A9A9A] mb-1">HW-0042 · Bay 4 mezzanine</p>
+                  <p className="text-sm font-mono font-semibold text-white tracking-tight">
+                    02:14:36{' '}
+                    <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
+                  </p>
+                </div>
+
+                <div
+                  className="snap-center shrink-0 w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3 shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex items-center gap-2.5 animate-blurIn"
+                  style={{ animationDelay: '700ms' }}
+                >
+                  <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold text-white">PTP approved</p>
+                    <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                  </div>
                 </div>
               </div>
             </div>
