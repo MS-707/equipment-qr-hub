@@ -12,6 +12,7 @@ import TabNav from '@/components/TabNav'
 import StatusToggle from '@/components/StatusToggle'
 import PMSchedule from '@/components/PMSchedule'
 import PmTracker from '@/components/PmTracker'
+import ManualCard from '@/components/ManualCard'
 import TrainingInfo from '@/components/TrainingInfo'
 import TrainingTracker from '@/components/TrainingTracker'
 import ComplianceInfo from '@/components/ComplianceInfo'
@@ -105,7 +106,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         </Link>
 
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 animate-blurIn">
           <div data-tour-module="status-badge" className="flex items-center gap-2 mb-2 flex-wrap">
             <span
               className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
@@ -134,6 +135,11 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             </h1>
             <ModuleTourButton tourId="equipment-detail" />
           </div>
+        </div>
+
+        {/* OEM Manual */}
+        <div className="mb-4">
+          <ManualCard equipment={equipment} />
         </div>
 
         {/* Authorization */}
