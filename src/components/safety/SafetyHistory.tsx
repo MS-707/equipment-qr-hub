@@ -79,7 +79,7 @@ export default function SafetyHistory() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
         <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
-          <ArrowLeft className="w-4 h-4" /> Safety Hub
+          <ArrowLeft className="w-4 h-4" /> Home
         </Link>
         <button
           type="button"

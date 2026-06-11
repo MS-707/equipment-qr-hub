@@ -837,7 +837,7 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
         New JHA
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
-        Back to Safety Hub
+        Back to Home
       </Link>
     </div>
   )
