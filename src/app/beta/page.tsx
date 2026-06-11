@@ -11,9 +11,14 @@ import {
   WifiOff,
   CheckCircle2,
   ArrowRight,
+  ArrowUpFromLine,
   Loader2,
   Lightbulb,
+  Lock,
   PenLine,
+  Flame,
+  PackageOpen,
+  Sparkles,
 } from 'lucide-react'
 
 const FEATURES = [
@@ -79,31 +84,279 @@ export default function BetaPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
       {/* Hero */}
-      <header className="relative max-w-3xl mx-auto px-4 pt-16 pb-12 text-center">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-[#572DFF]/[0.08] blur-3xl"
-        />
-        <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/20 text-[#572DFF] text-xs font-medium mb-6 animate-blurIn">
-          <Shield className="w-3.5 h-3.5" />
-          Early Access
+      <header className="relative">
+        {/* Layered backdrop: blueprint grid fading out radially + breathing glow */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_75%_55%_at_50%_0%,black_50%,transparent_100%)]" />
+          <div className="absolute -top-48 left-1/2 w-[880px] h-[880px] rounded-full bg-[#572DFF]/[0.13] blur-3xl animate-glowPulse" />
         </div>
-        <h1 className="relative text-3xl sm:text-4xl font-bold tracking-tight mb-4 animate-blurIn" style={{ animationDelay: '80ms' }}>
-          Build right.
-          <br />
-          <span className="text-[#572DFF]">Start safe.</span>
-        </h1>
-        <p
-          className="relative text-base sm:text-lg text-[#9A9A9A] max-w-xl mx-auto leading-relaxed animate-blurIn"
-          style={{ animationDelay: '160ms' }}
-        >
-          Safety documentation is how your team builds awareness before the work begins.
-          Sage makes that process faster, sharper, and harder to get wrong.
-        </p>
+
+        <div className="relative max-w-3xl mx-auto px-4 pt-16 sm:pt-20 pb-12 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/25 text-[#A78BFF] text-xs font-medium mb-6 animate-blurIn">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-[#7C5CFF] opacity-75 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#7C5CFF]" />
+            </span>
+            Early access — invites rolling out weekly
+          </div>
+          <h1
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-5 animate-blurIn"
+            style={{ animationDelay: '80ms' }}
+          >
+            Build right.
+            <br />
+            <span className="bg-gradient-to-br from-[#B9A3FF] via-[#7C5CFF] to-[#572DFF] bg-clip-text text-transparent">
+              Start safe.
+            </span>
+          </h1>
+          <p
+            className="text-base sm:text-lg text-[#9A9A9A] max-w-xl mx-auto leading-relaxed mb-8 animate-blurIn"
+            style={{ animationDelay: '160ms' }}
+          >
+            Safety documentation is how your team builds awareness before the work begins.
+            Sage makes that process faster, sharper, and harder to get wrong.
+          </p>
+          <div
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-blurIn"
+            style={{ animationDelay: '240ms' }}
+          >
+            <a
+              href="#signup"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold
+                         bg-[#572DFF] text-white hover:bg-[#6B42FF] transition-colors
+                         shadow-[0_0_32px_-8px_rgba(87,45,255,0.6)] press-scale"
+            >
+              Request access <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#features"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium
+                         border border-[#2E2E2E] text-[#C4C4C4] hover:border-[#572DFF]/40 hover:text-white
+                         transition-colors press-scale"
+            >
+              Explore the toolkit
+            </a>
+          </div>
+          <p className="text-xs text-[#666] mt-5 animate-blurIn" style={{ animationDelay: '300ms' }}>
+            Free during beta · Works offline · No app store required
+          </p>
+        </div>
+
+        {/* Product mockup with floating detail cards */}
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-10 pb-16">
+          <div className="relative">
+            {/* Browser frame, tilted back in perspective — levels out on hover */}
+            <div
+              aria-hidden
+              className="relative animate-blurIn select-none rounded-xl p-px
+                         bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F]
+                         shadow-[0_0_120px_-30px_rgba(87,45,255,0.55),0_30px_60px_-20px_rgba(0,0,0,0.7)]
+                         md:[transform:perspective(1400px)_rotateX(5deg)]
+                         md:hover:[transform:perspective(1400px)_rotateX(0deg)]
+                         origin-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{ animationDelay: '320ms' }}
+            >
+              <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
+                {/* Browser chrome */}
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0D0D0D]">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#E66A6A]/60" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#F0B53A]/60" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#34C172]/60" />
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="flex items-center gap-1.5 bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-1 text-[10px] text-[#9A9A9A]">
+                      <Lock className="w-2.5 h-2.5" />
+                      sage — equipment-qr-hub.vercel.app
+                    </div>
+                  </div>
+                  <div className="w-12" />
+                </div>
+
+                {/* App nav */}
+                <div className="flex items-center justify-between px-5 py-3 border-b border-[#1F1F1F]">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-sm font-bold text-white">Sage</span>
+                    <span className="text-[9px] font-semibold text-[#7C5CFF] tracking-wide">EHS</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-5 text-[10px] text-[#9A9A9A]">
+                    <span className="relative text-white font-medium">
+                      Home
+                      <span className="absolute -bottom-[13px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#572DFF]" />
+                    </span>
+                    <span>Pre-Trip</span>
+                    <span>Equipment</span>
+                    <span>Work Orders</span>
+                    <span>QR Labels</span>
+                  </div>
+                  <div className="w-6 h-6 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[8px] font-semibold text-[#A78BFF]">
+                    MS
+                  </div>
+                </div>
+
+                {/* Dashboard body */}
+                <div className="px-5 py-5 space-y-4">
+                  <div className="flex items-end justify-between">
+                    <p className="text-base font-bold text-white">Hello, Mark</p>
+                    <p className="text-[10px] text-[#9A9A9A]">Thursday, June 11</p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {[
+                      { label: "Today's PTP", value: 'Logged', sub: '5 signed', cls: 'text-[#34C172]' },
+                      { label: 'Active permits', value: '2', sub: 'open now', cls: 'text-white' },
+                      { label: 'Incidents', value: '0', sub: 'last 7 days', cls: 'text-white' },
+                    ].map(({ label, value, sub, cls }) => (
+                      <div key={label} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3">
+                        <p className="text-[8px] uppercase tracking-[0.12em] text-[#9A9A9A]">{label}</p>
+                        <p className={`text-sm font-semibold mt-0.5 ${cls}`}>{value}</p>
+                        <p className="text-[8px] text-[#666]">{sub}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-[9px] uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
+                        Quick actions
+                      </p>
+                      <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { icon: ClipboardList, label: 'Start PTP', primary: true },
+                        { icon: ListChecks, label: 'Job Hazard Analysis' },
+                        { icon: ArrowUpFromLine, label: 'Work-at-Height' },
+                        { icon: Flame, label: 'Hot Work' },
+                        { icon: PackageOpen, label: 'Confined Space' },
+                        { icon: AlertTriangle, label: 'Report Incident' },
+                      ].map(({ icon: Icon, label, primary }) => (
+                        <div
+                          key={label}
+                          className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[10px] font-medium border ${
+                            primary
+                              ? 'bg-[#572DFF] border-[#572DFF] text-white'
+                              : 'bg-[#141414] border-[#1F1F1F] text-[#C4C4C4]'
+                          }`}
+                        >
+                          <Icon className="w-3 h-3 shrink-0" />
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-[9px] uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
+                        Recent activity
+                      </p>
+                      <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5">
+                        <div>
+                          <p className="text-[8px] font-mono text-[#9A9A9A]">PTP-0118</p>
+                          <p className="text-[10px] text-white">Conveyor drive install — Line 3</p>
+                        </div>
+                        <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-[#34C172]/10 text-[#34C172]">
+                          Approved
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5">
+                        <div>
+                          <p className="text-[8px] font-mono text-[#9A9A9A]">HW-0042</p>
+                          <p className="text-[10px] text-white">Bracket welds — Bay 4 mezzanine</p>
+                        </div>
+                        <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-[#F0B53A]/10 text-[#F0B53A]">
+                          Active
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom fade — mockup melts into the page */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/75 to-transparent"
+            />
+
+            {/* Floating satellites — Sage AI suggestion */}
+            <div
+              aria-hidden
+              className="hidden md:block absolute -right-8 lg:-right-20 top-12 z-10 animate-blurIn"
+              style={{ animationDelay: '600ms' }}
+            >
+              <div className="animate-float w-60 rotate-2 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <p className="text-[10px] font-semibold text-white">Sage suggests</p>
+                </div>
+                <p className="text-[10px] text-[#C4C4C4] leading-relaxed mb-2.5">
+                  Pinch points during conveyor alignment — add lockout verification and cut-resistant gloves.
+                </p>
+                <div className="flex items-center gap-1.5 text-[9px] font-mono">
+                  <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
+                  <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
+                  <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating satellites — live permit countdown */}
+            <div
+              aria-hidden
+              className="hidden md:block absolute -left-8 lg:-left-20 top-48 z-10 animate-blurIn"
+              style={{ animationDelay: '700ms' }}
+            >
+              <div
+                className="animate-floatSlow w-52 -rotate-2 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                style={{ animationDelay: '1.5s' }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
+                    <p className="text-[10px] font-semibold text-white">Hot Work</p>
+                  </div>
+                  <span className="flex items-center gap-1 text-[9px] text-[#34C172]">
+                    <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
+                    Active
+                  </span>
+                </div>
+                <p className="text-[9px] font-mono text-[#9A9A9A] mb-1">HW-0042 · Bay 4 mezzanine</p>
+                <p className="text-sm font-mono font-semibold text-white tracking-tight">
+                  02:14:36{' '}
+                  <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Floating satellites — EHS approval toast */}
+            <div
+              aria-hidden
+              className="hidden lg:block absolute -right-12 bottom-28 z-10 animate-blurIn"
+              style={{ animationDelay: '800ms' }}
+            >
+              <div
+                className="animate-float w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex items-center gap-2.5"
+                style={{ animationDelay: '3s' }}
+              >
+                <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold text-white">PTP approved</p>
+                  <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Feature grid */}
-      <section className="max-w-3xl mx-auto px-4 pb-12">
+      <section id="features" className="max-w-3xl mx-auto px-4 pb-12 scroll-mt-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {FEATURES.map(({ icon: Icon, title, desc }, i) => (
             <div
