@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Shield,
   ClipboardList,
@@ -52,6 +52,22 @@ export default function BetaPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [slide, setSlide] = useState(0)
+
+  // Mobile hero showcase: auto-advance every 5s; manual select resets the timer.
+  useEffect(() => {
+    const t = setTimeout(() => setSlide((s) => (s + 1) % 3), 5000)
+    return () => clearTimeout(t)
+  }, [slide])
+
+  const slideCls = (i: number) =>
+    `absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      i === slide
+        ? 'opacity-100 translate-x-0'
+        : i === (slide + 2) % 3
+          ? 'opacity-0 -translate-x-10 pointer-events-none'
+          : 'opacity-0 translate-x-10 pointer-events-none'
+    }`
 
   const canSubmit = name.trim() && email.trim() && company.trim() && role.trim()
 
@@ -141,23 +157,21 @@ export default function BetaPage() {
           </p>
         </div>
 
-        {/* Product mockup with floating detail cards */}
+        {/* Product mockup with floating detail cards (desktop) */}
         <div className="relative max-w-4xl mx-auto px-4 sm:px-10 pb-8 md:pb-16">
-          <div className="relative">
-            {/* Browser frame — capped height on mobile, full on desktop */}
+          <div className="relative hidden md:block">
+            {/* Browser frame, tilted back in perspective — levels out on hover */}
             <div
               aria-hidden
               className="relative animate-blurIn select-none rounded-xl p-px
-                         max-h-[360px] sm:max-h-[420px] md:max-h-none overflow-hidden
                          bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F]
-                         shadow-[0_0_80px_-20px_rgba(87,45,255,0.45),0_20px_40px_-16px_rgba(0,0,0,0.6)]
-                         md:shadow-[0_0_120px_-30px_rgba(87,45,255,0.55),0_30px_60px_-20px_rgba(0,0,0,0.7)]
+                         shadow-[0_0_120px_-30px_rgba(87,45,255,0.55),0_30px_60px_-20px_rgba(0,0,0,0.7)]
                          md:[transform:perspective(1400px)_rotateX(5deg)]
                          md:hover:[transform:perspective(1400px)_rotateX(0deg)]
                          origin-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ animationDelay: '320ms' }}
             >
-              <div className="rounded-[11px] bg-[#0A0A0A]">
+              <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
                 {/* Window chrome */}
                 <div className="flex items-center px-4 py-3 border-b border-[#1F1F1F] bg-[#0D0D0D]">
                   <div className="flex gap-1.5">
@@ -271,10 +285,10 @@ export default function BetaPage() {
               </div>
             </div>
 
-            {/* Bottom fade — mockup melts into the page (taller on mobile to cover the cutoff) */}
+            {/* Bottom fade — mockup melts into the page */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -bottom-1 h-40 md:h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent"
+              className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent"
             />
 
             {/* Floating satellites — absolutely positioned on md+, scroll row on mobile */}
@@ -345,59 +359,224 @@ export default function BetaPage() {
               </div>
             </div>
 
-            {/* Mobile: horizontal scroll row beneath mockup */}
-            <div className="md:hidden relative z-10 -mt-6 pb-2">
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide px-1 py-3 snap-x snap-mandatory">
-                <div
-                  className="snap-center shrink-0 w-64 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] animate-blurIn"
-                  style={{ animationDelay: '500ms' }}
-                >
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
-                    <p className="text-[10px] font-semibold text-white">Sage suggests</p>
-                  </div>
-                  <p className="text-[10px] text-[#C4C4C4] leading-relaxed mb-2.5">
-                    Pinch points during conveyor alignment — add lockout verification and cut-resistant gloves.
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[9px] font-mono">
-                    <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
-                    <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
-                    <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
-                  </div>
-                </div>
+          </div>
 
-                <div
-                  className="snap-center shrink-0 w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] animate-blurIn"
-                  style={{ animationDelay: '600ms' }}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
-                      <p className="text-[10px] font-semibold text-white">Hot Work</p>
+          {/* Mobile: rotating module showcase — each screen with its floating explainer */}
+          <div className="md:hidden animate-blurIn" style={{ animationDelay: '320ms' }}>
+            <div className="relative h-[400px] max-w-sm mx-auto" aria-hidden>
+              {/* Slide 1 — Home dashboard + EHS approval toast */}
+              <div className={slideCls(0)}>
+                <div className="relative">
+                  <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
+                    <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0D0D0D]">
+                        <div className="flex gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#E66A6A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#F0B53A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#34C172]/60" />
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-bold text-white">Sage</span>
+                          <span className="text-[8px] font-semibold text-[#7C5CFF]">EHS</span>
+                        </div>
+                        <div className="w-5 h-5 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[7px] font-semibold text-[#A78BFF]">
+                          MS
+                        </div>
+                      </div>
+                      <div className="px-4 py-4 space-y-3.5">
+                        <div className="flex items-end justify-between">
+                          <p className="text-sm font-bold text-white">Hello, Mark</p>
+                          <p className="text-[9px] text-[#9A9A9A]">Thursday, June 11</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { label: "Today's PTP", value: 'Logged', sub: '5 signed', cls: 'text-[#34C172]' },
+                            { label: 'Permits', value: '2', sub: 'open now', cls: 'text-white' },
+                            { label: 'Incidents', value: '0', sub: '7 days', cls: 'text-white' },
+                          ].map(({ label, value, sub, cls }) => (
+                            <div key={label} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-2.5">
+                              <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A]">{label}</p>
+                              <p className={`text-xs font-semibold mt-0.5 ${cls}`}>{value}</p>
+                              <p className="text-[8px] text-[#666]">{sub}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A] font-semibold">
+                              Quick actions
+                            </p>
+                            <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {[
+                              { icon: ClipboardList, label: 'Start PTP', primary: true },
+                              { icon: ListChecks, label: 'Hazard Analysis' },
+                              { icon: Flame, label: 'Hot Work' },
+                              { icon: AlertTriangle, label: 'Report Incident' },
+                            ].map(({ icon: Icon, label, primary }) => (
+                              <div
+                                key={label}
+                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[9px] font-medium border ${
+                                  primary
+                                    ? 'bg-[#572DFF] border-[#572DFF] text-white'
+                                    : 'bg-[#141414] border-[#1F1F1F] text-[#C4C4C4]'
+                                }`}
+                              >
+                                <Icon className="w-3 h-3 shrink-0" />
+                                {label}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className="flex items-center gap-1 text-[9px] text-[#34C172]">
-                      <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
-                      Active
-                    </span>
                   </div>
-                  <p className="text-[9px] font-mono text-[#9A9A9A] mb-1">HW-0042 · Bay 4 mezzanine</p>
-                  <p className="text-sm font-mono font-semibold text-white tracking-tight">
-                    02:14:36{' '}
-                    <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
-                  </p>
-                </div>
-
-                <div
-                  className="snap-center shrink-0 w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3 shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex items-center gap-2.5 animate-blurIn"
-                  style={{ animationDelay: '700ms' }}
-                >
-                  <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold text-white">PTP approved</p>
-                    <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                  <div className="absolute -bottom-6 right-2 w-56 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold text-white">PTP approved</p>
+                      <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Slide 2 — Job Hazard Analysis + Sage AI explainer */}
+              <div className={slideCls(1)}>
+                <div className="relative">
+                  <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
+                    <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0D0D0D]">
+                        <div className="flex gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#E66A6A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#F0B53A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#34C172]/60" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <ListChecks className="w-3 h-3 text-[#7C5CFF]" />
+                          <span className="text-[10px] font-semibold text-white">Job Hazard Analysis</span>
+                        </div>
+                        <span className="text-[8px] font-mono text-[#9A9A9A]">JHA-0027</span>
+                      </div>
+                      <div className="px-4 py-4 space-y-3">
+                        <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3">
+                          <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A] mb-1">Step 1</p>
+                          <p className="text-[11px] text-white">Align conveyor drive coupling</p>
+                        </div>
+                        <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] text-white">Pinch points at rotating coupling</p>
+                          </div>
+                          <p className="text-[9px] text-[#9A9A9A]">
+                            Controls: LOTO verified · cut-resistant gloves · two-person alignment
+                          </p>
+                          <div className="flex items-center gap-1.5 text-[9px] font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
+                            <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
+                            <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Hard hat', 'Safety glasses', 'Cut-resistant gloves'].map((ppe) => (
+                            <span
+                              key={ppe}
+                              className="text-[8px] px-2 py-1 rounded-full border border-[#2E2E2E] text-[#C4C4C4]"
+                            >
+                              {ppe}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-6 left-2 w-60 -rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                      <p className="text-[10px] font-semibold text-white">Sage suggests</p>
+                    </div>
+                    <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
+                      Drafts the hazards, controls, and risk scores for every step you enter.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Slide 3 — Hot Work permit + live countdown explainer */}
+              <div className={slideCls(2)}>
+                <div className="relative">
+                  <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
+                    <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0D0D0D]">
+                        <div className="flex gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#E66A6A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#F0B53A]/60" />
+                          <span className="w-2 h-2 rounded-full bg-[#34C172]/60" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Flame className="w-3 h-3 text-[#F2934A]" />
+                          <span className="text-[10px] font-semibold text-white">Hot Work Permit</span>
+                        </div>
+                        <span className="flex items-center gap-1 text-[8px] text-[#34C172]">
+                          <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
+                          Active
+                        </span>
+                      </div>
+                      <div className="px-4 py-4 space-y-3">
+                        <div>
+                          <p className="text-[9px] font-mono text-[#9A9A9A]">HW-0042 · Bay 4 mezzanine</p>
+                          <p className="text-xl font-mono font-semibold text-white tracking-tight mt-1">
+                            02:14:36{' '}
+                            <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          {[
+                            'Fire watch posted',
+                            'Combustibles cleared 35 ft',
+                            'Extinguisher staged at point of work',
+                          ].map((item) => (
+                            <div
+                              key={item}
+                              className="flex items-center gap-2 bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2"
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-[#34C172] shrink-0" />
+                              <p className="text-[10px] text-[#C4C4C4]">{item}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-6 right-2 w-60 rotate-1 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
+                      <p className="text-[10px] font-semibold text-white">Live permits</p>
+                    </div>
+                    <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
+                      Checklists gate issuance — then a live countdown tracks expiry in the field.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Slide selector */}
+            <div className="flex items-center justify-center gap-2 mt-10">
+              {['Home', 'Hazard Analysis', 'Permits'].map((label, i) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setSlide(i)}
+                  className={`text-[10px] font-medium px-3 py-1.5 rounded-full border transition-colors min-h-[32px] ${
+                    i === slide
+                      ? 'border-[#572DFF]/50 bg-[#572DFF]/10 text-[#A78BFF]'
+                      : 'border-[#2E2E2E] text-[#9A9A9A]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
