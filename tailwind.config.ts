@@ -64,6 +64,10 @@ const config: Config = {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+        blurIn: {
+          from: { opacity: '0', transform: 'translateY(12px)', filter: 'blur(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+        },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
@@ -76,6 +80,7 @@ const config: Config = {
         slideInRight: 'slideInRight 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
         slideInLeft: 'slideInLeft 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
         scaleIn: 'scaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        blurIn: 'blurIn 450ms cubic-bezier(0.16, 1, 0.3, 1) both',
         shimmer: 'shimmer 2s linear infinite',
       }
     },

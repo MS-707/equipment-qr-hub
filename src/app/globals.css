@@ -157,6 +157,37 @@ input[type="datetime-local"] {
   overflow: hidden;
 }
 
+/* Gradient hairline divider — fades out toward both edges */
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-strong) 15%,
+    var(--border-strong) 85%,
+    transparent
+  );
+}
+
+/* Section-heading rule: label followed by a hairline that draws in
+   from the left and fades out to the right */
+.heading-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.heading-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border-strong), transparent);
+  transform-origin: left;
+  animation: rule-draw 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes rule-draw {
+  from { transform: scaleX(0); }
+}
+
 /* Press feedback for interactive elements */
 .press-scale {
   transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
