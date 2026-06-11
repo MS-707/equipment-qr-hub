@@ -1,13 +1,8 @@
 'use client'
 
 import { Users } from 'lucide-react'
-import { EquipmentItem } from '@/lib/types'
 
-interface TrainingInfoProps {
-  equipment: EquipmentItem
-}
-
-export default function TrainingInfo({ equipment }: TrainingInfoProps) {
+export default function TrainingInfo() {
   return (
     <div className="space-y-6">
       {/* EHS Support */}
