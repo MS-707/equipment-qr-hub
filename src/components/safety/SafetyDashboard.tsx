@@ -99,7 +99,7 @@ export default function SafetyDashboard() {
       <div className="flex items-start justify-between animate-blurIn">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-fg">
-            {firstName ? `Hello, ${firstName}` : 'Safety Hub'}
+            {firstName ? `Hello, ${firstName}` : 'Home'}
           </h1>
           <ModuleTourButton tourId="dashboard" />
         </div>
