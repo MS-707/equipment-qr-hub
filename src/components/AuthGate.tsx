@@ -176,6 +176,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               <input
                 id="dev-name"
                 type="text"
+                autoCapitalize="words"
+                autoComplete="name"
                 value={devName}
                 onChange={(e) => setDevName(e.target.value)}
                 placeholder="Your name"

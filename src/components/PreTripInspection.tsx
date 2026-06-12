@@ -563,6 +563,8 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <input
                 id="inspector-name"
                 type="text"
+                autoCapitalize="words"
+                autoComplete="name"
                 maxLength={100}
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}

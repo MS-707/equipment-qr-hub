@@ -138,6 +138,8 @@ export interface JhaStep {
   responsible: string
   /** Provenance of the hazard/control content for this step. */
   source?: 'sage' | 'manual'
+  /** UI-only: user expanded the hazard/controls block manually. */
+  showDetail?: boolean
 }
 
 export interface JobHazardAnalysis extends SafetyRecordBase {

@@ -157,16 +157,17 @@ export default function SignaturePad({
             Sign here — finger or stylus
           </span>
         )}
+      </div>
+      {!isEmpty && (
         <button
           type="button"
           onClick={clear}
-          className="no-print absolute top-1.5 right-1.5 inline-flex items-center gap-1 text-xs
-                     text-fg-2 hover:text-fg bg-mytra-bg/80 border border-mytra-border rounded px-3 py-2 min-h-[44px]
-                     transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
+          className="no-print mt-2 inline-flex items-center gap-1 text-xs
+                     text-fg-3 hover:text-fg transition-colors min-h-[44px] px-2 -ml-2"
         >
-          <Eraser className="w-3 h-3" /> Clear
+          <Eraser className="w-3 h-3" /> Clear signature
         </button>
-      </div>
+      )}
     </div>
   )
 }
