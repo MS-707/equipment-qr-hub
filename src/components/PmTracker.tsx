@@ -139,6 +139,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
               <input
                 id="dri-name"
                 type="text"
+                autoCapitalize="words"
                 placeholder="DRI name"
                 value={driName}
                 onChange={(e) => setDriName(e.target.value)}

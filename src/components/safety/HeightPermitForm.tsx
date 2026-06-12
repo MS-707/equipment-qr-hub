@@ -19,10 +19,7 @@ import PermitChecklist, { criticalRemaining } from './PermitChecklist'
 import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 const PFAS = 'PFAS (harness + lanyard/SRL)'
 
@@ -178,7 +175,7 @@ export default function HeightPermitForm() {
         </div>
         <div>
           <label htmlFor="hp-description" className={labelCls}>Work description</label>
-          <textarea id="hp-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={`${inputCls} resize-none`} />
+          <textarea id="hp-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={textareaCls} />
         </div>
         <div>
           <label htmlFor="hp-height" className={labelCls}>Working height</label>
@@ -212,7 +209,7 @@ export default function HeightPermitForm() {
             maxLength={2000}
             onChange={(e) => setRescuePlan(e.target.value)}
             placeholder="Suspension-trauma rescue / prompt rescue means"
-            className={`${inputCls} resize-none ${pfasSelected && !rescuePlan.trim() ? 'border-warn/60' : ''}`}
+            className={`${textareaCls} ${pfasSelected && !rescuePlan.trim() ? 'border-warn/60' : ''}`}
           />
         </div>
       </div>

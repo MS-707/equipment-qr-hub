@@ -30,12 +30,9 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getCurrentIdentity } from '@/lib/identity'
 import PPESelector from './PPESelector'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
 
 const RISK_ORDER: RiskLevel[] = ['low', 'medium', 'high', 'critical']
 
@@ -445,7 +442,7 @@ export default function JhaForm() {
                   onChange={(e) => updateStep(step.id, { taskActivity: e.target.value })}
                   placeholder={`Step ${i + 1} — what is done in this part of the job?`}
                   aria-label={`Step ${i + 1} task or activity`}
-                  className={`${inputCls} resize-none`}
+                  className={textareaCls}
                 />
               </div>
               <button
@@ -458,8 +455,8 @@ export default function JhaForm() {
               </button>
             </div>
 
-            {/* Hazard / risk / control detail — populated by Sage or by hand */}
-            {(step.hazards || step.controls || step.responsible || step.source === 'sage') && (
+            {/* Hazard / risk / control detail — always accessible for manual entry */}
+            {(step.hazards || step.controls || step.responsible || step.source === 'sage' || step.showDetail) ? (
               <div className="pl-8 space-y-3 animate-fadeIn">
                 <div>
                   <label className={labelCls}>
@@ -472,7 +469,7 @@ export default function JhaForm() {
                     value={step.hazards}
                     onChange={(e) => updateStep(step.id, { hazards: e.target.value, source: 'manual' })}
                     placeholder="One hazard per line"
-                    className={`${inputCls} resize-none`}
+                    className={textareaCls}
                   />
                 </div>
                 <div>
@@ -493,7 +490,7 @@ export default function JhaForm() {
                     value={step.controls}
                     onChange={(e) => updateStep(step.id, { controls: e.target.value, source: 'manual' })}
                     placeholder="Specific controls to reduce risk"
-                    className={`${inputCls} resize-none`}
+                    className={textareaCls}
                   />
                 </div>
                 <div>
@@ -508,6 +505,15 @@ export default function JhaForm() {
                   />
                 </div>
               </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => updateStep(step.id, { showDetail: true })}
+                className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1"
+              >
+                <Plus className="w-3 h-3" />
+                Add hazards &amp; controls
+              </button>
             )}
           </div>
         ))}
@@ -561,7 +567,7 @@ export default function JhaForm() {
           value={additionalNotes}
           onChange={(e) => setAdditionalNotes(e.target.value)}
           placeholder="Context from any meetings, special conditions, etc."
-          className={`${inputCls} resize-none`}
+          className={textareaCls}
         />
       </section>
 

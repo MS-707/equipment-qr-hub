@@ -15,10 +15,7 @@ import PermitChecklist, { criticalRemaining } from './PermitChecklist'
 import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 export default function HotWorkPermitForm() {
   const win = defaultValidityWindow(8)
@@ -188,7 +185,7 @@ export default function HotWorkPermitForm() {
         </div>
         <div>
           <label htmlFor="hw-description" className={labelCls}>Work description</label>
-          <textarea id="hw-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={`${inputCls} resize-none`} />
+          <textarea id="hw-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={textareaCls} />
         </div>
       </div>
 
@@ -213,13 +210,14 @@ export default function HotWorkPermitForm() {
                 value={fireWatchName}
                 maxLength={100}
                 onChange={(e) => setFireWatchName(e.target.value)}
+                autoCapitalize="words"
                 placeholder="Name"
                 className={`${inputCls} ${!fireWatchName.trim() ? 'border-warn/60' : ''}`}
               />
             </div>
             <div>
               <label htmlFor="hw-post-duration" className={labelCls}>Post-work monitoring (min)</label>
-              <input id="hw-post-duration" type="number" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
+              <input id="hw-post-duration" type="text" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
               {postDuration < 60 && (
                 <p className="text-xs text-warn mt-0.5">NFPA 51B requires minimum 60-minute fire watch</p>
               )}
