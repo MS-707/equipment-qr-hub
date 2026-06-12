@@ -15,16 +15,13 @@ import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10)
 }
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
 
 export default function PreTaskPlanForm() {
   const [step, setStep] = useState<'plan' | 'signon' | 'done'>('plan')
@@ -319,7 +316,7 @@ export default function PreTaskPlanForm() {
         </div>
         <div data-tour-module="scope-of-work">
           <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
-          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the team working on today?" className={`${inputCls} resize-none`} />
+          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the team working on today?" className={textareaCls} />
         </div>
       </div>
 
@@ -457,7 +454,7 @@ export default function PreTaskPlanForm() {
             )}
             <div>
               <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
-              <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={`${inputCls} resize-none`} />
+              <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={textareaCls} />
             </div>
           </div>
         )}

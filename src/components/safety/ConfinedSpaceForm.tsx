@@ -15,10 +15,7 @@ import PermitChecklist, { criticalRemaining } from './PermitChecklist'
 import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 function outOfRange(value: string, range: { min?: number; max?: number }): boolean {
   if (value.trim() === '') return false
@@ -219,7 +216,7 @@ export default function ConfinedSpaceForm() {
         </div>
         <div>
           <label htmlFor="cs-description" className={labelCls}>Space description</label>
-          <textarea id="cs-description" rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={`${inputCls} resize-none`} />
+          <textarea id="cs-description" rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={textareaCls} />
         </div>
       </div>
 
@@ -285,13 +282,14 @@ export default function ConfinedSpaceForm() {
             value={attendantName}
             maxLength={100}
             onChange={(e) => setAttendantName(e.target.value)}
+            autoCapitalize="words"
             placeholder="Name"
             className={`${inputCls} ${!attendantName.trim() ? 'border-warn/60' : ''}`}
           />
         </div>
         <div>
           <label htmlFor="cs-rescue" className={labelCls}>Rescue plan <span className="text-danger">*</span></label>
-          <textarea id="cs-rescue" rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${inputCls} resize-none ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
+          <textarea id="cs-rescue" rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${textareaCls} ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
         </div>
       </div>
 

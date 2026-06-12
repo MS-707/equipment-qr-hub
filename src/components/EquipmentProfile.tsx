@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, ClipboardCheck, GraduationCap, ShieldCheck, Shield } from 'lucide-react'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { useSwipe } from '@/hooks/useSwipe'
@@ -26,6 +26,7 @@ interface EquipmentProfileProps {
 type TabId = 'pre-trip' | 'training' | 'pm-schedule' | 'compliance'
 
 export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
 
@@ -87,8 +88,9 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const goPrev = useCallback(() => {
     const idx = TAB_IDS.indexOf(activeTab)
     if (idx > 0) handleTabChange(TAB_IDS[idx - 1])
+    else router.back()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, TAB_IDS])
+  }, [activeTab, TAB_IDS, router])
 
   const swipeHandlers = useSwipe(goNext, goPrev)
 
@@ -99,7 +101,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
         <Link
           href="/equipment"
           className="inline-flex items-center gap-1.5 text-fg-3 hover:text-fg
-                     text-sm transition-colors duration-150 mb-6 py-2 -ml-2 pl-2 pr-3"
+                     text-sm transition-colors duration-150 mb-6 min-h-[44px] py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Equipment

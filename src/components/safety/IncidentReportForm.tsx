@@ -14,10 +14,7 @@ import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
 import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
-
-const labelCls = 'block text-xs text-fg-2 mb-1'
-const inputCls =
-  'w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple'
+import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 
 const TYPES: { value: IncidentType; label: string }[] = [
   { value: 'injury', label: 'Injury' },
@@ -266,7 +263,7 @@ export default function IncidentReportForm() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="ir-name" className={labelCls}>Name</label>
-                <input id="ir-name" type="text" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
+                <input id="ir-name" type="text" autoCapitalize="words" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
               </div>
               <div>
                 <label htmlFor="ir-job-title" className={labelCls}>Job title</label>
@@ -304,11 +301,11 @@ export default function IncidentReportForm() {
         </div>
         <div>
           <label htmlFor="ir-what" className={labelCls}>What happened?</label>
-          <textarea id="ir-what" rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={`${inputCls} resize-none`} />
+          <textarea id="ir-what" rows={4} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={textareaCls} />
         </div>
         <div>
           <label htmlFor="ir-actions" className={labelCls}>Immediate actions taken</label>
-          <textarea id="ir-actions" rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea id="ir-actions" rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={textareaCls} />
         </div>
       </div>
 
@@ -327,6 +324,8 @@ export default function IncidentReportForm() {
                 addWitness()
               }
             }}
+            autoCapitalize="words"
+            enterKeyHint="done"
             placeholder="Add a name"
             className={inputCls}
           />
@@ -391,11 +390,11 @@ export default function IncidentReportForm() {
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label htmlFor="ir-root-cause" className={labelCls}>Root cause</label>
-          <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={textareaCls} />
         </div>
         <div>
           <label htmlFor="ir-corrective" className={labelCls}>Corrective actions</label>
-          <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={`${inputCls} resize-none`} />
+          <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={textareaCls} />
         </div>
       </section>
 

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, X, Star } from 'lucide-react'
 import SignaturePad from '@/components/SignaturePad'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import type { CrewSignature } from '@/lib/safety-types'
 import { newSignature } from '@/lib/safety-records'
 import { crewRoster, crewRoles } from '@/data/crew'
@@ -38,6 +39,7 @@ export default function CrewSignatureBlock({
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [dataUrl, setDataUrl] = useState<string | null>(null)
+  const [pendingRemove, setPendingRemove] = useState<CrewSignature | null>(null)
 
   function reset() {
     setName('')
@@ -100,7 +102,7 @@ export default function CrewSignatureBlock({
               )}
               <button
                 type="button"
-                onClick={() => remove(s.id)}
+                onClick={() => setPendingRemove(s)}
                 aria-label="Remove signature"
                 className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
               >
@@ -120,6 +122,7 @@ export default function CrewSignatureBlock({
               list="crew-roster"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoCapitalize="words"
               placeholder="Crew member name"
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                          text-sm text-fg placeholder:text-fg-4
@@ -156,7 +159,7 @@ export default function CrewSignatureBlock({
               type="button"
               onClick={save}
               disabled={!name.trim() || !dataUrl}
-              className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-mytra-purple text-white
+              className="flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold bg-mytra-purple text-white
                          hover:bg-mytra-purple-hover transition-colors
                          disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -165,7 +168,7 @@ export default function CrewSignatureBlock({
             <button
               type="button"
               onClick={reset}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
+              className="px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
                          text-fg-2 hover:text-fg transition-colors"
             >
               Cancel
@@ -176,13 +179,30 @@ export default function CrewSignatureBlock({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium
+          className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 min-h-[44px] rounded-lg text-sm font-medium
                      bg-mytra-bg border border-dashed border-mytra-border text-fg-2
                      hover:text-fg hover:border-mytra-purple/50 transition-colors"
         >
           <Plus className="w-4 h-4" /> Add signature
         </button>
       )}
+
+      <ConfirmDialog
+        open={pendingRemove !== null}
+        title="Remove signature?"
+        message={
+          pendingRemove
+            ? `${pendingRemove.name} will need to sign again if removed.`
+            : ''
+        }
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={() => {
+          if (pendingRemove) remove(pendingRemove.id)
+          setPendingRemove(null)
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
     </div>
   )
 }

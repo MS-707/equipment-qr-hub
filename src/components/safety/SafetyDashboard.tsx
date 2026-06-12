@@ -145,7 +145,7 @@ export default function SafetyDashboard() {
       {reviewRejectedCount > 0 && (
         <Link
           href="/safety/history"
-          className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-lg px-4 py-2.5 hover:bg-danger/15 transition-colors"
+          className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-lg px-4 py-3 min-h-[44px] hover:bg-danger/15 transition-colors"
         >
           <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
           <p className="text-xs text-danger flex-1">
@@ -157,7 +157,7 @@ export default function SafetyDashboard() {
       {reviewApprovedCount > 0 && (
         <Link
           href="/safety/history"
-          className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 hover:bg-ok/15 transition-colors"
+          className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-3 min-h-[44px] hover:bg-ok/15 transition-colors"
         >
           <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
           <p className="text-xs text-ok flex-1">
@@ -232,7 +232,7 @@ export default function SafetyDashboard() {
       <section data-tour-module="recent-activity">
         <div className="flex items-center justify-between gap-3 mb-2 px-1">
           <h2 className="heading-rule flex-1 text-xs uppercase tracking-wider text-fg-3 font-semibold">Recent activity</h2>
-          <Link href="/safety/history" className="text-xs text-mytra-purple hover:underline inline-flex items-center gap-0.5">
+          <Link href="/safety/history" className="text-xs text-mytra-purple hover:underline inline-flex items-center gap-0.5 min-h-[44px] px-2 -mr-2">
             View history <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
