@@ -246,6 +246,12 @@ export function getPtpForDate(date: string): PreTaskPlan | undefined {
   )
 }
 
+export function getLatestPtp(): PreTaskPlan | undefined {
+  return getAllSafetyRecords().find(
+    (r): r is PreTaskPlan => r.type === 'ptp'
+  )
+}
+
 export function isExpired(p: AnyPermit): boolean {
   return new Date().getTime() > new Date(p.validUntil).getTime()
 }

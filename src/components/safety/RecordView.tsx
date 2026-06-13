@@ -369,7 +369,7 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </Section>
       )}
 
-      <Section title={`Team sign-on (${ptp.crewSignatures.length})`}>
+      <Section title={`Crew sign-off (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
     </>
@@ -445,7 +445,7 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
       </Section>
 
       {jha.additionalNotes && (
-        <Section title="Additional notes / conditions">
+        <Section title="Special conditions / notes">
           <p className="text-sm text-fg-2 whitespace-pre-line">{jha.additionalNotes}</p>
         </Section>
       )}
@@ -484,7 +484,7 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
           ))}
         </ul>
       </Section>
-      <Section title={`Sign-on (${sigs.length})`}>
+      <Section title={`Crew sign-off (${sigs.length})`}>
         <SignatureGrid sigs={sigs} images={sigImages} />
       </Section>
     </>
