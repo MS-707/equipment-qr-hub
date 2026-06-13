@@ -96,7 +96,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="text"
                         value={item.notes}
                         onChange={(e) => set(item.id, { notes: e.target.value })}
-                        placeholder="Note (optional)"
+                        placeholder="Site-specific note (optional)"
                         className="mt-2 w-full bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
                                    text-sm text-fg placeholder:text-fg-4
                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple animate-fadeIn"

@@ -173,7 +173,7 @@ export default function IncidentReportForm() {
         title="Report Filed"
         message="Incident report recorded as"
         onNew={reset}
-        newLabel="New report"
+        newLabel="Start new report"
         offline={wasOffline}
         reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
@@ -326,7 +326,7 @@ export default function IncidentReportForm() {
             }}
             autoCapitalize="words"
             enterKeyHint="done"
-            placeholder="Add a name"
+            placeholder="Witness name"
             className={inputCls}
           />
           <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg">
@@ -389,11 +389,11 @@ export default function IncidentReportForm() {
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
-          <label htmlFor="ir-root-cause" className={labelCls}>Root cause</label>
+          <label htmlFor="ir-root-cause" className={labelCls}>Root cause analysis</label>
           <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={textareaCls} />
         </div>
         <div>
-          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions</label>
+          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions to prevent recurrence</label>
           <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={textareaCls} />
         </div>
       </section>
@@ -424,7 +424,7 @@ export default function IncidentReportForm() {
           disabled={!canSubmit}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canSubmit ? 'File Report' : 'Add a description and location'}
+          {canSubmit ? 'File Report' : 'Describe what happened and add location'}
         </button>
       </div>
     </div>

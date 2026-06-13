@@ -560,7 +560,7 @@ export default function JhaForm() {
 
       {/* Additional notes */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Additional Notes / Conditions</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Special Conditions / Notes</h4>
         <textarea
           rows={2}
           maxLength={2000}
@@ -585,7 +585,7 @@ export default function JhaForm() {
           disabled={!canSubmit}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canSubmit ? 'Save Job Hazard Analysis' : 'Add a job title and at least one step'}
+          {canSubmit ? 'Save Job Hazard Analysis' : 'Enter a job title and at least one step'}
         </button>
       </div>
     </div>
@@ -840,7 +840,7 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        New JHA
+        Start new JHA
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
         Back to Home
