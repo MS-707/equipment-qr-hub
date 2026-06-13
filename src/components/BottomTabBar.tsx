@@ -21,7 +21,7 @@ export default function BottomTabBar() {
     <nav
       className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-mytra-card border-t border-mytra-border no-print"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      aria-label="Main navigation"
+      aria-label="Tab bar"
     >
       <div className="flex items-stretch">
         {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, icon: Icon, badge }) => {

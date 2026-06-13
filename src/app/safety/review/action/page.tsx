@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, Shield } from 'lucide-react'
 
 interface ReviewInfo {
@@ -208,14 +209,17 @@ function ReviewActionInner() {
             )}
             <div className="flex flex-col gap-2 pt-2">
               <button
-                onClick={() => window.close()}
+                onClick={() => {
+                  window.close()
+                  setTimeout(() => { window.location.href = '/' }, 400)
+                }}
                 className="w-full py-2.5 rounded-lg text-sm font-medium bg-[#1F1F1F] text-white hover:bg-[#2A2A2A] transition-colors"
               >
                 Close this window
               </button>
-              <a href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
+              <Link href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
                 Go to Safety Dashboard
-              </a>
+              </Link>
             </div>
           </div>
         )}
@@ -232,9 +236,9 @@ function ReviewActionInner() {
               >
                 Try again
               </button>
-              <a href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
+              <Link href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
                 Go to Safety Dashboard
-              </a>
+              </Link>
             </div>
           </div>
         )}
