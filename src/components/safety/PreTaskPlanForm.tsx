@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
+import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -58,6 +58,29 @@ export default function PreTaskPlanForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [carryForwardDismissed, setCarryForwardDismissed] = useState(false)
+  const [prevPtp] = useState(() => {
+    const ptp = getLatestPtp()
+    if (!ptp || ptp.date === todayStr()) return null
+    const age = Date.now() - new Date(ptp.createdAt).getTime()
+    if (age > 7 * 24 * 60 * 60 * 1000) return null
+    return ptp
+  })
+
+  function applyCarryForward() {
+    if (!prevPtp) return
+    if (prevPtp.hazards.length > 0) setHazards(prevPtp.hazards.map(h => ({ ...h, id: crypto.randomUUID() })))
+    if (prevPtp.ppeRequired.length > 0) setPpe(prevPtp.ppeRequired)
+    if (prevPtp.emergencyMusterPoint) setMusterPoint(prevPtp.emergencyMusterPoint)
+    if (prevPtp.nearestHospital) setHospital(prevPtp.nearestHospital)
+    if (prevPtp.firstAidEyewashLocation) setFirstAid(prevPtp.firstAidEyewashLocation)
+    const h = prevPtp.heatIllnessPlan
+    if (Object.values(h).some(Boolean)) {
+      setHeat(h)
+      setHeatOpen(true)
+    }
+    setCarryForwardDismissed(true)
+  }
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.date === 'string') setDate(d.date)
@@ -268,6 +291,27 @@ export default function PreTaskPlanForm() {
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
             Dismiss
           </button>
+        </div>
+      )}
+      {!hasDraft && prevPtp && !carryForwardDismissed && (
+        <div className="flex items-center justify-between gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-ok font-medium flex items-center gap-1.5">
+              <Copy className="w-4 h-4 shrink-0" />
+              Carry forward from {prevPtp.date}
+            </p>
+            <p className="text-xs text-ok/80 mt-0.5 truncate">
+              {prevPtp.hazards.length} hazards, PPE, muster point & site conditions
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={applyCarryForward} className="text-xs font-medium text-ok bg-ok/15 hover:bg-ok/25 rounded-lg px-3 min-h-[44px] inline-flex items-center transition-colors">
+              Apply
+            </button>
+            <button type="button" onClick={() => setCarryForwardDismissed(true)} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-2 inline-flex items-center">
+              Skip
+            </button>
+          </div>
         </div>
       )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
