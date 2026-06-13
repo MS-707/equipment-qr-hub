@@ -101,9 +101,9 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
               <Link
                 href={`/equipment/${equipment.itemNumber}?tab=pm-schedule`}
                 className="text-fg-3 text-xs hover:text-mytra-purple transition-colors
-                           truncate block min-h-[44px] flex items-center"
+                           min-h-[44px] flex items-center"
               >
-                {equipment.name}
+                <span className="truncate">{equipment.name}</span>
               </Link>
             )}
 

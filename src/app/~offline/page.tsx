@@ -21,8 +21,8 @@ export default function OfflinePage() {
         </button>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple/80
-                     text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 border border-mytra-border bg-mytra-card hover:bg-mytra-card-hover
+                     text-fg-2 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
         >
           Back to Home
         </Link>
