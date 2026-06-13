@@ -88,7 +88,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   return (
     <div
-      className={`relative bg-mytra-card border rounded-lg overflow-hidden transition-colors ${
+      className={`relative bg-mytra-card border rounded-lg overflow-hidden transition-colors press-scale ${
         overdue ? 'border-danger/50' : 'border-mytra-border'
       }`}
     >

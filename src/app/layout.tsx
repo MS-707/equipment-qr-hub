@@ -8,6 +8,7 @@ import StorageAlert from '@/components/StorageAlert'
 import AuthProvider from '@/components/providers/AuthProvider'
 import SyncProvider from '@/components/providers/SyncProvider'
 
+const SyncToast = dynamic(() => import('@/components/SyncToast'), { ssr: false })
 const SageTriage = dynamic(() => import('@/components/SageTriage'), { ssr: false })
 const OnboardingTour = dynamic(() => import('@/components/onboarding/OnboardingTour'), { ssr: false })
 const ModuleTourEngine = dynamic(() => import('@/components/onboarding/ModuleTourEngine'), { ssr: false })
@@ -64,6 +65,7 @@ export default function RootLayout({
             <ModuleTourEngine />
             <TourAutoPrompt />
             <StorageAlert />
+            <SyncToast />
           </SyncProvider>
         </AuthProvider>
       </body>
