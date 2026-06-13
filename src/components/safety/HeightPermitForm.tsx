@@ -243,7 +243,7 @@ export default function HeightPermitForm() {
       </div>
 
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-off</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the competent person / issuer.</p>
         <CrewSignatureBlock
           value={sigData}
@@ -272,7 +272,7 @@ export default function HeightPermitForm() {
             : pfasSelected && !rescuePlan.trim()
               ? 'Add rescue plan for PFAS'
               : sigData.signatures.length === 0
-                ? 'Workers must sign off'
+                ? 'Workers must sign on'
                 : issuerId === null
                   ? 'Designate the issuer'
                   : !validWindowOk

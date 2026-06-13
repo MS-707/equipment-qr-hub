@@ -37,12 +37,29 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { shareRecord } from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
-import { defaultValidityWindow } from '@/lib/datetime'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import ReviewStatusSection from './ReviewStatusSection'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useReviewPoller } from '@/lib/review-poll'
+
+/** True if a saved form draft at this key holds any user-entered content. */
+function draftHasContent(draftKey: string): boolean {
+  try {
+    const raw = localStorage.getItem(draftKey)
+    if (!raw) return false
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    return Object.values(parsed).some(
+      (v) =>
+        (typeof v === 'string' && v.trim() !== '') ||
+        (Array.isArray(v) && v.length > 0) ||
+        (typeof v === 'boolean' && v) ||
+        (typeof v === 'number' && v !== 0)
+    )
+  } catch {
+    return false
+  }
+}
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -61,6 +78,7 @@ export default function RecordView({ id }: { id: string }) {
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [shared, setShared] = useState(false)
+  const [pendingReissue, setPendingReissue] = useState<{ draftKey: string; formPath: string; draft: Record<string, unknown> } | null>(null)
 
   useReviewPoller()
 
@@ -126,7 +144,6 @@ export default function RecordView({ id }: { id: string }) {
   function handleReissue() {
     if (!isPermit(r)) return
     const p = r as AnyPermit
-    const win = defaultValidityWindow(p.type === 'confined-space-permit' ? 4 : 8)
     const draftKey =
       p.type === 'height-permit' ? 'draft:height-permit'
         : p.type === 'hot-work-permit' ? 'draft:hot-work-permit'
@@ -135,6 +152,11 @@ export default function RecordView({ id }: { id: string }) {
       p.type === 'height-permit' ? '/safety/permits/height'
         : p.type === 'hot-work-permit' ? '/safety/permits/hot-work'
           : '/safety/permits/confined-space'
+    // Carry the permit's identity and reusable configuration, but NOT
+    // time-specific observations (gas readings) or named people on station
+    // (attendant / fire watch) — those must be re-confirmed for the new
+    // permit period. The validity window and pre-issue checklist are
+    // intentionally left to the form's fresh defaults.
     const draft: Record<string, unknown> = {
       projectName: p.projectName,
       location: p.location,
@@ -152,23 +174,27 @@ export default function RecordView({ id }: { id: string }) {
       const hw = p as HotWorkPermit
       draft.hotWorkTypes = hw.hotWorkTypes
       draft.fireWatchRequired = hw.fireWatchRequired
-      draft.fireWatchName = hw.fireWatchName
       draft.postDuration = hw.fireWatchPostDurationMin
       draft.extinguisherLocation = hw.extinguisherLocation
       draft.extinguisherType = hw.extinguisherType
       draft.sprinklerStatus = hw.sprinklerStatus
       draft.gasTestRequired = hw.gasTestRequired
-      draft.gasTestNotes = hw.gasTestNotes
     }
     if (p.type === 'confined-space-permit') {
       const cs = p as ConfinedSpacePermit
       draft.spaceDescription = cs.spaceDescription
       draft.hazards = cs.hazards
       draft.rescuePlan = cs.rescuePlan
-      draft.attendantName = cs.attendantName
     }
-    draft.validFrom = win.from
-    draft.validUntil = win.until
+    // Don't silently clobber a permit the user already has in progress.
+    if (draftHasContent(draftKey)) {
+      setPendingReissue({ draftKey, formPath, draft })
+      return
+    }
+    writeDraftAndGo(draftKey, draft, formPath)
+  }
+
+  function writeDraftAndGo(draftKey: string, draft: Record<string, unknown>, formPath: string) {
     try {
       localStorage.setItem(draftKey, JSON.stringify(draft))
     } catch {}
@@ -300,6 +326,18 @@ export default function RecordView({ id }: { id: string }) {
         inputPrompt="Reason for revoking this permit"
         onConfirm={handleRevoke}
         onCancel={() => setRevokeOpen(false)}
+      />
+      <ConfirmDialog
+        open={pendingReissue !== null}
+        title="Replace draft in progress?"
+        message="You have an unsaved permit of this type in progress. Reissuing will replace it with a copy of this permit."
+        confirmLabel="Replace & reissue"
+        variant="danger"
+        onConfirm={() => {
+          if (pendingReissue) writeDraftAndGo(pendingReissue.draftKey, pendingReissue.draft, pendingReissue.formPath)
+          setPendingReissue(null)
+        }}
+        onCancel={() => setPendingReissue(null)}
       />
 
       {/* Print-only authorization block (matches template Section 5/7) */}
@@ -435,7 +473,7 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </Section>
       )}
 
-      <Section title={`Crew sign-off (${ptp.crewSignatures.length})`}>
+      <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
     </>
@@ -550,7 +588,7 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
           ))}
         </ul>
       </Section>
-      <Section title={`Crew sign-off (${sigs.length})`}>
+      <Section title={`Crew sign-on (${sigs.length})`}>
         <SignatureGrid sigs={sigs} images={sigImages} />
       </Section>
     </>
