@@ -206,6 +206,17 @@ function ReviewActionInner() {
                 Email notification could not be sent. Please notify the employee directly.
               </p>
             )}
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                onClick={() => window.close()}
+                className="w-full py-2.5 rounded-lg text-sm font-medium bg-[#1F1F1F] text-white hover:bg-[#2A2A2A] transition-colors"
+              >
+                Close this window
+              </button>
+              <a href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
+                Go to Safety Dashboard
+              </a>
+            </div>
           </div>
         )}
 
@@ -214,6 +225,17 @@ function ReviewActionInner() {
             <AlertTriangle className="w-12 h-12 text-[#E6A23C] mx-auto" />
             <h1 className="text-lg font-semibold">Unable to Process</h1>
             <p className="text-sm text-[#9A9A9A]">{error}</p>
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full py-2.5 rounded-lg text-sm font-medium bg-[#572DFF] text-white hover:bg-[#4722CC] transition-colors"
+              >
+                Try again
+              </button>
+              <a href="/" className="text-sm text-[#9A9A9A] hover:text-white transition-colors text-center">
+                Go to Safety Dashboard
+              </a>
+            </div>
           </div>
         )}
       </div>

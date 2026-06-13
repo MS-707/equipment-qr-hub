@@ -204,7 +204,7 @@ export default function RecordView({ id }: { id: string }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="no-print flex items-center justify-between">
-        <Link href="/safety/history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg">
+        <Link href="/safety/history" aria-label="Back to safety history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
           <ArrowLeft className="w-4 h-4" /> History
         </Link>
         <div className="flex items-center gap-2">

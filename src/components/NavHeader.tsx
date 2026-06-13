@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { WifiOff } from 'lucide-react'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
@@ -11,6 +12,7 @@ import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
@@ -46,14 +48,14 @@ export default function NavHeader() {
         </Link>
 
         {/* Right: Nav Links */}
-        <nav className="flex items-center gap-3 sm:gap-5">
+        <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-5">
           {!online && (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
+            <span aria-label="Offline" className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
               <WifiOff className="w-3 h-3" />
               <span className="hidden sm:inline">Offline</span>
             </span>
           )}
-          {NAV_ITEMS.map(({ href, longLabel, icon: Icon, badge }) => {
+          {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, longLabel, icon: Icon, badge }) => {
             /* Nav links are hidden on mobile — BottomTabBar handles them */
             const isActive = isNavItemActive(href, pathname)
             const badgeCount = badge ? badgeCounts[badge] : 0
@@ -63,6 +65,7 @@ export default function NavHeader() {
                 key={href}
                 href={href}
                 data-tour-tab={href}
+                aria-current={isActive ? 'page' : undefined}
                 className={`relative hidden md:inline-flex items-center gap-1.5 text-sm transition-colors duration-200 rounded px-2 min-h-[44px]
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                   ${
