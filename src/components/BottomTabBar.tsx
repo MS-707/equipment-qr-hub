@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const { openOrders, openSafety } = useLiveCounts()
   if (pathname.startsWith('/beta')) return null
 
@@ -19,11 +21,10 @@ export default function BottomTabBar() {
     <nav
       className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-mytra-card border-t border-mytra-border no-print"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      role="tablist"
       aria-label="Main navigation"
     >
       <div className="flex items-stretch">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, badge }) => {
+        {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, icon: Icon, badge }) => {
           const isActive = isNavItemActive(href, pathname)
           const badgeCount = badge ? badgeCounts[badge] : 0
 

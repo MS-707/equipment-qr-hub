@@ -103,8 +103,8 @@ export default function EquipmentDirectory() {
           <button
             onClick={() => setSearchQuery('')}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-4 hover:text-fg
-                       transition-colors p-0.5"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-fg-4 hover:text-fg
+                       transition-colors p-2"
           >
             <X size={16} />
           </button>
@@ -117,7 +117,7 @@ export default function EquipmentDirectory() {
         <button
           onClick={() => setSelectedCategory('all')}
           aria-pressed={selectedCategory === 'all'}
-          className={`text-sm font-medium px-4 py-1.5 rounded-full transition-colors
+          className={`min-h-[44px] text-sm font-medium px-4 py-1.5 rounded-full transition-colors
             ${
               selectedCategory === 'all'
                 ? 'bg-mytra-purple text-white'
@@ -138,7 +138,7 @@ export default function EquipmentDirectory() {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               aria-pressed={isSelected}
-              className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors border"
+              className="min-h-[44px] text-sm font-medium px-3 py-1.5 rounded-full transition-colors border"
               style={
                 isSelected
                   ? {
@@ -207,7 +207,7 @@ export default function EquipmentDirectory() {
                   onClick={() => toggleCategory(category)}
                   aria-expanded={!isCollapsed}
                   className="flex items-center gap-2.5 mb-3 pl-3 border-l-[3px] w-full text-left
-                             group cursor-pointer"
+                             group cursor-pointer min-h-[44px]"
                   style={{ borderColor: color }}
                 >
                   {isCollapsed ? (

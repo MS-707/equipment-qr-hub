@@ -17,6 +17,7 @@ export interface NavItem {
   longLabel: string
   icon: LucideIcon
   badge?: BadgeKey
+  adminOnly?: boolean
 }
 
 /**
@@ -29,7 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/inspections', label: 'Pre-Trip', longLabel: 'Pre-Trip', icon: ClipboardCheck },
   { href: '/equipment', label: 'Assets', longLabel: 'Equipment', icon: LayoutGrid },
   { href: '/work-orders', label: 'Orders', longLabel: 'Work Orders', icon: ClipboardList, badge: 'orders' },
-  { href: '/admin/labels', label: 'QR', longLabel: 'QR Labels', icon: QrCode },
+  { href: '/admin/labels', label: 'QR', longLabel: 'QR Labels', icon: QrCode, adminOnly: true },
 ]
 
 /** Home owns the whole /safety workflow; everything else matches by prefix. */

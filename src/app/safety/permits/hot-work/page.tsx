@@ -9,8 +9,8 @@ export default function HotWorkPermitPage() {
   return (
     <AuthGate>
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <Link href="/safety" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg mb-4">
-          <ArrowLeft className="w-4 h-4" /> Home
+        <Link href="/safety" aria-label="Back to safety dashboard" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg mb-4 min-h-[44px]">
+          <ArrowLeft className="w-4 h-4" /> Safety
         </Link>
         <HotWorkPermitForm />
       </div>
