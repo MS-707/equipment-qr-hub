@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp } from '@/lib/safety-records'
+import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -69,7 +69,7 @@ export default function PreTaskPlanForm() {
 
   function applyCarryForward() {
     if (!prevPtp) return
-    if (prevPtp.hazards.length > 0) setHazards(prevPtp.hazards.map(h => ({ ...h, id: crypto.randomUUID() })))
+    if (prevPtp.hazards.length > 0) setHazards(prevPtp.hazards.map(h => ({ ...h, id: cryptoRandomId() })))
     if (prevPtp.ppeRequired.length > 0) setPpe(prevPtp.ppeRequired)
     if (prevPtp.emergencyMusterPoint) setMusterPoint(prevPtp.emergencyMusterPoint)
     if (prevPtp.nearestHospital) setHospital(prevPtp.nearestHospital)
@@ -241,7 +241,7 @@ export default function PreTaskPlanForm() {
         </button>
 
         <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-off</h3>
+          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
           <p className="text-xs text-fg-2 mb-3">
             Pass the device around — each crew member signs to acknowledge the plan. Designate
             the supervisor.
@@ -511,7 +511,7 @@ export default function PreTaskPlanForm() {
           disabled={!canContinue}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canContinue ? 'Continue to crew sign-off' : 'Complete scope, location & muster point'}
+          {canContinue ? 'Continue to crew sign-on' : 'Complete scope, location & muster point'}
         </button>
       </div>
     </div>

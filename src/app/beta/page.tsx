@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 
 const FEATURES = [
-  { icon: ClipboardList, title: 'Pre-Task Plans', desc: 'Digital PTP with suggested hazards, recommended PPE, and team sign-off before work starts.' },
+  { icon: ClipboardList, title: 'Pre-Task Plans', desc: 'Digital PTP with suggested hazards, recommended PPE, and crew sign-on before work starts.' },
   { icon: Shield, title: 'Work Permits', desc: 'Work-at-height, hot work, and confined-space permits with checklists that gate issuance and live expiry countdowns.' },
   { icon: AlertTriangle, title: 'Incident Reporting', desc: 'Log near-misses and injuries with photos, witnesses, and root-cause notes — from the bench or the field.' },
   { icon: WifiOff, title: 'Offline-First', desc: 'Works without Wi-Fi at remote sites. Records save to your device and sync automatically when you reconnect.' },

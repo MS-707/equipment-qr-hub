@@ -322,7 +322,7 @@ export default function ConfinedSpaceForm() {
       </div>
 
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-off</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each entrant confirms understanding. Designate the entry supervisor.</p>
         <CrewSignatureBlock
           value={sigData}
@@ -355,7 +355,7 @@ export default function ConfinedSpaceForm() {
                 : !rescuePlan.trim()
                   ? 'Add a rescue plan'
                   : sigData.signatures.length === 0
-                    ? 'Entrants must sign off'
+                    ? 'Entrants must sign on'
                     : supervisorId === null
                       ? 'Designate the entry supervisor'
                       : !validWindowOk
