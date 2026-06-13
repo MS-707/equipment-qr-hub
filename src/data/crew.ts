@@ -30,8 +30,6 @@ export function rememberCrewMember(name: string, role?: string | null): void {
   } catch {}
 }
 
-export const crewRoster: CrewMember[] = typeof window !== 'undefined' ? readHistory() : []
-
 export function getCrewRoster(): CrewMember[] {
   return readHistory()
 }
