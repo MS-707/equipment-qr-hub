@@ -218,10 +218,10 @@ export default function PreTaskPlanForm() {
         </button>
 
         <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-          <h3 className="text-sm font-semibold text-fg mb-1">Team sign-on</h3>
+          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-off</h3>
           <p className="text-xs text-fg-2 mb-3">
-            Pass the device around — each team member signs to acknowledge the plan. Mark one as
-            supervisor.
+            Pass the device around — each crew member signs to acknowledge the plan. Designate
+            the supervisor.
           </p>
           <CrewSignatureBlock
             value={sigData}
@@ -246,9 +246,9 @@ export default function PreTaskPlanForm() {
             className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {sigData.signatures.length === 0
-              ? 'Add at least one signature'
+              ? 'At least one crew member must sign'
               : supervisorId === null
-                ? 'Mark a supervisor'
+                ? 'Designate the supervisor'
                 : 'Submit Pre-Task Plan'}
           </button>
         </div>
@@ -453,7 +453,7 @@ export default function PreTaskPlanForm() {
               </div>
             )}
             <div>
-              <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
+              <label htmlFor="ptp-tbt-notes" className={labelCls}>Discussion points</label>
               <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={textareaCls} />
             </div>
           </div>
@@ -467,7 +467,7 @@ export default function PreTaskPlanForm() {
           disabled={!canContinue}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canContinue ? 'Continue to crew sign-on' : 'Fill in scope, location & muster point'}
+          {canContinue ? 'Continue to crew sign-off' : 'Complete scope, location & muster point'}
         </button>
       </div>
     </div>
@@ -527,7 +527,7 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        New Plan
+        Start new PTP
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
         Back to Home

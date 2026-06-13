@@ -8,13 +8,15 @@ interface PermitTimerProps {
   status: PermitStatus
 }
 
-function remainingLabel(validUntil: string): { text: string; expired: boolean } {
+function remainingLabel(validUntil: string): { text: string; expired: boolean; urgent: boolean } {
   const ms = new Date(validUntil).getTime() - Date.now()
-  if (ms <= 0) return { text: 'EXPIRED — close out', expired: true }
+  if (ms <= 0) return { text: 'EXPIRED — close out permit', expired: true, urgent: false }
   const mins = Math.floor(ms / 60000)
   const h = Math.floor(mins / 60)
   const m = mins % 60
-  return { text: h > 0 ? `Expires in ${h}h ${m}m` : `Expires in ${m}m`, expired: false }
+  const urgent = mins <= 30
+  const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`
+  return { text: urgent ? `${timeStr} left — close out soon` : `Expires in ${timeStr}`, expired: false, urgent }
 }
 
 export default function PermitTimer({ validUntil, status }: PermitTimerProps) {
@@ -29,6 +31,6 @@ export default function PermitTimer({ validUntil, status }: PermitTimerProps) {
   if (status === 'closed') return <span className="text-xs text-fg-3">Closed</span>
   if (status === 'revoked') return <span className="text-xs text-danger">Revoked</span>
 
-  const { text, expired } = remainingLabel(validUntil)
-  return <span className={`text-xs font-medium ${expired ? 'text-expired' : 'text-fg-2'}`}>{text}</span>
+  const { text, expired, urgent } = remainingLabel(validUntil)
+  return <span className={`text-xs font-medium ${expired ? 'text-expired' : urgent ? 'text-warn' : 'text-fg-2'}`}>{text}</span>
 }

@@ -136,7 +136,7 @@ export default function HeightPermitForm() {
         title="Permit Issued"
         message="Work-at-Height permit is active, logged as"
         onNew={reset}
-        newLabel="New permit"
+        newLabel="Start new permit"
         offline={wasOffline}
         reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
@@ -243,8 +243,8 @@ export default function HeightPermitForm() {
       </div>
 
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Sign-on</h4>
-        <p className="text-xs text-fg-2 mb-3">Each worker acknowledges. Mark the competent person / issuer.</p>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-off</h4>
+        <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the competent person / issuer.</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}
@@ -268,13 +268,13 @@ export default function HeightPermitForm() {
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {critLeft > 0
-            ? `Check ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+            ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
             : pfasSelected && !rescuePlan.trim()
-              ? 'Add rescue plan'
+              ? 'Add rescue plan for PFAS'
               : sigData.signatures.length === 0
-                ? 'Add worker sign-on'
+                ? 'Workers must sign off'
                 : issuerId === null
-                  ? 'Mark the issuer'
+                  ? 'Designate the issuer'
                   : !validWindowOk
                     ? 'Fix validity window'
                     : 'Issue Permit'}
