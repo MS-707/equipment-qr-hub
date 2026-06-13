@@ -8,6 +8,7 @@
  */
 
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
+import { notifySyncResult } from '@/components/SyncToast'
 
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
@@ -48,14 +49,21 @@ export async function trySyncRecord(id: string): Promise<boolean> {
     for (let attempt = 0; attempt <= delays.length; attempt++) {
       try {
         const result = await attemptSync(id)
-        if (result === 'ok') return true
-        if (result === 'not-configured') return false
+        if (result === 'ok') {
+          notifySyncResult({ id, status: 'synced' })
+          return true
+        }
+        if (result === 'not-configured') {
+          notifySyncResult({ id, status: 'offline' })
+          return false
+        }
       } catch {
         // network/offline — retry if attempts remain
       }
       if (attempt < delays.length) await wait(delays[attempt])
     }
     markSyncFailed(id)
+    notifySyncResult({ id, status: 'failed' })
     return false
   } finally {
     inFlight.delete(id)
