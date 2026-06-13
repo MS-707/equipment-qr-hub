@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
@@ -36,6 +37,7 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { shareRecord } from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
+import { defaultValidityWindow } from '@/lib/datetime'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import ReviewStatusSection from './ReviewStatusSection'
@@ -53,6 +55,7 @@ function fmt(iso: string): string {
 }
 
 export default function RecordView({ id }: { id: string }) {
+  const router = useRouter()
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
@@ -116,7 +119,61 @@ export default function RecordView({ id }: { id: string }) {
     }
   }
 
-  const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
+  const permitStatus = isPermit(r) ? permitDisplayStatus(r as AnyPermit) : null
+  const permitOpen = isPermit(r) && permitStatus !== 'closed' && permitStatus !== 'revoked'
+  const permitClosed = isPermit(r) && !permitOpen
+
+  function handleReissue() {
+    if (!isPermit(r)) return
+    const p = r as AnyPermit
+    const win = defaultValidityWindow(p.type === 'confined-space-permit' ? 4 : 8)
+    const draftKey =
+      p.type === 'height-permit' ? 'draft:height-permit'
+        : p.type === 'hot-work-permit' ? 'draft:hot-work-permit'
+          : 'draft:confined-space-permit'
+    const formPath =
+      p.type === 'height-permit' ? '/safety/permits/height'
+        : p.type === 'hot-work-permit' ? '/safety/permits/hot-work'
+          : '/safety/permits/confined-space'
+    const draft: Record<string, unknown> = {
+      projectName: p.projectName,
+      location: p.location,
+    }
+    if ('workDescription' in p) draft.workDescription = (p as HeightPermit | HotWorkPermit).workDescription
+    if (p.type === 'height-permit') {
+      const hp = p as HeightPermit
+      draft.workingHeight = hp.workingHeight
+      draft.accessMethod = hp.accessMethod
+      draft.fallProtection = hp.fallProtection
+      draft.anchorPoints = hp.anchorPoints
+      draft.rescuePlan = hp.rescuePlan
+    }
+    if (p.type === 'hot-work-permit') {
+      const hw = p as HotWorkPermit
+      draft.hotWorkTypes = hw.hotWorkTypes
+      draft.fireWatchRequired = hw.fireWatchRequired
+      draft.fireWatchName = hw.fireWatchName
+      draft.postDuration = hw.fireWatchPostDurationMin
+      draft.extinguisherLocation = hw.extinguisherLocation
+      draft.extinguisherType = hw.extinguisherType
+      draft.sprinklerStatus = hw.sprinklerStatus
+      draft.gasTestRequired = hw.gasTestRequired
+      draft.gasTestNotes = hw.gasTestNotes
+    }
+    if (p.type === 'confined-space-permit') {
+      const cs = p as ConfinedSpacePermit
+      draft.spaceDescription = cs.spaceDescription
+      draft.hazards = cs.hazards
+      draft.rescuePlan = cs.rescuePlan
+      draft.attendantName = cs.attendantName
+    }
+    draft.validFrom = win.from
+    draft.validUntil = win.until
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(draft))
+    } catch {}
+    router.push(formPath)
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
@@ -215,6 +272,15 @@ export default function RecordView({ id }: { id: string }) {
             <Ban className="w-4 h-4" /> Revoke
           </button>
         </div>
+      )}
+      {permitClosed && (
+        <button
+          type="button"
+          onClick={handleReissue}
+          className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
+        >
+          <Copy className="w-4 h-4" /> Reissue as new permit
+        </button>
       )}
       <ConfirmDialog
         open={closeOpen}
