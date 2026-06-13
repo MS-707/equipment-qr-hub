@@ -121,9 +121,10 @@ export default function SafetyDashboard() {
         <StatCard
           label="Today's PTP"
           value={ptp ? 'Logged' : 'Not started'}
-          sub={ptp ? `${ptp.crewSignatures.length} signed` : 'tap Start PTP'}
+          sub={ptp ? `${ptp.crewSignatures.length} crew signed` : 'Tap to start'}
           tone={ptp ? 'good' : 'warn'}
           delayMs={0}
+          href={ptp ? `/safety/record/${ptp.id}` : '/safety/ptp'}
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" delayMs={60} />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} delayMs={120} />
@@ -266,22 +267,35 @@ function StatCard({
   sub,
   tone,
   delayMs = 0,
+  href,
 }: {
   label: string
   value: string
   sub: string
   tone: 'good' | 'warn' | 'neutral'
   delayMs?: number
+  href?: string
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
-  return (
-    <div
-      style={{ animationDelay: `${delayMs}ms` }}
-      className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
-                    transition-shadow duration-200 hover:shadow-pop animate-blurIn">
+  const cls = `bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
+                    transition-shadow duration-200 hover:shadow-pop animate-blurIn ${href ? 'press-scale' : ''}`
+  const content = (
+    <>
       <p className="text-xs uppercase tracking-wider text-fg-3">{label}</p>
       <p className={`text-lg font-semibold mt-0.5 ${valueColor}`}>{value}</p>
       <p className="text-xs text-fg-4">{sub}</p>
+    </>
+  )
+  if (href) {
+    return (
+      <Link href={href} style={{ animationDelay: `${delayMs}ms` }} className={cls}>
+        {content}
+      </Link>
+    )
+  }
+  return (
+    <div style={{ animationDelay: `${delayMs}ms` }} className={cls}>
+      {content}
     </div>
   )
 }
