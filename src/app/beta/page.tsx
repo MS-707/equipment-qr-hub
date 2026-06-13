@@ -14,7 +14,6 @@ import {
   ArrowUpFromLine,
   Loader2,
   Lightbulb,
-  PenLine,
   Flame,
   PackageOpen,
   Sparkles,
@@ -30,7 +29,7 @@ const FEATURES = [
   { icon: WifiOff, title: 'Offline-First', desc: 'No Wi-Fi on the job site? No problem. Everything saves to your device and syncs the moment you are back online.' },
   { icon: AlertTriangle, title: 'Incident Reporting', desc: 'Log near-misses and injuries from the field with photos, witnesses, and root-cause notes — before details fade.' },
   { icon: FileSearch, title: 'EHS Review', desc: 'Submit records for manager review with one tap. Reviewers approve or deny from an email link — no login needed.' },
-  { icon: MessageCircle, title: 'Sage Assistant', desc: 'Ask a safety question mid-task and get an answer grounded in today\'s plan, your open permits, and recent incidents. Works offline.' },
+  { icon: MessageCircle, title: 'Sage Assistant', desc: 'Ask a safety question mid-task and get an answer based on today\'s plan, your open permits, and recent incidents. Works offline.' },
 ]
 
 const ROLES = [
@@ -122,7 +121,7 @@ export default function BetaPage() {
         {/* Layered backdrop: blueprint grid fading out radially + breathing glow */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_75%_55%_at_50%_0%,black_50%,transparent_100%)]" />
-          <div className="absolute -top-48 left-1/2 w-[880px] h-[880px] rounded-full bg-[#572DFF]/[0.13] blur-3xl animate-glowPulse" />
+          <div className="absolute -top-48 left-1/2 w-[880px] h-[880px] rounded-full bg-[#572DFF]/[0.13] blur-3xl animate-glowPulse will-change-transform" />
         </div>
 
         <div className="relative max-w-3xl mx-auto px-4 pt-10 sm:pt-16 md:pt-20 pb-8 sm:pb-12 text-center">
@@ -383,15 +382,28 @@ export default function BetaPage() {
           {/* Mobile: rotating module showcase — each screen with its floating explainer */}
           <div className="md:hidden animate-blurIn" style={{ animationDelay: '320ms' }}>
             <div
-              className="relative h-[400px] max-w-sm mx-auto"
+              className="relative h-[400px] max-w-sm mx-auto outline-none focus-visible:ring-2 focus-visible:ring-[#572DFF] rounded-xl"
               role="region"
               aria-roledescription="carousel"
               aria-label="Product feature showcase"
+              aria-live="polite"
+              tabIndex={0}
               onPointerEnter={() => setPaused(true)}
               onPointerLeave={() => setPaused(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') {
+                  e.preventDefault()
+                  setPaused(true)
+                  setSlide((s) => (s + 1) % MOBILE_SLIDES.length)
+                } else if (e.key === 'ArrowLeft') {
+                  e.preventDefault()
+                  setPaused(true)
+                  setSlide((s) => (s + MOBILE_SLIDES.length - 1) % MOBILE_SLIDES.length)
+                }
+              }}
             >
               {/* Slide 1 — Home dashboard + EHS approval toast */}
-              <div className={slideCls(0)}>
+              <div className={slideCls(0)} role="group" aria-roledescription="slide" aria-label="1 of 5: Dashboard" aria-hidden={slide !== 0}>
                 <div className="relative">
                   <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
                     <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
@@ -471,7 +483,7 @@ export default function BetaPage() {
               </div>
 
               {/* Slide 2 — Job Hazard Analysis + Sage AI explainer */}
-              <div className={slideCls(1)}>
+              <div className={slideCls(1)} role="group" aria-roledescription="slide" aria-label="2 of 5: AI Risk Analysis" aria-hidden={slide !== 1}>
                 <div className="relative">
                   <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
                     <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
@@ -519,7 +531,7 @@ export default function BetaPage() {
                     </div>
                   </div>
                   <div className="absolute -bottom-6 left-2 -rotate-1">
-                    <div className={`w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
+                    <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
                       <p className="text-[10px] font-semibold text-white">Sage suggests</p>
@@ -533,7 +545,7 @@ export default function BetaPage() {
               </div>
 
               {/* Slide 3 — Hot Work permit + live countdown explainer */}
-              <div className={slideCls(2)}>
+              <div className={slideCls(2)} role="group" aria-roledescription="slide" aria-label="3 of 5: Live Permits" aria-hidden={slide !== 2}>
                 <div className="relative">
                   <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
                     <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
@@ -579,7 +591,7 @@ export default function BetaPage() {
                     </div>
                   </div>
                   <div className="absolute -bottom-6 right-2 rotate-1">
-                    <div className={`w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
+                    <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
                       <p className="text-[10px] font-semibold text-white">Live permits</p>
@@ -593,7 +605,7 @@ export default function BetaPage() {
               </div>
 
               {/* Slide 4 — SDS Binder */}
-              <div className={slideCls(3)} role="group" aria-roledescription="slide" aria-label="4 of 5: SDS Binder">
+              <div className={slideCls(3)} role="group" aria-roledescription="slide" aria-label="4 of 5: SDS Binder" aria-hidden={slide !== 3}>
                 <div className="relative">
                   <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
                     <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
@@ -657,7 +669,7 @@ export default function BetaPage() {
               </div>
 
               {/* Slide 5 — EHS Review */}
-              <div className={slideCls(4)} role="group" aria-roledescription="slide" aria-label="5 of 5: EHS Review">
+              <div className={slideCls(4)} role="group" aria-roledescription="slide" aria-label="5 of 5: EHS Review" aria-hidden={slide !== 4}>
                 <div className="relative">
                   <div className="rounded-xl p-px bg-gradient-to-b from-[#3A3A3A] via-[#1F1F1F] to-[#1F1F1F] shadow-[0_0_80px_-20px_rgba(87,45,255,0.45)] select-none">
                     <div className="rounded-[11px] bg-[#0A0A0A] overflow-hidden">
@@ -723,7 +735,7 @@ export default function BetaPage() {
                 <button
                   key={label}
                   type="button"
-                  onClick={() => setSlide(i)}
+                  onClick={() => { setPaused(true); setSlide(i) }}
                   aria-current={i === slide ? 'true' : undefined}
                   aria-label={`Show ${label} slide`}
                   className={`text-[10px] font-medium px-3 py-1.5 rounded-full border transition-colors min-h-[44px] ${
@@ -739,7 +751,7 @@ export default function BetaPage() {
             <div className="flex justify-center mt-3">
               <a
                 href="#signup"
-                className="text-xs text-[#A78BFF] inline-flex items-center gap-1 hover:text-white transition-colors"
+                className="text-xs text-[#A78BFF] inline-flex items-center gap-1 hover:text-white transition-colors min-h-[44px] py-2"
               >
                 Request early access <ArrowRight className="w-3 h-3" />
               </a>
@@ -868,7 +880,7 @@ export default function BetaPage() {
               </div>
               <div>
                 <label htmlFor="beta-role" className="block text-xs text-[#9A9A9A] mb-1">Your role <span aria-hidden="true" className="text-[#E66A6A]">*</span></label>
-                <select id="beta-role" value={role} onChange={(e) => setRole(e.target.value)} className={`${inputCls} ${!role ? 'text-[#666]' : ''}`}>
+                <select id="beta-role" required value={role} onChange={(e) => setRole(e.target.value)} className={`${inputCls} ${!role ? 'text-[#666]' : ''}`}>
                   <option value="" disabled>Select role</option>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
@@ -892,6 +904,7 @@ export default function BetaPage() {
             <button
               type="submit"
               disabled={!canSubmit || submitting}
+              aria-describedby={!canSubmit ? 'submit-hint' : undefined}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-colors
                          bg-[#572DFF] text-white hover:bg-[#6B42FF]
                          disabled:opacity-40 disabled:cursor-not-allowed
@@ -903,8 +916,13 @@ export default function BetaPage() {
                 <>Request Access <ArrowRight className="w-4 h-4" /></>
               )}
             </button>
+            {!canSubmit && (
+              <p id="submit-hint" className="text-xs text-[#9A9A9A] text-center">
+                Fill in all required fields to continue.
+              </p>
+            )}
 
-            <p className="text-xs text-fg-3 text-center">
+            <p className="text-xs text-[#9A9A9A] text-center">
               We only use your info to process this request and send beta access instructions.
             </p>
           </form>
