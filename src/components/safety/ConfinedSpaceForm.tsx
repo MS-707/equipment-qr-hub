@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { PackageOpen, RotateCcw } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { PackageOpen, RotateCcw, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react'
+import { analyzeAtmosphere, type AtmoAlert } from '@/lib/atmo-check'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
@@ -53,6 +54,10 @@ export default function ConfinedSpaceForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [aiAnalysis, setAiAnalysis] = useState<{ safe: boolean; alerts: { gas: string; reading: number; threshold: string; severity: string; guidance: string }[]; recommendations: string[] } | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -89,6 +94,80 @@ export default function ConfinedSpaceForm() {
     if (atmoUnsafe && !prevAtmoUnsafe.current) haptic('error')
     prevAtmoUnsafe.current = atmoUnsafe
   }, [atmoUnsafe])
+  const atmoAnalysis = useMemo(() => {
+    const readings = {
+      oxygen: oxygen.trim() ? parseFloat(oxygen) : null,
+      lel: lel.trim() ? parseFloat(lel) : null,
+      co: co.trim() ? parseFloat(co) : null,
+      h2s: h2s.trim() ? parseFloat(h2s) : null,
+    }
+    if (readings.oxygen === null && readings.lel === null && readings.co === null && readings.h2s === null) return null
+    if ((readings.oxygen !== null && Number.isNaN(readings.oxygen)) ||
+        (readings.lel !== null && Number.isNaN(readings.lel)) ||
+        (readings.co !== null && Number.isNaN(readings.co)) ||
+        (readings.h2s !== null && Number.isNaN(readings.h2s))) return null
+    return analyzeAtmosphere(readings, spaceDescription, hazards)
+  }, [oxygen, lel, co, h2s, spaceDescription, hazards])
+
+  const worstSeverity = useMemo(() => {
+    if (!atmoAnalysis) return 'safe' as const
+    const order = { safe: 0, warning: 1, danger: 2, idlh: 3 } as const
+    let worst: AtmoAlert['severity'] = 'safe'
+    for (const a of atmoAnalysis.alerts) {
+      if (order[a.severity] > order[worst]) worst = a.severity
+    }
+    return worst
+  }, [atmoAnalysis])
+
+  const worstAlert = useMemo(() => {
+    if (!atmoAnalysis) return null
+    const order = { safe: 0, warning: 1, danger: 2, idlh: 3 } as const
+    let worst: AtmoAlert | null = null
+    for (const a of atmoAnalysis.alerts) {
+      if (!worst || order[a.severity] > order[worst.severity]) worst = a
+    }
+    return worst && worst.severity !== 'safe' ? worst : null
+  }, [atmoAnalysis])
+
+  async function fetchAiAnalysis() {
+    setAiLoading(true)
+    setAiError(null)
+    try {
+      const res = await fetch('/api/safety/analyze-atmosphere', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          readings: {
+            oxygen: oxygen.trim() ? parseFloat(oxygen) : null,
+            lel: lel.trim() ? parseFloat(lel) : null,
+            co: co.trim() ? parseFloat(co) : null,
+            h2s: h2s.trim() ? parseFloat(h2s) : null,
+          },
+          spaceDescription,
+          hazards,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setAiError(data.error ?? 'Request failed')
+        return
+      }
+      const data = await res.json()
+      setAiAnalysis(data.analysis)
+    } catch {
+      setAiError('Network error — check your connection')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  function alertForGas(gasLabel: string): AtmoAlert | undefined {
+    if (!atmoAnalysis) return undefined
+    const gasMap: Record<string, string> = { 'O₂ %': 'O2', 'LEL %': 'LEL', 'CO ppm': 'CO', 'H₂S ppm': 'H2S' }
+    const key = gasMap[gasLabel]
+    return atmoAnalysis.alerts.find((a) => a.gas === key)
+  }
+
   const [confirmOpen, setConfirmOpen] = useState(false)
   const canSubmit =
     spaceDescription.trim().length > 0 &&
@@ -236,12 +315,27 @@ export default function ConfinedSpaceForm() {
         <ChipMultiSelect options={CONFINED_SPACE_HAZARDS} selected={hazards} onChange={setHazards} />
       </section>
 
+      {worstAlert && (
+        <div
+          className={`sticky top-[56px] z-30 rounded-lg px-4 py-3 flex items-start gap-3 shadow-lg animate-fadeIn ${worstSeverity === 'idlh' ? 'bg-danger text-white' : 'bg-danger/95 backdrop-blur-sm text-white'}`}
+          role="alert"
+          aria-live="assertive"
+        >
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-sm font-bold uppercase">{worstSeverity === 'idlh' ? 'IMMEDIATELY DANGEROUS TO LIFE' : 'DO NOT ENTER'}</p>
+            <p className="text-sm mt-0.5">{worstAlert.guidance}</p>
+          </div>
+        </div>
+      )}
+
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
           Atmospheric test <span className="text-fg-4 normal-case">· test O₂ → flammable → toxic</span>
         </h4>
         <div className="grid grid-cols-2 gap-3">
           {atmoFields.map((f) => {
+            const alert = alertForGas(f.label)
             const bad = outOfRange(f.value, f.range)
             const fieldId = `cs-atmo-${f.label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`
             return (
@@ -257,7 +351,15 @@ export default function ConfinedSpaceForm() {
                   onChange={(e) => f.set(e.target.value)}
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : ''}`}
                 />
-                {bad && <p className="text-xs text-danger mt-0.5">Outside safe limits</p>}
+                {alert && alert.severity !== 'safe' && (
+                  <p className={`text-xs mt-0.5 ${alert.severity === 'warning' ? 'text-warn' : 'text-danger'} font-medium`}>
+                    {alert.guidance}
+                  </p>
+                )}
+                {!alert && bad && <p className="text-xs text-danger mt-0.5">Outside safe limits</p>}
+                {alert?.severity === 'safe' && f.value.trim() && (
+                  <p className="text-xs text-ok mt-0.5 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Within limits</p>
+                )}
               </div>
             )
           })}
@@ -282,6 +384,50 @@ export default function ConfinedSpaceForm() {
             Ventilation in use
           </label>
         </div>
+
+        {atmoAnalysis && atmoAnalysis.recommendations.length > 0 && (
+          <div className="space-y-1.5 pt-1">
+            {atmoAnalysis.recommendations.map((rec, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs text-fg-2 bg-mytra-bg rounded-md px-3 py-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-warn shrink-0 mt-0.5" />
+                <span>{rec}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {process.env.NEXT_PUBLIC_AI_ASSIST === '1' && atmoAnalysis && !atmoAnalysis.safe && (
+          <div className="pt-1">
+            {!aiAnalysis && !aiLoading && (
+              <button
+                type="button"
+                onClick={fetchAiAnalysis}
+                className="flex items-center gap-2 text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover min-h-[44px]"
+              >
+                <Sparkles className="w-4 h-4" />
+                Deep analysis with Sage
+              </button>
+            )}
+            {aiLoading && (
+              <div className="flex items-center gap-2 text-xs text-fg-3">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Sage is analyzing atmospheric conditions…
+              </div>
+            )}
+            {aiError && <p className="text-xs text-danger">{aiError}</p>}
+            {aiAnalysis && (
+              <div className="bg-mytra-bg border border-mytra-border rounded-lg p-3 space-y-2 animate-fadeIn">
+                <p className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Sage Analysis</p>
+                {aiAnalysis.alerts.filter((a: { severity: string }) => a.severity !== 'safe').map((a: { gas: string; guidance: string; severity: string }, i: number) => (
+                  <p key={i} className={`text-xs ${a.severity === 'warning' ? 'text-warn' : 'text-danger'}`}>{a.gas}: {a.guidance}</p>
+                ))}
+                {aiAnalysis.recommendations.map((r: string, i: number) => (
+                  <p key={`r-${i}`} className="text-xs text-fg-2">{r}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
