@@ -82,6 +82,23 @@ export default function RecordView({ id }: { id: string }) {
 
   useReviewPoller()
 
+  const [isStandalone, setIsStandalone] = useState(false)
+
+  useEffect(() => {
+    setIsStandalone(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true
+    )
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('print') === '1' && !isStandalone) {
+      const timer = setTimeout(() => window.print(), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isStandalone])
+
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
     setRecord(r ?? null)
@@ -227,7 +244,13 @@ export default function RecordView({ id }: { id: string }) {
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              if (isStandalone) {
+                window.open(`${window.location.pathname}?print=1`, '_blank')
+              } else {
+                window.print()
+              }
+            }}
             className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
           >
             <Printer className="w-3.5 h-3.5" /> Print

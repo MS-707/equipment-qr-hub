@@ -48,7 +48,7 @@ export default function SyncToast() {
     <div
       role={toast.tone === 'danger' ? 'alert' : 'status'}
       aria-live={toast.tone === 'danger' ? 'assertive' : 'polite'}
-      className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 px-4 py-2.5 rounded-full border shadow-lg ${cls} animate-fadeIn`}
+      className={`no-print fixed bottom-20 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 px-4 py-2.5 rounded-full border shadow-lg ${cls} animate-fadeIn`}
     >
       <Icon className="w-4 h-4 shrink-0" />
       <span className="text-xs font-medium whitespace-nowrap">{toast.message}</span>
