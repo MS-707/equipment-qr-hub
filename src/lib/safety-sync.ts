@@ -73,7 +73,7 @@ export async function trySyncRecord(id: string, notify = true): Promise<boolean>
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
         notifySyncResult({ tone: 'warn', message: 'Saved offline — will sync when back online' })
       } else {
-        notifySyncResult({ tone: 'danger', message: 'Sync failed — will retry', persist: true })
+        notifySyncResult({ tone: 'danger', message: 'Sync failed — will retry' })
       }
     }
     return false
