@@ -27,6 +27,7 @@ import type {
 } from '@/lib/safety-types'
 import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
+import { safeParseSafetyRecords } from '@/lib/schemas'
 
 const STORAGE_KEY = 'eqr-safety-records'
 const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
@@ -116,31 +117,25 @@ function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as SafetyRecord[]
-    return parsed.map((r) => ({ reviewStatus: undefined, ...r }))
-  } catch (primaryErr) {
-    // Primary store is corrupted (truncated write, partial setItem, etc.).
-    // Attempt recovery from the last known-good backup before giving up.
-    console.error('[safety-records] Primary store corrupt — attempting backup restore:', primaryErr)
-    const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
-    if (backup) {
-      try {
-        const recovered = (JSON.parse(backup) as SafetyRecord[]).map((r) => ({ reviewStatus: undefined, ...r }))
-        console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
-        // Promote the backup back to primary so subsequent reads succeed.
-        try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
-        return recovered
-      } catch {
-        console.error('[safety-records] Backup also corrupt. Returning empty store.')
-      }
-    }
-    // Emit a detectable event so an error boundary / Sentry hook can alert.
-    try {
-      window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
-    } catch { /* SSR guard */ }
-    return []
+  const records = safeParseSafetyRecords(raw)
+  if (records.length > 0) {
+    return records.map((r) => ({ reviewStatus: undefined, ...r }))
   }
+  console.error('[safety-records] Primary store corrupt or empty — attempting backup restore.')
+  const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
+  if (backup) {
+    const recovered = safeParseSafetyRecords(backup)
+    if (recovered.length > 0) {
+      console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+      try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+      return recovered.map((r) => ({ reviewStatus: undefined, ...r }))
+    }
+    console.error('[safety-records] Backup also corrupt. Returning empty store.')
+  }
+  try {
+    window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
+  } catch { /* SSR guard */ }
+  return []
 }
 
 function writeAll(records: SafetyRecord[]): void {

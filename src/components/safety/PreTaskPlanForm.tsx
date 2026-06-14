@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy, AlertTriangle, AlertCircle, ShieldCheck } from 'lucide-react'
 import type { Shift } from '@/lib/types'
-import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
+import type { HazardEntry, HeatIllnessPlan, PreTaskPlan } from '@/lib/safety-types'
 import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
@@ -17,6 +17,19 @@ import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
+
+interface AuditFinding {
+  category: string
+  severity: 'blocker' | 'warning'
+  finding: string
+  suggestion: string
+}
+
+interface AuditResult {
+  pass: boolean
+  findings: AuditFinding[]
+  overallRisk: 'low' | 'medium' | 'high' | 'critical'
+}
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
@@ -67,6 +80,11 @@ export default function PreTaskPlanForm() {
     if (age > 7 * 24 * 60 * 60 * 1000) return null
     return ptp
   })
+
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null)
+  const [auditing, setAuditing] = useState(false)
+  const [auditError, setAuditError] = useState<string | null>(null)
+  const [acknowledgedWarnings, setAcknowledgedWarnings] = useState(false)
 
   function applyCarryForward() {
     if (!prevPtp) return

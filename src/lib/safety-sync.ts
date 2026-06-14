@@ -103,6 +103,14 @@ export async function syncAllPending({ notify = false }: { notify?: boolean } = 
   }
 }
 
+export async function retrySyncRecord(recordId: string): Promise<boolean> {
+  return trySyncRecord(recordId, true)
+}
+
+export async function retryAllPending(): Promise<void> {
+  return syncAllPending({ notify: true })
+}
+
 /** Wire background sync: run once now (silent), and again — with a summary
  *  toast — whenever the device reconnects. */
 export function installSyncListeners(): () => void {
