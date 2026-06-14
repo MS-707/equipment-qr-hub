@@ -5,7 +5,7 @@
 If you discover a security vulnerability in Sage EHS, please report it
 responsibly. **Do not open a public issue.**
 
-Email **security@mytra.ai** with:
+Email **mark.starr@mytra.ai** with:
 
 - A description of the vulnerability
 - Steps to reproduce
