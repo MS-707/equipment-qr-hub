@@ -350,11 +350,12 @@ export default function IncidentReportForm() {
       {/* Photos */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
+        <p className="text-xs text-fg-3">Tip: capture a wide shot, a close-up, and any equipment involved</p>
         <div className="flex flex-wrap gap-2">
           {photos.map((p) => (
             <div key={p.id} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.dataUrl} alt="Incident photo" className="w-16 h-16 object-cover rounded-lg border border-mytra-border" />
+              <img src={p.dataUrl} alt="Incident photo" className="w-20 h-20 object-cover rounded-lg border border-mytra-border" />
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
@@ -367,7 +368,7 @@ export default function IncidentReportForm() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
+            className="w-20 h-20 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
             <span className="text-xs">Add</span>
@@ -377,6 +378,7 @@ export default function IncidentReportForm() {
           ref={fileRef}
           type="file"
           accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={(e) => {
             onFile(e.target.files?.[0] ?? null)

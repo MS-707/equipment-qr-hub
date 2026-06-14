@@ -33,7 +33,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0A',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' },
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+  ],
   viewportFit: 'cover',
 }
 
@@ -43,8 +46,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" data-theme="dark" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('sage-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}else{var d=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=d?'dark':'light'}}catch(e){document.documentElement.dataset.theme='dark'}})()` }} />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* iOS PWA Splash Screens */}
         <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1179x2556.png" />
@@ -54,7 +58,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1668x2388.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1640x2360.png" />
       </head>
-      <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-16 md:pb-0">
+      <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-20 md:pb-0">
         <AuthProvider>
           <SyncProvider>
             <NavHeader />

@@ -1,12 +1,22 @@
 import { verifyReviewToken } from '@/lib/review-token'
 import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
+import { rateLimit } from '@/lib/rate-limit'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_EHS_REVIEW !== '1') {
     return Response.json({ error: 'EHS review is not enabled' }, { status: 404 })
+  }
+
+  const ip =
+    req.headers.get('x-real-ip') ??
+    req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean).pop() ??
+    'unknown'
+  const rl = await rateLimit(`review-decide:${ip}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
   let body: { token: string; note?: string }
@@ -23,7 +33,7 @@ export async function POST(req: Request) {
 
   const parsed = verifyReviewToken(token)
   if (!parsed) {
-    return Response.json({ error: 'Invalid or expired link. Review links expire after 7 days.' }, { status: 403 })
+    return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
   }
 
   const submission = await getReviewSubmission(parsed.recordId)
@@ -65,6 +75,15 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   if (process.env.NEXT_PUBLIC_EHS_REVIEW !== '1') {
     return Response.json({ error: 'EHS review is not enabled' }, { status: 404 })
+  }
+
+  const ip =
+    req.headers.get('x-real-ip') ??
+    req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean).pop() ??
+    'unknown'
+  const rl = await rateLimit(`review-decide:${ip}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
   const url = new URL(req.url)

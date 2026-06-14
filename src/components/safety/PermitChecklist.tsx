@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Check, AlertTriangle, MessageSquarePlus } from 'lucide-react'
 import type { PermitCheckItem } from '@/lib/safety-types'
+import { haptic } from '@/lib/haptic'
 
 interface PermitChecklistProps {
   items: PermitCheckItem[]
@@ -20,6 +21,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
   )
 
   function set(id: string, patch: Partial<PermitCheckItem>) {
+    if ('checked' in patch) haptic('tap')
     onChange(items.map((i) => (i.id === id ? { ...i, ...patch } : i)))
   }
 

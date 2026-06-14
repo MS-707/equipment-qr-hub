@@ -2,13 +2,25 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { LogOut, ChevronDown } from 'lucide-react'
+import { LogOut, ChevronDown, Sun, Moon, Monitor } from 'lucide-react'
 import { clearCurrentIdentity } from '@/lib/identity'
+import { useTheme, type ThemePreference } from '@/lib/theme'
 
 export default function UserMenu() {
   const { data: session, status } = useSession()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { theme, setTheme } = useTheme()
+
+  const cycleTheme = () => {
+    const order: ThemePreference[] = ['dark', 'light', 'auto']
+    const next = order[(order.indexOf(theme) + 1) % order.length]
+    setTheme(next)
+  }
+
+  const themeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
+  const themeLabel = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto'
+  const ThemeIcon = themeIcon
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -62,6 +74,15 @@ export default function UserMenu() {
             )}
           </div>
           <div className="h-px bg-mytra-border my-1" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={cycleTheme}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
+                       hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
+          >
+            <ThemeIcon className="w-4 h-4" /> Theme: {themeLabel}
+          </button>
           <button
             type="button"
             role="menuitem"

@@ -35,9 +35,8 @@ export function verifyReviewToken(token: string): { recordId: string; action: 'a
     const ts = parseInt(tsStr, 10)
     if (isNaN(ts)) return null
 
-    // Token expires after 7 days
     const age = Math.floor(Date.now() / 1000) - ts
-    if (age > 7 * 24 * 60 * 60) return null
+    if (age > 24 * 60 * 60) return null
 
     const expected = Buffer.from(sign(`${recordId}:${action}:${tsStr}`))
     const provided = Buffer.from(sig)

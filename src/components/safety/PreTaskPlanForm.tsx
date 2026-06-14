@@ -16,6 +16,7 @@ import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { haptic } from '@/lib/haptic'
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
@@ -522,7 +523,7 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
   const headingRef = useRef<HTMLHeadingElement>(null)
   const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
-  useEffect(() => { headingRef.current?.focus() }, [])
+  useEffect(() => { headingRef.current?.focus(); haptic('success') }, [])
 
   useEffect(() => {
     if (!ehsEnabled) return

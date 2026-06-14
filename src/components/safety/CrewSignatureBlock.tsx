@@ -7,6 +7,7 @@ import ConfirmDialog from '@/components/ConfirmDialog'
 import type { CrewSignature } from '@/lib/safety-types'
 import { newSignature } from '@/lib/safety-records'
 import { getCrewRoster, crewRoles, rememberCrewMember } from '@/data/crew'
+import { haptic } from '@/lib/haptic'
 
 export interface SignatureData {
   signatures: CrewSignature[]
@@ -51,6 +52,7 @@ export default function CrewSignatureBlock({
 
   function save() {
     if (!name.trim() || !dataUrl) return
+    haptic('tap')
     const sig = newSignature({ name: name.trim(), role: role || null, hasSignature: true })
     onChange({
       signatures: [...value.signatures, sig],

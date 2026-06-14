@@ -31,6 +31,7 @@ import { useFormDraft } from '@/lib/use-draft'
 import { getCurrentIdentity } from '@/lib/identity'
 import PPESelector from './PPESelector'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { haptic } from '@/lib/haptic'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 
@@ -791,7 +792,7 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
   const headingRef = useRef<HTMLHeadingElement>(null)
   const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
-  useEffect(() => { headingRef.current?.focus() }, [])
+  useEffect(() => { headingRef.current?.focus(); haptic('success') }, [])
 
   useEffect(() => {
     if (!ehsEnabled) return

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { PackageOpen, RotateCcw } from 'lucide-react'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
@@ -17,6 +17,7 @@ import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { haptic } from '@/lib/haptic'
 
 function outOfRange(value: string, range: { min?: number; max?: number }): boolean {
   if (value.trim() === '') return false
@@ -83,6 +84,11 @@ export default function ConfinedSpaceForm() {
     outOfRange(lel, { max: 10 }) ||
     outOfRange(co, { max: 35 }) ||
     outOfRange(h2s, { max: 10 })
+  const prevAtmoUnsafe = useRef(false)
+  useEffect(() => {
+    if (atmoUnsafe && !prevAtmoUnsafe.current) haptic('error')
+    prevAtmoUnsafe.current = atmoUnsafe
+  }, [atmoUnsafe])
   const [confirmOpen, setConfirmOpen] = useState(false)
   const canSubmit =
     spaceDescription.trim().length > 0 &&
