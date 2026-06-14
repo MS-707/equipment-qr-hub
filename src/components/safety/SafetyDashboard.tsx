@@ -13,7 +13,6 @@ import {
   FlaskConical,
   CheckCircle2,
   ChevronRight,
-  RefreshCw,
 } from 'lucide-react'
 import {
   getPtpForDate,
@@ -32,6 +31,7 @@ import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
+import SyncQueuePanel from './SyncQueuePanel'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -52,7 +52,6 @@ export default function SafetyDashboard() {
   const [ptp, setPtp] = useState<PreTaskPlan | undefined>(undefined)
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
-  const [pendingSyncCount, setPendingSyncCount] = useState(0)
   const [reviewApprovedCount, setReviewApprovedCount] = useState(0)
   const [reviewRejectedCount, setReviewRejectedCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
@@ -68,9 +67,6 @@ export default function SafetyDashboard() {
     const all = getAllSafetyRecords()
     setIncidentCount(
       all.filter((r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo).length
-    )
-    setPendingSyncCount(
-      all.filter((r) => r.syncStatus === 'pending' || r.syncStatus === 'offline' || r.syncStatus === 'failed').length
     )
     const reviewItems = getReviewActionableRecords()
     setReviewApprovedCount(reviewItems.approved.length)
@@ -132,15 +128,8 @@ export default function SafetyDashboard() {
         )}
       </div>
 
-      {/* Sync status */}
-      {pendingSyncCount > 0 && (
-        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
-          <RefreshCw className="w-4 h-4 text-warn shrink-0" />
-          <p className="text-xs text-warn">
-            {pendingSyncCount} record{pendingSyncCount !== 1 ? 's' : ''} waiting to sync
-          </p>
-        </div>
-      )}
+      {/* Sync queue */}
+      <SyncQueuePanel />
 
       {/* EHS review banners */}
       {reviewRejectedCount > 0 && (

@@ -10,6 +10,8 @@
  * server providers.
  */
 
+import { safeParseIdentity } from '@/lib/schemas'
+
 export interface Identity {
   name: string
   email: string | null
@@ -41,10 +43,7 @@ export function getCurrentIdentity(): Identity | null {
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY)
     if (!raw) return null
-    const id = JSON.parse(raw) as Identity
-    // Return stale identity rather than deleting it — field workers on
-    // multi-day remote jobs without connectivity still need attribution.
-    return id
+    return safeParseIdentity(raw)
   } catch {
     return null
   }

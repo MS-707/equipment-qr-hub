@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
+import { usePendingSyncCount } from '@/hooks/usePendingSyncCount'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { openOrders, openSafety } = useLiveCounts()
+  const pendingSyncCount = usePendingSyncCount()
   if (pathname.startsWith('/beta')) return null
 
   const badgeCounts: Record<BadgeKey, number> = {
@@ -46,6 +48,9 @@ export default function BottomTabBar() {
                                    px-1 text-xs font-bold rounded-full bg-mytra-purple text-white">
                     {badgeCount}
                   </span>
+                )}
+                {href === '/' && pendingSyncCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-danger rounded-full" />
                 )}
               </span>
               <span className="text-[13px] font-medium leading-tight">{label}</span>
