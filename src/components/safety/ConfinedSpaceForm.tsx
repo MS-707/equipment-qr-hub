@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { PackageOpen, RotateCcw, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react'
+import { PackageOpen, RotateCcw, AlertTriangle, CheckCircle2, Info, Sparkles, ChevronDown, Loader2 } from 'lucide-react'
 import { analyzeAtmosphere, type AtmoAlert } from '@/lib/atmo-check'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
@@ -57,7 +57,7 @@ export default function ConfinedSpaceForm() {
   const [aiAnalysis, setAiAnalysis] = useState<{ safe: boolean; alerts: { gas: string; reading: number; threshold: string; severity: string; guidance: string }[]; recommendations: string[] } | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
-
+  const [aiExpanded, setAiExpanded] = useState(true)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -315,28 +315,27 @@ export default function ConfinedSpaceForm() {
         <ChipMultiSelect options={CONFINED_SPACE_HAZARDS} selected={hazards} onChange={setHazards} />
       </section>
 
-      {worstAlert && (
+      {worstAlert && (worstSeverity === 'danger' || worstSeverity === 'idlh') && (
         <div
-          className={`sticky top-[56px] z-30 rounded-lg px-4 py-3 flex items-start gap-3 shadow-lg animate-fadeIn ${worstSeverity === 'idlh' ? 'bg-danger text-white' : 'bg-danger/95 backdrop-blur-sm text-white'}`}
           role="alert"
           aria-live="assertive"
+          className={`sticky top-[56px] z-30 flex items-start gap-3 rounded-lg px-4 py-3 text-white font-semibold text-sm shadow-lg animate-fadeIn ${worstSeverity === 'idlh' ? 'bg-danger' : 'bg-danger/95 backdrop-blur-sm'}`}
         >
           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-sm font-bold uppercase">{worstSeverity === 'idlh' ? 'IMMEDIATELY DANGEROUS TO LIFE' : 'DO NOT ENTER'}</p>
-            <p className="text-sm mt-0.5">{worstAlert.guidance}</p>
-          </div>
+          <span>{worstSeverity === 'idlh' ? 'EVACUATE' : 'STOP'} — {worstAlert.gas} {worstAlert.reading}{worstAlert.gas === 'O2' || worstAlert.gas === 'LEL' ? '%' : ' ppm'} exceeds safe limit ({worstAlert.threshold}). {worstAlert.guidance.split(' — ').slice(1).join(' — ')}</span>
         </div>
       )}
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-          Atmospheric test <span className="text-fg-4 normal-case">· test O₂ → flammable → toxic</span>
+          Atmospheric test <span className="text-fg-4 normal-case">{'·'} test O₂ → flammable → toxic</span>
         </h4>
         <div className="grid grid-cols-2 gap-3">
           {atmoFields.map((f) => {
             const alert = alertForGas(f.label)
-            const bad = outOfRange(f.value, f.range)
+            const sev = alert?.severity ?? 'safe'
+            const bad = sev === 'danger' || sev === 'idlh'
+            const warn = sev === 'warning'
             const fieldId = `cs-atmo-${f.label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`
             return (
               <div key={f.label}>
@@ -349,16 +348,25 @@ export default function ConfinedSpaceForm() {
                   inputMode="decimal"
                   value={f.value}
                   onChange={(e) => f.set(e.target.value)}
-                  className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : ''}`}
+                  className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : warn ? 'border-warn ring-2 ring-warn/30' : ''}`}
                 />
-                {alert && alert.severity !== 'safe' && (
-                  <p className={`text-xs mt-0.5 ${alert.severity === 'warning' ? 'text-warn' : 'text-danger'} font-medium`}>
+                {alert && sev === 'safe' && f.value.trim() !== '' && (
+                  <p className="flex items-center gap-1 text-xs text-ok mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Within limits
+                  </p>
+                )}
+                {alert && sev === 'warning' && (
+                  <p className="flex items-center gap-1 text-xs text-warn mt-0.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
                     {alert.guidance}
                   </p>
                 )}
-                {!alert && bad && <p className="text-xs text-danger mt-0.5">Outside safe limits</p>}
-                {alert?.severity === 'safe' && f.value.trim() && (
-                  <p className="text-xs text-ok mt-0.5 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Within limits</p>
+                {alert && (sev === 'danger' || sev === 'idlh') && (
+                  <p className="flex items-center gap-1 text-xs text-danger mt-0.5 font-semibold">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {alert.guidance}
+                  </p>
                 )}
               </div>
             )
@@ -384,51 +392,81 @@ export default function ConfinedSpaceForm() {
             Ventilation in use
           </label>
         </div>
+      </div>
 
-        {atmoAnalysis && atmoAnalysis.recommendations.length > 0 && (
-          <div className="space-y-1.5 pt-1">
-            {atmoAnalysis.recommendations.map((rec, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-fg-2 bg-mytra-bg rounded-md px-3 py-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-warn shrink-0 mt-0.5" />
-                <span>{rec}</span>
-              </div>
-            ))}
-          </div>
-        )}
+      {atmoAnalysis && atmoAnalysis.recommendations.length > 0 && (
+        <div className="space-y-2 animate-fadeIn">
+          {atmoAnalysis.recommendations.map((rec, i) => (
+            <div key={i} className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
+              <Info className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-xs text-fg-2">{rec}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {process.env.NEXT_PUBLIC_AI_ASSIST === '1' && atmoAnalysis && !atmoAnalysis.safe && (
-          <div className="pt-1">
-            {!aiAnalysis && !aiLoading && (
+      {process.env.NEXT_PUBLIC_AI_ASSIST === '1' && atmoAnalysis && !atmoAnalysis.safe && (
+        <div className="animate-fadeIn">
+          {!aiAnalysis && !aiLoading && (
+            <button
+              type="button"
+              onClick={fetchAiAnalysis}
+              className="flex items-center gap-2 text-sm text-mytra-purple hover:text-mytra-purple-hover font-medium px-1 py-1 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Deep analysis with Sage
+            </button>
+          )}
+          {aiLoading && (
+            <div className="flex items-center gap-2 text-sm text-fg-3 px-1 py-1">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Sage is analyzing cross-gas interactions...
+            </div>
+          )}
+          {aiError && (
+            <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{aiError}</span>
+            </div>
+          )}
+          {aiAnalysis && (
+            <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
               <button
                 type="button"
-                onClick={fetchAiAnalysis}
-                className="flex items-center gap-2 text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover min-h-[44px]"
+                onClick={() => setAiExpanded((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-fg hover:bg-mytra-border/20 transition-colors"
               >
-                <Sparkles className="w-4 h-4" />
-                Deep analysis with Sage
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-mytra-purple" />
+                  Sage AI Analysis
+                </span>
+                <ChevronDown className={`w-4 h-4 text-fg-3 transition-transform ${aiExpanded ? 'rotate-180' : ''}`} />
               </button>
-            )}
-            {aiLoading && (
-              <div className="flex items-center gap-2 text-xs text-fg-3">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Sage is analyzing atmospheric conditions…
-              </div>
-            )}
-            {aiError && <p className="text-xs text-danger">{aiError}</p>}
-            {aiAnalysis && (
-              <div className="bg-mytra-bg border border-mytra-border rounded-lg p-3 space-y-2 animate-fadeIn">
-                <p className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Sage Analysis</p>
-                {aiAnalysis.alerts.filter((a: { severity: string }) => a.severity !== 'safe').map((a: { gas: string; guidance: string; severity: string }, i: number) => (
-                  <p key={i} className={`text-xs ${a.severity === 'warning' ? 'text-warn' : 'text-danger'}`}>{a.gas}: {a.guidance}</p>
-                ))}
-                {aiAnalysis.recommendations.map((r: string, i: number) => (
-                  <p key={`r-${i}`} className="text-xs text-fg-2">{r}</p>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              {aiExpanded && (
+                <div className="px-4 pb-3 space-y-2 border-t border-mytra-border pt-3">
+                  {aiAnalysis.alerts.filter((a) => a.severity !== 'safe').map((a, i) => (
+                    <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${a.severity === 'idlh' ? 'bg-danger/10 border border-danger/20 text-danger font-semibold' : a.severity === 'danger' ? 'bg-danger/10 border border-danger/20 text-danger' : 'bg-warn/10 border border-warn/20 text-warn'}`}>
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span><strong>{a.gas} {a.reading}{a.gas === 'O2' || a.gas === 'LEL' ? '%' : ' ppm'}:</strong> {a.guidance}</span>
+                    </div>
+                  ))}
+                  {aiAnalysis.recommendations.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <p className="text-xs font-semibold text-fg-3 uppercase tracking-wider">Recommendations</p>
+                      {aiAnalysis.recommendations.map((rec, i) => (
+                        <div key={i} className="flex items-start gap-2 bg-mytra-purple/5 border border-mytra-purple/10 rounded-lg px-3 py-2">
+                          <Info className="w-3.5 h-3.5 text-mytra-purple shrink-0 mt-0.5" />
+                          <p className="text-xs text-fg-2">{rec}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <div>
