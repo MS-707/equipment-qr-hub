@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, WifiOff, Send, Loader2 } from 'lucide-react'
+import { haptic } from '@/lib/haptic'
 
 interface FormSuccessProps {
   id: string
@@ -20,7 +21,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
   const [reviewDone, setReviewDone] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
-  useEffect(() => { headingRef.current?.focus() }, [])
+  useEffect(() => { headingRef.current?.focus(); haptic('success') }, [])
 
   async function handleReviewSubmit() {
     if (!onSubmitForReview) return
