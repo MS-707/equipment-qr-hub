@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { isAdmin } from '@/lib/admin'
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 
 export const dynamic = 'force-dynamic'
 

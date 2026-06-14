@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 
 export type BetaStatus = 'pending' | 'approved' | 'rejected'
 
@@ -31,7 +31,7 @@ const memStore = new Map<string, BetaSignup>()
 
 export async function addSignup(signup: BetaSignup): Promise<void> {
   if (kvEnabled()) {
-    await kv.set(`${KV_PREFIX}${signup.id}`, signup)
+    await kv.set(`${KV_PREFIX}${signup.id}`, signup, { ex: 60 * 60 * 24 * 180 })
     await kv.sadd(KV_INDEX_SET, signup.id)
   } else {
     memStore.set(signup.id, signup)
@@ -77,7 +77,7 @@ export async function updateSignupStatus(id: string, status: BetaStatus): Promis
     if (!signup) return undefined
     signup.status = status
     signup.decidedAt = new Date().toISOString()
-    await kv.set(`${KV_PREFIX}${id}`, signup)
+    await kv.set(`${KV_PREFIX}${id}`, signup, { ex: 60 * 60 * 24 * 180 })
     return signup
   }
   const signup = memStore.get(id)

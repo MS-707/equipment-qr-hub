@@ -3,7 +3,7 @@
  * Uses Vercel KV when available, in-memory Set for local dev.
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 
 const KV_KEY = 'known-users'
 

@@ -637,11 +637,13 @@ export function markReviewRecalled(
   all[idx] = {
     ...rec,
     reviewStatus: 'recalled',
-    reviewerName: undefined,
-    reviewerEmail: undefined,
-    reviewNote: undefined,
-    reviewDecidedAt: undefined,
-    events: [...rec.events, { action: 'review-recalled', by: by.name, byEmail: by.email, at }],
+    events: [...rec.events, {
+      action: 'review-recalled',
+      by: by.name,
+      byEmail: by.email,
+      at,
+      ...(rec.reviewerName ? { previousReviewer: rec.reviewerName } : {}),
+    }],
   }
   writeAll(all)
   notify()
@@ -690,4 +692,34 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')
+}
+
+// ── Data deletion (GDPR right-to-erasure) ────────────────────
+
+export async function clearAllLocalData(): Promise<void> {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(STORAGE_KEY_BACKUP)
+
+  const draftKeys = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k?.startsWith('draft:')) draftKeys.push(k)
+  }
+  draftKeys.forEach((k) => localStorage.removeItem(k))
+
+  localStorage.removeItem('sage-identity')
+
+  try {
+    const db = await openBlobDB()
+    const tx = db.transaction(PHOTO_STORE, 'readwrite')
+    tx.objectStore(PHOTO_STORE).clear()
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+  } catch {
+    // IndexedDB may not be available
+  }
+
+  notify()
 }

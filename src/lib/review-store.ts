@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 import { SAFETY_TYPE_LABELS, type SafetyRecordType } from '@/lib/safety-types'
 
 export interface ReviewSubmission {
