@@ -894,7 +894,7 @@ export default function BetaPage() {
 
             <div>
               <label htmlFor="beta-reason" className="block text-xs text-[#9A9A9A] mb-1">What are you hoping to solve?</label>
-              <textarea id="beta-reason" rows={2} maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Safety docs slow us down, hazard tracking is manual, need better permit workflows..." className={`${inputCls} resize-none`} />
+              <textarea id="beta-reason" rows={2} maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} className={`${inputCls} resize-none`} />
             </div>
 
             {error && (
