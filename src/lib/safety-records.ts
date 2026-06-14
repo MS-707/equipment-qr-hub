@@ -494,7 +494,17 @@ export function markSyncFailed(id: string): void {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
   if (idx === -1) return
-  all[idx] = { ...all[idx], syncStatus: 'failed' }
+  const event: import('@/lib/safety-types').AuditEvent = {
+    action: 'sync-failed',
+    by: 'system',
+    byEmail: null,
+    at: new Date().toISOString(),
+  }
+  all[idx] = {
+    ...all[idx],
+    syncStatus: 'failed',
+    events: [...all[idx].events, event],
+  }
   writeAll(all)
   notify()
 }

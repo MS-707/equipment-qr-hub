@@ -437,6 +437,12 @@ export default function ConfinedSpaceForm() {
 
       {process.env.NEXT_PUBLIC_AI_ASSIST === '1' && atmoAnalysis && !atmoAnalysis.safe && (
         <div className="animate-fadeIn">
+          <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+            <p className="text-xs text-fg-2">
+              AI analysis is advisory only and does not replace atmospheric monitoring by a competent person with calibrated instruments. Always follow your site-specific confined space entry procedures.
+            </p>
+          </div>
           {!aiAnalysis && !aiLoading && (
             <button
               type="button"

@@ -125,6 +125,9 @@ export default function CrewSignatureBlock({
 
       {adding ? (
         <div className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
+          <p className="text-xs text-fg-3 leading-relaxed">
+            By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.
+          </p>
           <div>
             <label className="block text-xs text-fg-2 mb-1">Name</label>
             <input

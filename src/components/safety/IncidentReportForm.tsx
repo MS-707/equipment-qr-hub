@@ -201,11 +201,13 @@ export default function IncidentReportForm() {
   }
 
   function adoptRootCause(text: string) {
-    setRootCause((prev) => prev ? `${prev}\n\n${text}` : text)
+    const attributed = `[AI-suggested] ${text}`
+    setRootCause((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
   }
 
   function adoptCorrectiveAction(text: string) {
-    setCorrectiveActions((prev) => prev ? `${prev}\n\n${text}` : text)
+    const attributed = `[AI-suggested] ${text}`
+    setCorrectiveActions((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
   }
 
   function dismissAnalysis() {

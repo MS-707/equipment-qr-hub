@@ -11,7 +11,7 @@
  */
 
 const ADMIN_EMAILS: Set<string> = new Set(
-  (process.env.ADMIN_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? 'mark.starr@mytra.ai')
+  (process.env.ADMIN_EMAILS ?? 'mark.starr@mytra.ai')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)

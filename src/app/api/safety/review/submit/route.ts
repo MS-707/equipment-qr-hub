@@ -128,7 +128,7 @@ export async function POST(req: Request) {
       '',
       'Click a link above to approve or deny this record.',
       'The employee will be notified by email automatically.',
-      'Links expire after 7 days.',
+      'Links expire after 24 hours.',
       '────────────────────',
     ].join('\n')
 
