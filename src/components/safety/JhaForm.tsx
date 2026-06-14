@@ -796,14 +796,16 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
   useEffect(() => {
     if (!ehsEnabled) return
     const identity = getCurrentIdentity()
-    markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+    const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
     const rec = getSafetyRecordById(submittedId)
     if (rec) {
       fetch('/api/safety/review/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
-      }).catch(() => {})
+      })
+        .then((res) => { if (res.ok) markSubmittedForReview(submittedId, by) })
+        .catch(() => {})
     }
   }, [ehsEnabled, submittedId])
 

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { PackageOpen, RotateCcw } from 'lucide-react'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
@@ -82,9 +83,11 @@ export default function ConfinedSpaceForm() {
     outOfRange(lel, { max: 10 }) ||
     outOfRange(co, { max: 35 }) ||
     outOfRange(h2s, { max: 10 })
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const canSubmit =
     spaceDescription.trim().length > 0 &&
     location.trim().length > 0 &&
+    hazards.length > 0 &&
     attendantName.trim().length > 0 &&
     rescuePlan.trim().length > 0 &&
     critLeft === 0 &&
@@ -130,8 +133,10 @@ export default function ConfinedSpaceForm() {
     void trySyncRecord(record.id)
     if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
-      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
-      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) }).catch(() => {})
+      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
+      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) })
+        .then((res) => { if (res.ok) markSubmittedForReview(record.id, by) })
+        .catch(() => {})
     }
     saveLastContext({ projectName, location })
     clearDraft()
@@ -342,27 +347,39 @@ export default function ConfinedSpaceForm() {
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
-          onClick={submit}
+          onClick={() => setConfirmOpen(true)}
           disabled={!canSubmit}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {critLeft > 0
-            ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
-            : atmoUnsafe
-              ? 'Atmosphere outside safe limits'
-              : !attendantName.trim()
-                ? 'Assign an attendant'
-                : !rescuePlan.trim()
-                  ? 'Add a rescue plan'
-                  : sigData.signatures.length === 0
-                    ? 'Entrants must sign on'
-                    : supervisorId === null
-                      ? 'Designate the entry supervisor'
-                      : !validWindowOk
-                        ? 'Fix validity window'
-                        : 'Issue Permit'}
+          {!spaceDescription.trim() || !location.trim()
+            ? 'Describe the space and location'
+            : hazards.length === 0
+              ? 'Identify at least one hazard'
+              : critLeft > 0
+                ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                : atmoUnsafe
+                  ? 'Atmosphere outside safe limits'
+                  : !attendantName.trim()
+                    ? 'Assign an attendant'
+                    : !rescuePlan.trim()
+                      ? 'Add a rescue plan'
+                      : sigData.signatures.length === 0
+                        ? 'Entrants must sign on'
+                        : supervisorId === null
+                          ? 'Designate the entry supervisor'
+                          : !validWindowOk
+                            ? 'Fix validity window'
+                            : 'Issue Permit'}
         </button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Issue confined space entry permit?"
+        message={`This will activate a live permit for "${location || 'this location'}". Verify atmospheric readings and rescue plan before proceeding.`}
+        confirmLabel="Issue Permit"
+        onConfirm={() => { setConfirmOpen(false); submit() }}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   )
 }

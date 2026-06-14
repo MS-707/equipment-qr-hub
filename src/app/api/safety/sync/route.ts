@@ -102,17 +102,19 @@ export async function POST(req: Request) {
       properties['Severity'] = { select: { name: String((record as { severity?: string }).severity) } }
     }
 
-    const fullJson = JSON.stringify(record, null, 2).slice(0, 1900)
-    const children = [
-      {
-        object: 'block',
-        type: 'code',
+    const fullJson = JSON.stringify(record, null, 2)
+    const CHUNK_SIZE = 1900
+    const children = []
+    for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+      children.push({
+        object: 'block' as const,
+        type: 'code' as const,
         code: {
           language: 'json',
-          rich_text: [{ type: 'text', text: { content: fullJson } }],
+          rich_text: [{ type: 'text' as const, text: { content: fullJson.slice(i, i + CHUNK_SIZE) } }],
         },
-      },
-    ]
+      })
+    }
 
     const res = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',

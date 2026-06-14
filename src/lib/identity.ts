@@ -42,14 +42,18 @@ export function getCurrentIdentity(): Identity | null {
     const raw = localStorage.getItem(CURRENT_USER_KEY)
     if (!raw) return null
     const id = JSON.parse(raw) as Identity
-    if (id.verifiedAt && Date.now() - new Date(id.verifiedAt).getTime() > IDENTITY_TTL_MS) {
-      localStorage.removeItem(CURRENT_USER_KEY)
-      return null
-    }
+    // Return stale identity rather than deleting it — field workers on
+    // multi-day remote jobs without connectivity still need attribution.
     return id
   } catch {
     return null
   }
+}
+
+export function isIdentityStale(): boolean {
+  const id = getCurrentIdentity()
+  if (!id?.verifiedAt) return true
+  return Date.now() - new Date(id.verifiedAt).getTime() > IDENTITY_TTL_MS
 }
 
 export function clearCurrentIdentity(): void {

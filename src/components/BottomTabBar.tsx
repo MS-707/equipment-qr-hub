@@ -34,8 +34,8 @@ export default function BottomTabBar() {
               href={href}
               data-tour-tab={href}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[49px]
-                         transition-colors duration-200 ${
-                isActive ? 'text-mytra-purple' : 'text-fg-3'
+                         transition-all duration-200 active:scale-90 ${
+                isActive ? 'text-mytra-purple' : 'text-fg-3 active:text-fg-2'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >
@@ -49,6 +49,7 @@ export default function BottomTabBar() {
                 )}
               </span>
               <span className="text-xs font-medium leading-tight">{label}</span>
+              {isActive && <span className="w-1 h-1 rounded-full bg-mytra-purple" />}
             </Link>
           )
         })}

@@ -244,9 +244,17 @@ export default function SafetyDashboard() {
             <RecordCardSkeleton />
           </div>
         ) : recent.length === 0 ? (
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 shadow-card text-center">
-            <CheckCircle2 className="w-8 h-8 text-fg-4 mx-auto mb-2" />
-            <p className="text-sm text-fg-2">No safety records yet. Start your day with a PTP.</p>
+          <div className="bg-mytra-card border border-mytra-border rounded-lg p-8 shadow-card text-center animate-fadeInUp">
+            <ClipboardList className="w-8 h-8 text-mytra-purple mx-auto mb-3" />
+            <p className="text-sm font-medium text-fg mb-1">Ready to go</p>
+            <p className="text-xs text-fg-3 mb-4">No safety records yet. Start your day with a Pre-Task Plan.</p>
+            <Link
+              href="/safety/ptp"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                         bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors min-h-[44px]"
+            >
+              <ClipboardList className="w-4 h-4" /> Start PTP
+            </Link>
           </div>
         ) : (
           <div className="space-y-2">

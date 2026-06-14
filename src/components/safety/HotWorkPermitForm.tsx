@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { Flame, RotateCcw } from 'lucide-react'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import { createHotWorkPermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
@@ -63,12 +64,14 @@ export default function HotWorkPermitForm() {
     submittedId !== null
   )
 
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const critLeft = criticalRemaining(checklist)
   const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
   const fireWatchOk = !fireWatchRequired || fireWatchName.trim().length > 0
   const canSubmit =
     workDescription.trim().length > 0 &&
     location.trim().length > 0 &&
+    hotWorkTypes.length > 0 &&
     critLeft === 0 &&
     fireWatchOk &&
     sigData.signatures.length >= 1 &&
@@ -108,8 +111,10 @@ export default function HotWorkPermitForm() {
     void trySyncRecord(record.id)
     if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
-      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
-      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) }).catch(() => {})
+      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
+      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) })
+        .then((res) => { if (res.ok) markSubmittedForReview(record.id, by) })
+        .catch(() => {})
     }
     saveLastContext({ projectName, location })
     clearDraft()
@@ -299,23 +304,35 @@ export default function HotWorkPermitForm() {
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
-          onClick={submit}
+          onClick={() => setConfirmOpen(true)}
           disabled={!canSubmit}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {critLeft > 0
-            ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
-            : !fireWatchOk
-              ? 'Assign a fire watch'
-              : sigData.signatures.length === 0
-                ? 'Workers must sign on'
-                : issuerId === null
-                  ? 'Designate the issuer'
-                  : !validWindowOk
-                    ? 'Fix validity window'
-                    : 'Issue Permit'}
+          {!workDescription.trim() || !location.trim()
+            ? 'Describe the work and location'
+            : hotWorkTypes.length === 0
+              ? 'Select hot work type'
+              : critLeft > 0
+                ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                : !fireWatchOk
+                  ? 'Assign a fire watch'
+                  : sigData.signatures.length === 0
+                    ? 'Workers must sign on'
+                    : issuerId === null
+                      ? 'Designate the issuer'
+                      : !validWindowOk
+                        ? 'Fix validity window'
+                        : 'Issue Permit'}
         </button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Issue hot work permit?"
+        message={`This will activate a live permit for "${location || 'this location'}". Make sure all checklist items and fire watch are verified.`}
+        confirmLabel="Issue Permit"
+        onConfirm={() => { setConfirmOpen(false); submit() }}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   )
 }

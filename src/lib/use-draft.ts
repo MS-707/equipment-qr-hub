@@ -39,18 +39,35 @@ export function useFormDraft<T extends Record<string, unknown>>(
   }, [formKey, restoreState])
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>()
+  const disabledRef = useRef(disabled)
+  disabledRef.current = disabled
+
+  const flushDraft = useCallback(() => {
+    if (disabledRef.current) return
+    try {
+      const state = getStateRef.current()
+      localStorage.setItem(DRAFT_PREFIX + formKey, JSON.stringify(state))
+    } catch {}
+  }, [formKey])
 
   useEffect(() => {
     clearTimeout(saveTimer.current)
     if (disabled) return
-    saveTimer.current = setTimeout(() => {
-      try {
-        const state = getStateRef.current()
-        localStorage.setItem(DRAFT_PREFIX + formKey, JSON.stringify(state))
-      } catch {}
-    }, SAVE_DELAY)
+    saveTimer.current = setTimeout(flushDraft, SAVE_DELAY)
     return () => clearTimeout(saveTimer.current)
   })
+
+  useEffect(() => {
+    const onVisChange = () => {
+      if (document.visibilityState === 'hidden') flushDraft()
+    }
+    document.addEventListener('visibilitychange', onVisChange)
+    window.addEventListener('pagehide', flushDraft)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisChange)
+      window.removeEventListener('pagehide', flushDraft)
+    }
+  }, [flushDraft])
 
   const clearDraft = useCallback(() => {
     localStorage.removeItem(DRAFT_PREFIX + formKey)

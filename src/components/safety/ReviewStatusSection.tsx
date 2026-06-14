@@ -33,7 +33,6 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
   async function handleSubmit() {
     setSubmitting(true)
     setError(null)
-    markSubmittedForReview(record.id, by)
     try {
       const res = await fetch('/api/safety/review/submit', {
         method: 'POST',
@@ -45,10 +44,12 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError((data as { error?: string }).error ?? 'Submit failed — will retry on next sync')
+        setError((data as { error?: string }).error ?? 'Submit failed — try again')
+      } else {
+        markSubmittedForReview(record.id, by)
       }
     } catch {
-      setError('Offline — EHS review will be sent when connection returns')
+      setError('Offline — try again when connection returns')
     } finally {
       setSubmitting(false)
     }

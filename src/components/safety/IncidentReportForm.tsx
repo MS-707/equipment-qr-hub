@@ -136,12 +136,12 @@ export default function IncidentReportForm() {
     saveLastContext({ projectName, location })
     if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
-      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
       fetch('/api/safety/review/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record, notionPageId: record.notionPageId }),
-      }).catch(() => {})
+      }).then((res) => { if (res.ok) markSubmittedForReview(record.id, by) }).catch(() => {})
     }
     clearDraft()
     setWasOffline(!navigator.onLine)
