@@ -1,7 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { ArrowUpFromLine, RotateCcw } from 'lucide-react'
+import FormStepper, { useActiveStep } from '@/components/safety/FormStepper'
+import type { FormStep } from '@/components/safety/FormStepper'
+import ValidationSummary from '@/components/safety/ValidationSummary'
+import type { ValidationError } from '@/components/safety/ValidationSummary'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createHeightPermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
@@ -43,6 +47,10 @@ export default function HeightPermitForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [showValidation, setShowValidation] = useState(false)
+
+  const stepIds = useMemo(() => ['details', 'protection', 'checklist', 'validity', 'signatures'] as const, [])
+  const activeStepId = useActiveStep([...stepIds])
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -77,6 +85,29 @@ export default function HeightPermitForm() {
     issuerId !== null &&
     validWindowOk &&
     (!pfasSelected || rescuePlan.trim().length > 0)
+
+  const steps: FormStep[] = useMemo(() => [
+    { id: 'details', label: 'Details', complete: location.trim().length > 0 && projectName.trim().length > 0 && workDescription.trim().length > 0 && workingHeight.trim().length > 0 },
+    { id: 'protection', label: 'Protection', complete: accessMethod.length > 0 && fallProtection.length > 0 && (!pfasSelected || rescuePlan.trim().length > 0) },
+    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
+    { id: 'validity', label: 'Validity', complete: validWindowOk },
+    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && issuerId !== null },
+  ], [location, projectName, workDescription, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, sigData.signatures.length, issuerId])
+
+  const validationErrors: ValidationError[] = useMemo(() => {
+    const errs: ValidationError[] = []
+    if (!workDescription.trim()) errs.push({ label: 'Work description is required', fieldId: 'hp-description' })
+    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'hp-location' })
+    if (!workingHeight.trim()) errs.push({ label: 'Working height is required', fieldId: 'hp-height' })
+    if (accessMethod.length === 0) errs.push({ label: 'Select at least one access method', fieldId: 'hp-access-method' })
+    if (fallProtection.length === 0) errs.push({ label: 'Select at least one fall protection', fieldId: 'hp-fall-protection' })
+    if (pfasSelected && !rescuePlan.trim()) errs.push({ label: 'Rescue plan is required for PFAS', fieldId: 'hp-rescue' })
+    if (critLeft > 0) errs.push({ label: `${critLeft} required checklist item${critLeft === 1 ? '' : 's'} remaining`, fieldId: 'hp-checklist' })
+    if (!validWindowOk) errs.push({ label: '"Valid until" must be after "Valid from"', fieldId: 'hp-valid-until' })
+    if (sigData.signatures.length < 1) errs.push({ label: 'At least one worker must sign on', fieldId: 'hp-crew-signatures' })
+    if (issuerId === null) errs.push({ label: 'Designate the issuer', fieldId: 'hp-crew-signatures' })
+    return errs
+  }, [workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, sigData.signatures.length, issuerId])
 
   function submit() {
     if (!canSubmit) return
@@ -163,7 +194,9 @@ export default function HeightPermitForm() {
           </button>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <FormStepper steps={steps} activeStepId={activeStepId} />
+
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Work-at-Height Permit</h3>
@@ -190,12 +223,12 @@ export default function HeightPermitForm() {
         </div>
       </div>
 
-      <section className="space-y-2">
+      <section id="hp-access-method" data-step="protection" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Access method</h4>
         <ChipMultiSelect options={HEIGHT_ACCESS_METHODS} selected={accessMethod} onChange={setAccessMethod} />
       </section>
 
-      <section className="space-y-2">
+      <section id="hp-fall-protection" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Fall protection</h4>
         <ChipMultiSelect options={HEIGHT_FALL_PROTECTION} selected={fallProtection} onChange={setFallProtection} />
       </section>
@@ -221,7 +254,7 @@ export default function HeightPermitForm() {
         </div>
       </div>
 
-      <section className="space-y-2">
+      <section id="hp-checklist" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
@@ -229,7 +262,7 @@ export default function HeightPermitForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -249,7 +282,7 @@ export default function HeightPermitForm() {
         </div>
       </div>
 
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="hp-crew-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the competent person / issuer.</p>
         <CrewSignatureBlock
@@ -267,12 +300,13 @@ export default function HeightPermitForm() {
           <span>{saveError}</span>
         </div>
       )}
+      <ValidationSummary errors={validationErrors} show={showValidation} onDismiss={() => setShowValidation(false)} />
+
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
-          onClick={() => setConfirmOpen(true)}
-          disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
+          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover ${!canSubmit ? 'opacity-40' : ''}`}
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'

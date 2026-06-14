@@ -17,6 +17,7 @@ import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
+import ValidationSummary, { type ValidationError } from './ValidationSummary'
 
 interface AuditFinding {
   category: string
@@ -81,6 +82,9 @@ export default function PreTaskPlanForm() {
     return ptp
   })
 
+  const [showValidation, setShowValidation] = useState(false)
+  const [showSignonValidation, setShowSignonValidation] = useState(false)
+
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null)
   const [auditing, setAuditing] = useState(false)
   const [auditError, setAuditError] = useState<string | null>(null)
@@ -136,6 +140,17 @@ export default function PreTaskPlanForm() {
 
   const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0 && musterPoint.trim().length > 0
   const canSubmit = sigData.signatures.length >= 1 && supervisorId !== null
+
+  const planErrors: ValidationError[] = [
+    ...(scopeOfWork.trim().length === 0 ? [{ label: 'Scope of work', fieldId: 'ptp-scope' }] : []),
+    ...(location.trim().length === 0 ? [{ label: 'Location', fieldId: 'ptp-location' }] : []),
+    ...(musterPoint.trim().length === 0 ? [{ label: 'Muster point', fieldId: 'ptp-muster' }] : []),
+  ]
+
+  const signonErrors: ValidationError[] = [
+    ...(sigData.signatures.length < 1 ? [{ label: 'At least one crew signature', fieldId: 'crew-signatures' }] : []),
+    ...(supervisorId === null ? [{ label: 'Designate a supervisor', fieldId: 'crew-signatures' }] : []),
+  ]
 
   function toggleHeat(key: keyof HeatIllnessPlan) {
     setHeat((h) => ({ ...h, [key]: !h[key] }))
@@ -328,7 +343,7 @@ export default function PreTaskPlanForm() {
           <ArrowLeft className="w-4 h-4" /> Back to plan
         </button>
 
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+        <div id="crew-signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
           <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
           <p className="text-xs text-fg-2 mb-3">
             Pass the device around — each crew member signs to acknowledge the plan. Designate
@@ -467,11 +482,19 @@ export default function PreTaskPlanForm() {
             <span>{saveError}</span>
           </div>
         )}
-        <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+        <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent space-y-3">
+          <ValidationSummary
+            errors={signonErrors}
+            show={showSignonValidation}
+            onDismiss={() => setShowSignonValidation(false)}
+          />
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit || (sageEnabled && auditResult !== null && auditBlocksSubmit)}
+            onClick={() => {
+              if (!canSubmit) { setShowSignonValidation(true); return }
+              handleSubmit()
+            }}
+            disabled={canSubmit && sageEnabled && auditResult !== null && auditBlocksSubmit}
             className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {sigData.signatures.length === 0
@@ -712,11 +735,18 @@ export default function PreTaskPlanForm() {
         )}
       </section>
 
-      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent">
+      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent space-y-3">
+        <ValidationSummary
+          errors={planErrors}
+          show={showValidation}
+          onDismiss={() => setShowValidation(false)}
+        />
         <button
           type="button"
-          onClick={() => setStep('signon')}
-          disabled={!canContinue}
+          onClick={() => {
+            if (!canContinue) { setShowValidation(true); return }
+            setStep('signon')
+          }}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {canContinue ? 'Continue to crew sign-on' : 'Complete scope, location & muster point'}

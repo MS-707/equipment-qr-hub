@@ -1,7 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { Flame, RotateCcw } from 'lucide-react'
+import FormStepper, { useActiveStep } from './FormStepper'
+import type { FormStep } from './FormStepper'
+import ValidationSummary from './ValidationSummary'
+import type { ValidationError } from './ValidationSummary'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createHotWorkPermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
@@ -40,6 +44,7 @@ export default function HotWorkPermitForm() {
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [showValidation, setShowValidation] = useState(false)
   const [lastCtx] = useState(getLastContext)
 
   const restore = useCallback((d: Record<string, unknown>) => {
@@ -77,6 +82,32 @@ export default function HotWorkPermitForm() {
     sigData.signatures.length >= 1 &&
     issuerId !== null &&
     validWindowOk
+
+  const stepIds = useMemo(() => ['details', 'hot-work-type', 'fire-watch', 'checklist', 'validity', 'signatures'], [])
+
+  const activeStepId = useActiveStep(stepIds)
+
+  const steps: FormStep[] = useMemo(() => [
+    { id: 'details', label: 'Details', complete: workDescription.trim().length > 0 && location.trim().length > 0 },
+    { id: 'hot-work-type', label: 'Hot Work Type', complete: hotWorkTypes.length > 0 },
+    { id: 'fire-watch', label: 'Fire Watch', complete: fireWatchOk },
+    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
+    { id: 'validity', label: 'Validity', complete: validWindowOk },
+    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && issuerId !== null },
+  ], [workDescription, location, hotWorkTypes, fireWatchOk, critLeft, validWindowOk, sigData.signatures.length, issuerId])
+
+  const validationErrors: ValidationError[] = useMemo(() => {
+    const errs: ValidationError[] = []
+    if (!workDescription.trim()) errs.push({ label: 'Work description is required', fieldId: 'hw-description' })
+    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'hw-location' })
+    if (hotWorkTypes.length === 0) errs.push({ label: 'Select at least one hot work type', fieldId: 'hot-work-type-section' })
+    if (critLeft > 0) errs.push({ label: `${critLeft} required checklist item${critLeft === 1 ? '' : 's'} remaining`, fieldId: 'checklist-section' })
+    if (!fireWatchOk) errs.push({ label: 'Fire watch person must be assigned', fieldId: 'hw-fire-watch' })
+    if (sigData.signatures.length === 0) errs.push({ label: 'At least one worker must sign on', fieldId: 'signatures-section' })
+    if (issuerId === null && sigData.signatures.length > 0) errs.push({ label: 'Designate an issuer', fieldId: 'signatures-section' })
+    if (!validWindowOk) errs.push({ label: '"Valid until" must be after "Valid from"', fieldId: 'hw-valid-until' })
+    return errs
+  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk])
 
   function submit() {
     if (!canSubmit) return
@@ -171,7 +202,8 @@ export default function HotWorkPermitForm() {
           </button>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <FormStepper steps={steps} activeStepId={activeStepId} />
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Hot Work Permit</h3>
@@ -194,12 +226,12 @@ export default function HotWorkPermitForm() {
         </div>
       </div>
 
-      <section className="space-y-2">
+      <section id="hot-work-type-section" data-step="hot-work-type" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Type of hot work</h4>
         <ChipMultiSelect options={HOT_WORK_TYPES} selected={hotWorkTypes} onChange={setHotWorkTypes} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
@@ -255,7 +287,7 @@ export default function HotWorkPermitForm() {
         )}
       </div>
 
-      <section className="space-y-2">
+      <section id="checklist-section" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
@@ -263,7 +295,7 @@ export default function HotWorkPermitForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -283,7 +315,7 @@ export default function HotWorkPermitForm() {
         </div>
       </div>
 
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the issuer.</p>
         <CrewSignatureBlock
@@ -301,12 +333,12 @@ export default function HotWorkPermitForm() {
           <span>{saveError}</span>
         </div>
       )}
-      <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+      <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent space-y-3">
+        <ValidationSummary errors={validationErrors} show={showValidation} onDismiss={() => setShowValidation(false)} />
         <button
           type="button"
-          onClick={() => setConfirmOpen(true)}
-          disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={() => { if (canSubmit) { setShowValidation(false); setConfirmOpen(true) } else { setShowValidation(true) } }}
+          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover ${!canSubmit ? 'opacity-40' : ''}`}
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'
