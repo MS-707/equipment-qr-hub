@@ -200,11 +200,11 @@ export default function IncidentReportForm() {
     }
   }
 
-  function useRootCause(text: string) {
+  function adoptRootCause(text: string) {
     setRootCause((prev) => prev ? `${prev}\n\n${text}` : text)
   }
 
-  function useCorrectiveAction(text: string) {
+  function adoptCorrectiveAction(text: string) {
     setCorrectiveActions((prev) => prev ? `${prev}\n\n${text}` : text)
   }
 
@@ -479,7 +479,7 @@ export default function IncidentReportForm() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => useRootCause(rc.cause)}
+                        onClick={() => adoptRootCause(rc.cause)}
                         className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
                       >
                         Use this
@@ -524,7 +524,7 @@ export default function IncidentReportForm() {
                             </div>
                             <button
                               type="button"
-                              onClick={() => useCorrectiveAction(ca.action)}
+                              onClick={() => adoptCorrectiveAction(ca.action)}
                               className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
                             >
                               Use this
