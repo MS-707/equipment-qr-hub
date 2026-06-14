@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { AlertTriangle, Camera, X, Plus, RotateCcw } from 'lucide-react'
+import { AlertTriangle, Camera, X, Plus, RotateCcw, Sparkles, Loader2, ChevronRight } from 'lucide-react'
 import type { IncidentType, IncidentSeverity, InjuredPerson } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
 import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
@@ -15,6 +15,60 @@ import { toLocalInput, toIso } from '@/lib/datetime'
 import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { getOfflineAnalysis } from '@/lib/incident-patterns'
+
+const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
+
+interface AnalysisRootCause {
+  cause: string
+  category: 'equipment' | 'process' | 'training' | 'environment' | 'management'
+  whyChain: string[]
+}
+
+interface AnalysisCorrectiveAction {
+  action: string
+  controlLevel: 'elimination' | 'substitution' | 'engineering' | 'administrative' | 'ppe'
+  priority: 'immediate' | 'short-term' | 'long-term'
+}
+
+interface AnalysisResult {
+  rootCauses: AnalysisRootCause[]
+  correctiveActions: AnalysisCorrectiveAction[]
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  equipment: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  process: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  training: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  environment: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  management: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+}
+
+const CONTROL_LEVEL_ORDER: AnalysisCorrectiveAction['controlLevel'][] = [
+  'elimination', 'substitution', 'engineering', 'administrative', 'ppe',
+]
+
+const CONTROL_LEVEL_LABELS: Record<string, string> = {
+  elimination: 'Elimination',
+  substitution: 'Substitution',
+  engineering: 'Engineering Controls',
+  administrative: 'Administrative Controls',
+  ppe: 'PPE',
+}
+
+const CONTROL_LEVEL_COLORS: Record<string, string> = {
+  elimination: 'bg-emerald-500/10 text-emerald-400',
+  substitution: 'bg-teal-500/10 text-teal-400',
+  engineering: 'bg-blue-500/10 text-blue-400',
+  administrative: 'bg-amber-500/10 text-amber-400',
+  ppe: 'bg-orange-500/10 text-orange-400',
+}
+
+const PRIORITY_COLORS: Record<string, string> = {
+  immediate: 'bg-danger/10 text-danger',
+  'short-term': 'bg-warn/10 text-warn',
+  'long-term': 'bg-mytra-purple/10 text-mytra-purple',
+}
 
 const TYPES: { value: IncidentType; label: string }[] = [
   { value: 'injury', label: 'Injury' },
@@ -45,6 +99,10 @@ export default function IncidentReportForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
+  const [analysisSource, setAnalysisSource] = useState<'ai' | 'offline' | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -99,6 +157,65 @@ export default function IncidentReportForm() {
     }
   }
 
+  const canAnalyze = SAGE_ENABLED && description.trim().length >= 20
+
+  async function analyzeIncident() {
+    setAnalysisLoading(true)
+    setAnalysisResult(null)
+    setAnalysisError(null)
+    setAnalysisSource(null)
+    try {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 55000)
+      const res = await fetch('/api/safety/analyze-incident', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description,
+          incidentType,
+          severity,
+          bodyPartAffected: injuredPerson.bodyPartAffected || undefined,
+          immediateActions: immediateActions || undefined,
+          location: location || undefined,
+        }),
+        signal: ctrl.signal,
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (data?.error) {
+        throw new Error(data.error)
+      }
+      setAnalysisResult({ rootCauses: data.rootCauses ?? [], correctiveActions: data.correctiveActions ?? [] })
+      setAnalysisSource('ai')
+    } catch {
+      const offline = getOfflineAnalysis(incidentType, description)
+      if (offline) {
+        setAnalysisResult(offline)
+        setAnalysisSource('offline')
+      } else {
+        setAnalysisError('Unable to analyze — check your connection and try again')
+      }
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
+
+  function adoptRootCause(text: string) {
+    const attributed = `[AI-suggested] ${text}`
+    setRootCause((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
+  }
+
+  function adoptCorrectiveAction(text: string) {
+    const attributed = `[AI-suggested] ${text}`
+    setCorrectiveActions((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
+  }
+
+  function dismissAnalysis() {
+    setAnalysisResult(null)
+    setAnalysisError(null)
+    setAnalysisSource(null)
+  }
+
   function submit() {
     if (!canSubmit) return
     setSaveError(null)
@@ -136,12 +253,12 @@ export default function IncidentReportForm() {
     saveLastContext({ projectName, location })
     if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
-      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
       fetch('/api/safety/review/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record, notionPageId: record.notionPageId }),
-      }).catch(() => {})
+      }).then((res) => { if (res.ok) markSubmittedForReview(record.id, by) }).catch(() => {})
     }
     clearDraft()
     setWasOffline(!navigator.onLine)
@@ -164,6 +281,9 @@ export default function IncidentReportForm() {
     setPhotos([])
     setReporterSig(null)
     setSubmittedId(null)
+    setAnalysisResult(null)
+    setAnalysisError(null)
+    setAnalysisSource(null)
   }
 
   if (submittedId) {
@@ -173,7 +293,7 @@ export default function IncidentReportForm() {
         title="Report Filed"
         message="Incident report recorded as"
         onNew={reset}
-        newLabel="New report"
+        newLabel="Start new report"
         offline={wasOffline}
         reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
@@ -307,6 +427,124 @@ export default function IncidentReportForm() {
           <label htmlFor="ir-actions" className={labelCls}>Immediate actions taken</label>
           <textarea id="ir-actions" rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={textareaCls} />
         </div>
+
+        {canAnalyze && !analysisResult && !analysisLoading && (
+          <button
+            type="button"
+            onClick={analyzeIncident}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium
+                       bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
+                       hover:border-mytra-purple/60 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" /> Analyze with Sage
+          </button>
+        )}
+
+        {analysisLoading && (
+          <div className="flex items-center justify-center gap-2 py-3 text-sm text-mytra-purple">
+            <Loader2 className="w-4 h-4 animate-spin" /> Sage is analyzing...
+          </div>
+        )}
+
+        {analysisError && (
+          <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+            <span>{analysisError}</span>
+          </div>
+        )}
+
+        {analysisResult && (
+          <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-mytra-purple" />
+                <span className="text-sm font-medium text-fg">Root Cause Analysis</span>
+                {analysisSource === 'offline' && (
+                  <span className="text-xs bg-warn/10 text-warn px-1.5 py-0.5 rounded">offline</span>
+                )}
+              </div>
+              <button type="button" onClick={dismissAnalysis} className="text-fg-4 hover:text-fg-2 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {analysisResult.rootCauses.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Root Causes</h5>
+                {analysisResult.rootCauses.map((rc, i) => (
+                  <div key={i} className="bg-mytra-bg border border-mytra-border rounded-lg p-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border capitalize ${CATEGORY_COLORS[rc.category]}`}>
+                          {rc.category}
+                        </span>
+                        <span className="text-sm text-fg">{rc.cause}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => adoptRootCause(rc.cause)}
+                        className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                      >
+                        Use this
+                      </button>
+                    </div>
+                    {rc.whyChain.length > 0 && (
+                      <div className="mt-2 ml-1 space-y-1">
+                        {rc.whyChain.map((why, j) => (
+                          <div key={j} className="flex items-start gap-1.5 text-xs text-fg-2" style={{ paddingLeft: `${j * 12}px` }}>
+                            <ChevronRight className="w-3 h-3 shrink-0 mt-0.5 text-fg-4" />
+                            <span>{why}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {analysisResult.correctiveActions.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Corrective Actions</h5>
+                {CONTROL_LEVEL_ORDER.map((level) => {
+                  const actions = analysisResult!.correctiveActions.filter((a) => a.controlLevel === level)
+                  if (actions.length === 0) return null
+                  return (
+                    <div key={level}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${CONTROL_LEVEL_COLORS[level]}`}>
+                          {CONTROL_LEVEL_LABELS[level]}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {actions.map((ca, j) => (
+                          <div key={j} className="flex items-start justify-between gap-2 bg-mytra-bg border border-mytra-border rounded-lg p-2.5">
+                            <div className="min-w-0">
+                              <span className="text-sm text-fg">{ca.action}</span>
+                              <span className={`ml-2 inline-block text-xs font-medium px-1.5 py-0.5 rounded ${PRIORITY_COLORS[ca.priority]}`}>
+                                {ca.priority}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => adoptCorrectiveAction(ca.action)}
+                              className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                            >
+                              Use this
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <p className="text-xs text-fg-4 text-center">
+              AI suggestions are not a substitute for a competent incident investigation.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Witnesses */}
@@ -326,7 +564,7 @@ export default function IncidentReportForm() {
             }}
             autoCapitalize="words"
             enterKeyHint="done"
-            placeholder="Add a name"
+            placeholder="Witness name"
             className={inputCls}
           />
           <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg">
@@ -350,11 +588,12 @@ export default function IncidentReportForm() {
       {/* Photos */}
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
+        <p className="text-xs text-fg-3">Tip: capture a wide shot, a close-up, and any equipment involved</p>
         <div className="flex flex-wrap gap-2">
           {photos.map((p) => (
             <div key={p.id} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.dataUrl} alt="Incident photo" className="w-16 h-16 object-cover rounded-lg border border-mytra-border" />
+              <img src={p.dataUrl} alt="Incident photo" className="w-20 h-20 object-cover rounded-lg border border-mytra-border" />
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
@@ -367,7 +606,7 @@ export default function IncidentReportForm() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="w-16 h-16 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
+            className="w-20 h-20 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
             <span className="text-xs">Add</span>
@@ -377,6 +616,7 @@ export default function IncidentReportForm() {
           ref={fileRef}
           type="file"
           accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={(e) => {
             onFile(e.target.files?.[0] ?? null)
@@ -389,11 +629,11 @@ export default function IncidentReportForm() {
       <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
-          <label htmlFor="ir-root-cause" className={labelCls}>Root cause</label>
+          <label htmlFor="ir-root-cause" className={labelCls}>Root cause analysis</label>
           <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={textareaCls} />
         </div>
         <div>
-          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions</label>
+          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions to prevent recurrence</label>
           <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={textareaCls} />
         </div>
       </section>
@@ -424,7 +664,7 @@ export default function IncidentReportForm() {
           disabled={!canSubmit}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canSubmit ? 'File Report' : 'Add a description and location'}
+          {canSubmit ? 'File Report' : 'Describe what happened and add location'}
         </button>
       </div>
     </div>

@@ -128,7 +128,7 @@ export async function POST(req: Request) {
       '',
       'Click a link above to approve or deny this record.',
       'The employee will be notified by email automatically.',
-      'Links expire after 7 days.',
+      'Links expire after 24 hours.',
       '────────────────────',
     ].join('\n')
 
@@ -184,17 +184,19 @@ async function syncToNotion(
     'EHS Review': { select: { name: 'Pending' } },
   }
 
-  const fullJson = JSON.stringify(record, null, 2).slice(0, 1900)
-  const children = [
-    {
+  const fullJson = JSON.stringify(record, null, 2)
+  const CHUNK_SIZE = 1900
+  const children: { object: 'block'; type: 'code'; code: { language: string; rich_text: { type: 'text'; text: { content: string } }[] } }[] = []
+  for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+    children.push({
       object: 'block',
       type: 'code',
       code: {
         language: 'json',
-        rich_text: [{ type: 'text', text: { content: fullJson } }],
+        rich_text: [{ type: 'text', text: { content: fullJson.slice(i, i + CHUNK_SIZE) } }],
       },
-    },
-  ]
+    })
+  }
 
   try {
     const res = await fetch('https://api.notion.com/v1/pages', {

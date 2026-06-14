@@ -250,6 +250,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         )}
+        <p className="text-xs text-fg-4 text-center mt-4">
+          By signing in you agree to our{' '}
+          <a href="/terms" className="text-mytra-purple hover:underline">Terms</a>
+          {' '}and{' '}
+          <a href="/privacy" className="text-mytra-purple hover:underline">Privacy Policy</a>.
+        </p>
       </div>
       </div>
     </Centered>

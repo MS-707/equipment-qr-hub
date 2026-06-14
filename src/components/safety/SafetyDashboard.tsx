@@ -13,7 +13,6 @@ import {
   FlaskConical,
   CheckCircle2,
   ChevronRight,
-  RefreshCw,
 } from 'lucide-react'
 import {
   getPtpForDate,
@@ -32,6 +31,7 @@ import PermitStatusBadge from './PermitStatusBadge'
 import { permitDisplayStatus } from '@/lib/safety-records'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
+import SyncQueuePanel from './SyncQueuePanel'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -52,7 +52,6 @@ export default function SafetyDashboard() {
   const [ptp, setPtp] = useState<PreTaskPlan | undefined>(undefined)
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
-  const [pendingSyncCount, setPendingSyncCount] = useState(0)
   const [reviewApprovedCount, setReviewApprovedCount] = useState(0)
   const [reviewRejectedCount, setReviewRejectedCount] = useState(0)
   const [recent, setRecent] = useState<SafetyRecord[]>([])
@@ -68,9 +67,6 @@ export default function SafetyDashboard() {
     const all = getAllSafetyRecords()
     setIncidentCount(
       all.filter((r) => r.type === 'incident-report' && new Date(r.createdAt).getTime() >= sevenDaysAgo).length
-    )
-    setPendingSyncCount(
-      all.filter((r) => r.syncStatus === 'pending' || r.syncStatus === 'offline' || r.syncStatus === 'failed').length
     )
     const reviewItems = getReviewActionableRecords()
     setReviewApprovedCount(reviewItems.approved.length)
@@ -121,9 +117,10 @@ export default function SafetyDashboard() {
         <StatCard
           label="Today's PTP"
           value={ptp ? 'Logged' : 'Not started'}
-          sub={ptp ? `${ptp.crewSignatures.length} signed` : 'tap Start PTP'}
+          sub={ptp ? `${ptp.crewSignatures.length} crew signed` : 'Tap to start'}
           tone={ptp ? 'good' : 'warn'}
           delayMs={0}
+          href={ptp ? `/safety/record/${ptp.id}` : '/safety/ptp'}
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" delayMs={60} />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} delayMs={120} />
@@ -131,15 +128,8 @@ export default function SafetyDashboard() {
         )}
       </div>
 
-      {/* Sync status */}
-      {pendingSyncCount > 0 && (
-        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
-          <RefreshCw className="w-4 h-4 text-warn shrink-0" />
-          <p className="text-xs text-warn">
-            {pendingSyncCount} record{pendingSyncCount !== 1 ? 's' : ''} waiting to sync
-          </p>
-        </div>
-      )}
+      {/* Sync queue */}
+      <SyncQueuePanel />
 
       {/* EHS review banners */}
       {reviewRejectedCount > 0 && (
@@ -243,9 +233,17 @@ export default function SafetyDashboard() {
             <RecordCardSkeleton />
           </div>
         ) : recent.length === 0 ? (
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 shadow-card text-center">
-            <CheckCircle2 className="w-8 h-8 text-fg-4 mx-auto mb-2" />
-            <p className="text-sm text-fg-2">No safety records yet. Start your day with a PTP.</p>
+          <div className="bg-mytra-card border border-mytra-border rounded-lg p-8 shadow-card text-center animate-fadeInUp">
+            <ClipboardList className="w-8 h-8 text-mytra-purple mx-auto mb-3" />
+            <p className="text-sm font-medium text-fg mb-1">Ready to go</p>
+            <p className="text-xs text-fg-3 mb-4">No safety records yet. Start your day with a Pre-Task Plan.</p>
+            <Link
+              href="/safety/ptp"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                         bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors min-h-[44px]"
+            >
+              <ClipboardList className="w-4 h-4" /> Start PTP
+            </Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -266,22 +264,35 @@ function StatCard({
   sub,
   tone,
   delayMs = 0,
+  href,
 }: {
   label: string
   value: string
   sub: string
   tone: 'good' | 'warn' | 'neutral'
   delayMs?: number
+  href?: string
 }) {
   const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
-  return (
-    <div
-      style={{ animationDelay: `${delayMs}ms` }}
-      className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
-                    transition-shadow duration-200 hover:shadow-pop animate-blurIn">
+  const cls = `bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
+                    transition-shadow duration-200 hover:shadow-pop animate-blurIn ${href ? 'press-scale' : ''}`
+  const content = (
+    <>
       <p className="text-xs uppercase tracking-wider text-fg-3">{label}</p>
       <p className={`text-lg font-semibold mt-0.5 ${valueColor}`}>{value}</p>
       <p className="text-xs text-fg-4">{sub}</p>
+    </>
+  )
+  if (href) {
+    return (
+      <Link href={href} style={{ animationDelay: `${delayMs}ms` }} className={cls}>
+        {content}
+      </Link>
+    )
+  }
+  return (
+    <div style={{ animationDelay: `${delayMs}ms` }} className={cls}>
+      {content}
     </div>
   )
 }

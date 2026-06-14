@@ -2,13 +2,28 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { LogOut, ChevronDown } from 'lucide-react'
+import { LogOut, ChevronDown, Sun, Moon, Monitor, Trash2 } from 'lucide-react'
 import { clearCurrentIdentity } from '@/lib/identity'
+import { useTheme, type ThemePreference } from '@/lib/theme'
+import { clearAllLocalData } from '@/lib/safety-records'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 export default function UserMenu() {
   const { data: session, status } = useSession()
   const [open, setOpen] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { theme, setTheme } = useTheme()
+
+  const cycleTheme = () => {
+    const order: ThemePreference[] = ['dark', 'light', 'auto']
+    const next = order[(order.indexOf(theme) + 1) % order.length]
+    setTheme(next)
+  }
+
+  const themeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
+  const themeLabel = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto'
+  const ThemeIcon = themeIcon
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -49,6 +64,21 @@ export default function UserMenu() {
         <ChevronDown className="w-3.5 h-3.5" />
       </button>
 
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete all local data?"
+        message="This permanently removes all safety records, signatures, photos, and drafts from this device. Synced records in Notion are not affected. This cannot be undone."
+        confirmLabel="Delete everything"
+        variant="danger"
+        onConfirm={async () => {
+          await clearAllLocalData()
+          clearCurrentIdentity()
+          setShowDeleteConfirm(false)
+          signOut({ callbackUrl: '/safety' })
+        }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+
       {open && (
         <div
           role="menu"
@@ -65,6 +95,15 @@ export default function UserMenu() {
           <button
             type="button"
             role="menuitem"
+            onClick={cycleTheme}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
+                       hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
+          >
+            <ThemeIcon className="w-4 h-4" /> Theme: {themeLabel}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
             onClick={() => {
               clearCurrentIdentity()
               signOut({ callbackUrl: '/safety' })
@@ -73,6 +112,16 @@ export default function UserMenu() {
                        hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
             <LogOut className="w-4 h-4" /> Sign out
+          </button>
+          <div className="h-px bg-mytra-border my-1" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => { setOpen(false); setShowDeleteConfirm(true) }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-danger/80 hover:text-danger
+                       hover:bg-danger/5 rounded transition-colors min-h-[44px]"
+          >
+            <Trash2 className="w-4 h-4" /> Delete my data
           </button>
         </div>
       )}

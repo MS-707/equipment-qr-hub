@@ -27,6 +27,7 @@ import type {
 } from '@/lib/safety-types'
 import { isPermit } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
+import { safeParseSafetyRecords } from '@/lib/schemas'
 
 const STORAGE_KEY = 'eqr-safety-records'
 const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
@@ -116,31 +117,25 @@ function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as SafetyRecord[]
-    return parsed.map((r) => ({ reviewStatus: undefined, ...r }))
-  } catch (primaryErr) {
-    // Primary store is corrupted (truncated write, partial setItem, etc.).
-    // Attempt recovery from the last known-good backup before giving up.
-    console.error('[safety-records] Primary store corrupt — attempting backup restore:', primaryErr)
-    const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
-    if (backup) {
-      try {
-        const recovered = (JSON.parse(backup) as SafetyRecord[]).map((r) => ({ reviewStatus: undefined, ...r }))
-        console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
-        // Promote the backup back to primary so subsequent reads succeed.
-        try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
-        return recovered
-      } catch {
-        console.error('[safety-records] Backup also corrupt. Returning empty store.')
-      }
-    }
-    // Emit a detectable event so an error boundary / Sentry hook can alert.
-    try {
-      window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
-    } catch { /* SSR guard */ }
-    return []
+  const records = safeParseSafetyRecords(raw)
+  if (records.length > 0) {
+    return records.map((r) => ({ reviewStatus: undefined, ...r }))
   }
+  console.error('[safety-records] Primary store corrupt or empty — attempting backup restore.')
+  const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
+  if (backup) {
+    const recovered = safeParseSafetyRecords(backup)
+    if (recovered.length > 0) {
+      console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+      try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+      return recovered.map((r) => ({ reviewStatus: undefined, ...r }))
+    }
+    console.error('[safety-records] Backup also corrupt. Returning empty store.')
+  }
+  try {
+    window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
+  } catch { /* SSR guard */ }
+  return []
 }
 
 function writeAll(records: SafetyRecord[]): void {
@@ -243,6 +238,12 @@ export function getRecordsForDate(date: string): SafetyRecord[] {
 export function getPtpForDate(date: string): PreTaskPlan | undefined {
   return getAllSafetyRecords().find(
     (r): r is PreTaskPlan => r.type === 'ptp' && (r as PreTaskPlan).date === date
+  )
+}
+
+export function getLatestPtp(): PreTaskPlan | undefined {
+  return getAllSafetyRecords().find(
+    (r): r is PreTaskPlan => r.type === 'ptp'
   )
 }
 
@@ -493,7 +494,17 @@ export function markSyncFailed(id: string): void {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
   if (idx === -1) return
-  all[idx] = { ...all[idx], syncStatus: 'failed' }
+  const event: import('@/lib/safety-types').AuditEvent = {
+    action: 'sync-failed',
+    by: 'system',
+    byEmail: null,
+    at: new Date().toISOString(),
+  }
+  all[idx] = {
+    ...all[idx],
+    syncStatus: 'failed',
+    events: [...all[idx].events, event],
+  }
   writeAll(all)
   notify()
 }
@@ -626,11 +637,13 @@ export function markReviewRecalled(
   all[idx] = {
     ...rec,
     reviewStatus: 'recalled',
-    reviewerName: undefined,
-    reviewerEmail: undefined,
-    reviewNote: undefined,
-    reviewDecidedAt: undefined,
-    events: [...rec.events, { action: 'review-recalled', by: by.name, byEmail: by.email, at }],
+    events: [...rec.events, {
+      action: 'review-recalled',
+      by: by.name,
+      byEmail: by.email,
+      at,
+      ...(rec.reviewerName ? { previousReviewer: rec.reviewerName } : {}),
+    }],
   }
   writeAll(all)
   notify()
@@ -679,4 +692,34 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')
+}
+
+// ── Data deletion (GDPR right-to-erasure) ────────────────────
+
+export async function clearAllLocalData(): Promise<void> {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(STORAGE_KEY_BACKUP)
+
+  const draftKeys = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k?.startsWith('draft:')) draftKeys.push(k)
+  }
+  draftKeys.forEach((k) => localStorage.removeItem(k))
+
+  localStorage.removeItem('sage-identity')
+
+  try {
+    const db = await openBlobDB()
+    const tx = db.transaction(PHOTO_STORE, 'readwrite')
+    tx.objectStore(PHOTO_STORE).clear()
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+  } catch {
+    // IndexedDB may not be available
+  }
+
+  notify()
 }

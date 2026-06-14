@@ -10,6 +10,8 @@
  * server providers.
  */
 
+import { safeParseIdentity } from '@/lib/schemas'
+
 export interface Identity {
   name: string
   email: string | null
@@ -41,15 +43,16 @@ export function getCurrentIdentity(): Identity | null {
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY)
     if (!raw) return null
-    const id = JSON.parse(raw) as Identity
-    if (id.verifiedAt && Date.now() - new Date(id.verifiedAt).getTime() > IDENTITY_TTL_MS) {
-      localStorage.removeItem(CURRENT_USER_KEY)
-      return null
-    }
-    return id
+    return safeParseIdentity(raw)
   } catch {
     return null
   }
+}
+
+export function isIdentityStale(): boolean {
+  const id = getCurrentIdentity()
+  if (!id?.verifiedAt) return true
+  return Date.now() - new Date(id.verifiedAt).getTime() > IDENTITY_TTL_MS
 }
 
 export function clearCurrentIdentity(): void {

@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { WifiOff } from 'lucide-react'
 
@@ -10,10 +12,17 @@ export default function OfflinePage() {
         <p className="text-fg-3 text-sm mb-6">
           This page hasn&apos;t been cached yet. Connect to the network and try again.
         </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center justify-center gap-2 bg-mytra-purple hover:bg-mytra-purple/80
+                     text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors mb-3 w-full sm:w-auto"
+        >
+          Try again
+        </button>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple/80
-                     text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 border border-mytra-border bg-mytra-card hover:bg-mytra-card-hover
+                     text-fg-2 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
         >
           Back to Home
         </Link>

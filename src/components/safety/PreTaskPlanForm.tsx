@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react'
+import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy, AlertTriangle, AlertCircle, ShieldCheck } from 'lucide-react'
 import type { Shift } from '@/lib/types'
-import type { HazardEntry, HeatIllnessPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById } from '@/lib/safety-records'
+import type { HazardEntry, HeatIllnessPlan, PreTaskPlan } from '@/lib/safety-types'
+import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -16,6 +16,21 @@ import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { haptic } from '@/lib/haptic'
+import ValidationSummary, { type ValidationError } from './ValidationSummary'
+
+interface AuditFinding {
+  category: string
+  severity: 'blocker' | 'warning'
+  finding: string
+  suggestion: string
+}
+
+interface AuditResult {
+  pass: boolean
+  findings: AuditFinding[]
+  overallRisk: 'low' | 'medium' | 'high' | 'critical'
+}
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
@@ -58,6 +73,37 @@ export default function PreTaskPlanForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [carryForwardDismissed, setCarryForwardDismissed] = useState(false)
+  const [prevPtp] = useState(() => {
+    const ptp = getLatestPtp()
+    if (!ptp || ptp.date === todayStr()) return null
+    const age = Date.now() - new Date(ptp.createdAt).getTime()
+    if (age > 7 * 24 * 60 * 60 * 1000) return null
+    return ptp
+  })
+
+  const [showValidation, setShowValidation] = useState(false)
+  const [showSignonValidation, setShowSignonValidation] = useState(false)
+
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null)
+  const [auditing, setAuditing] = useState(false)
+  const [auditError, setAuditError] = useState<string | null>(null)
+  const [acknowledgedWarnings, setAcknowledgedWarnings] = useState(false)
+
+  function applyCarryForward() {
+    if (!prevPtp) return
+    if (prevPtp.hazards.length > 0) setHazards(prevPtp.hazards.map(h => ({ ...h, id: cryptoRandomId() })))
+    if (prevPtp.ppeRequired.length > 0) setPpe(prevPtp.ppeRequired)
+    if (prevPtp.emergencyMusterPoint) setMusterPoint(prevPtp.emergencyMusterPoint)
+    if (prevPtp.nearestHospital) setHospital(prevPtp.nearestHospital)
+    if (prevPtp.firstAidEyewashLocation) setFirstAid(prevPtp.firstAidEyewashLocation)
+    const h = prevPtp.heatIllnessPlan
+    if (Object.values(h).some(Boolean)) {
+      setHeat(h)
+      setHeatOpen(true)
+    }
+    setCarryForwardDismissed(true)
+  }
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.date === 'string') setDate(d.date)
@@ -94,6 +140,17 @@ export default function PreTaskPlanForm() {
 
   const canContinue = scopeOfWork.trim().length > 0 && location.trim().length > 0 && musterPoint.trim().length > 0
   const canSubmit = sigData.signatures.length >= 1 && supervisorId !== null
+
+  const planErrors: ValidationError[] = [
+    ...(scopeOfWork.trim().length === 0 ? [{ label: 'Scope of work', fieldId: 'ptp-scope' }] : []),
+    ...(location.trim().length === 0 ? [{ label: 'Location', fieldId: 'ptp-location' }] : []),
+    ...(musterPoint.trim().length === 0 ? [{ label: 'Muster point', fieldId: 'ptp-muster' }] : []),
+  ]
+
+  const signonErrors: ValidationError[] = [
+    ...(sigData.signatures.length < 1 ? [{ label: 'At least one crew signature', fieldId: 'crew-signatures' }] : []),
+    ...(supervisorId === null ? [{ label: 'Designate a supervisor', fieldId: 'crew-signatures' }] : []),
+  ]
 
   function toggleHeat(key: keyof HeatIllnessPlan) {
     setHeat((h) => ({ ...h, [key]: !h[key] }))
@@ -144,6 +201,72 @@ export default function PreTaskPlanForm() {
       setToolboxLoading(false)
     }
   }
+
+  function buildPtpSnapshot(): PreTaskPlan {
+    return {
+      id: '',
+      type: 'ptp',
+      createdBy: '',
+      createdByEmail: null,
+      createdAt: new Date().toISOString(),
+      location,
+      projectName,
+      syncStatus: 'pending',
+      notionPageId: null,
+      events: [],
+      date,
+      shift,
+      scopeOfWork,
+      hazards,
+      ppeRequired: ppe,
+      emergencyMusterPoint: musterPoint,
+      nearestHospital: hospital,
+      firstAidEyewashLocation: firstAid,
+      weatherNotes: weather,
+      windSpeed: wind,
+      heatIllnessPlan: heat,
+      toolboxTalkTopic: toolboxTopic,
+      toolboxTalkNotes: toolboxNotes,
+      crewSignatures: sigData.signatures,
+      supervisorSignatureId: supervisorId,
+    }
+  }
+
+  async function runAudit() {
+    setAuditing(true)
+    setAuditError(null)
+    setAuditResult(null)
+    setAcknowledgedWarnings(false)
+    try {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 55000)
+      const res = await fetch('/api/safety/audit-ptp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ptp: buildPtpSnapshot() }),
+        signal: ctrl.signal,
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (data?.error) {
+        setAuditError(data.error)
+      } else {
+        setAuditResult(data as AuditResult)
+      }
+    } catch (err) {
+      const msg =
+        err instanceof DOMException && err.name === 'AbortError'
+          ? 'Request timed out — try again'
+          : 'Network error — check your connection'
+      setAuditError(msg)
+    } finally {
+      setAuditing(false)
+    }
+  }
+
+  const hasBlockers = auditResult?.findings.some((f) => f.severity === 'blocker') ?? false
+  const hasWarnings = auditResult?.findings.some((f) => f.severity === 'warning') ?? false
+  const auditBlocksSubmit = hasBlockers || (hasWarnings && !acknowledgedWarnings)
 
   function handleSubmit() {
     if (!canSubmit) return
@@ -198,6 +321,9 @@ export default function PreTaskPlanForm() {
     setSubmittedId(null)
     setToolboxTopic('')
     setToolboxNotes('')
+    setAuditResult(null)
+    setAuditError(null)
+    setAcknowledgedWarnings(false)
   }
 
   // ── DONE ──────────────────────────────────────────────────
@@ -217,11 +343,11 @@ export default function PreTaskPlanForm() {
           <ArrowLeft className="w-4 h-4" /> Back to plan
         </button>
 
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
-          <h3 className="text-sm font-semibold text-fg mb-1">Team sign-on</h3>
+        <div id="crew-signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
           <p className="text-xs text-fg-2 mb-3">
-            Pass the device around — each team member signs to acknowledge the plan. Mark one as
-            supervisor.
+            Pass the device around — each crew member signs to acknowledge the plan. Designate
+            the supervisor.
           </p>
           <CrewSignatureBlock
             value={sigData}
@@ -232,24 +358,152 @@ export default function PreTaskPlanForm() {
           />
         </div>
 
+        {sageEnabled && (
+          <div className="space-y-3">
+            {!auditResult && !auditing && (
+              <button
+                type="button"
+                onClick={runAudit}
+                disabled={auditing}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium
+                           bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
+                           hover:border-mytra-purple/60 transition-colors
+                           disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="w-4 h-4" /> Audit with Sage
+              </button>
+            )}
+
+            {auditing && (
+              <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-4 shadow-card">
+                <div className="flex items-center justify-center gap-2 py-2 text-sm text-mytra-purple">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Sage is auditing your plan...
+                </div>
+              </div>
+            )}
+
+            {auditError && (
+              <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{auditError}</span>
+              </div>
+            )}
+
+            {auditResult && (
+              <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden animate-fadeIn">
+                {auditResult.pass && auditResult.findings.length === 0 ? (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-ok/10 border-b border-ok/20">
+                    <ShieldCheck className="w-5 h-5 text-ok" />
+                    <span className="text-sm font-medium text-ok">Sage: Plan looks complete</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b border-mytra-border">
+                      <Sparkles className="w-4 h-4 text-mytra-purple" />
+                      <span className="text-sm font-medium text-fg">Sage audit</span>
+                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ml-auto ${
+                        auditResult.overallRisk === 'critical' ? 'bg-danger/10 text-danger'
+                        : auditResult.overallRisk === 'high' ? 'bg-danger/10 text-danger'
+                        : auditResult.overallRisk === 'medium' ? 'bg-warn/10 text-warn'
+                        : 'bg-ok/10 text-ok'
+                      }`}>
+                        {auditResult.overallRisk.charAt(0).toUpperCase() + auditResult.overallRisk.slice(1)} risk
+                      </span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {auditResult.findings.map((f, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-lg p-3 border ${
+                            f.severity === 'blocker'
+                              ? 'bg-danger/5 border-danger/20'
+                              : 'bg-warn/5 border-warn/20'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2">
+                            {f.severity === 'blocker' ? (
+                              <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+                            )}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+                                  f.severity === 'blocker'
+                                    ? 'bg-danger/10 text-danger'
+                                    : 'bg-warn/10 text-warn'
+                                }`}>
+                                  {f.severity === 'blocker' ? 'Blocker' : 'Warning'}
+                                </span>
+                                <span className="text-xs text-fg-3">{f.category}</span>
+                              </div>
+                              <p className="text-sm text-fg">{f.finding}</p>
+                              <p className="text-xs text-fg-2 mt-1">{f.suggestion}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {hasBlockers && (
+                      <div className="px-4 pb-3">
+                        <p className="text-xs text-danger">Resolve blockers before submitting.</p>
+                      </div>
+                    )}
+                    {!hasBlockers && hasWarnings && !acknowledgedWarnings && (
+                      <div className="px-4 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setAcknowledgedWarnings(true)}
+                          className="w-full py-2 rounded-lg text-xs font-medium bg-warn/10 border border-warn/20 text-warn hover:bg-warn/20 transition-colors"
+                        >
+                          Acknowledge warnings and proceed
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="px-4 pb-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setAuditResult(null); setAcknowledgedWarnings(false) }}
+                    className="text-xs text-fg-4 hover:text-fg-2 transition-colors"
+                  >
+                    Re-audit
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {saveError && (
           <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
             <span className="font-semibold shrink-0">Save failed:</span>
             <span>{saveError}</span>
           </div>
         )}
-        <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+        <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent space-y-3">
+          <ValidationSummary
+            errors={signonErrors}
+            show={showSignonValidation}
+            onDismiss={() => setShowSignonValidation(false)}
+          />
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
+            onClick={() => {
+              if (!canSubmit) { setShowSignonValidation(true); return }
+              handleSubmit()
+            }}
+            disabled={canSubmit && sageEnabled && auditResult !== null && auditBlocksSubmit}
             className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {sigData.signatures.length === 0
-              ? 'Add at least one signature'
+              ? 'At least one crew member must sign'
               : supervisorId === null
-                ? 'Mark a supervisor'
-                : 'Submit Pre-Task Plan'}
+                ? 'Designate the supervisor'
+                : hasBlockers
+                  ? 'Resolve blockers to submit'
+                  : 'Submit Pre-Task Plan'}
           </button>
         </div>
       </div>
@@ -268,6 +522,27 @@ export default function PreTaskPlanForm() {
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
             Dismiss
           </button>
+        </div>
+      )}
+      {!hasDraft && prevPtp && !carryForwardDismissed && (
+        <div className="flex items-center justify-between gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 animate-fadeIn">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-ok font-medium flex items-center gap-1.5">
+              <Copy className="w-4 h-4 shrink-0" />
+              Carry forward from {prevPtp.date}
+            </p>
+            <p className="text-xs text-ok/80 mt-0.5 truncate">
+              {prevPtp.hazards.length} hazards, PPE, muster point & site conditions
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={applyCarryForward} className="text-xs font-medium text-ok bg-ok/15 hover:bg-ok/25 rounded-lg px-3 min-h-[44px] inline-flex items-center transition-colors">
+              Apply
+            </button>
+            <button type="button" onClick={() => setCarryForwardDismissed(true)} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-2 inline-flex items-center">
+              Skip
+            </button>
+          </div>
         </div>
       )}
       <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
@@ -453,21 +728,28 @@ export default function PreTaskPlanForm() {
               </div>
             )}
             <div>
-              <label htmlFor="ptp-tbt-notes" className={labelCls}>Notes</label>
+              <label htmlFor="ptp-tbt-notes" className={labelCls}>Discussion points</label>
               <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={textareaCls} />
             </div>
           </div>
         )}
       </section>
 
-      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent">
+      <div data-tour-module="crew-signon" className="sticky bottom-0 pb-4 pt-4 bg-gradient-to-t from-mytra-bg from-60% to-transparent space-y-3">
+        <ValidationSummary
+          errors={planErrors}
+          show={showValidation}
+          onDismiss={() => setShowValidation(false)}
+        />
         <button
           type="button"
-          onClick={() => setStep('signon')}
-          disabled={!canContinue}
+          onClick={() => {
+            if (!canContinue) { setShowValidation(true); return }
+            setStep('signon')
+          }}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {canContinue ? 'Continue to crew sign-on' : 'Fill in scope, location & muster point'}
+          {canContinue ? 'Continue to crew sign-on' : 'Complete scope, location & muster point'}
         </button>
       </div>
     </div>
@@ -478,19 +760,21 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
   const headingRef = useRef<HTMLHeadingElement>(null)
   const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
-  useEffect(() => { headingRef.current?.focus() }, [])
+  useEffect(() => { headingRef.current?.focus(); haptic('success') }, [])
 
   useEffect(() => {
     if (!ehsEnabled) return
     const identity = getCurrentIdentity()
-    markSubmittedForReview(submittedId, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
+    const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
     const rec = getSafetyRecordById(submittedId)
     if (rec) {
       fetch('/api/safety/review/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
-      }).catch(() => {})
+      })
+        .then((res) => { if (res.ok) markSubmittedForReview(submittedId, by) })
+        .catch(() => {})
     }
   }, [ehsEnabled, submittedId])
 
@@ -527,7 +811,7 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        New Plan
+        Start new PTP
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
         Back to Home

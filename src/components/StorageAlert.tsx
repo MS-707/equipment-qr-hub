@@ -15,7 +15,7 @@ export default function StorageAlert() {
   if (!visible) return null
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[80] bg-danger/95 text-white px-4 py-3 text-center">
+    <div className="no-print fixed top-0 left-0 right-0 z-[80] bg-danger/95 text-white px-4 py-3 text-center">
       <div className="max-w-2xl mx-auto flex items-center gap-2 justify-center">
         <AlertTriangle className="w-4 h-4 shrink-0" />
         <p className="text-sm font-medium">

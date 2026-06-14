@@ -6,7 +6,8 @@ import SignaturePad from '@/components/SignaturePad'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import type { CrewSignature } from '@/lib/safety-types'
 import { newSignature } from '@/lib/safety-records'
-import { crewRoster, crewRoles } from '@/data/crew'
+import { getCrewRoster, crewRoles, rememberCrewMember } from '@/data/crew'
+import { haptic } from '@/lib/haptic'
 
 export interface SignatureData {
   signatures: CrewSignature[]
@@ -40,6 +41,7 @@ export default function CrewSignatureBlock({
   const [role, setRole] = useState('')
   const [dataUrl, setDataUrl] = useState<string | null>(null)
   const [pendingRemove, setPendingRemove] = useState<CrewSignature | null>(null)
+  const [roster] = useState(() => getCrewRoster())
 
   function reset() {
     setName('')
@@ -50,12 +52,20 @@ export default function CrewSignatureBlock({
 
   function save() {
     if (!name.trim() || !dataUrl) return
+    haptic('tap')
     const sig = newSignature({ name: name.trim(), role: role || null, hasSignature: true })
     onChange({
       signatures: [...value.signatures, sig],
       blobs: { ...value.blobs, [sig.id]: dataUrl },
     })
+    rememberCrewMember(name.trim(), role || null)
     reset()
+  }
+
+  function handleNameChange(v: string) {
+    setName(v)
+    const match = roster.find((c) => c.name.toLowerCase() === v.toLowerCase())
+    if (match?.role && !role) setRole(match.role)
   }
 
   function remove(id: string) {
@@ -115,13 +125,16 @@ export default function CrewSignatureBlock({
 
       {adding ? (
         <div className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
+          <p className="text-xs text-fg-3 leading-relaxed">
+            By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.
+          </p>
           <div>
             <label className="block text-xs text-fg-2 mb-1">Name</label>
             <input
               type="text"
               list="crew-roster"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               autoCapitalize="words"
               placeholder="Crew member name"
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
@@ -129,7 +142,7 @@ export default function CrewSignatureBlock({
                          focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
             />
             <datalist id="crew-roster">
-              {crewRoster.map((c) => (
+              {roster.map((c) => (
                 <option key={c.name} value={c.name} />
               ))}
             </datalist>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
@@ -42,6 +43,24 @@ import ReviewStatusSection from './ReviewStatusSection'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useReviewPoller } from '@/lib/review-poll'
 
+/** True if a saved form draft at this key holds any user-entered content. */
+function draftHasContent(draftKey: string): boolean {
+  try {
+    const raw = localStorage.getItem(draftKey)
+    if (!raw) return false
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    return Object.values(parsed).some(
+      (v) =>
+        (typeof v === 'string' && v.trim() !== '') ||
+        (Array.isArray(v) && v.length > 0) ||
+        (typeof v === 'boolean' && v) ||
+        (typeof v === 'number' && v !== 0)
+    )
+  } catch {
+    return false
+  }
+}
+
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
     month: 'short',
@@ -53,13 +72,32 @@ function fmt(iso: string): string {
 }
 
 export default function RecordView({ id }: { id: string }) {
+  const router = useRouter()
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [shared, setShared] = useState(false)
+  const [pendingReissue, setPendingReissue] = useState<{ draftKey: string; formPath: string; draft: Record<string, unknown> } | null>(null)
 
   useReviewPoller()
+
+  const [isStandalone, setIsStandalone] = useState(false)
+
+  useEffect(() => {
+    setIsStandalone(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true
+    )
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('print') === '1' && !isStandalone) {
+      const timer = setTimeout(() => window.print(), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isStandalone])
 
   const load = useCallback(() => {
     const r = getSafetyRecordById(id)
@@ -116,12 +154,74 @@ export default function RecordView({ id }: { id: string }) {
     }
   }
 
-  const permitOpen = isPermit(r) && permitDisplayStatus(r as AnyPermit) !== 'closed' && permitDisplayStatus(r as AnyPermit) !== 'revoked'
+  const permitStatus = isPermit(r) ? permitDisplayStatus(r as AnyPermit) : null
+  const permitOpen = isPermit(r) && permitStatus !== 'closed' && permitStatus !== 'revoked'
+  const permitClosed = isPermit(r) && !permitOpen
+
+  function handleReissue() {
+    if (!isPermit(r)) return
+    const p = r as AnyPermit
+    const draftKey =
+      p.type === 'height-permit' ? 'draft:height-permit'
+        : p.type === 'hot-work-permit' ? 'draft:hot-work-permit'
+          : 'draft:confined-space-permit'
+    const formPath =
+      p.type === 'height-permit' ? '/safety/permits/height'
+        : p.type === 'hot-work-permit' ? '/safety/permits/hot-work'
+          : '/safety/permits/confined-space'
+    // Carry the permit's identity and reusable configuration, but NOT
+    // time-specific observations (gas readings) or named people on station
+    // (attendant / fire watch) — those must be re-confirmed for the new
+    // permit period. The validity window and pre-issue checklist are
+    // intentionally left to the form's fresh defaults.
+    const draft: Record<string, unknown> = {
+      projectName: p.projectName,
+      location: p.location,
+    }
+    if ('workDescription' in p) draft.workDescription = (p as HeightPermit | HotWorkPermit).workDescription
+    if (p.type === 'height-permit') {
+      const hp = p as HeightPermit
+      draft.workingHeight = hp.workingHeight
+      draft.accessMethod = hp.accessMethod
+      draft.fallProtection = hp.fallProtection
+      draft.anchorPoints = hp.anchorPoints
+      draft.rescuePlan = hp.rescuePlan
+    }
+    if (p.type === 'hot-work-permit') {
+      const hw = p as HotWorkPermit
+      draft.hotWorkTypes = hw.hotWorkTypes
+      draft.fireWatchRequired = hw.fireWatchRequired
+      draft.postDuration = hw.fireWatchPostDurationMin
+      draft.extinguisherLocation = hw.extinguisherLocation
+      draft.extinguisherType = hw.extinguisherType
+      draft.sprinklerStatus = hw.sprinklerStatus
+      draft.gasTestRequired = hw.gasTestRequired
+    }
+    if (p.type === 'confined-space-permit') {
+      const cs = p as ConfinedSpacePermit
+      draft.spaceDescription = cs.spaceDescription
+      draft.hazards = cs.hazards
+      draft.rescuePlan = cs.rescuePlan
+    }
+    // Don't silently clobber a permit the user already has in progress.
+    if (draftHasContent(draftKey)) {
+      setPendingReissue({ draftKey, formPath, draft })
+      return
+    }
+    writeDraftAndGo(draftKey, draft, formPath)
+  }
+
+  function writeDraftAndGo(draftKey: string, draft: Record<string, unknown>, formPath: string) {
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(draft))
+    } catch {}
+    router.push(formPath)
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="no-print flex items-center justify-between">
-        <Link href="/safety/history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg">
+        <Link href="/safety/history" aria-label="Back to safety history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
           <ArrowLeft className="w-4 h-4" /> History
         </Link>
         <div className="flex items-center gap-2">
@@ -144,7 +244,13 @@ export default function RecordView({ id }: { id: string }) {
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              if (isStandalone) {
+                window.open(`${window.location.pathname}?print=1`, '_blank')
+              } else {
+                window.print()
+              }
+            }}
             className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
           >
             <Printer className="w-3.5 h-3.5" /> Print
@@ -216,6 +322,15 @@ export default function RecordView({ id }: { id: string }) {
           </button>
         </div>
       )}
+      {permitClosed && (
+        <button
+          type="button"
+          onClick={handleReissue}
+          className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
+        >
+          <Copy className="w-4 h-4" /> Reissue as new permit
+        </button>
+      )}
       <ConfirmDialog
         open={closeOpen}
         title="Close Permit"
@@ -234,6 +349,18 @@ export default function RecordView({ id }: { id: string }) {
         inputPrompt="Reason for revoking this permit"
         onConfirm={handleRevoke}
         onCancel={() => setRevokeOpen(false)}
+      />
+      <ConfirmDialog
+        open={pendingReissue !== null}
+        title="Replace draft in progress?"
+        message="You have an unsaved permit of this type in progress. Reissuing will replace it with a copy of this permit."
+        confirmLabel="Replace & reissue"
+        variant="danger"
+        onConfirm={() => {
+          if (pendingReissue) writeDraftAndGo(pendingReissue.draftKey, pendingReissue.draft, pendingReissue.formPath)
+          setPendingReissue(null)
+        }}
+        onCancel={() => setPendingReissue(null)}
       />
 
       {/* Print-only authorization block (matches template Section 5/7) */}
@@ -369,7 +496,7 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </Section>
       )}
 
-      <Section title={`Team sign-on (${ptp.crewSignatures.length})`}>
+      <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
         <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
       </Section>
     </>
@@ -445,7 +572,7 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
       </Section>
 
       {jha.additionalNotes && (
-        <Section title="Additional notes / conditions">
+        <Section title="Special conditions / notes">
           <p className="text-sm text-fg-2 whitespace-pre-line">{jha.additionalNotes}</p>
         </Section>
       )}
@@ -484,7 +611,7 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
           ))}
         </ul>
       </Section>
-      <Section title={`Sign-on (${sigs.length})`}>
+      <Section title={`Crew sign-on (${sigs.length})`}>
         <SignatureGrid sigs={sigs} images={sigImages} />
       </Section>
     </>

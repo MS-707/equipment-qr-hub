@@ -8,7 +8,7 @@
  * take safety tooling down with it.
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 
 const windows = new Map<string, { count: number; resetAt: number }>()
 let lastCleanup = Date.now()

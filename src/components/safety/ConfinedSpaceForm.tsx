@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { PackageOpen, RotateCcw } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { PackageOpen, RotateCcw, AlertTriangle, CheckCircle2, Info, Sparkles, ChevronDown, Loader2 } from 'lucide-react'
+import { analyzeAtmosphere, type AtmoAlert } from '@/lib/atmo-check'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
@@ -16,6 +18,9 @@ import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { haptic } from '@/lib/haptic'
+import FormStepper, { useActiveStep, type FormStep } from './FormStepper'
+import ValidationSummary, { type ValidationError } from './ValidationSummary'
 
 function outOfRange(value: string, range: { min?: number; max?: number }): boolean {
   if (value.trim() === '') return false
@@ -51,6 +56,10 @@ export default function ConfinedSpaceForm() {
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
+  const [aiAnalysis, setAiAnalysis] = useState<{ safe: boolean; alerts: { gas: string; reading: number; threshold: string; severity: string; guidance: string }[]; recommendations: string[] } | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiExpanded, setAiExpanded] = useState(true)
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
@@ -82,9 +91,92 @@ export default function ConfinedSpaceForm() {
     outOfRange(lel, { max: 10 }) ||
     outOfRange(co, { max: 35 }) ||
     outOfRange(h2s, { max: 10 })
+  const prevAtmoUnsafe = useRef(false)
+  useEffect(() => {
+    if (atmoUnsafe && !prevAtmoUnsafe.current) haptic('error')
+    prevAtmoUnsafe.current = atmoUnsafe
+  }, [atmoUnsafe])
+  const atmoAnalysis = useMemo(() => {
+    const readings = {
+      oxygen: oxygen.trim() ? parseFloat(oxygen) : null,
+      lel: lel.trim() ? parseFloat(lel) : null,
+      co: co.trim() ? parseFloat(co) : null,
+      h2s: h2s.trim() ? parseFloat(h2s) : null,
+    }
+    if (readings.oxygen === null && readings.lel === null && readings.co === null && readings.h2s === null) return null
+    if ((readings.oxygen !== null && Number.isNaN(readings.oxygen)) ||
+        (readings.lel !== null && Number.isNaN(readings.lel)) ||
+        (readings.co !== null && Number.isNaN(readings.co)) ||
+        (readings.h2s !== null && Number.isNaN(readings.h2s))) return null
+    return analyzeAtmosphere(readings, spaceDescription, hazards)
+  }, [oxygen, lel, co, h2s, spaceDescription, hazards])
+
+  const worstSeverity = useMemo(() => {
+    if (!atmoAnalysis) return 'safe' as const
+    const order = { safe: 0, warning: 1, danger: 2, idlh: 3 } as const
+    let worst: AtmoAlert['severity'] = 'safe'
+    for (const a of atmoAnalysis.alerts) {
+      if (order[a.severity] > order[worst]) worst = a.severity
+    }
+    return worst
+  }, [atmoAnalysis])
+
+  const worstAlert = useMemo(() => {
+    if (!atmoAnalysis) return null
+    const order = { safe: 0, warning: 1, danger: 2, idlh: 3 } as const
+    let worst: AtmoAlert | null = null
+    for (const a of atmoAnalysis.alerts) {
+      if (!worst || order[a.severity] > order[worst.severity]) worst = a
+    }
+    return worst && worst.severity !== 'safe' ? worst : null
+  }, [atmoAnalysis])
+
+  async function fetchAiAnalysis() {
+    setAiLoading(true)
+    setAiError(null)
+    try {
+      const res = await fetch('/api/safety/analyze-atmosphere', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          readings: {
+            oxygen: oxygen.trim() ? parseFloat(oxygen) : null,
+            lel: lel.trim() ? parseFloat(lel) : null,
+            co: co.trim() ? parseFloat(co) : null,
+            h2s: h2s.trim() ? parseFloat(h2s) : null,
+          },
+          spaceDescription,
+          hazards,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setAiError(data.error ?? 'Request failed')
+        return
+      }
+      const data = await res.json()
+      setAiAnalysis(data.analysis)
+    } catch {
+      setAiError('Network error — check your connection')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  function alertForGas(gasLabel: string): AtmoAlert | undefined {
+    if (!atmoAnalysis) return undefined
+    const gasMap: Record<string, string> = { 'O₂ %': 'O2', 'LEL %': 'LEL', 'CO ppm': 'CO', 'H₂S ppm': 'H2S' }
+    const key = gasMap[gasLabel]
+    return atmoAnalysis.alerts.find((a) => a.gas === key)
+  }
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [showValidation, setShowValidation] = useState(false)
+  const dismissValidation = useCallback(() => setShowValidation(false), [])
   const canSubmit =
     spaceDescription.trim().length > 0 &&
     location.trim().length > 0 &&
+    hazards.length > 0 &&
     attendantName.trim().length > 0 &&
     rescuePlan.trim().length > 0 &&
     critLeft === 0 &&
@@ -92,6 +184,31 @@ export default function ConfinedSpaceForm() {
     sigData.signatures.length >= 1 &&
     supervisorId !== null &&
     validWindowOk
+
+  const stepIds = ['details', 'hazards', 'atmospheric', 'rescue', 'checklist', 'validity', 'signatures'] as const
+  const steps: FormStep[] = [
+    { id: 'details', label: 'Details', complete: spaceDescription.trim().length > 0 && location.trim().length > 0 },
+    { id: 'hazards', label: 'Hazards', complete: hazards.length > 0 },
+    { id: 'atmospheric', label: 'Atmo Test', complete: !atmoUnsafe && oxygen.trim() !== '' },
+    { id: 'rescue', label: 'Rescue', complete: attendantName.trim().length > 0 && rescuePlan.trim().length > 0 },
+    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
+    { id: 'validity', label: 'Validity', complete: validWindowOk },
+    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && supervisorId !== null },
+  ]
+  const activeStepId = useActiveStep([...stepIds])
+
+  const validationErrors = useMemo((): ValidationError[] => {
+    const errs: ValidationError[] = []
+    if (hazards.length === 0) errs.push({ label: 'Identify at least one hazard', fieldId: 'cs-hazards' })
+    if (!attendantName.trim()) errs.push({ label: 'Assign an attendant', fieldId: 'cs-attendant' })
+    if (!rescuePlan.trim()) errs.push({ label: 'Add a rescue plan', fieldId: 'cs-rescue' })
+    if (atmoUnsafe) errs.push({ label: 'Atmosphere outside safe limits', fieldId: 'cs-atmo-o' })
+    if (critLeft > 0) errs.push({ label: `Complete ${critLeft} required checklist item${critLeft === 1 ? '' : 's'}`, fieldId: 'cs-checklist' })
+    if (!validWindowOk) errs.push({ label: 'Fix validity window — "until" must be after "from"', fieldId: 'cs-valid-until' })
+    if (supervisorId === null) errs.push({ label: 'Designate the entry supervisor', fieldId: 'cs-signatures' })
+    if (sigData.signatures.length === 0) errs.push({ label: 'At least one entrant must sign on', fieldId: 'cs-signatures' })
+    return errs
+  }, [hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, supervisorId, sigData.signatures.length])
 
   function submit() {
     if (!canSubmit) return
@@ -130,8 +247,10 @@ export default function ConfinedSpaceForm() {
     void trySyncRecord(record.id)
     if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
       const identity = getCurrentIdentity()
-      markSubmittedForReview(record.id, { name: identity?.name ?? 'Unknown', email: identity?.email ?? null })
-      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) }).catch(() => {})
+      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
+      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) })
+        .then((res) => { if (res.ok) markSubmittedForReview(record.id, by) })
+        .catch(() => {})
     }
     saveLastContext({ projectName, location })
     clearDraft()
@@ -170,7 +289,7 @@ export default function ConfinedSpaceForm() {
         title="Permit Issued"
         message="Confined Space Entry permit is active, logged as"
         onNew={reset}
-        newLabel="New permit"
+        newLabel="Start new permit"
         offline={wasOffline}
         reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
       />
@@ -186,6 +305,7 @@ export default function ConfinedSpaceForm() {
 
   return (
     <div className="animate-fadeIn space-y-4">
+      <FormStepper steps={steps} activeStepId={activeStepId} />
       {hasDraft && (
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
@@ -197,7 +317,7 @@ export default function ConfinedSpaceForm() {
           </button>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Confined Space Entry Permit</h3>
@@ -220,18 +340,32 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <section className="space-y-2">
+      <section id="cs-hazards" data-step="hazards" className="space-y-2">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Hazards present</h4>
         <ChipMultiSelect options={CONFINED_SPACE_HAZARDS} selected={hazards} onChange={setHazards} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      {worstAlert && (worstSeverity === 'danger' || worstSeverity === 'idlh') && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className={`sticky top-[56px] z-30 flex items-start gap-3 rounded-lg px-4 py-3 text-white font-semibold text-sm shadow-lg animate-fadeIn ${worstSeverity === 'idlh' ? 'bg-danger' : 'bg-danger/95 backdrop-blur-sm'}`}
+        >
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+          <span>{worstSeverity === 'idlh' ? 'EVACUATE' : 'STOP'} — {worstAlert.gas} {worstAlert.reading}{worstAlert.gas === 'O2' || worstAlert.gas === 'LEL' ? '%' : ' ppm'} exceeds safe limit ({worstAlert.threshold}). {worstAlert.guidance.split(' — ').slice(1).join(' — ')}</span>
+        </div>
+      )}
+
+      <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-          Atmospheric test <span className="text-fg-4 normal-case">· test O₂ → flammable → toxic</span>
+          Atmospheric test <span className="text-fg-4 normal-case">{'·'} test O₂ → flammable → toxic</span>
         </h4>
         <div className="grid grid-cols-2 gap-3">
           {atmoFields.map((f) => {
-            const bad = outOfRange(f.value, f.range)
+            const alert = alertForGas(f.label)
+            const sev = alert?.severity ?? 'safe'
+            const bad = sev === 'danger' || sev === 'idlh'
+            const warn = sev === 'warning'
             const fieldId = `cs-atmo-${f.label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`
             return (
               <div key={f.label}>
@@ -244,9 +378,26 @@ export default function ConfinedSpaceForm() {
                   inputMode="decimal"
                   value={f.value}
                   onChange={(e) => f.set(e.target.value)}
-                  className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : ''}`}
+                  className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : warn ? 'border-warn ring-2 ring-warn/30' : ''}`}
                 />
-                {bad && <p className="text-xs text-danger mt-0.5">Out of acceptable range</p>}
+                {alert && sev === 'safe' && f.value.trim() !== '' && (
+                  <p className="flex items-center gap-1 text-xs text-ok mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Within limits
+                  </p>
+                )}
+                {alert && sev === 'warning' && (
+                  <p className="flex items-center gap-1 text-xs text-warn mt-0.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {alert.guidance}
+                  </p>
+                )}
+                {alert && (sev === 'danger' || sev === 'idlh') && (
+                  <p className="flex items-center gap-1 text-xs text-danger mt-0.5 font-semibold">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {alert.guidance}
+                  </p>
+                )}
               </div>
             )
           })}
@@ -273,7 +424,87 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      {atmoAnalysis && atmoAnalysis.recommendations.length > 0 && (
+        <div className="space-y-2 animate-fadeIn">
+          {atmoAnalysis.recommendations.map((rec, i) => (
+            <div key={i} className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
+              <Info className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-xs text-fg-2">{rec}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {process.env.NEXT_PUBLIC_AI_ASSIST === '1' && atmoAnalysis && !atmoAnalysis.safe && (
+        <div className="animate-fadeIn">
+          <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+            <p className="text-xs text-fg-2">
+              AI analysis is advisory only and does not replace atmospheric monitoring by a competent person with calibrated instruments. Always follow your site-specific confined space entry procedures.
+            </p>
+          </div>
+          {!aiAnalysis && !aiLoading && (
+            <button
+              type="button"
+              onClick={fetchAiAnalysis}
+              className="flex items-center gap-2 text-sm text-mytra-purple hover:text-mytra-purple-hover font-medium px-1 py-1 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Deep analysis with Sage
+            </button>
+          )}
+          {aiLoading && (
+            <div className="flex items-center gap-2 text-sm text-fg-3 px-1 py-1">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Sage is analyzing cross-gas interactions...
+            </div>
+          )}
+          {aiError && (
+            <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{aiError}</span>
+            </div>
+          )}
+          {aiAnalysis && (
+            <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setAiExpanded((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-fg hover:bg-mytra-border/20 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-mytra-purple" />
+                  Sage AI Analysis
+                </span>
+                <ChevronDown className={`w-4 h-4 text-fg-3 transition-transform ${aiExpanded ? 'rotate-180' : ''}`} />
+              </button>
+              {aiExpanded && (
+                <div className="px-4 pb-3 space-y-2 border-t border-mytra-border pt-3">
+                  {aiAnalysis.alerts.filter((a) => a.severity !== 'safe').map((a, i) => (
+                    <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${a.severity === 'idlh' ? 'bg-danger/10 border border-danger/20 text-danger font-semibold' : a.severity === 'danger' ? 'bg-danger/10 border border-danger/20 text-danger' : 'bg-warn/10 border border-warn/20 text-warn'}`}>
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span><strong>{a.gas} {a.reading}{a.gas === 'O2' || a.gas === 'LEL' ? '%' : ' ppm'}:</strong> {a.guidance}</span>
+                    </div>
+                  ))}
+                  {aiAnalysis.recommendations.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <p className="text-xs font-semibold text-fg-3 uppercase tracking-wider">Recommendations</p>
+                      {aiAnalysis.recommendations.map((rec, i) => (
+                        <div key={i} className="flex items-start gap-2 bg-mytra-purple/5 border border-mytra-purple/10 rounded-lg px-3 py-2">
+                          <Info className="w-3.5 h-3.5 text-mytra-purple shrink-0 mt-0.5" />
+                          <p className="text-xs text-fg-2">{rec}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <div>
           <label htmlFor="cs-attendant" className={labelCls}>Attendant (stationed outside)</label>
           <input
@@ -293,7 +524,7 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <section className="space-y-2">
+      <section id="cs-checklist" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-entry checklist</h4>
           {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
@@ -301,7 +532,7 @@ export default function ConfinedSpaceForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -321,9 +552,9 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-on</h4>
-        <p className="text-xs text-fg-2 mb-3">Each entrant signs. Mark the entry supervisor.</p>
+        <p className="text-xs text-fg-2 mb-3">Each entrant confirms understanding. Designate the entry supervisor.</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}
@@ -339,30 +570,42 @@ export default function ConfinedSpaceForm() {
           <span>{saveError}</span>
         </div>
       )}
+      <ValidationSummary errors={validationErrors} show={showValidation} onDismiss={dismissValidation} />
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
-          onClick={submit}
-          disabled={!canSubmit}
+          onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {critLeft > 0
-            ? `Check ${critLeft} required item${critLeft === 1 ? '' : 's'}`
-            : atmoUnsafe
-              ? 'Atmosphere out of range'
-              : !attendantName.trim()
-                ? 'Assign an attendant'
-                : !rescuePlan.trim()
-                  ? 'Add a rescue plan'
-                  : sigData.signatures.length === 0
-                    ? 'Add entrant sign-on'
-                    : supervisorId === null
-                      ? 'Mark the entry supervisor'
-                      : !validWindowOk
-                        ? 'Fix validity window'
-                        : 'Issue Permit'}
+          {!spaceDescription.trim() || !location.trim()
+            ? 'Describe the space and location'
+            : hazards.length === 0
+              ? 'Identify at least one hazard'
+              : critLeft > 0
+                ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                : atmoUnsafe
+                  ? 'Atmosphere outside safe limits'
+                  : !attendantName.trim()
+                    ? 'Assign an attendant'
+                    : !rescuePlan.trim()
+                      ? 'Add a rescue plan'
+                      : sigData.signatures.length === 0
+                        ? 'Entrants must sign on'
+                        : supervisorId === null
+                          ? 'Designate the entry supervisor'
+                          : !validWindowOk
+                            ? 'Fix validity window'
+                            : 'Issue Permit'}
         </button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Issue confined space entry permit?"
+        message={`This will activate a live permit for "${location || 'this location'}". Verify atmospheric readings and rescue plan before proceeding.`}
+        confirmLabel="Issue Permit"
+        onConfirm={() => { setConfirmOpen(false); submit() }}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   )
 }

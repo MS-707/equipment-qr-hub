@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { CheckCircle2, XCircle, Clock, RefreshCw, Loader2, Users } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCw, Loader2, Users } from 'lucide-react'
+import Link from 'next/link'
 import AuthGate from '@/components/AuthGate'
 import type { BetaSignup } from '@/lib/beta'
 
@@ -47,6 +48,9 @@ function BetaAdmin() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 animate-fadeIn">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]" aria-label="Back to home">
+        <ArrowLeft className="w-4 h-4" /> Home
+      </Link>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-mytra-purple" />

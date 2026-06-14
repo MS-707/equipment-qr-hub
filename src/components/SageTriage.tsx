@@ -136,20 +136,19 @@ function SageTriageInner() {
   useEffect(() => {
     const vv = window.visualViewport
     if (!vv || !open) return
+    const dlg = dialogRef.current
     function onResize() {
-      const el = dialogRef.current
-      if (!el || !vv) return
+      if (!dlg || !vv) return
       const offset = window.innerHeight - vv.height
-      el.style.height = offset > 0 ? `${vv.height}px` : ''
-      el.style.transform = offset > 0 ? `translateY(${vv.offsetTop}px)` : ''
+      dlg.style.height = offset > 0 ? `${vv.height}px` : ''
+      dlg.style.transform = offset > 0 ? `translateY(${vv.offsetTop}px)` : ''
     }
     vv.addEventListener('resize', onResize)
     vv.addEventListener('scroll', onResize)
     return () => {
       vv.removeEventListener('resize', onResize)
       vv.removeEventListener('scroll', onResize)
-      const el = dialogRef.current
-      if (el) { el.style.height = ''; el.style.transform = '' }
+      if (dlg) { dlg.style.height = ''; dlg.style.transform = '' }
     }
   }, [open])
 
