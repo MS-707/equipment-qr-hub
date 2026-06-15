@@ -14,7 +14,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { getAllSafetyRecords, onSafetyChange } from '@/lib/safety-records'
-import { retrySyncRecord, retryAllPending } from '@/lib/safety-sync'
+import { retrySyncRecord, retryAllPending, isSyncAvailable } from '@/lib/safety-sync'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
 
@@ -69,7 +69,7 @@ export default function SyncQueuePanel() {
     }
   }, [load])
 
-  if (pending.length === 0) return null
+  if (pending.length === 0 || !isSyncAvailable()) return null
 
   const handleRetry = async (id: string) => {
     setSyncing((prev) => new Set(prev).add(id))

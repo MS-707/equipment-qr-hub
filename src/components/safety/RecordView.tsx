@@ -33,7 +33,7 @@ import {
   revokePermit,
   permitDisplayStatus,
 } from '@/lib/safety-records'
-import { trySyncRecord } from '@/lib/safety-sync'
+import { trySyncRecord, isSyncAvailable } from '@/lib/safety-sync'
 import { shareRecord } from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
@@ -385,7 +385,7 @@ export default function RecordView({ id }: { id: string }) {
       <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
-          {r.events.map((e, i) => (
+          {r.events.filter((e) => isSyncAvailable() || e.action !== 'sync-failed').map((e, i) => (
             <li key={i} className="text-xs text-fg-2 flex items-start gap-2">
               <span className="text-mytra-purple font-medium uppercase shrink-0">{e.action}</span>
               <span>

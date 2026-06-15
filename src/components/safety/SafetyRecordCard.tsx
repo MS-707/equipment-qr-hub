@@ -6,6 +6,7 @@ import type { SafetyRecord, SafetyRecordType, AnyPermit } from '@/lib/safety-typ
 import { SAFETY_TYPE_LABELS, isPermit, isPTP, isJHA, isIncident } from '@/lib/safety-types'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
+import { isSyncAvailable } from '@/lib/safety-sync'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -65,21 +66,23 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
           </p>
         </div>
         <div className="shrink-0 flex items-center gap-1.5">
-          {record.syncStatus === 'failed' ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
-              <AlertCircle className="w-3 h-3" />
-              Failed
-            </span>
-          ) : record.syncStatus === 'pending' || record.syncStatus === 'offline' ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
-              <RefreshCw className="w-3 h-3" />
-              Pending
-            </span>
-          ) : (
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-ok"
-              title="Synced"
-            />
+          {isSyncAvailable() && (
+            record.syncStatus === 'failed' ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
+                <AlertCircle className="w-3 h-3" />
+                Failed
+              </span>
+            ) : record.syncStatus === 'pending' || record.syncStatus === 'offline' ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
+                <RefreshCw className="w-3 h-3" />
+                Pending
+              </span>
+            ) : record.syncStatus === 'synced' ? (
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-ok"
+                title="Synced"
+              />
+            ) : null
           )}
           {isPermit(record) && <PermitStatusBadge permit={record as AnyPermit} />}
           <ReviewStatusBadge record={record} />
