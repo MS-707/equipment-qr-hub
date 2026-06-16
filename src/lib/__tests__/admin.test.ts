@@ -40,8 +40,8 @@ describe('isAdmin', () => {
     expect(isAdmin('worker@mytra.ai')).toBe(false)
   })
 
-  it('respects NEXT_PUBLIC_ADMIN_EMAILS env var', async () => {
-    vi.stubEnv('NEXT_PUBLIC_ADMIN_EMAILS', 'alice@example.com,bob@example.com')
+  it('respects ADMIN_EMAILS env var', async () => {
+    vi.stubEnv('ADMIN_EMAILS', 'alice@example.com,bob@example.com')
     const { isAdmin } = await import('../admin')
     expect(isAdmin('alice@example.com')).toBe(true)
     expect(isAdmin('bob@example.com')).toBe(true)

@@ -10,6 +10,12 @@
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
 import { notifySyncResult } from '@/components/SyncToast'
 
+let syncDisabled = false
+
+export function isSyncAvailable(): boolean {
+  return !syncDisabled
+}
+
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
   if (!record) return 'fail'
@@ -46,6 +52,7 @@ const inFlight = new Set<string>()
  *   the caller aggregates into a single summary instead.
  */
 export async function trySyncRecord(id: string, notify = true): Promise<boolean> {
+  if (syncDisabled) return false
   if (!getSafetyRecordById(id)) return false
   if (inFlight.has(id)) return false
   inFlight.add(id)
@@ -59,8 +66,7 @@ export async function trySyncRecord(id: string, notify = true): Promise<boolean>
           return true
         }
         if (result === 'not-configured') {
-          // Backend not set up — record stays pending. Not a field-worker-
-          // actionable state, so no toast (it would falsely promise a later sync).
+          syncDisabled = true
           return false
         }
       } catch {
