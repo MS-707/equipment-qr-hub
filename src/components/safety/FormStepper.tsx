@@ -135,7 +135,7 @@ export default function FormStepper({ steps, activeStepId }: FormStepperProps) {
               {isComplete ? (
                 <Check className="w-3.5 h-3.5 text-ok shrink-0" />
               ) : (
-                <span className={`text-[10px] font-bold leading-none ${isActive ? 'text-mytra-purple' : 'text-fg-4'}`}>
+                <span className={`text-xs font-bold leading-none ${isActive ? 'text-mytra-purple' : 'text-fg-4'}`}>
                   {i + 1}
                 </span>
               )}

@@ -127,21 +127,21 @@ export default function SyncQueuePanel() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-fg-2 truncate">{SAFETY_TYPE_LABELS[r.type]}</span>
-                      <span className="text-[10px] font-mono text-fg-4 truncate">{r.id}</span>
+                      <span className="text-xs font-mono text-fg-4 truncate">{r.id}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-fg-4">{relativeTime(r.createdAt)}</span>
+                      <span className="text-xs text-fg-4">{relativeTime(r.createdAt)}</span>
                       {r.syncStatus === 'failed' ? (
-                        <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
+                        <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
                           Failed
                         </span>
                       ) : isSyncing ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
                           <Loader2 className="w-2.5 h-2.5 animate-spin" />
                           Syncing
                         </span>
                       ) : (
-                        <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
+                        <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
                           Pending
                         </span>
                       )}

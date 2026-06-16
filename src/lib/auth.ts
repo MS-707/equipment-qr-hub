@@ -67,7 +67,11 @@ if (allowDevLogin || allowEmailLogin) {
         const email = (creds?.email ?? '').toString().trim().toLowerCase()
         const name = (creds?.name ?? '').toString().trim()
         if (!emailAllowed(email)) return null
-        if (isProduction && (creds?.code ?? '') !== emailLoginCode) return null
+        if (isProduction && (creds?.code ?? '') !== emailLoginCode) {
+          console.warn(`[auth] code-login failed for ${email}`)
+          return null
+        }
+        console.info(`[auth] code-login: ${email} (${isProduction ? 'production' : 'dev'})`)
         return { id: email, name: name || email.split('@')[0], email }
       },
     })

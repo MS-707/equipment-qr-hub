@@ -732,6 +732,54 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
   return [headers.join(','), ...rows].join('\n')
 }
 
+// ── Retention cleanup ────────────────────────────────────────
+
+const RETENTION_DAYS = 90
+
+export function archiveOldSyncedRecords(): number {
+  const all = readAll()
+  const cutoff = Date.now() - RETENTION_DAYS * 86_400_000
+  const toKeep: SafetyRecord[] = []
+  let removed = 0
+  for (const r of all) {
+    const lastEvent = r.events[r.events.length - 1]
+    const ts = lastEvent?.at ?? r.createdAt
+    if (r.syncStatus === 'synced' && new Date(ts).getTime() < cutoff) {
+      removed++
+    } else {
+      toKeep.push(r)
+    }
+  }
+  if (removed > 0) {
+    writeAll(toKeep)
+    notify()
+  }
+  return removed
+}
+
+const DRAFT_MAX_AGE_MS = 7 * 86_400_000
+
+export function pruneOldDrafts(): number {
+  const now = Date.now()
+  const toRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (!k?.startsWith('draft:')) continue
+    try {
+      const raw = localStorage.getItem(k)
+      if (!raw) continue
+      const parsed = JSON.parse(raw) as { _savedAt?: number }
+      if (parsed._savedAt && now - parsed._savedAt > DRAFT_MAX_AGE_MS) {
+        toRemove.push(k)
+      }
+    } catch {
+      toRemove.push(k)
+    }
+  }
+  toRemove.forEach((k) => localStorage.removeItem(k))
+  return toRemove.length
+}
+
 // ── Data deletion (GDPR right-to-erasure) ────────────────────
 
 export async function clearAllLocalData(): Promise<void> {

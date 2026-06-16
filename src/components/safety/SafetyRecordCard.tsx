@@ -53,14 +53,14 @@ function validityBadge(record: SafetyRecord): React.ReactNode {
   const startDate = isPTP(record) ? (record as PreTaskPlan).date : (record as JobHazardAnalysis).dateOfAnalysis
   if (td <= vu && td >= startDate) {
     return (
-      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-ok/10 text-ok">
+      <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-ok/10 text-ok">
         Active
       </span>
     )
   }
   if (td > vu) {
     return (
-      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
+      <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
         Expired
       </span>
     )
@@ -95,12 +95,12 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
         <div className="shrink-0 flex items-center gap-1.5">
           {isSyncAvailable() && (
             record.syncStatus === 'failed' ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
                 <AlertCircle className="w-3 h-3" />
                 Failed
               </span>
             ) : record.syncStatus === 'pending' || record.syncStatus === 'offline' ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
                 <RefreshCw className="w-3 h-3" />
                 Pending
               </span>

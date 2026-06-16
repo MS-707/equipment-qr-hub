@@ -46,7 +46,7 @@ export function useFormDraft<T extends Record<string, unknown>>(
     if (disabledRef.current) return
     try {
       const state = getStateRef.current()
-      localStorage.setItem(DRAFT_PREFIX + formKey, JSON.stringify(state))
+      localStorage.setItem(DRAFT_PREFIX + formKey, JSON.stringify({ ...state, _savedAt: Date.now() }))
     } catch {}
   }, [formKey])
 

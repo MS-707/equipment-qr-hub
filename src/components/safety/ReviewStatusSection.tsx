@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Send, RotateCcw, CheckCircle2, AlertCircle, Clock, Loader2 } from 'lucide-react'
 import type { SafetyRecord } from '@/lib/safety-types'
-import { markSubmittedForReview, markReviewRecalled } from '@/lib/safety-records'
+import { markSubmittedForReview, markReviewRecalled, markSynced } from '@/lib/safety-records'
 import { getCurrentIdentity } from '@/lib/identity'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
@@ -46,6 +46,10 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
         const data = await res.json().catch(() => ({}))
         setError((data as { error?: string }).error ?? 'Submit failed — try again')
       } else {
+        const data = await res.json().catch(() => ({})) as { notionPageId?: string }
+        if (data.notionPageId) {
+          markSynced(record.id, data.notionPageId)
+        }
         markSubmittedForReview(record.id, by)
       }
     } catch {
