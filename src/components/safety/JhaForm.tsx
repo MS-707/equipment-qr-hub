@@ -32,13 +32,14 @@ import { getCurrentIdentity } from '@/lib/identity'
 import PPESelector from './PPESelector'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
+import { localToday } from '@/lib/datetime'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 
 const RISK_ORDER: RiskLevel[] = ['low', 'medium', 'high', 'critical']
 
 function todayStr(): string {
-  return new Date().toISOString().slice(0, 10)
+  return localToday()
 }
 
 /** Read a file as bare base64 (no data-URL prefix). */
@@ -70,6 +71,7 @@ function blankStep(): JhaStep {
 export default function JhaForm() {
   const [jobTitle, setJobTitle] = useState('')
   const [dateOfAnalysis, setDateOfAnalysis] = useState(todayStr())
+  const [validUntil, setValidUntil] = useState('')
   const [department, setDepartment] = useState('')
   const [location, setLocation] = useState('')
   const [referenceDoc, setReferenceDoc] = useState('')
@@ -92,6 +94,7 @@ export default function JhaForm() {
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.jobTitle === 'string') setJobTitle(d.jobTitle)
     if (typeof d.dateOfAnalysis === 'string') setDateOfAnalysis(d.dateOfAnalysis)
+    if (typeof d.validUntil === 'string') setValidUntil(d.validUntil)
     if (typeof d.department === 'string') setDepartment(d.department)
     if (typeof d.location === 'string') setLocation(d.location)
     if (typeof d.referenceDoc === 'string') setReferenceDoc(d.referenceDoc)
@@ -102,7 +105,7 @@ export default function JhaForm() {
 
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'jha',
-    () => ({ jobTitle, dateOfAnalysis, department, location, referenceDoc, ppe, steps, additionalNotes }),
+    () => ({ jobTitle, dateOfAnalysis, validUntil, department, location, referenceDoc, ppe, steps, additionalNotes }),
     restore,
     submittedId !== null
   )
@@ -262,6 +265,7 @@ export default function JhaForm() {
       record = createJobHazardAnalysis({
         jobTitle,
         dateOfAnalysis,
+        validUntil: validUntil || undefined,
         department,
         location,
         projectName: jobTitle,
@@ -387,10 +391,14 @@ export default function JhaForm() {
           <label htmlFor="jha-title" className={labelCls}>Job / Task title</label>
           <input id="jha-title" type="text" maxLength={200} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g. Install conveyor drive unit on Line 3" className={inputCls} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label htmlFor="jha-date" className={labelCls}>Date of analysis</label>
-            <input id="jha-date" type="date" value={dateOfAnalysis} onChange={(e) => setDateOfAnalysis(e.target.value)} className={inputCls} />
+            <input id="jha-date" type="date" value={dateOfAnalysis} onChange={(e) => { setDateOfAnalysis(e.target.value); if (validUntil && e.target.value > validUntil) setValidUntil('') }} className={inputCls} />
+          </div>
+          <div>
+            <label htmlFor="jha-valid-until" className={labelCls}>Valid through</label>
+            <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={(() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label htmlFor="jha-dept" className={labelCls}>Department / Team</label>

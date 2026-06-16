@@ -237,14 +237,52 @@ export function getRecordsForDate(date: string): SafetyRecord[] {
 
 export function getPtpForDate(date: string): PreTaskPlan | undefined {
   return getAllSafetyRecords().find(
-    (r): r is PreTaskPlan => r.type === 'ptp' && (r as PreTaskPlan).date === date
+    (r): r is PreTaskPlan => {
+      if (r.type !== 'ptp') return false
+      const ptp = r as PreTaskPlan
+      if (ptp.validUntil) return ptp.date <= date && date <= ptp.validUntil
+      return ptp.date === date
+    }
   )
+}
+
+export type PtpDateStatus = { ptp: PreTaskPlan; status: 'active' } | { ptp: PreTaskPlan; status: 'expired' } | { ptp: undefined; status: 'none' }
+
+export function getPtpStatusForDate(date: string): PtpDateStatus {
+  const active = getPtpForDate(date)
+  if (active) return { ptp: active, status: 'active' }
+  const latest = getLatestPtp()
+  if (latest?.validUntil && latest.validUntil < date && latest.date <= date) {
+    return { ptp: latest, status: 'expired' }
+  }
+  return { ptp: undefined, status: 'none' }
 }
 
 export function getLatestPtp(): PreTaskPlan | undefined {
   return getAllSafetyRecords().find(
     (r): r is PreTaskPlan => r.type === 'ptp'
   )
+}
+
+export function getJhaForDate(date: string): JobHazardAnalysis | undefined {
+  return getAllSafetyRecords().find(
+    (r): r is JobHazardAnalysis => {
+      if (r.type !== 'jha') return false
+      const jha = r as JobHazardAnalysis
+      if (jha.validUntil) return jha.dateOfAnalysis <= date && date <= jha.validUntil
+      return jha.dateOfAnalysis === date
+    }
+  )
+}
+
+export function ptpDayLabel(ptp: PreTaskPlan, date: string): string | null {
+  if (!ptp.validUntil || ptp.validUntil === ptp.date) return null
+  const start = new Date(ptp.date + 'T00:00:00')
+  const current = new Date(date + 'T00:00:00')
+  const end = new Date(ptp.validUntil + 'T00:00:00')
+  const dayN = Math.floor((current.getTime() - start.getTime()) / 86_400_000) + 1
+  const totalDays = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1
+  return `Day ${dayN} of ${totalDays}`
 }
 
 export function isExpired(p: AnyPermit): boolean {

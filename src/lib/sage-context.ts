@@ -1,8 +1,9 @@
 import { getPtpForDate, getActivePermits, getAllSafetyRecords } from './safety-records'
 import type { PreTaskPlan, AnyPermit } from './safety-types'
+import { localToday } from './datetime'
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return localToday()
 }
 
 function timeOfDay(): string {
@@ -23,8 +24,12 @@ export interface SageContext {
 }
 
 function summarizePtp(ptp: PreTaskPlan): string {
+  const validityLine = ptp.validUntil && ptp.validUntil !== ptp.date
+    ? `Valid: ${ptp.date} through ${ptp.validUntil} (multi-day)`
+    : `Valid: ${ptp.date} (single day)`
   const lines: string[] = [
     `TODAY'S PTP (${ptp.id}):`,
+    validityLine,
     `Scope: ${ptp.scopeOfWork || '(not specified)'}`,
     `Location: ${ptp.location || '(not specified)'}`,
     `Project: ${ptp.projectName || '(not specified)'}`,

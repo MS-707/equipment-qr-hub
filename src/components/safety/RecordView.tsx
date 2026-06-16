@@ -434,8 +434,17 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
     <>
       <Section title="Scope of work">
         <p className="text-sm text-fg-2">{ptp.scopeOfWork || '—'}</p>
-        <p className="text-xs text-fg-3 mt-1">{ptp.date} · {ptp.shift} shift</p>
+        <p className="text-xs text-fg-3 mt-1">
+          {ptp.date}{ptp.validUntil && ptp.validUntil !== ptp.date ? ` through ${ptp.validUntil}` : ''} · {ptp.shift} shift
+        </p>
       </Section>
+      {ptp.validUntil && ptp.validUntil !== ptp.date && (
+        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-blue-400">
+            This plan covers multiple days. Crew should verbally re-confirm hazards and controls each morning before work begins.
+          </p>
+        </div>
+      )}
 
       <Section title="Hazards & controls">
         {ptp.hazards.length === 0 ? (
@@ -509,11 +518,18 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
       <Section title="Job / task">
         <p className="text-sm text-fg">{jha.jobTitle || '—'}</p>
         <dl className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Field label="Date of analysis" value={jha.dateOfAnalysis} />
+          <Field label="Date of analysis" value={jha.validUntil && jha.validUntil !== jha.dateOfAnalysis ? `${jha.dateOfAnalysis} through ${jha.validUntil}` : jha.dateOfAnalysis} />
           {jha.department && <Field label="Department / Team" value={jha.department} />}
           {jha.referenceDoc && <Field label="Reference doc" value={jha.referenceDoc} />}
         </dl>
       </Section>
+      {jha.validUntil && jha.validUntil !== jha.dateOfAnalysis && (
+        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-blue-400">
+            This JHA covers multiple days. Review hazards and controls daily as site conditions may change.
+          </p>
+        </div>
+      )}
 
       {jha.ppeRequired.length > 0 && (
         <Section title="PPE required">

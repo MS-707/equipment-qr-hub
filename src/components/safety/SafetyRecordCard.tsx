@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { ClipboardList, ListChecks, ArrowUpFromLine, Flame, PackageOpen, AlertTriangle, RefreshCw, AlertCircle } from 'lucide-react'
-import type { SafetyRecord, SafetyRecordType, AnyPermit } from '@/lib/safety-types'
+import type { SafetyRecord, SafetyRecordType, AnyPermit, PreTaskPlan, JobHazardAnalysis } from '@/lib/safety-types'
 import { SAFETY_TYPE_LABELS, isPermit, isPTP, isJHA, isIncident } from '@/lib/safety-types'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import { isSyncAvailable } from '@/lib/safety-sync'
+import { localToday } from '@/lib/datetime'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -39,6 +40,32 @@ function title(r: SafetyRecord): string {
   }
   if (isIncident(r)) return r.description || 'Incident report'
   return 'Safety record'
+}
+
+function validityBadge(record: SafetyRecord): React.ReactNode {
+  const vu = isPTP(record)
+    ? (record as PreTaskPlan).validUntil
+    : isJHA(record)
+      ? (record as JobHazardAnalysis).validUntil
+      : undefined
+  if (!vu) return null
+  const td = localToday()
+  const startDate = isPTP(record) ? (record as PreTaskPlan).date : (record as JobHazardAnalysis).dateOfAnalysis
+  if (td <= vu && td >= startDate) {
+    return (
+      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-ok/10 text-ok">
+        Active
+      </span>
+    )
+  }
+  if (td > vu) {
+    return (
+      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
+        Expired
+      </span>
+    )
+  }
+  return null
 }
 
 export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
@@ -84,6 +111,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
               />
             ) : null
           )}
+          {validityBadge(record)}
           {isPermit(record) && <PermitStatusBadge permit={record as AnyPermit} />}
           <ReviewStatusBadge record={record} />
         </div>

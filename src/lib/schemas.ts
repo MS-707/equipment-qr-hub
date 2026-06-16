@@ -87,6 +87,7 @@ const HeatIllnessPlanSchema = z.object({
 const PreTaskPlanSchema = SafetyRecordBaseSchema.extend({
   type: z.literal('ptp'),
   date: z.string(),
+  validUntil: z.string().optional(),
   shift: ShiftSchema,
   scopeOfWork: z.string(),
   hazards: z.array(HazardEntrySchema),
@@ -119,6 +120,7 @@ const JhaSchema = SafetyRecordBaseSchema.extend({
   type: z.literal('jha'),
   jobTitle: z.string(),
   dateOfAnalysis: z.string(),
+  validUntil: z.string().optional(),
   department: z.string(),
   referenceDoc: z.string(),
   ppeRequired: z.array(z.string()),

@@ -15,15 +15,17 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import {
-  getPtpForDate,
+  getPtpStatusForDate,
   getActivePermits,
   getAllSafetyRecords,
   onSafetyChange,
   getReviewActionableRecords,
+  ptpDayLabel,
 } from '@/lib/safety-records'
+import type { PtpDateStatus } from '@/lib/safety-records'
 import { useReviewPoller } from '@/lib/review-poll'
 import { getCurrentIdentity } from '@/lib/identity'
-import type { SafetyRecord, AnyPermit, PreTaskPlan } from '@/lib/safety-types'
+import type { SafetyRecord, AnyPermit } from '@/lib/safety-types'
 import SafetyRecordCard from './SafetyRecordCard'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import PermitTimer from './PermitTimer'
@@ -32,9 +34,10 @@ import { permitDisplayStatus } from '@/lib/safety-records'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
 import SyncQueuePanel from './SyncQueuePanel'
+import { localToday } from '@/lib/datetime'
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return localToday()
 }
 
 const QUICK_ACTIONS: { href: string; label: string; icon: typeof ClipboardList; primary?: boolean; external?: boolean }[] = [
@@ -49,7 +52,7 @@ const QUICK_ACTIONS: { href: string; label: string; icon: typeof ClipboardList; 
 ]
 
 export default function SafetyDashboard() {
-  const [ptp, setPtp] = useState<PreTaskPlan | undefined>(undefined)
+  const [ptpStatus, setPtpStatus] = useState<PtpDateStatus>({ ptp: undefined, status: 'none' })
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
   const [reviewApprovedCount, setReviewApprovedCount] = useState(0)
@@ -61,7 +64,7 @@ export default function SafetyDashboard() {
   useReviewPoller()
 
   const load = useCallback(() => {
-    setPtp(getPtpForDate(today()))
+    setPtpStatus(getPtpStatusForDate(today()))
     setActivePermits(getActivePermits())
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
     const all = getAllSafetyRecords()
@@ -115,12 +118,12 @@ export default function SafetyDashboard() {
         ) : (
           <>
         <StatCard
-          label="Today's PTP"
-          value={ptp ? 'Logged' : 'Not started'}
-          sub={ptp ? `${ptp.crewSignatures.length} crew signed` : 'Tap to start'}
-          tone={ptp ? 'good' : 'warn'}
+          label={ptpStatus.status === 'active' && ptpStatus.ptp.validUntil ? (ptpDayLabel(ptpStatus.ptp, today()) ?? "Today's PTP") : "Today's PTP"}
+          value={ptpStatus.status === 'active' ? 'Active' : ptpStatus.status === 'expired' ? 'Expired' : 'Not started'}
+          sub={ptpStatus.status === 'active' ? `${ptpStatus.ptp.crewSignatures.length} crew signed` : ptpStatus.status === 'expired' ? 'Tap to renew' : 'Tap to start'}
+          tone={ptpStatus.status === 'active' ? 'good' : ptpStatus.status === 'expired' ? 'danger' : 'warn'}
           delayMs={0}
-          href={ptp ? `/safety/record/${ptp.id}` : '/safety/ptp'}
+          href={ptpStatus.status === 'active' ? `/safety/record/${ptpStatus.ptp.id}` : '/safety/ptp'}
         />
         <StatCard label="Active permits" value={String(activePermits.length)} sub="open now" tone="neutral" delayMs={60} />
         <StatCard label="Incidents" value={String(incidentCount)} sub="last 7 days" tone={incidentCount > 0 ? 'warn' : 'neutral'} delayMs={120} />
@@ -269,11 +272,11 @@ function StatCard({
   label: string
   value: string
   sub: string
-  tone: 'good' | 'warn' | 'neutral'
+  tone: 'good' | 'warn' | 'neutral' | 'danger'
   delayMs?: number
   href?: string
 }) {
-  const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : 'text-fg'
+  const valueColor = tone === 'good' ? 'text-ok' : tone === 'warn' ? 'text-warn' : tone === 'danger' ? 'text-danger' : 'text-fg'
   const cls = `bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
                     transition-shadow duration-200 hover:shadow-pop animate-blurIn ${href ? 'press-scale' : ''}`
   const content = (

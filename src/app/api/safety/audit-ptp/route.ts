@@ -39,6 +39,13 @@ Given a full PTP record, audit it for completeness across these categories:
    - At least one crew signature expected
    - Supervisor signature expected
 
+6. MULTI-DAY PLAN VALIDITY
+   If the PTP has a validUntil date beyond the PTP date (multi-day plan):
+   - Flag that weather conditions may change day-to-day — each morning should include a weather check
+   - Flag that crew members may differ day-to-day — daily verbal re-confirmation recommended
+   - Flag that site conditions (excavations, scaffolding, deliveries) may change
+   Rate as "warning" unless the scope involves rapidly changing conditions, then "blocker".
+
 Rate each finding as:
 - "blocker": a critical safety gap that should be resolved before work begins
 - "warning": a gap worth reviewing but not necessarily a showstopper
