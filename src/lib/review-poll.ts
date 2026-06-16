@@ -6,6 +6,7 @@ import {
   markReviewApproved,
   markReviewRejected,
 } from '@/lib/safety-records'
+import { trySyncRecord } from '@/lib/safety-sync'
 
 const POLL_INTERVAL_MS = 90_000
 const STALE_THRESHOLD_MS = 5 * 60_000
@@ -71,12 +72,14 @@ async function doPoll(): Promise<void> {
           reviewerEmail: null,
           reviewNote: decision.reviewNote ?? null,
         })
+        void trySyncRecord(record.id, false)
       } else if (decision.status === 'rejected') {
         markReviewRejected(record.id, {
           reviewerName: decision.reviewerName ?? 'EHS Manager',
           reviewerEmail: null,
           reviewNote: decision.reviewNote ?? null,
         })
+        void trySyncRecord(record.id, false)
       }
     }
   } catch {

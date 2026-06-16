@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy, AlertTriangle, AlertCircle, ShieldCheck } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan, PreTaskPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, cryptoRandomId } from '@/lib/safety-records'
+import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, getPtpForDate, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -17,6 +17,7 @@ import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
+import { localToday } from '@/lib/datetime'
 import ValidationSummary, { type ValidationError } from './ValidationSummary'
 
 interface AuditFinding {
@@ -35,13 +36,14 @@ interface AuditResult {
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
 function todayStr(): string {
-  return new Date().toISOString().slice(0, 10)
+  return localToday()
 }
 
 export default function PreTaskPlanForm() {
   const [step, setStep] = useState<'plan' | 'signon' | 'done'>('plan')
 
   const [date, setDate] = useState(todayStr())
+  const [validUntil, setValidUntil] = useState('')
   const [shift, setShift] = useState<Shift>('Day')
   const [projectName, setProjectName] = useState('')
   const [location, setLocation] = useState('')
@@ -74,7 +76,9 @@ export default function PreTaskPlanForm() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
   const [carryForwardDismissed, setCarryForwardDismissed] = useState(false)
+  const [activePtp] = useState(() => getPtpForDate(todayStr()))
   const [prevPtp] = useState(() => {
+    if (activePtp) return null
     const ptp = getLatestPtp()
     if (!ptp || ptp.date === todayStr()) return null
     const age = Date.now() - new Date(ptp.createdAt).getTime()
@@ -107,6 +111,7 @@ export default function PreTaskPlanForm() {
 
   const restore = useCallback((d: Record<string, unknown>) => {
     if (typeof d.date === 'string') setDate(d.date)
+    if (typeof d.validUntil === 'string') setValidUntil(d.validUntil)
     if (typeof d.shift === 'string') setShift(d.shift as Shift)
     if (typeof d.projectName === 'string') setProjectName(d.projectName)
     if (typeof d.location === 'string') setLocation(d.location)
@@ -133,7 +138,7 @@ export default function PreTaskPlanForm() {
 
   const { hasDraft, clearDraft, dismissDraft } = useFormDraft(
     'ptp',
-    () => ({ date, shift, projectName, location, scopeOfWork, hazards, ppe, musterPoint, hospital, firstAid, weather, wind, heat, toolboxTopic, toolboxNotes }),
+    () => ({ date, validUntil, shift, projectName, location, scopeOfWork, hazards, ppe, musterPoint, hospital, firstAid, weather, wind, heat, toolboxTopic, toolboxNotes }),
     restore,
     submittedId !== null
   )
@@ -275,6 +280,7 @@ export default function PreTaskPlanForm() {
     try {
       record = createPreTaskPlan({
         date,
+        validUntil: validUntil || undefined,
         shift,
         projectName,
         location,
@@ -524,6 +530,18 @@ export default function PreTaskPlanForm() {
           </button>
         </div>
       )}
+      {activePtp && (
+        <Link
+          href={`/safety/record/${activePtp.id}`}
+          className="flex items-center gap-3 bg-ok/10 border border-ok/20 rounded-lg px-4 py-3 min-h-[44px] hover:bg-ok/15 transition-colors animate-fadeIn"
+        >
+          <CheckCircle2 className="w-5 h-5 text-ok shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-ok font-medium">Active PTP{activePtp.validUntil ? ` through ${activePtp.validUntil}` : ''}</p>
+            <p className="text-xs text-ok/80 mt-0.5 truncate">{activePtp.scopeOfWork || 'View current plan'}</p>
+          </div>
+        </Link>
+      )}
       {!hasDraft && prevPtp && !carryForwardDismissed && (
         <div className="flex items-center justify-between gap-2 bg-ok/10 border border-ok/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex-1 min-w-0">
@@ -551,10 +569,14 @@ export default function PreTaskPlanForm() {
           <h3 className="text-sm font-semibold text-fg">Pre-Task / Pre-Build Plan</h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label htmlFor="ptp-date" className={labelCls}>Date</label>
-            <input id="ptp-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+            <input id="ptp-date" type="date" value={date} onChange={(e) => { setDate(e.target.value); if (validUntil && e.target.value > validUntil) setValidUntil('') }} className={inputCls} />
+          </div>
+          <div>
+            <label htmlFor="ptp-valid-until" className={labelCls}>Valid through</label>
+            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={(() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
           </div>
           <div>
             <label className={labelCls}>Shift</label>

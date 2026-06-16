@@ -6,6 +6,7 @@
 import { kv } from '@/lib/kv'
 
 const KV_KEY = 'known-users'
+const KV_TTL_SECONDS = 90 * 24 * 3600 // 90 days
 
 function kvEnabled(): boolean {
   return !!process.env.KV_REST_API_URL
@@ -18,6 +19,7 @@ export async function isFirstLogin(email: string): Promise<boolean> {
 
   if (kvEnabled()) {
     const added = await kv.sadd(KV_KEY, normalized)
+    await kv.expire(KV_KEY, KV_TTL_SECONDS)
     return added === 1
   }
 

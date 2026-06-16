@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { LogOut, ChevronDown, Sun, Moon, Monitor, Trash2 } from 'lucide-react'
+import { LogOut, ChevronDown, Sun, Moon, Monitor, Trash2, Globe } from 'lucide-react'
 import { clearCurrentIdentity } from '@/lib/identity'
 import { useTheme, type ThemePreference } from '@/lib/theme'
+import { useLocale, type Locale } from '@/lib/i18n'
 import { clearAllLocalData } from '@/lib/safety-records'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
@@ -14,11 +15,17 @@ export default function UserMenu() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
+  const { locale, setLocale, t } = useLocale()
 
   const cycleTheme = () => {
     const order: ThemePreference[] = ['dark', 'light', 'auto']
     const next = order[(order.indexOf(theme) + 1) % order.length]
     setTheme(next)
+  }
+
+  const toggleLocale = () => {
+    const next: Locale = locale === 'en' ? 'es' : 'en'
+    setLocale(next)
   }
 
   const themeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
@@ -99,7 +106,16 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
                        hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
-            <ThemeIcon className="w-4 h-4" /> Theme: {themeLabel}
+            <ThemeIcon className="w-4 h-4" /> {t('user.theme')}: {themeLabel}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={toggleLocale}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
+                       hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
+          >
+            <Globe className="w-4 h-4" /> {t('user.language')}: {locale === 'en' ? 'EN' : 'ES'}
           </button>
           <button
             type="button"
@@ -111,7 +127,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
                        hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
-            <LogOut className="w-4 h-4" /> Sign out
+            <LogOut className="w-4 h-4" /> {t('user.signOut')}
           </button>
           <div className="h-px bg-mytra-border my-1" />
           <button
@@ -121,7 +137,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-danger/80 hover:text-danger
                        hover:bg-danger/5 rounded transition-colors min-h-[44px]"
           >
-            <Trash2 className="w-4 h-4" /> Delete my data
+            <Trash2 className="w-4 h-4" /> {t('user.deleteMyData')}
           </button>
         </div>
       )}

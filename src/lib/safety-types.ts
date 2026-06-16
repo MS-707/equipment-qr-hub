@@ -101,6 +101,8 @@ export interface HeatIllnessPlan {
 export interface PreTaskPlan extends SafetyRecordBase {
   type: 'ptp'
   date: string
+  /** Last calendar day (YYYY-MM-DD, inclusive) this PTP covers. Omitted = single-day. */
+  validUntil?: string
   shift: Shift
   scopeOfWork: string
   hazards: HazardEntry[]
@@ -146,6 +148,8 @@ export interface JobHazardAnalysis extends SafetyRecordBase {
   type: 'jha'
   jobTitle: string
   dateOfAnalysis: string
+  /** Last calendar day (YYYY-MM-DD, inclusive) this JHA covers. Omitted = single-day. */
+  validUntil?: string
   department: string
   referenceDoc: string
   ppeRequired: string[]
