@@ -7,7 +7,6 @@ import BottomTabBar from '@/components/BottomTabBar'
 import StorageAlert from '@/components/StorageAlert'
 import AuthProvider from '@/components/providers/AuthProvider'
 import SyncProvider from '@/components/providers/SyncProvider'
-import { I18nProvider } from '@/lib/i18n'
 
 const SyncToast = dynamic(() => import('@/components/SyncToast'), { ssr: false })
 const SwUpdateBanner = dynamic(() => import('@/components/SwUpdateBanner'), { ssr: false })
@@ -62,7 +61,6 @@ export default function RootLayout({
       </head>
       <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-20 md:pb-0">
         <AuthProvider>
-          <I18nProvider>
           <SyncProvider>
             <NavHeader />
             {children}
@@ -75,7 +73,6 @@ export default function RootLayout({
             <SyncToast />
             <SwUpdateBanner />
           </SyncProvider>
-          </I18nProvider>
         </AuthProvider>
       </body>
     </html>
