@@ -583,7 +583,7 @@ export default function IncidentReportForm() {
             {witnesses.map((w, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-fg-2">
                 {w}
-                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label="Remove witness" className="text-fg-3 hover:text-danger w-7 h-7 flex items-center justify-center -mr-0.5">
+                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label="Remove witness" className="text-fg-3 hover:text-danger w-11 h-11 flex items-center justify-center -mr-1">
                   <X className="w-3 h-3" />
                 </button>
               </span>

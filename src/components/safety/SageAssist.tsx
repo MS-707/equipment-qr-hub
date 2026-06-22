@@ -370,7 +370,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               disabled={selected.size === 0}
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+                         disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
             >
               <Plus className="w-4 h-4" /> Add selected
             </button>
@@ -378,7 +378,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={dismiss}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Dismiss
             </button>
@@ -479,7 +479,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
                 disabled={selectedPpe.size === 0}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
                            bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                           disabled:opacity-40 disabled:cursor-not-allowed"
+                           disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
               >
                 <Plus className="w-4 h-4" /> Add selected PPE
               </button>
@@ -488,7 +488,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={() => setFollowUpMode('chips')}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Back
             </button>
@@ -532,7 +532,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
                   <p className="text-xs text-fg-2 mb-2">{p.reason}</p>
                   <Link
                     href={PERMIT_LINKS[p.permit_type] ?? '/safety/permits'}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple hover:underline min-h-[44px]"
                   >
                     Open Permit <ArrowRight className="w-3 h-3" />
                   </Link>
@@ -546,7 +546,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={() => setFollowUpMode('chips')}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Back
             </button>
