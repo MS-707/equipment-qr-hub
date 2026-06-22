@@ -99,7 +99,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
 
   if (topics.length === 0) {
     return (
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
         <p className="text-xs text-fg-3 italic">No training requirements defined for this equipment.</p>
       </div>
     )
@@ -123,7 +123,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
           return (
             <div
               key={topic}
-              className="bg-mytra-card border border-mytra-border rounded-lg overflow-hidden"
+              className="bg-mytra-card border border-mytra-border rounded-card overflow-hidden"
             >
               <button
                 onClick={() => setExpandedTopic(isExpanded ? null : topic)}

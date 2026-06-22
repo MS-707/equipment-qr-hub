@@ -52,7 +52,7 @@ export default function QRLabel({ equipment, baseUrl, printMode = false }: QRLab
   }
 
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 flex flex-col items-center text-center">
+    <div className="bg-mytra-card border border-mytra-border rounded-card p-4 flex flex-col items-center text-center">
       <QRCodeSVG
         value={qrValue}
         size={120}

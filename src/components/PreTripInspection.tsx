@@ -65,7 +65,7 @@ function ChecklistItemRow({
   const isFail = state.result === 'fail'
 
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-3">
+    <div className="bg-mytra-card border border-mytra-border rounded-card p-3">
       {/* Item label and critical badge */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-start gap-2 min-w-0">
@@ -199,7 +199,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
         onClick={onToggle}
         aria-expanded={showHistory}
         className="w-full flex items-center justify-between px-4 py-3
-                   bg-mytra-card border border-mytra-border rounded-lg
+                   bg-mytra-card border border-mytra-border rounded-card
                    hover:bg-mytra-card-hover active:bg-mytra-border
                    transition-colors duration-150 press-scale"
       >
@@ -219,7 +219,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
             {history.slice(0, 5).map((record) => (
               <div
                 key={record.id}
-                className="bg-mytra-card border border-mytra-border rounded-lg px-4 py-3
+                className="bg-mytra-card border border-mytra-border rounded-card px-4 py-3
                            flex items-center justify-between gap-3"
               >
                 <div className="min-w-0">
@@ -547,7 +547,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       {/* ── IDENTIFY STEP ──────────────────────────────────── */}
       {step === 'identify' && (
         <div className="animate-fadeIn space-y-4">
-          <div data-tour-module="inspector-form" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4">
+          <div data-tour-module="inspector-form" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <ClipboardCheck className="w-5 h-5 text-mytra-purple" />
               <h3 className="text-sm font-semibold text-fg">
@@ -666,7 +666,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       {step === 'checklist' && (
         <div className="animate-fadeIn space-y-4">
           {/* Progress bar */}
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-3">
+          <div className="bg-mytra-card border border-mytra-border rounded-card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-fg-3">
                 {answeredItems}/{totalItems} items checked

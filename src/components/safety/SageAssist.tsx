@@ -320,7 +320,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Suggestion cards (initial + gap-check reuse) ──── */}
       {suggestions && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">
@@ -391,7 +391,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Follow-up chips bar ─────────────────────────────── */}
       {followUpMode === 'chips' && !suggestions && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2.5">
             <Sparkles className="w-3.5 h-3.5 text-mytra-purple" />
             <span className="text-xs font-medium text-fg-2">What next?</span>
@@ -431,7 +431,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Loading state for follow-ups ────────────────────── */}
       {followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center justify-center gap-2 py-2 text-sm text-mytra-purple">
             <Loader2 className="w-4 h-4 animate-spin" /> Sage is thinking...
           </div>
@@ -440,7 +440,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── PPE suggestions ─────────────────────────────────── */}
       {followUpMode === 'ppe' && !followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">Suggested PPE</span>
@@ -498,7 +498,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Permit gap results ──────────────────────────────── */}
       {followUpMode === 'permits' && !followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">Permit check</span>

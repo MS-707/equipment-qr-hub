@@ -80,7 +80,7 @@ export default function CrewSignatureBlock({
       {value.signatures.length > 0 && (
         <div className="space-y-2">
           {value.signatures.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 bg-mytra-card shadow-card border border-mytra-border rounded-lg p-2.5">
+            <div key={s.id} className="flex items-center gap-3 bg-mytra-card shadow-card border border-mytra-border rounded-card p-2.5">
               {value.blobs[s.id] && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -125,7 +125,7 @@ export default function CrewSignatureBlock({
       )}
 
       {adding ? (
-        <div className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
+        <div className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3 space-y-3 animate-fadeIn">
           <p className="text-xs text-fg-3 leading-relaxed">
             By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.
           </p>

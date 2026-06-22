@@ -15,7 +15,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
           Maintenance Dates
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+          <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
             <p className="text-xs text-fg-3 mb-1">Last PM Date</p>
             <p
               className={`text-sm font-medium ${
@@ -25,7 +25,7 @@ export default function ComplianceInfo({ equipment }: ComplianceInfoProps) {
               {equipment.lastPmDate || 'Not tracked yet'}
             </p>
           </div>
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+          <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
             <p className="text-xs text-fg-3 mb-1">Next PM Due</p>
             <p
               className={`text-sm font-medium ${

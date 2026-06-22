@@ -7,6 +7,7 @@ import { SAFETY_TYPE_LABELS, isPermit, isPTP, isJHA, isIncident } from '@/lib/sa
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import { isSyncAvailable } from '@/lib/safety-sync'
+import { haptic } from '@/lib/haptic'
 import { localToday } from '@/lib/datetime'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
@@ -73,9 +74,10 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
   return (
     <Link
       href={`/safety/record/${record.id}`}
-      className="block bg-mytra-card border border-mytra-border rounded-lg px-3 py-3 shadow-card
-                 hover:bg-mytra-card-hover hover:-translate-y-0.5 hover:shadow-lg hover:shadow-mytra-purple/5
-                 active:translate-y-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] press-scale"
+      onClick={() => haptic('tap')}
+      className="block bg-mytra-card border border-mytra-border rounded-card px-3 py-3 shadow-card
+                 hover:bg-mytra-card-hover hover:shadow-raised
+                 transition-colors duration-200 press-scale"
     >
       <div className="flex items-start gap-3">
         <span className="shrink-0 w-9 h-9 rounded-lg bg-mytra-bg border border-mytra-border flex items-center justify-center">
@@ -83,7 +85,7 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-fg-3">{record.id}</span>
+            <span className="text-xs font-mono text-fg-3 tabular-nums">{record.id}</span>
             <span className="text-xs text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
           </div>
           <p className="text-sm text-fg truncate">{title(record)}</p>

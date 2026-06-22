@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Shield, ShieldAlert } from 'lucide-react'
 import { EquipmentItem, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
 import { getAuthorization, onShopMgmtChange } from '@/lib/shop-management'
+import { haptic } from '@/lib/haptic'
 
 interface EquipmentCardProps {
   equipment: EquipmentItem
@@ -27,10 +28,10 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
   return (
     <Link
       href={`/equipment/${equipment.itemNumber}`}
-      className="block bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card
-                 hover:bg-mytra-card-hover hover:-translate-y-0.5 hover:shadow-lg hover:shadow-mytra-purple/5
-                 active:translate-y-0 press-scale
-                 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+      onClick={() => haptic('tap')}
+      className="block bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card
+                 hover:bg-mytra-card-hover hover:shadow-raised
+                 press-scale transition-colors duration-200
                  min-h-[72px] focus:outline-none focus:ring-2 focus:ring-mytra-purple"
       style={{ borderLeftWidth: '3px', borderLeftColor: categoryColor }}
     >

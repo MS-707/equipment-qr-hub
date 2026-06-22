@@ -96,14 +96,14 @@ export default function SyncQueuePanel() {
   }
 
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+    <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex items-center gap-2 w-full px-4 py-2.5 min-h-[44px] text-left"
       >
         <RefreshCw className="w-4 h-4 text-warn shrink-0" />
-        <p className="text-xs text-warn flex-1">
+        <p className="text-xs text-warn flex-1 tabular-nums">
           {pending.length} record{pending.length !== 1 ? 's' : ''} pending sync
         </p>
         {expanded ? (

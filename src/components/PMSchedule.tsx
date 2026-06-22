@@ -82,7 +82,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
           return (
             <div
               key={freq.key}
-              className="bg-mytra-card border border-mytra-border rounded-lg overflow-hidden"
+              className="bg-mytra-card border border-mytra-border rounded-card overflow-hidden"
             >
               <button
                 onClick={() => toggleAccordion(freq.originalIndex)}

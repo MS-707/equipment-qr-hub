@@ -17,7 +17,7 @@ export default function ManualCard({ equipment }: ManualCardProps) {
   if (!hasDescription && !hasManual) return null
 
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg overflow-hidden shadow-card animate-blurIn">
+    <div className="bg-mytra-card border border-mytra-border rounded-card overflow-hidden shadow-card animate-blurIn">
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">

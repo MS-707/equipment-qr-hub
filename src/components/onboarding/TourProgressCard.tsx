@@ -65,7 +65,7 @@ export default function TourProgressCard() {
   }
 
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+    <div className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-4 h-4 text-mytra-purple" />

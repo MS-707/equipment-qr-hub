@@ -320,7 +320,7 @@ export default function IncidentReportForm() {
           </button>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Incident / Near-Miss Report</h3>
@@ -460,7 +460,7 @@ export default function IncidentReportForm() {
         )}
 
         {analysisResult && (
-          <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp space-y-4">
+          <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-mytra-purple" />
@@ -555,7 +555,7 @@ export default function IncidentReportForm() {
       </div>
 
       {/* Witnesses */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Witnesses</h4>
         <div className="flex gap-2">
           <input
@@ -593,7 +593,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Photos */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
         <p className="text-xs text-fg-3">Tip: capture a wide shot, a close-up, and any equipment involved</p>
         <div className="flex flex-wrap gap-2">
@@ -633,7 +633,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Root cause & corrective */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label htmlFor="ir-root-cause" className={labelCls}>Root cause analysis</label>
@@ -646,7 +646,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Reporter signature */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
           <label htmlFor="ir-reporter-name" className={labelCls}>Name</label>

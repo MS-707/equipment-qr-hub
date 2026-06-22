@@ -83,7 +83,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
   return (
     <div className="space-y-4">
       {/* DRI Assignment */}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
         <h3 className="text-sm font-semibold text-fg flex items-center gap-1.5 mb-2">
           <User className="w-4 h-4 text-fg-3" />
           PM Responsible Individual (DRI)
@@ -183,7 +183,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
       </div>
 
       {/* PM Status Grid */}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
         <h3 className="text-sm font-semibold text-fg mb-3">PM Completion Status</h3>
         <div className="space-y-2">
           {activeFreqs.map((freq) => {
@@ -231,7 +231,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
 
       {/* Log Completion Modal */}
       {logFreq && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-4 shadow-card">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-4 shadow-card">
           <h4 className="text-sm font-medium text-fg mb-2 flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-mytra-purple" />
             Log {logFreq} PM — {equipment.name}

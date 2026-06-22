@@ -338,7 +338,7 @@ export default function ConfinedSpaceForm() {
           </button>
         </div>
       )}
-      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Confined Space Entry Permit</h3>
@@ -377,7 +377,7 @@ export default function ConfinedSpaceForm() {
         </div>
       )}
 
-      <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
           Atmospheric test <span className="text-fg-4 normal-case">{'·'} test O₂ → flammable → toxic</span>
         </h4>
@@ -488,7 +488,7 @@ export default function ConfinedSpaceForm() {
             </div>
           )}
           {aiAnalysis && (
-            <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+            <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
               <button
                 type="button"
                 onClick={() => setAiExpanded((v) => !v)}
@@ -526,7 +526,7 @@ export default function ConfinedSpaceForm() {
         </div>
       )}
 
-      <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <div>
           <label htmlFor="cs-attendant" className={labelCls}>Attendant (stationed outside)</label>
           <input
@@ -554,7 +554,7 @@ export default function ConfinedSpaceForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -574,7 +574,7 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each entrant confirms understanding. Designate the entry supervisor.</p>
         <CrewSignatureBlock

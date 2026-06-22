@@ -59,7 +59,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
       ) : (
         <div className="space-y-2">
           {hazards.map((h) => (
-            <div key={h.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-2">
+            <div key={h.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3 space-y-2">
               <div className="flex items-start gap-2">
                 <input
                   type="text"

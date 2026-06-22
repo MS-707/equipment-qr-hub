@@ -37,8 +37,8 @@ export default function BottomTabBar() {
               href={href}
               onClick={() => haptic('tap')}
               data-tour-tab={href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px]
-                         transition-all duration-200 active:scale-90 ${
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[var(--tab-bar-h)]
+                         transition-colors duration-200 press-scale ${
                 isActive ? 'text-mytra-purple' : 'text-fg-3 active:text-fg-2'
               }`}
               aria-current={isActive ? 'page' : undefined}
@@ -47,7 +47,7 @@ export default function BottomTabBar() {
                 <Icon className="w-7 h-7" />
                 {badgeCount > 0 && (
                   <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-xs font-bold rounded-full bg-mytra-purple text-white">
+                                   px-1 text-xs font-bold rounded-full bg-mytra-purple text-white tabular-nums">
                     {badgeCount}
                   </span>
                 )}

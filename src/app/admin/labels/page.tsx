@@ -27,7 +27,7 @@ export default function LabelsPage() {
   if (!canAccess) {
     return (
       <main className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-6 text-center max-w-sm">
+        <div className="bg-mytra-card border border-mytra-border rounded-card p-6 text-center max-w-sm">
           <ShieldAlert className="w-8 h-8 text-warn mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-fg">Admin Access Required</h2>
           <p className="text-sm text-fg-3 mt-2">
@@ -79,7 +79,7 @@ export default function LabelsPage() {
           </div>
 
           {/* Controls bar */}
-          <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 mb-8 flex flex-col sm:flex-row items-start sm:items-end gap-4">
+          <div className="bg-mytra-card border border-mytra-border rounded-card p-4 mb-8 flex flex-col sm:flex-row items-start sm:items-end gap-4">
             <div className="flex-1 w-full sm:w-auto">
               <label
                 htmlFor="base-url"

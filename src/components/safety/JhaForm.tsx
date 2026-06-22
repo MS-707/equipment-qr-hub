@@ -332,7 +332,7 @@ export default function JhaForm() {
 
       {/* Document upload */}
       {SAGE_ENABLED && !submittedId && (
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-3">
+        <div className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card space-y-3">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-mytra-purple" />
             <h3 className="text-sm font-semibold text-fg">Import from document</h3>
@@ -394,7 +394,7 @@ export default function JhaForm() {
       )}
 
       {/* Job / task information */}
-      <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ListChecks className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Job / Task Information</h3>
@@ -450,7 +450,7 @@ export default function JhaForm() {
         </p>
 
         {steps.map((step, i) => (
-          <div key={step.id} className="bg-mytra-card border border-mytra-border rounded-lg p-3 space-y-3 shadow-card">
+          <div key={step.id} className="bg-mytra-card border border-mytra-border rounded-card p-3 space-y-3 shadow-card">
             <div className="flex items-start gap-2">
               <span className="shrink-0 w-6 h-6 rounded-full bg-mytra-purple/15 text-mytra-purple text-xs font-semibold flex items-center justify-center mt-0.5">
                 {i + 1}
@@ -580,7 +580,7 @@ export default function JhaForm() {
       </section>
 
       {/* Additional notes */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Special Conditions / Notes</h4>
         <textarea
           rows={2}
@@ -729,7 +729,7 @@ function matrixLevel(s: number, l: number): RiskLevel {
 function RiskMatrixGuide() {
   const [open, setOpen] = useState(false)
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+    <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}

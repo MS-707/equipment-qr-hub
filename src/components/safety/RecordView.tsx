@@ -296,9 +296,9 @@ export default function RecordView({ id }: { id: string }) {
       </div>
 
       {/* Header — screen only; print uses the formal header above */}
-      <div className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <div className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-mono text-fg-3">{r.id}</span>
+          <span className="text-xs font-mono text-fg-3 tabular-nums">{r.id}</span>
           <div className="flex items-center gap-1.5">
             {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
             <ReviewStatusBadge record={r} />
@@ -403,7 +403,7 @@ export default function RecordView({ id }: { id: string }) {
       </div>
 
       {/* History */}
-      <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
           {r.events.filter((e) => isSyncAvailable() || e.action !== 'sync-failed').map((e, i) => (
@@ -741,7 +741,7 @@ function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
           </div>
         </div>
       )}
-      <dl className="grid grid-cols-2 gap-2 text-sm mb-2">
+      <dl className="grid grid-cols-2 gap-2 text-sm mb-2 tabular-nums">
         <Field label="O₂ %" value={atmo.oxygenPct || '—'} />
         <Field label="LEL %" value={atmo.lelPct || '—'} />
         <Field label="CO ppm" value={atmo.coPpm || '—'} />
@@ -856,7 +856,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+    <section className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
       <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">{title}</h2>
       {children}
     </section>

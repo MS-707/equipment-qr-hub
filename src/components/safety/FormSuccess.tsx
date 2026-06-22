@@ -38,7 +38,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
 
   return (
     <div className="animate-fadeIn space-y-4">
-      <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
+      <div className="bg-ok/10 border border-ok/20 rounded-card p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
         <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">{title}</h3>
         <p className="text-sm text-ok">

@@ -49,7 +49,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
               .map((item) => {
                 const notesOpen = openNotes.has(item.id)
                 return (
-                  <div key={item.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3">
+                  <div key={item.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3">
                     <div className="flex items-start gap-3">
                       <button
                         type="button"

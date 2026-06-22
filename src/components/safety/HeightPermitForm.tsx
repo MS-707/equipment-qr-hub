@@ -211,7 +211,7 @@ export default function HeightPermitForm() {
       )}
       <FormStepper steps={steps} activeStepId={activeStepId} />
 
-      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Work-at-Height Permit</h3>
@@ -248,7 +248,7 @@ export default function HeightPermitForm() {
         <ChipMultiSelect options={HEIGHT_FALL_PROTECTION} selected={fallProtection} onChange={setFallProtection} />
       </section>
 
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <div>
           <label htmlFor="hp-anchor" className={labelCls}>Anchor points (location + rating)</label>
           <input id="hp-anchor" type="text" maxLength={200} value={anchorPoints} onChange={(e) => setAnchorPoints(e.target.value)} placeholder="≥5,000 lb / engineered" className={inputCls} />
@@ -277,7 +277,7 @@ export default function HeightPermitForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -297,7 +297,7 @@ export default function HeightPermitForm() {
         </div>
       </div>
 
-      <section id="hp-crew-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="hp-crew-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the competent person / issuer.</p>
         <CrewSignatureBlock

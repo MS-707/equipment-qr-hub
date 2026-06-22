@@ -219,7 +219,7 @@ export default function HotWorkPermitForm() {
         </div>
       )}
       <FormStepper steps={steps} activeStepId={activeStepId} />
-      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Hot Work Permit</h3>
@@ -247,7 +247,7 @@ export default function HotWorkPermitForm() {
         <ChipMultiSelect options={HOT_WORK_TYPES} selected={hotWorkTypes} onChange={setHotWorkTypes} />
       </section>
 
-      <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
@@ -311,7 +311,7 @@ export default function HotWorkPermitForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -331,7 +331,7 @@ export default function HotWorkPermitForm() {
         </div>
       </div>
 
-      <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the issuer.</p>
         <CrewSignatureBlock
