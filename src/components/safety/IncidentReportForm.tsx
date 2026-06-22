@@ -489,7 +489,7 @@ export default function IncidentReportForm() {
                       <button
                         type="button"
                         onClick={() => adoptRootCause(rc.cause)}
-                        className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                        className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                       >
                         Use this
                       </button>
@@ -534,7 +534,7 @@ export default function IncidentReportForm() {
                             <button
                               type="button"
                               onClick={() => adoptCorrectiveAction(ca.action)}
-                              className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                              className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                             >
                               Use this
                             </button>
@@ -574,7 +574,7 @@ export default function IncidentReportForm() {
             placeholder="Witness name"
             className={inputCls}
           />
-          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg">
+          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg min-h-[44px]">
             <Plus className="w-4 h-4" />
           </button>
         </div>
@@ -583,7 +583,7 @@ export default function IncidentReportForm() {
             {witnesses.map((w, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-fg-2">
                 {w}
-                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} className="text-fg-3 hover:text-danger">
+                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label="Remove witness" className="text-fg-3 hover:text-danger w-7 h-7 flex items-center justify-center -mr-0.5">
                   <X className="w-3 h-3" />
                 </button>
               </span>

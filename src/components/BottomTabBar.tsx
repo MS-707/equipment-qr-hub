@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
+import { haptic } from '@/lib/haptic'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 import { usePendingSyncCount } from '@/hooks/usePendingSyncCount'
 
@@ -34,6 +35,7 @@ export default function BottomTabBar() {
             <Link
               key={href}
               href={href}
+              onClick={() => haptic('tap')}
               data-tour-tab={href}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px]
                          transition-all duration-200 active:scale-90 ${

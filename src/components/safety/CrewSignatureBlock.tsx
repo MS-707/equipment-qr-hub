@@ -137,6 +137,7 @@ export default function CrewSignatureBlock({
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               autoCapitalize="words"
+              enterKeyHint="next"
               placeholder="Crew member name"
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                          text-sm text-fg placeholder:text-fg-4

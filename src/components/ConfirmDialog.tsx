@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { haptic } from '@/lib/haptic'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -85,7 +86,10 @@ export default function ConfirmDialog({
         </button>
         <button
           type="button"
-          onClick={() => onConfirm(inputPrompt ? inputValue : undefined)}
+          onClick={() => {
+            haptic(variant === 'danger' ? 'warning' : 'tap')
+            onConfirm(inputPrompt ? inputValue : undefined)
+          }}
           className={`flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors
             ${variant === 'danger'
               ? 'bg-danger text-white hover:bg-danger/90'

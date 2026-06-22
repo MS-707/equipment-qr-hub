@@ -400,21 +400,21 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
             <button
               type="button"
               onClick={checkForGaps}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Check for gaps
             </button>
             <button
               type="button"
               onClick={suggestPpe}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Suggest PPE
             </button>
             <button
               type="button"
               onClick={checkPermits}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Need a permit?
             </button>
@@ -422,7 +422,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
           <button
             type="button"
             onClick={dismiss}
-            className="block mt-2 text-xs text-fg-4 hover:text-fg-2 transition-colors"
+            className="block mt-2 text-xs text-fg-4 hover:text-fg-2 transition-colors min-h-[44px]"
           >
             Done with Sage
           </button>

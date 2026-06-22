@@ -393,8 +393,9 @@ export default function ConfinedSpaceForm() {
                 </label>
                 <input
                   id={fieldId}
-                  type="number"
+                  type="text"
                   inputMode="decimal"
+                  enterKeyHint="next"
                   value={f.value}
                   onChange={(e) => f.set(e.target.value)}
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : warn ? 'border-warn ring-2 ring-warn/30' : ''}`}

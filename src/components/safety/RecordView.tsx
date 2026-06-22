@@ -41,6 +41,7 @@ import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import ReviewStatusSection from './ReviewStatusSection'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { RecordViewSkeleton } from '@/components/Skeleton'
 import { useReviewPoller } from '@/lib/review-poll'
 
 /** True if a saved form draft at this key holds any user-entered content. */
@@ -128,7 +129,7 @@ export default function RecordView({ id }: { id: string }) {
     return unsub
   }, [id, load])
 
-  if (record === undefined) return <div className="max-w-2xl mx-auto px-4 py-10 text-fg-3 text-sm">Loading…</div>
+  if (record === undefined) return <RecordViewSkeleton />
   if (record === null)
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 text-center">

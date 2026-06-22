@@ -530,7 +530,7 @@ export default function JhaForm() {
               <button
                 type="button"
                 onClick={() => updateStep(step.id, { showDetail: true })}
-                className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1"
+                className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1 min-h-[44px]"
               >
                 <Plus className="w-3 h-3" />
                 Add hazards &amp; controls

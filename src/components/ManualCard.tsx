@@ -31,7 +31,7 @@ export default function ManualCard({ equipment }: ManualCardProps) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 bg-mytra-purple hover:bg-mytra-purple-hover
                          text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors
-                         shadow-sm hover:shadow-md hover:shadow-mytra-purple/20 press-scale shrink-0"
+                         shadow-sm hover:shadow-md hover:shadow-mytra-purple/20 press-scale shrink-0 min-h-[44px]"
             >
               {isPdf ? (
                 <>
