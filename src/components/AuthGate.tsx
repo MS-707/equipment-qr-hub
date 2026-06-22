@@ -142,7 +142,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="mb-4 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">
             <p className="text-xs text-danger/80">
               {authError === 'AccessDenied'
-                ? "That account isn't on an approved domain. Use your company email."
+                ? needsCode
+                  ? "Sign-in failed. Check that your email is on an approved domain and the access code is correct."
+                  : "That account isn't on an approved domain. Use your company email."
                 : 'Sign-in failed. Please try again.'}
             </p>
           </div>

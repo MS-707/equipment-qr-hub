@@ -85,7 +85,15 @@ export default function ConfinedSpaceForm() {
   )
 
   const critLeft = criticalRemaining(checklist)
-  const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const validFromMs = new Date(validFrom).getTime()
+  const validUntilMs = new Date(validUntil).getTime()
+  const validWindowDuration = validUntilMs - validFromMs
+  const validWindowOk =
+    !Number.isNaN(validFromMs) &&
+    !Number.isNaN(validUntilMs) &&
+    validFromMs >= Date.now() - 5 * 60 * 1000 &&
+    validWindowDuration >= 30 * 60 * 1000 &&
+    validWindowDuration <= 24 * 60 * 60 * 1000
   const atmoUnsafe =
     outOfRange(oxygen, { min: 19.5, max: 23.5 }) ||
     outOfRange(lel, { max: 10 }) ||
@@ -206,11 +214,18 @@ export default function ConfinedSpaceForm() {
     if (!rescuePlan.trim()) errs.push({ label: 'Add a rescue plan', fieldId: 'cs-rescue' })
     if (atmoUnsafe) errs.push({ label: 'Atmosphere outside safe limits', fieldId: 'cs-atmo-o' })
     if (critLeft > 0) errs.push({ label: `Complete ${critLeft} required checklist item${critLeft === 1 ? '' : 's'}`, fieldId: 'cs-checklist' })
-    if (!validWindowOk) errs.push({ label: 'Fix validity window — "until" must be after "from"', fieldId: 'cs-valid-until' })
+    if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
+      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'cs-valid-from' })
+    else if (validFromMs < Date.now() - 5 * 60 * 1000)
+      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'cs-valid-from' })
+    else if (validWindowDuration < 30 * 60 * 1000)
+      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'cs-valid-until' })
+    else if (validWindowDuration > 24 * 60 * 60 * 1000)
+      errs.push({ label: 'Confined space permit cannot exceed 24 hours', fieldId: 'cs-valid-until' })
     if (supervisorId === null) errs.push({ label: 'Designate the entry supervisor', fieldId: 'cs-signatures' })
     if (sigData.signatures.length === 0) errs.push({ label: 'At least one entrant must sign on', fieldId: 'cs-signatures' })
     return errs
-  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, supervisorId, sigData.signatures.length])
+  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, validFromMs, validUntilMs, validWindowDuration, supervisorId, sigData.signatures.length])
 
   function submit() {
     if (!canSubmit) return

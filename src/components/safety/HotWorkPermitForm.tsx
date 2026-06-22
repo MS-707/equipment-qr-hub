@@ -71,7 +71,13 @@ export default function HotWorkPermitForm() {
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const critLeft = criticalRemaining(checklist)
-  const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const validFromMs = new Date(validFrom).getTime()
+  const validUntilMs = new Date(validUntil).getTime()
+  const validWindowOk =
+    !Number.isNaN(validFromMs) &&
+    !Number.isNaN(validUntilMs) &&
+    validFromMs >= Date.now() - 5 * 60 * 1000 &&
+    (validUntilMs - validFromMs) >= 30 * 60 * 1000
   const fireWatchOk = !fireWatchRequired || fireWatchName.trim().length > 0
   const canSubmit =
     workDescription.trim().length > 0 &&
@@ -106,9 +112,14 @@ export default function HotWorkPermitForm() {
     if (!fireWatchOk) errs.push({ label: 'Fire watch person must be assigned', fieldId: 'hw-fire-watch' })
     if (sigData.signatures.length === 0) errs.push({ label: 'At least one worker must sign on', fieldId: 'signatures-section' })
     if (issuerId === null && sigData.signatures.length > 0) errs.push({ label: 'Designate an issuer', fieldId: 'signatures-section' })
-    if (!validWindowOk) errs.push({ label: '"Valid until" must be after "Valid from"', fieldId: 'hw-valid-until' })
+    if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
+      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'hw-valid-from' })
+    else if (validFromMs < Date.now() - 5 * 60 * 1000)
+      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'hw-valid-from' })
+    else if ((validUntilMs - validFromMs) < 30 * 60 * 1000)
+      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'hw-valid-until' })
     return errs
-  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk])
+  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk, validFromMs, validUntilMs])
 
   function submit() {
     if (!canSubmit) return

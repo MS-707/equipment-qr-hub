@@ -195,7 +195,7 @@ function ReviewActionInner() {
             <p className="text-sm text-[#9A9A9A]">
               {result.status === 'approved'
                 ? `This ${info?.recordLabel || 'record'} has been approved.`
-                : `This ${info?.recordLabel || 'record'} has been denied.`}
+                : `This ${info?.recordLabel || 'record'} needs revision.`}
             </p>
             {result.employeeNotified && (
               <p className="text-xs text-[#34C172]">

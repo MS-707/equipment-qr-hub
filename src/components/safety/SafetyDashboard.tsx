@@ -141,7 +141,7 @@ export default function SafetyDashboard() {
         >
           <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
           <p className="text-xs text-danger flex-1">
-            {reviewRejectedCount} record{reviewRejectedCount !== 1 ? 's' : ''} need{reviewRejectedCount === 1 ? 's' : ''} revision — rejected by EHS
+            {reviewRejectedCount} record{reviewRejectedCount !== 1 ? 's' : ''} need{reviewRejectedCount === 1 ? 's' : ''} revision — returned by EHS
           </p>
           <ChevronRight className="w-3.5 h-3.5 text-danger shrink-0" />
         </Link>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy } from 'lucide-react'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy, Loader2 } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
@@ -78,6 +78,8 @@ export default function RecordView({ id }: { id: string }) {
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [shared, setShared] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [pendingReissue, setPendingReissue] = useState<{ draftKey: string; formPath: string; draft: Record<string, unknown> } | null>(null)
 
   useReviewPoller()
@@ -147,10 +149,15 @@ export default function RecordView({ id }: { id: string }) {
     setRevokeOpen(false)
   }
   async function handleShare() {
-    const outcome = await shareRecord(r)
-    if (outcome === 'shared' || outcome === 'mailto') {
-      setShared(true)
-      setTimeout(() => setShared(false), 2500)
+    setSharing(true)
+    try {
+      const outcome = await shareRecord(r)
+      if (outcome === 'shared' || outcome === 'mailto') {
+        setShared(true)
+        setTimeout(() => setShared(false), 2500)
+      }
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -228,25 +235,38 @@ export default function RecordView({ id }: { id: string }) {
           {r.syncStatus !== 'synced' && (
             <button
               type="button"
-              onClick={() => trySyncRecord(r.id)}
-              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+              disabled={syncing}
+              aria-busy={syncing}
+              onClick={async () => {
+                setSyncing(true)
+                try { await trySyncRecord(r.id) } finally { setSyncing(false) }
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Retry sync
+              {syncing
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…</>
+                : <><RefreshCw className="w-3.5 h-3.5" /> Retry sync</>}
             </button>
           )}
           <button
             type="button"
+            disabled={sharing}
+            aria-busy={sharing}
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
           >
-            {shared ? <Check className="w-3.5 h-3.5 text-ok" /> : <Share2 className="w-3.5 h-3.5" />}
-            {shared ? 'Shared' : 'Share'}
+            {sharing
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sharing…</>
+              : shared
+                ? <><Check className="w-3.5 h-3.5 text-ok" /> Shared</>
+                : <><Share2 className="w-3.5 h-3.5" /> Share</>}
           </button>
           <button
             type="button"
             onClick={() => {
               if (isStandalone) {
-                window.open(`${window.location.pathname}?print=1`, '_blank')
+                const w = window.open(`${window.location.pathname}?print=1`, '_blank')
+                if (!w) window.print()
               } else {
                 window.print()
               }

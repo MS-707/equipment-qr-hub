@@ -100,7 +100,8 @@ export default function CrewSignatureBlock({
                   type="button"
                   onClick={() => onSupervisorChange(supervisorId === s.id ? null : s.id)}
                   title={`Mark as ${supervisorLabel.toLowerCase()}`}
-                  className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] ${
+                  aria-pressed={supervisorId === s.id}
+                  className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] min-w-[44px] ${
                     supervisorId === s.id
                       ? 'bg-mytra-purple/20 text-mytra-purple border-mytra-purple/40'
                       : 'bg-mytra-bg text-fg-3 border-mytra-border hover:text-fg'

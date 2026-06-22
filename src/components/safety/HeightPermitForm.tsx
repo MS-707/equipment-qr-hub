@@ -73,7 +73,13 @@ export default function HeightPermitForm() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const pfasSelected = fallProtection.includes(PFAS)
   const critLeft = criticalRemaining(checklist)
-  const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const validFromMs = new Date(validFrom).getTime()
+  const validUntilMs = new Date(validUntil).getTime()
+  const validWindowOk =
+    !Number.isNaN(validFromMs) &&
+    !Number.isNaN(validUntilMs) &&
+    validFromMs >= Date.now() - 5 * 60 * 1000 &&
+    (validUntilMs - validFromMs) >= 30 * 60 * 1000
   const canSubmit =
     workDescription.trim().length > 0 &&
     location.trim().length > 0 &&
@@ -103,11 +109,16 @@ export default function HeightPermitForm() {
     if (fallProtection.length === 0) errs.push({ label: 'Select at least one fall protection', fieldId: 'hp-fall-protection' })
     if (pfasSelected && !rescuePlan.trim()) errs.push({ label: 'Rescue plan is required for PFAS', fieldId: 'hp-rescue' })
     if (critLeft > 0) errs.push({ label: `${critLeft} required checklist item${critLeft === 1 ? '' : 's'} remaining`, fieldId: 'hp-checklist' })
-    if (!validWindowOk) errs.push({ label: '"Valid until" must be after "Valid from"', fieldId: 'hp-valid-until' })
+    if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
+      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'hp-valid-from' })
+    else if (validFromMs < Date.now() - 5 * 60 * 1000)
+      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'hp-valid-from' })
+    else if ((validUntilMs - validFromMs) < 30 * 60 * 1000)
+      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'hp-valid-until' })
     if (sigData.signatures.length < 1) errs.push({ label: 'At least one worker must sign on', fieldId: 'hp-crew-signatures' })
     if (issuerId === null) errs.push({ label: 'Designate the issuer', fieldId: 'hp-crew-signatures' })
     return errs
-  }, [workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, sigData.signatures.length, issuerId])
+  }, [workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, validFromMs, validUntilMs, sigData.signatures.length, issuerId])
 
   function submit() {
     if (!canSubmit) return

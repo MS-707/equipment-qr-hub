@@ -55,7 +55,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="button"
                         onClick={() => set(item.id, { checked: !item.checked })}
                         aria-pressed={item.checked}
-                        aria-label={item.checked ? 'Checked' : 'Not checked'}
+                        aria-label={`${item.checked ? 'Uncheck' : 'Check'}: ${item.label}`}
                         className={`shrink-0 mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                           item.checked
                             ? 'bg-mytra-purple border-mytra-purple text-white'
@@ -65,10 +65,10 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         <Check className="w-3.5 h-3.5" />
                       </button>
 
-                      <button
-                        type="button"
+                      <div
+                        role="none"
                         onClick={() => set(item.id, { checked: !item.checked })}
-                        className="flex-1 text-left min-w-0"
+                        className="flex-1 text-left min-w-0 cursor-pointer select-none"
                       >
                         <span className="text-sm text-fg leading-snug">{item.label}</span>
                         {item.critical && (
@@ -77,7 +77,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                             Required
                           </span>
                         )}
-                      </button>
+                      </div>
 
                       <button
                         type="button"
@@ -98,6 +98,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="text"
                         value={item.notes}
                         onChange={(e) => set(item.id, { notes: e.target.value })}
+                        aria-label={`Note for: ${item.label}`}
                         placeholder="Site-specific note (optional)"
                         className="mt-2 w-full bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
                                    text-sm text-fg placeholder:text-fg-4

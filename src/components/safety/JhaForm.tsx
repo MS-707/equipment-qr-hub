@@ -132,17 +132,18 @@ export default function JhaForm() {
     setDocName(file.name)
 
     try {
+      if (file.size > 3 * 1024 * 1024) {
+        setDocError('File too large — keep it under 3 MB.')
+        setDocLoading(false)
+        return
+      }
+
       const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
       const payload: { documentText?: string; documentBase64?: string; fileName: string } = {
         fileName: file.name,
       }
 
       if (isPdf) {
-        if (file.size > 3 * 1024 * 1024) {
-          setDocError('PDF too large — keep it under 3MB.')
-          setDocLoading(false)
-          return
-        }
         payload.documentBase64 = await fileToBase64(file)
       } else {
         const text = await file.text()
