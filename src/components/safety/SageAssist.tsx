@@ -116,6 +116,12 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setError(data.error ?? `Request failed (${res.status})`)
+        setSuggestions([])
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setError(data.error)
@@ -186,6 +192,12 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setFollowUpError(data.error ?? `Request failed (${res.status})`)
+        setSuggestions([])
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setFollowUpError(data.error)
@@ -248,6 +260,11 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setFollowUpError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setFollowUpError(data.error)

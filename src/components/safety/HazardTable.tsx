@@ -15,7 +15,7 @@ const RISK_LEVELS: RiskLevel[] = ['low', 'medium', 'high', 'critical']
 
 export default function HazardTable({ hazards, onChange }: HazardTableProps) {
   function update(id: string, patch: Partial<HazardEntry>) {
-    onChange(hazards.map((h) => (h.id === id ? { ...h, ...patch, source: patch.description || patch.controlMeasure ? 'manual' : h.source } : h)))
+    onChange(hazards.map((h) => (h.id === id ? { ...h, ...patch, source: (patch.description || patch.controlMeasure) ? 'manual' : h.source } : h)))
   }
 
   function remove(id: string) {

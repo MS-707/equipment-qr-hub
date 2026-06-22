@@ -183,6 +183,11 @@ export default function PreTaskPlanForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setToolboxError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setToolboxError(data.error)
@@ -252,6 +257,11 @@ export default function PreTaskPlanForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setAuditError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setAuditError(data.error)
@@ -273,8 +283,10 @@ export default function PreTaskPlanForm() {
   const hasWarnings = auditResult?.findings.some((f) => f.severity === 'warning') ?? false
   const auditBlocksSubmit = hasBlockers || (hasWarnings && !acknowledgedWarnings)
 
+  const submitGuard = useRef(false)
   function handleSubmit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createPreTaskPlan>
     try {
@@ -299,6 +311,7 @@ export default function PreTaskPlanForm() {
         supervisorSignatureId: supervisorId,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
       return
     }
@@ -576,7 +589,7 @@ export default function PreTaskPlanForm() {
           </div>
           <div>
             <label htmlFor="ptp-valid-until" className={labelCls}>Valid through</label>
-            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={(() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
+            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={date ? (() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
           </div>
           <div>
             <label className={labelCls}>Shift</label>

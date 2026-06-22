@@ -57,7 +57,7 @@ export default function QRLabel({ equipment, baseUrl, printMode = false }: QRLab
         value={qrValue}
         size={120}
         bgColor="transparent"
-        fgColor="#FFFFFF"
+        fgColor="currentColor"
         level="M"
         includeMargin={false}
       />

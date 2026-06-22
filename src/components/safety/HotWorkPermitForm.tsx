@@ -79,6 +79,7 @@ export default function HotWorkPermitForm() {
     hotWorkTypes.length > 0 &&
     critLeft === 0 &&
     fireWatchOk &&
+    postDuration >= 60 &&
     sigData.signatures.length >= 1 &&
     issuerId !== null &&
     validWindowOk
@@ -157,6 +158,8 @@ export default function HotWorkPermitForm() {
     clearDraft()
     setWasOffline(false)
     const w = defaultValidityWindow(8)
+    setProjectName('')
+    setLocation('')
     setWorkDescription('')
     setHotWorkTypes([])
     setChecklist(buildPermitItems('hot-work'))

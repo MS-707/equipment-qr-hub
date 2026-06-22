@@ -10,10 +10,10 @@
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
 import { notifySyncResult } from '@/components/SyncToast'
 
-let syncDisabled = false
+let syncDisabledUntil = 0
 
 export function isSyncAvailable(): boolean {
-  return !syncDisabled
+  return Date.now() >= syncDisabledUntil
 }
 
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
@@ -52,7 +52,7 @@ const inFlight = new Set<string>()
  *   the caller aggregates into a single summary instead.
  */
 export async function trySyncRecord(id: string, notify = true): Promise<boolean> {
-  if (syncDisabled) return false
+  if (Date.now() < syncDisabledUntil) return false
   if (!getSafetyRecordById(id)) return false
   if (inFlight.has(id)) return false
   inFlight.add(id)
@@ -66,7 +66,7 @@ export async function trySyncRecord(id: string, notify = true): Promise<boolean>
           return true
         }
         if (result === 'not-configured') {
-          syncDisabled = true
+          syncDisabledUntil = Date.now() + 5 * 60 * 1000
           return false
         }
       } catch {

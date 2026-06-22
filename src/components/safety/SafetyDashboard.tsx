@@ -30,7 +30,6 @@ import SafetyRecordCard from './SafetyRecordCard'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import PermitTimer from './PermitTimer'
 import PermitStatusBadge from './PermitStatusBadge'
-import { permitDisplayStatus } from '@/lib/safety-records'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
 import SyncQueuePanel from './SyncQueuePanel'
@@ -212,7 +211,7 @@ export default function SafetyDashboard() {
                 <div className="shrink-0 text-right space-y-1">
                   <PermitStatusBadge permit={p} />
                   <div>
-                    <PermitTimer validUntil={p.validUntil} status={permitDisplayStatus(p) === 'expired' ? 'active' : p.status} />
+                    <PermitTimer validUntil={p.validUntil} status={p.status} />
                   </div>
                 </div>
               </Link>

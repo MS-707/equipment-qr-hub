@@ -181,6 +181,10 @@ export default function IncidentReportForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        throw new Error(data.error ?? `Request failed (${res.status})`)
+      }
       const data = await res.json()
       if (data?.error) {
         throw new Error(data.error)
@@ -216,8 +220,10 @@ export default function IncidentReportForm() {
     setAnalysisSource(null)
   }
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     const reporterSignatureId = reporterSig ? cryptoRandomId() : null
     let record: ReturnType<typeof createIncidentReport>
@@ -240,6 +246,7 @@ export default function IncidentReportForm() {
         reporterSignatureId,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
       return
     }

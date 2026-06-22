@@ -163,11 +163,12 @@ export default function JhaForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
-      const data = await res.json()
       if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Failed to parse document' }))
         setDocError(data.error || 'Failed to parse document')
         return
       }
+      const data = await res.json()
 
       if (data.suggestedTitle && !jobTitle.trim()) setJobTitle(data.suggestedTitle)
       if (data.suggestedLocation && !location.trim()) setLocation(data.suggestedLocation)
@@ -222,6 +223,11 @@ export default function JhaForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setSageError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setSageError(data.error)
@@ -238,9 +244,9 @@ export default function JhaForm() {
           next[i] = {
             ...next[i],
             hazards: next[i].hazards.trim() ? next[i].hazards : a.hazards,
-            riskLevel: a.riskLevel ?? next[i].riskLevel,
+            riskLevel: next[i].riskLevel !== 'medium' ? next[i].riskLevel : (a.riskLevel ?? next[i].riskLevel),
             controls: next[i].controls.trim() ? next[i].controls : a.controls,
-            residualRiskLevel: a.residualRiskLevel ?? next[i].residualRiskLevel,
+            residualRiskLevel: next[i].residualRiskLevel ? next[i].residualRiskLevel : (a.residualRiskLevel ?? next[i].residualRiskLevel),
             source: 'sage',
           }
         })
@@ -257,8 +263,10 @@ export default function JhaForm() {
     }
   }
 
+  const submitGuard = useRef(false)
   function handleSubmit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createJobHazardAnalysis>
     try {
@@ -277,6 +285,7 @@ export default function JhaForm() {
         preparedBySignatureId: null,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save — device storage may be full.')
       return
     }
@@ -290,6 +299,8 @@ export default function JhaForm() {
     clearDraft()
     setWasOffline(false)
     setJobTitle('')
+    setDateOfAnalysis(todayStr())
+    setValidUntil('')
     setDepartment('')
     setLocation('')
     setReferenceDoc('')
@@ -398,7 +409,7 @@ export default function JhaForm() {
           </div>
           <div>
             <label htmlFor="jha-valid-until" className={labelCls}>Valid through</label>
-            <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={(() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
+            <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={dateOfAnalysis ? (() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label htmlFor="jha-dept" className={labelCls}>Department / Team</label>

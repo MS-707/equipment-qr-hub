@@ -199,6 +199,8 @@ export default function ConfinedSpaceForm() {
 
   const validationErrors = useMemo((): ValidationError[] => {
     const errs: ValidationError[] = []
+    if (!spaceDescription.trim()) errs.push({ label: 'Describe the confined space', fieldId: 'cs-space' })
+    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'cs-location' })
     if (hazards.length === 0) errs.push({ label: 'Identify at least one hazard', fieldId: 'cs-hazards' })
     if (!attendantName.trim()) errs.push({ label: 'Assign an attendant', fieldId: 'cs-attendant' })
     if (!rescuePlan.trim()) errs.push({ label: 'Add a rescue plan', fieldId: 'cs-rescue' })
@@ -208,7 +210,7 @@ export default function ConfinedSpaceForm() {
     if (supervisorId === null) errs.push({ label: 'Designate the entry supervisor', fieldId: 'cs-signatures' })
     if (sigData.signatures.length === 0) errs.push({ label: 'At least one entrant must sign on', fieldId: 'cs-signatures' })
     return errs
-  }, [hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, supervisorId, sigData.signatures.length])
+  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, supervisorId, sigData.signatures.length])
 
   function submit() {
     if (!canSubmit) return
@@ -262,6 +264,8 @@ export default function ConfinedSpaceForm() {
     clearDraft()
     setWasOffline(false)
     const w = defaultValidityWindow(4)
+    setProjectName('')
+    setLocation('')
     setSpaceDescription('')
     setHazards([])
     setOxygen('')
@@ -574,6 +578,7 @@ export default function ConfinedSpaceForm() {
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
+          disabled={!canSubmit}
           onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >

@@ -59,7 +59,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   function cycleStatus() {
     const currentIdx = STATUS_FLOW.indexOf(workOrder.status)
-    const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length]
+    if (currentIdx >= STATUS_FLOW.length - 1) return
+    const nextStatus = STATUS_FLOW[currentIdx + 1]
     updateWorkOrder(workOrder.id, { status: nextStatus })
     onUpdate()
   }

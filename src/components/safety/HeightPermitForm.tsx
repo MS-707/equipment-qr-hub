@@ -153,6 +153,8 @@ export default function HeightPermitForm() {
     clearDraft()
     setWasOffline(false)
     const w = defaultValidityWindow(8)
+    setProjectName('')
+    setLocation('')
     setWorkDescription('')
     setWorkingHeight('')
     setAccessMethod([])

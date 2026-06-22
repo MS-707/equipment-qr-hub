@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSession, signIn, getProviders } from 'next-auth/react'
 import { ShieldCheck, WifiOff, Loader2 } from 'lucide-react'
-import { setCurrentIdentity, getCurrentIdentity } from '@/lib/identity'
+import { setCurrentIdentity, getCurrentIdentity, isIdentityStale } from '@/lib/identity'
 
 type ProvidersMap = Awaited<ReturnType<typeof getProviders>>
 
@@ -73,7 +73,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   // Unauthenticated
   const cached = getCurrentIdentity()
 
-  if (!online && cached) {
+  if (!online && cached && !isIdentityStale()) {
     return (
       <>
         <div className="no-print bg-warn/10 border-b border-warn/20 px-4 py-2 text-center">

@@ -793,7 +793,7 @@ export async function clearAllLocalData(): Promise<void> {
   }
   draftKeys.forEach((k) => localStorage.removeItem(k))
 
-  localStorage.removeItem('sage-identity')
+  localStorage.removeItem('eqr-current-user')
 
   try {
     const db = await openBlobDB()

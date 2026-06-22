@@ -75,8 +75,9 @@ export function useFormDraft<T extends Record<string, unknown>>(
   }, [formKey])
 
   const dismissDraft = useCallback(() => {
+    localStorage.removeItem(DRAFT_PREFIX + formKey)
     setHasDraft(false)
-  }, [])
+  }, [formKey])
 
   return { hasDraft, clearDraft, dismissDraft }
 }
