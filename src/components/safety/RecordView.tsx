@@ -460,8 +460,8 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </p>
       </Section>
       {ptp.validUntil && ptp.validUntil !== ptp.date && (
-        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
-          <p className="text-xs text-blue-400">
+        <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-mytra-purple">
             This plan covers multiple days. Crew should verbally re-confirm hazards and controls each morning before work begins.
           </p>
         </div>
@@ -545,8 +545,8 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
         </dl>
       </Section>
       {jha.validUntil && jha.validUntil !== jha.dateOfAnalysis && (
-        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
-          <p className="text-xs text-blue-400">
+        <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-mytra-purple">
             This JHA covers multiple days. Review hazards and controls daily as site conditions may change.
           </p>
         </div>

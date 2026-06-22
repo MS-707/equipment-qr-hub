@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { ArrowUpFromLine, RotateCcw } from 'lucide-react'
 import FormStepper, { useActiveStep } from '@/components/safety/FormStepper'
 import type { FormStep } from '@/components/safety/FormStepper'
@@ -120,8 +120,10 @@ export default function HeightPermitForm() {
     return errs
   }, [workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, validFromMs, validUntilMs, sigData.signatures.length, issuerId])
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createHeightPermit>
     try {
@@ -319,7 +321,8 @@ export default function HeightPermitForm() {
         <button
           type="button"
           onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
-          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover ${!canSubmit ? 'opacity-40' : ''}`}
+          disabled={!canSubmit}
+          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'

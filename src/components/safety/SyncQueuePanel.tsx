@@ -136,7 +136,7 @@ export default function SyncQueuePanel() {
                           Failed
                         </span>
                       ) : isSyncing ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-mytra-purple/10 text-mytra-purple">
                           <Loader2 className="w-2.5 h-2.5 animate-spin" />
                           Syncing
                         </span>

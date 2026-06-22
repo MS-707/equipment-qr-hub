@@ -227,8 +227,10 @@ export default function ConfinedSpaceForm() {
     return errs
   }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, validFromMs, validUntilMs, validWindowDuration, supervisorId, sigData.signatures.length])
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createConfinedSpacePermit>
     try {

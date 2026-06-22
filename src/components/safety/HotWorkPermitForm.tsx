@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { Flame, RotateCcw } from 'lucide-react'
 import FormStepper, { useActiveStep } from './FormStepper'
 import type { FormStep } from './FormStepper'
@@ -121,8 +121,10 @@ export default function HotWorkPermitForm() {
     return errs
   }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk, validFromMs, validUntilMs])
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createHotWorkPermit>
     try {
@@ -352,7 +354,8 @@ export default function HotWorkPermitForm() {
         <button
           type="button"
           onClick={() => { if (canSubmit) { setShowValidation(false); setConfirmOpen(true) } else { setShowValidation(true) } }}
-          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover ${!canSubmit ? 'opacity-40' : ''}`}
+          disabled={!canSubmit}
+          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'
