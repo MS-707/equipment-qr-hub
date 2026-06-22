@@ -138,6 +138,7 @@ export default function SafetyDashboard() {
       {reviewRejectedCount > 0 && (
         <Link
           href="/safety/history"
+          onClick={() => haptic('tap')}
           className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-card px-4 py-3 min-h-[44px] hover:bg-danger/15 transition-colors"
         >
           <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
@@ -150,6 +151,7 @@ export default function SafetyDashboard() {
       {reviewApprovedCount > 0 && (
         <Link
           href="/safety/history"
+          onClick={() => haptic('tap')}
           className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-card px-4 py-3 min-h-[44px] hover:bg-ok/15 transition-colors"
         >
           <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
