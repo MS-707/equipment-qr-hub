@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`sds-parse:${session!.user!.email}`, 3, 60_000)
+  const rl = await rateLimit(`sds-parse:${session?.user?.email || 'unknown'}`, 3, 60_000)
   if (!rl.ok) {
     return Response.json(
       { error: 'Too many requests' },

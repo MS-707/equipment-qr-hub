@@ -188,13 +188,16 @@ export async function POST(req: Request) {
   await markProcessed(payload.event_id)
 
   if (process.env.SLACK_WEBHOOK_URL) {
+    const abort = new AbortController()
+    const timer = setTimeout(() => abort.abort(), 5000)
     fetch(process.env.SLACK_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: abort.signal,
       body: JSON.stringify({
-        text: `SDS record created: *${payload.chemical_name}* (${sdsId})\nApproved by ${payload.approved_by} for ${payload.project || 'unspecified project'}`,
+        text: `SDS record created: *${(payload.chemical_name || '').slice(0, 200)}* (${sdsId})\nApproved by ${payload.approved_by || 'unknown'} for ${payload.project || 'unspecified project'}`,
       }),
-    }).catch(() => {})
+    }).catch(() => {}).finally(() => clearTimeout(timer))
   }
 
   return Response.json({ ok: true, sdsId, action: 'created' })

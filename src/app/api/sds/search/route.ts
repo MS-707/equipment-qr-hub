@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`sds-search:${session!.user!.email}`, 20, 60_000)
+  const rl = await rateLimit(`sds-search:${session?.user?.email || 'unknown'}`, 20, 60_000)
   if (!rl.ok) {
     return Response.json(
       { results: [], total: 0, error: 'Too many requests' },
