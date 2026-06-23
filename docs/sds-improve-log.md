@@ -154,3 +154,7 @@ Found 0 HIGH, 1 MEDIUM. Fixed 1:
 Sub-audits:
 - ReDoS regex audit: ZERO findings (all patterns safe, no `new RegExp()` calls)
 - Cryptographic audit: FIXED the one MEDIUM, confirmed HMAC/token/webhook crypto correct
+
+| B46 | 2026-06-23T08:10:00Z | 130m | B — Form-styles (3), inspections CSV (7) — **634 total across 60 files** | Done |
+| B47 | 2026-06-23T08:13:00Z | 133m | B — Suggest-JHA route validation tests (7 new) — **641 total across 61 files** | Done |
+| B48 | 2026-06-23T08:21:00Z | 141m | B — Safety-records edge cases (12 new, fixed Zod schema compliance) — **653 total across 62 files** | Done |

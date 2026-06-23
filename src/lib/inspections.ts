@@ -239,6 +239,12 @@ export function submitInspection(data: {
 
 // ── Export helpers ────────────────────────────────────
 
+function csvCell(v: unknown): string {
+  let s = v == null ? '' : String(v)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
+  return `"${s.replace(/"/g, '""')}"`
+}
+
 export function exportInspectionsToCsv(records: InspectionRecord[]): string {
   const headers = [
     'Inspection_ID', 'Equipment_ID', 'Inspector', 'Shift',
@@ -251,10 +257,10 @@ export function exportInspectionsToCsv(records: InspectionRecord[]): string {
       .map((i) => i.label)
       .join('; ')
     return [
-      r.id, r.equipmentId, `"${r.inspectorName.replace(/"/g, '""')}"`, r.shift,
-      r.hourMeterReading ?? '', r.checklistType, r.result,
-      r.hasCriticalFail ? 'YES' : 'NO',
-      `"${failedItems.replace(/"/g, '""')}"`, r.workOrderId ?? '', r.createdAt, r.syncStatus,
+      csvCell(r.id), csvCell(r.equipmentId), csvCell(r.inspectorName), csvCell(r.shift),
+      csvCell(r.hourMeterReading), csvCell(r.checklistType), csvCell(r.result),
+      csvCell(r.hasCriticalFail ? 'YES' : 'NO'),
+      csvCell(failedItems), csvCell(r.workOrderId), csvCell(r.createdAt), csvCell(r.syncStatus),
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')

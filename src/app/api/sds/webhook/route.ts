@@ -144,7 +144,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() || 'unknown'
+  const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() || 'unknown'
   const rl = await rateLimit(`sds-webhook:${ip}`, 30, 60_000)
   if (!rl.ok) {
     return Response.json(

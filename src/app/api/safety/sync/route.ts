@@ -47,11 +47,13 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
-  if (session?.user?.email) {
+  const sessionEmail = session?.user?.email
+  if (sessionEmail) {
     const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
-    if (recordEmail && recordEmail !== session?.user?.email) {
+    if (recordEmail && recordEmail !== sessionEmail) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
     }
+    ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
   }
 
   const dbId = dbForType(record.type)

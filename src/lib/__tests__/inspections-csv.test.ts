@@ -72,4 +72,10 @@ describe('exportInspectionsToCsv', () => {
     const csv = exportInspectionsToCsv([record])
     expect(csv).toContain('Alice ""Al"" Smith')
   })
+
+  it('sanitizes CSV formula injection in inspector name', () => {
+    const record = { ...mockRecord, inspectorName: '=CMD()' }
+    const csv = exportInspectionsToCsv([record])
+    expect(csv).toContain("\"'=CMD()\"")
+  })
 })

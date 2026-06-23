@@ -89,7 +89,7 @@ export async function POST(req: Request) {
   const location = (body.location ?? '').trim().slice(0, 200)
   const followUp = body.followUp === true
   const existingHazards = Array.isArray(body.existingHazards)
-    ? body.existingHazards.map((h) => String(h).slice(0, 200))
+    ? body.existingHazards.slice(0, 50).map((h) => String(h).slice(0, 200))
     : []
 
   const userMessage = [

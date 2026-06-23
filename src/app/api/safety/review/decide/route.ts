@@ -102,6 +102,14 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Submission not found' }, { status: 404 })
   }
 
+  if (submission.status !== 'pending') {
+    return Response.json({
+      recordId: submission.recordId,
+      status: submission.status,
+      action: parsed.action,
+    })
+  }
+
   return Response.json({
     recordId: submission.recordId,
     recordLabel: submission.recordLabel,
