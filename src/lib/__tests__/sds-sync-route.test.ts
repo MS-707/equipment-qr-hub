@@ -184,6 +184,27 @@ describe('/api/sds/sync', () => {
     }
   })
 
+  it('caps children blocks at 100 for very large records', async () => {
+    process.env.NOTION_API_KEY = 'test-key'
+    process.env.NOTION_SDS_DB_ID = 'test-db-id'
+    const hugeRecord = {
+      ...validRecord,
+      sections: Array.from({ length: 16 }, (_, i) => ({
+        number: i + 1,
+        title: `Section ${i + 1}`,
+        content: 'A'.repeat(15000),
+      })),
+    }
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ results: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ id: 'huge-page' }) })
+    const { POST } = await import('@/app/api/sds/sync/route')
+    const res = await POST(makeRequest(hugeRecord))
+    expect(res.status).toBe(200)
+    const createBody = JSON.parse(mockFetch.mock.calls[1][1].body)
+    expect(createBody.children.length).toBeLessThanOrEqual(100)
+  })
+
   it('returns 502 when Notion page creation fails', async () => {
     process.env.NOTION_API_KEY = 'test-key'
     process.env.NOTION_SDS_DB_ID = 'test-db-id'

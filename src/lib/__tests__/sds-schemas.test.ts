@@ -52,6 +52,23 @@ describe('SdsRecordSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('accepts notionPageId as optional string', () => {
+    const result = SdsRecordSchema.safeParse({ ...validRecord, notionPageId: 'np-123' })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.notionPageId).toBe('np-123')
+  })
+
+  it('accepts notionPageId as null', () => {
+    const result = SdsRecordSchema.safeParse({ ...validRecord, notionPageId: null })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.notionPageId).toBeNull()
+  })
+
+  it('accepts record without notionPageId', () => {
+    const result = SdsRecordSchema.safeParse(validRecord)
+    expect(result.success).toBe(true)
+  })
+
   it('allows extra fields via passthrough', () => {
     const result = SdsRecordSchema.safeParse({ ...validRecord, futureField: true })
     expect(result.success).toBe(true)
