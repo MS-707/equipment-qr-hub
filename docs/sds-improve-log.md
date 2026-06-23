@@ -24,3 +24,5 @@ Append-only log of all work units. Source of truth for the design doc: `docs/pla
 | B2 | 2026-06-23T06:27:00Z | 27m | B — Tournament review #1: fix 9 HIGH/MEDIUM findings | Done |
 | B3 | 2026-06-23T06:30:00Z | 30m | B — sds-sync orchestration test coverage (12 tests) | Done |
 | B4 | 2026-06-23T06:33:00Z | 33m | B — Tournament review #2: fix 2/3 MEDIUM findings (0 HIGH) | Done |
+| B5 | 2026-06-23T06:35:00Z | 35m | B — Parse route guard tests (6 tests) | Done |
+| B6 | 2026-06-23T06:37:00Z | 37m | B — Tournament review #3: ZERO new HIGH/MEDIUM findings | Done |
