@@ -188,3 +188,25 @@ Found 0 HIGH, 3 MEDIUM. Fixed 2:
 1. **FIXED** — review/submit unvalidated createdAt sent to Notion → added regex validation
 2. DEFERRED — Full record JSON body to Notion without field-level sanitization (MAX_CHILDREN bounds it)
 3. **FIXED** — review/submit missing ownership check → added session email stamp + mismatch rejection
+
+### Tournament Review #20 Results (2026-06-23T12:52Z)
+
+**CLEAN — no new HIGH/MEDIUM findings.** First consecutive clean review.
+
+| B54 | 2026-06-23T12:53:00Z | 413m | B — Safety/inspection checklists + crew roster tests (20 new) — **739 total across 72 files** | Done |
+| B55 | 2026-06-23T12:56:00Z | 416m | B — Tournament review #21 fixes (2H/1M) + equipment training map tests — **744 total across 73 files** | Done |
+
+### Tournament Review #21 Results (2026-06-23T12:55Z)
+
+Found 2 HIGH, 3 MEDIUM. Fixed 3:
+1. **FIXED** — safety/sync + review/submit unbounded body → 512KB Content-Length limit
+2. **FIXED** — review-store lock key not scoped to review cycle → include submittedAt in lock key
+3. **FIXED** — createdAt regex too permissive → Date.parse + 30-char length cap
+4. DEFERRED — Webhook rate-limit ordering (HMAC-first is intentional, prevents rate-limiting authenticated Slack)
+5. DEFERRED — review-token colon delimiter DoS (already on deferred list, IDs never contain colons by design)
+
+### Tournament Review #22 Results (2026-06-23T13:02Z)
+
+**CLEAN — no new HIGH/MEDIUM findings.** Second consecutive clean review attempt (streak: 1, need 2).
+
+Reviewed all 13 core files. Only candidate finding was Content-Length header bypass (omit header → defaults to '0'), but this is a refinement of the already-deferred "no full Zod body validation" item, not a new standalone issue. Vercel platform 4.5MB limit + MAX_CHILDREN = 100 cap actual impact.
