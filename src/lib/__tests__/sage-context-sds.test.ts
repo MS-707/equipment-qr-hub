@@ -92,6 +92,17 @@ describe('buildSageContext — sdsSummary (via summarizeSdsLibrary)', () => {
     expect(ctx.sdsSummary).toContain('DANGER chemicals: Cement, Sulfuric Acid')
   })
 
+  it('truncates DANGER list at 10 names with "and N more" suffix', () => {
+    const records = Array.from({ length: 15 }, (_, i) =>
+      makeSds({ id: `SDS-2026-${String(i + 1).padStart(4, '0')}`, productName: `Chemical-${i + 1}`, signalWord: 'Danger' })
+    )
+    vi.mocked(getAllSdsRecords).mockReturnValue(records)
+    const ctx = buildSageContext('/dashboard', 'Alice')
+    expect(ctx.sdsSummary).toContain('and 5 more')
+    expect(ctx.sdsSummary).toContain('Chemical-10')
+    expect(ctx.sdsSummary).not.toContain('Chemical-11')
+  })
+
   it('omits DANGER line when no Danger signal-word chemicals exist', () => {
     vi.mocked(getAllSdsRecords).mockReturnValue([
       makeSds({ signalWord: 'Warning' }),
