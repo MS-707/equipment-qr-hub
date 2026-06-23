@@ -339,6 +339,34 @@ describe('markSdsSyncFailed', () => {
   })
 })
 
+describe('writeAll quota handling', () => {
+  it('throws descriptive error on QuotaExceededError', async () => {
+    const mod = await importModule()
+    mod.createSdsRecord(validInput)
+
+    const quotaError = new DOMException('quota exceeded', 'QuotaExceededError')
+    const origSetItem = localStorage.setItem
+    localStorage.setItem = () => { throw quotaError }
+
+    expect(() => mod.createSdsRecord({ ...validInput, productName: 'Second' }))
+      .toThrow('Device storage is full')
+
+    localStorage.setItem = origSetItem
+  })
+})
+
+describe('nextId year rollover', () => {
+  it('resets counter when year changes', async () => {
+    const mod = await importModule()
+    const r1 = mod.createSdsRecord(validInput)
+    expect(r1.id).toBe('SDS-2026-0001')
+
+    vi.setSystemTime(new Date('2027-01-01T00:00:00.000Z'))
+    const r2 = mod.createSdsRecord({ ...validInput, productName: 'NextYear' })
+    expect(r2.id).toBe('SDS-2027-0001')
+  })
+})
+
 describe('cryptoRandomId', () => {
   it('returns 32-char hex string', async () => {
     const mod = await importModule()
