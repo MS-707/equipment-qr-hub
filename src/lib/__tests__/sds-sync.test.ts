@@ -104,6 +104,50 @@ describe('trySyncSds', () => {
     expect(result).toBe(false)
     expect(isSdsSyncAvailable()).toBe(false)
   })
+
+  it('shows success toast when notify=true', async () => {
+    vi.mocked(getSdsById).mockReturnValue(mockRecord as never)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ ok: true, notionPageId: 'np-1' }),
+    })
+    await trySyncSds('SDS-2026-0001', true)
+    expect(notifySyncResult).toHaveBeenCalledWith(
+      expect.objectContaining({ tone: 'ok', message: 'SDS synced to cloud' })
+    )
+  })
+
+  it('shows offline toast when notify=true and navigator offline', async () => {
+    vi.stubGlobal('navigator', { onLine: false })
+    vi.mocked(getSdsById).mockReturnValue(mockRecord as never)
+    mockFetch.mockRejectedValue(new Error('network'))
+    const p = trySyncSds('SDS-2026-0001', true)
+    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(2000)
+    await vi.advanceTimersByTimeAsync(4000)
+    await vi.advanceTimersByTimeAsync(1000)
+    await p
+    expect(notifySyncResult).toHaveBeenCalledWith(
+      expect.objectContaining({ tone: 'warn' })
+    )
+    vi.stubGlobal('navigator', { onLine: true })
+  })
+
+  it('deduplicates concurrent sync attempts for same id', async () => {
+    vi.mocked(getSdsById).mockReturnValue(mockRecord as never)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ ok: true, notionPageId: 'np-1' }),
+    })
+    const p1 = trySyncSds('SDS-2026-0001', false)
+    const p2 = trySyncSds('SDS-2026-0001', false)
+    const [r1, r2] = await Promise.all([p1, p2])
+    expect(r1).toBe(true)
+    expect(r2).toBe(false)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('syncAllPendingSds', () => {
