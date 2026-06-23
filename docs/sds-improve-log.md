@@ -76,8 +76,17 @@ Found 0 HIGH, 3 MEDIUM. Fixed all 3:
 2. **FIXED** — Fire-and-forget fetch without timeout (added 5s AbortController)
 3. **FIXED** — Non-null assertions `session!.user!.email` → safe optional chaining
 
-### Exit Condition Check (2026-06-23T07:16Z)
+| B25 | 2026-06-23T07:18:00Z | 78m | B — Fix non-null assertions in 11 API routes (systemic safety fix) | Done |
+| B26 | 2026-06-23T07:20:00Z | 80m | B — Review-store + review-token tests (22 new, 325 total) | Done |
+| B27 | 2026-06-23T07:21:00Z | 81m | B — Email/Slack notify tests (10 new, 335 total) | Done |
+| B28 | 2026-06-23T07:22:00Z | 82m | B — Beta signup tests (7 new, 342 total) + build verified clean | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (303/303), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 76 minutes elapsed (started 05:59:49Z)
-- **(c) Two consecutive clean reviews**: NO — Review #9 found 3 MEDIUM (need 2 consecutive clean reviews)
+### Tournament Review #10 Results (2026-06-23T07:21Z)
+
+**ZERO new HIGH/MEDIUM findings.** First consecutive clean review.
+
+### Exit Condition Check (2026-06-23T07:22Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (342/342), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 82 minutes elapsed (started 05:59:49Z)
+- **(c) Two consecutive clean reviews**: PENDING — Review #10 clean, awaiting review #11
