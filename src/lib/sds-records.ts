@@ -8,6 +8,7 @@
  */
 
 import type { SdsRecord } from '@/lib/sds-types'
+import { safeParseSdsRecords } from '@/lib/sds-schemas'
 
 const STORAGE_KEY = 'eqr-sds-records'
 const STORAGE_KEY_BACKUP = 'eqr-sds-records-backup'
@@ -67,21 +68,17 @@ function readAll(): SdsRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as SdsRecord[]
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
-  } catch { /* fall through to backup */ }
+  const parsed = safeParseSdsRecords(raw)
+  if (parsed.length > 0) return parsed
   console.error('[sds-records] Primary store corrupt or empty — attempting backup restore.')
   const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
   if (backup) {
-    try {
-      const recovered = JSON.parse(backup) as SdsRecord[]
-      if (Array.isArray(recovered) && recovered.length > 0) {
-        console.warn(`[sds-records] Restored ${recovered.length} record(s) from backup.`)
-        try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
-        return recovered
-      }
-    } catch { /* backup also corrupt */ }
+    const recovered = safeParseSdsRecords(backup)
+    if (recovered.length > 0) {
+      console.warn(`[sds-records] Restored ${recovered.length} record(s) from backup.`)
+      try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+      return recovered
+    }
     console.error('[sds-records] Backup also corrupt. Returning empty store.')
   }
   try {
