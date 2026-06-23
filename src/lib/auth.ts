@@ -15,8 +15,9 @@
 import type { NextAuthOptions } from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
+import { timingSafeEqual } from 'crypto'
 import { isFirstLogin } from '@/lib/user-tracker'
-import { sendSlackMessage } from '@/lib/slack-notify'
+import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { isAdmin } from '@/lib/admin'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
@@ -38,6 +39,13 @@ const allowDevLogin = process.env.ALLOW_DEV_LOGIN === '1' && !isProduction
 // EMAIL_LOGIN_CODE is configured and presented at sign-in. Without this gate,
 // anyone could sign in as any allowed-domain address (including admins).
 const emailLoginCode = process.env.EMAIL_LOGIN_CODE ?? ''
+
+function safeCodeCompare(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a)
+  const bBuf = Buffer.from(b)
+  if (aBuf.length !== bBuf.length) return false
+  return timingSafeEqual(aBuf, bBuf)
+}
 const allowEmailLogin =
   process.env.ALLOW_EMAIL_LOGIN === '1' && (!isProduction || emailLoginCode.length > 0)
 
@@ -67,7 +75,8 @@ if (allowDevLogin || allowEmailLogin) {
         const email = (creds?.email ?? '').toString().trim().toLowerCase()
         const name = (creds?.name ?? '').toString().trim()
         if (!emailAllowed(email)) return null
-        if (isProduction && (creds?.code ?? '') !== emailLoginCode) {
+        const code = (creds?.code ?? '').toString()
+        if (isProduction && (!emailLoginCode || !safeCodeCompare(code, emailLoginCode))) {
           console.warn(`[auth] code-login failed for ${email}`)
           return null
         }
@@ -96,7 +105,7 @@ export const authOptions: NextAuthOptions = {
         try {
           if (await isFirstLogin(email)) {
             const name = user.name || email.split('@')[0]
-            await sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
+            await sendSlackMessage(`🆕 *${escapeSlack(name)}* (${escapeSlack(email)}) just signed into Sage EHS for the first time.`)
           }
         } catch {
           // notification is best-effort

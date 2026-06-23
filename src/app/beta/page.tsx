@@ -124,7 +124,21 @@ export default function BetaPage() {
           <div className="absolute -top-48 left-1/2 w-[880px] h-[880px] rounded-full bg-[#572DFF]/[0.13] blur-3xl animate-glowPulse will-change-transform" />
         </div>
 
-        <div className="relative max-w-3xl mx-auto px-4 pt-10 sm:pt-16 md:pt-20 pb-8 sm:pb-12 text-center">
+        {/* Slim top bar — brand + a way back into the app for returning users */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 pt-5 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <span className="text-base font-bold text-white">Sage</span>
+            <span className="text-xs bg-[#572DFF]/20 text-[#A78BFF] rounded px-1.5 py-0.5 font-medium">EHS</span>
+          </span>
+          <a
+            href="/"
+            className="text-sm text-[#9A9A9A] hover:text-white transition-colors press-scale min-h-[44px] inline-flex items-center"
+          >
+            Already signed up?&nbsp;<span className="font-semibold text-white">Log in</span>
+          </a>
+        </div>
+
+        <div className="relative max-w-3xl mx-auto px-4 pt-8 sm:pt-12 md:pt-16 pb-8 sm:pb-12 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#572DFF]/10 border border-[#572DFF]/25 text-[#A78BFF] text-xs font-medium mb-6 animate-blurIn">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-[#7C5CFF] opacity-75 animate-ping" />

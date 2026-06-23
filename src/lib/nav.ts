@@ -2,12 +2,19 @@ import {
   ShieldCheck,
   ClipboardCheck,
   LayoutGrid,
+  FlaskConical,
   ClipboardList,
   QrCode,
   type LucideIcon,
 } from 'lucide-react'
 
-export type BadgeKey = 'safety' | 'orders'
+export type BadgeKey = 'safety' | 'sds' | 'orders'
+
+/**
+ * The SDS library is a standalone app. Nav links point there and open in a new
+ * tab so the field worker keeps Sage open behind it.
+ */
+export const SDS_EXTERNAL_URL = 'https://sds-five-beta.vercel.app/'
 
 export interface NavItem {
   href: string
@@ -18,6 +25,10 @@ export interface NavItem {
   icon: LucideIcon
   badge?: BadgeKey
   adminOnly?: boolean
+  /** Hidden from the desktop top bar but kept on the mobile bottom tab bar. */
+  hideOnDesktop?: boolean
+  /** Links to an external app — render as <a target="_blank"> instead of <Link>. */
+  external?: boolean
 }
 
 /**
@@ -29,6 +40,11 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', longLabel: 'Home', icon: ShieldCheck, badge: 'safety' },
   { href: '/inspections', label: 'Pre-Trip', longLabel: 'Pre-Trip', icon: ClipboardCheck },
   { href: '/equipment', label: 'Assets', longLabel: 'Equipment', icon: LayoutGrid },
+  // SDS is module-tier, not a primary desktop tab — reached via the dashboard
+  // "SDS Library" tile on desktop, but kept on the mobile tab bar so field
+  // workers retain one-tap chemical-safety access. Links out to the standalone
+  // SDS app (no badge — there's no in-app SDS store to count new arrivals from).
+  { href: SDS_EXTERNAL_URL, label: 'SDS', longLabel: 'Safety Data Sheets', icon: FlaskConical, hideOnDesktop: true, external: true },
   { href: '/work-orders', label: 'Orders', longLabel: 'Work Orders', icon: ClipboardList, badge: 'orders' },
   { href: '/admin/labels', label: 'QR', longLabel: 'QR Labels', icon: QrCode, adminOnly: true },
 ]

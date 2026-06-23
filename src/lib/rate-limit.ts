@@ -67,7 +67,7 @@ export async function rateLimit(
     }
     return { ok: true, retryAfter: 0 }
   } catch (e) {
-    console.error('[rate-limit] KV error, using in-memory fallback:', e instanceof Error ? e.message : e)
+    console.error(`[rate-limit] KV error for key=${key}, using in-memory fallback:`, e instanceof Error ? e.message : e)
     return memoryLimit(key, maxRequests, windowMs)
   }
 }

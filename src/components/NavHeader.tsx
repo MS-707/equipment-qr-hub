@@ -12,8 +12,8 @@ import HelpButton from '@/components/onboarding/HelpButton'
 
 export default function NavHeader() {
   const pathname = usePathname()
-  const { data: session } = useSession()
-  const { openOrders, openSafety } = useLiveCounts()
+  const { data: session, status } = useSession()
+  const { openOrders, openSafety, newSds } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
   useEffect(() => {
@@ -31,10 +31,16 @@ export default function NavHeader() {
 
   const badgeCounts: Record<BadgeKey, number> = {
     safety: openSafety,
+    sds: newSds,
     orders: openOrders,
   }
 
   if (pathname.startsWith('/beta')) return null
+
+  // Clean splash on the unauthenticated home/login screen: keep the brand,
+  // hide the module links. Scoped to '/' AND a confirmed 'unauthenticated'
+  // status, so other routes (and logged-in users mid-load) never lose nav.
+  const onLoginSplash = pathname === '/' && status === 'unauthenticated'
 
   return (
     <header className="no-print sticky top-0 z-50 bg-mytra-bg/95 backdrop-blur-sm border-b border-mytra-border">
@@ -47,7 +53,8 @@ export default function NavHeader() {
           </span>
         </Link>
 
-        {/* Right: Nav Links */}
+        {/* Right: Nav Links — hidden on the login splash for a clean welcome screen */}
+        {!onLoginSplash && (
         <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-5">
           {!online && (
             <span aria-label="Offline" className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
@@ -55,7 +62,7 @@ export default function NavHeader() {
               <span className="hidden sm:inline">Offline</span>
             </span>
           )}
-          {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, longLabel, icon: Icon, badge }) => {
+          {NAV_ITEMS.filter(item => (!item.adminOnly || session?.user?.isAdmin) && !item.hideOnDesktop).map(({ href, longLabel, icon: Icon, badge }) => {
             /* Nav links are hidden on mobile — BottomTabBar handles them */
             const isActive = isNavItemActive(href, pathname)
             const badgeCount = badge ? badgeCounts[badge] : 0
@@ -92,6 +99,7 @@ export default function NavHeader() {
           <HelpButton />
           <UserMenu />
         </nav>
+        )}
       </div>
     </header>
   )

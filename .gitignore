@@ -42,3 +42,6 @@ public/sw.js.map
 
 # Sage eval harness generated output
 evals/sage/out/
+
+# Demo recording output
+scripts/demo/out/
