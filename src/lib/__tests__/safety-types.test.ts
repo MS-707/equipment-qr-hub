@@ -27,7 +27,7 @@ function makeRecord(type: SafetyRecordType): SafetyRecord {
     syncStatus: 'pending',
     notionPageId: null,
     events: [],
-  } as SafetyRecord
+  } as unknown as SafetyRecord
 }
 
 describe('safety-types', () => {

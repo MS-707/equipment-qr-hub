@@ -8,10 +8,10 @@ const mockRecord: InspectionRecord = {
   inspectorName: 'Alice Smith',
   shift: 'Day',
   hourMeterReading: 1500,
-  checklistType: 'pre-trip',
+  checklistType: 'electric-forklift',
   items: [
-    { id: 'brake', label: 'Brakes', result: 'pass', notes: '', critical: true, photo: null },
-    { id: 'lights', label: 'Lights', result: 'fail', notes: 'Broken left headlight', critical: false, photo: null },
+    { id: 'brake', label: 'Brakes', category: 'Brakes', result: 'pass', notes: '', critical: true, photo: null },
+    { id: 'lights', label: 'Lights', category: 'Lights', result: 'fail', notes: 'Broken left headlight', critical: false, photo: null },
   ],
   result: 'fail',
   hasCriticalFail: false,

@@ -304,7 +304,7 @@ describe('markSdsSynced', () => {
     mod.markSdsSynced('SDS-2026-0001', 'notion-page-123')
     const record = mod.getSdsById('SDS-2026-0001')
     expect(record?.syncStatus).toBe('synced')
-    expect((record as Record<string, unknown>)?.notionPageId).toBe('notion-page-123')
+    expect((record as unknown as Record<string, unknown>)?.notionPageId).toBe('notion-page-123')
   })
 
   it('no-ops for nonexistent id', async () => {

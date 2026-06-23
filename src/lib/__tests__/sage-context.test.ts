@@ -17,11 +17,11 @@ import { getPtpForDate, getActivePermits, getAllSafetyRecords } from '../safety-
 import { getAllSdsRecords, getSdsById } from '../sds-records'
 
 beforeEach(() => {
-  vi.mocked(getPtpForDate).mockReturnValue(null)
+  vi.mocked(getPtpForDate).mockReturnValue(undefined)
   vi.mocked(getActivePermits).mockReturnValue([])
   vi.mocked(getAllSafetyRecords).mockReturnValue([])
   vi.mocked(getAllSdsRecords).mockReturnValue([])
-  vi.mocked(getSdsById).mockReturnValue(null)
+  vi.mocked(getSdsById).mockReturnValue(undefined)
 })
 
 describe('buildSageContext', () => {

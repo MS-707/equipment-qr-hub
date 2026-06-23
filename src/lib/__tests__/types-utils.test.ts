@@ -60,18 +60,18 @@ describe('getChecklistType', () => {
 
 describe('requiresMachineGuarding', () => {
   it('returns true for section 3556', () => {
-    expect(requiresMachineGuarding(makeItem({ calOshaSections: ['3556'] }))).toBe(true)
+    expect(requiresMachineGuarding(makeItem({ calOshaSections: '3556' }))).toBe(true)
   })
 
   it('returns true for section 3577', () => {
-    expect(requiresMachineGuarding(makeItem({ calOshaSections: ['3577'] }))).toBe(true)
+    expect(requiresMachineGuarding(makeItem({ calOshaSections: '3577' }))).toBe(true)
   })
 
   it('returns false for other sections', () => {
-    expect(requiresMachineGuarding(makeItem({ calOshaSections: ['3200'] }))).toBe(false)
+    expect(requiresMachineGuarding(makeItem({ calOshaSections: '3200' }))).toBe(false)
   })
 
   it('returns false for empty sections', () => {
-    expect(requiresMachineGuarding(makeItem({ calOshaSections: [] }))).toBe(false)
+    expect(requiresMachineGuarding(makeItem({ calOshaSections: '' }))).toBe(false)
   })
 })

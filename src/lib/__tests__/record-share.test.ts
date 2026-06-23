@@ -14,7 +14,7 @@ const basePtp: PreTaskPlan = {
   notionPageId: null,
   events: [],
   date: '2026-06-23',
-  shift: 'day',
+  shift: 'Day',
   scopeOfWork: 'Repair bridge deck',
   weatherNotes: 'Clear skies',
   windSpeed: '5 mph',
@@ -24,15 +24,15 @@ const basePtp: PreTaskPlan = {
   toolboxTalkTopic: 'Fall protection review',
   toolboxTalkNotes: 'All crew reminded to inspect harnesses',
   hazards: [
-    { description: 'Fall from height', riskLevel: 'high', controlMeasure: 'Full harness + lanyard' },
+    { id: 'HAZ-1', description: 'Fall from height', riskLevel: 'high', controlMeasure: 'Full harness + lanyard', addedBy: 'Alice' },
   ],
   ppeRequired: ['hard-hat', 'safety-glasses'],
   crewSignatures: [
-    { name: 'Alice', role: 'Supervisor', hasSignature: true, signedAt: '2026-06-23T08:05:00Z', isSupervisor: true },
-    { name: 'Bob', role: 'Worker', hasSignature: true, signedAt: '2026-06-23T08:06:00Z', isSupervisor: false },
+    { id: 'SIG-1', name: 'Alice', email: 'alice@example.com', role: 'Supervisor', hasSignature: true, signedAt: '2026-06-23T08:05:00Z' },
+    { id: 'SIG-2', name: 'Bob', email: 'bob@example.com', role: 'Worker', hasSignature: true, signedAt: '2026-06-23T08:06:00Z' },
   ],
-  validFrom: '2026-06-23T06:00:00Z',
-  validUntil: '2026-06-23T18:00:00Z',
+  heatIllnessPlan: { water: true, shade: true, restBreaks: true, highHeatProcedures: false },
+  supervisorSignatureId: 'SIG-1',
 }
 
 const baseIncident: IncidentReport = {
@@ -48,14 +48,15 @@ const baseIncident: IncidentReport = {
   events: [],
   occurredAt: '2026-06-23T13:45:00Z',
   incidentType: 'near-miss',
-  severity: 'low',
+  severity: 'minor',
   description: 'Load shifted during crane lift',
   immediateActions: 'Stopped lift, re-rigged load',
   witnesses: ['Dave', 'Eve'],
   rootCause: 'Improper rigging',
   correctiveActions: 'Re-train crew on rigging procedures',
   reportedToCalOsha: false,
-  category: 'struck-by',
+  photoSlots: [],
+  reporterSignatureId: null,
 }
 
 describe('buildRecordSubject', () => {

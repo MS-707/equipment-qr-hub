@@ -102,7 +102,7 @@ describe('safeParseSafetyRecords', () => {
     const extended = { ...basePtp, futureField: 42 }
     const result = safeParseSafetyRecords(JSON.stringify([extended]))
     expect(result).toHaveLength(1)
-    expect((result[0] as Record<string, unknown>).futureField).toBe(42)
+    expect((result[0] as unknown as Record<string, unknown>).futureField).toBe(42)
   })
 
   it('validates all syncStatus values', () => {

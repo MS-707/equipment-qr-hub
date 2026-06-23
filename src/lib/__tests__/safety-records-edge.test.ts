@@ -58,14 +58,16 @@ describe('safety-records edge cases', () => {
   it('createJobHazardAnalysis generates JHA prefix ID', () => {
     const jha = createJobHazardAnalysis({
       jobTitle: 'Crane Lift',
+      dateOfAnalysis: '2026-06-23',
       department: 'Rigging',
+      referenceDoc: '',
       steps: [],
       ppeRequired: ['Hard Hat', 'Safety Glasses'],
-      approvedBy: null,
+      additionalNotes: '',
+      signatures: [],
+      preparedBySignatureId: null,
       location: 'Site A',
       projectName: 'Test',
-      createdBy: 'Bob',
-      createdByEmail: 'bob@x.com',
     })
     expect(jha.id).toMatch(/^JHA-/)
     expect(jha.type).toBe('jha')
@@ -75,7 +77,6 @@ describe('safety-records edge cases', () => {
 
   it('createHotWorkPermit has correct type', () => {
     const permit = createHotWorkPermit({
-      permitNumber: 'HW-001',
       validFrom: '2026-06-23T06:00:00Z',
       validUntil: '2099-12-31T18:00:00Z',
       workDescription: 'Welding steel beams',
@@ -93,8 +94,6 @@ describe('safety-records edge cases', () => {
       issuerSignatureId: null,
       location: 'Site B',
       projectName: 'Test',
-      createdBy: 'Alice',
-      createdByEmail: 'alice@x.com',
     })
     expect(permit.type).toBe('hot-work-permit')
     expect(permit.status).toBe('active')
@@ -103,7 +102,6 @@ describe('safety-records edge cases', () => {
 
   it('createConfinedSpacePermit has atmospheric monitoring fields', () => {
     const permit = createConfinedSpacePermit({
-      permitNumber: 'CS-001',
       validFrom: '2026-06-23T06:00:00Z',
       validUntil: '2099-12-31T18:00:00Z',
       spaceDescription: 'Tank 5 — storage tank',
@@ -118,8 +116,6 @@ describe('safety-records edge cases', () => {
       entrants: [],
       location: 'Plant',
       projectName: 'Test',
-      createdBy: 'Alice',
-      createdByEmail: 'alice@x.com',
     })
     expect(permit.type).toBe('confined-space-permit')
     expect(permit.spaceDescription).toContain('Tank 5')
@@ -140,8 +136,6 @@ describe('safety-records edge cases', () => {
       reporterSignatureId: null,
       location: 'Site A',
       projectName: 'Test',
-      createdBy: 'Alice',
-      createdByEmail: 'alice@x.com',
     })
     expect(incident.id).toMatch(/^INC-/)
     expect(incident.type).toBe('incident-report')
@@ -150,7 +144,6 @@ describe('safety-records edge cases', () => {
 
   it('permitDisplayStatus returns expired for past permits', () => {
     const permit = createHeightPermit({
-      permitNumber: 'HT-001',
       validFrom: '2020-01-01T06:00:00Z',
       validUntil: '2020-01-01T18:00:00Z',
       workDescription: 'Roof repair',
@@ -164,8 +157,6 @@ describe('safety-records edge cases', () => {
       issuerSignatureId: null,
       location: 'Site A',
       projectName: 'Test',
-      createdBy: 'Alice',
-      createdByEmail: 'alice@x.com',
     })
     expect(isExpired(permit)).toBe(true)
     expect(permitDisplayStatus(permit)).toBe('expired')
@@ -173,7 +164,6 @@ describe('safety-records edge cases', () => {
 
   it('getActivePermits returns only non-expired active permits', () => {
     const active = createHeightPermit({
-      permitNumber: 'HT-FUTURE',
       validFrom: '2026-06-23T00:00:00Z',
       validUntil: '2099-12-31T23:59:59Z',
       workDescription: 'Roof repair',
@@ -187,8 +177,6 @@ describe('safety-records edge cases', () => {
       issuerSignatureId: null,
       location: 'Site A',
       projectName: 'Test',
-      createdBy: 'Alice',
-      createdByEmail: 'alice@x.com',
     })
     const permits = getActivePermits()
     expect(permits.length).toBeGreaterThanOrEqual(1)
