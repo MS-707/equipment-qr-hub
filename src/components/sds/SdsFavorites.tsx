@@ -40,7 +40,7 @@ export default function SdsFavorites({ favorites }: SdsFavoritesProps) {
               </p>
               {r.signalWord !== 'None' && (
                 <span
-                  className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                  className="inline-block text-xs font-semibold px-1.5 py-0.5 rounded-full"
                   style={{ backgroundColor: `color-mix(in srgb, ${signalColor} 15%, transparent)`, color: signalColor }}
                 >
                   {r.signalWord}

@@ -40,8 +40,12 @@ Found 6 MEDIUM, 0 HIGH. Fixed 4:
 5. **FIXED** — No SDS archival mechanism (added archiveOldSyncedSdsRecords, 180-day retention)
 6. DOCUMENTED — rpop data loss (7-day KV backup exists, no automated recovery)
 
-### Exit Condition Check (2026-06-23T06:50Z)
+| B10 | 2026-06-23T06:52:00Z | 52m | B — Tests for notionPageId schema + children cap (4 tests, 159 total) | Done |
+| B11 | 2026-06-23T06:53:00Z | 53m | B — Tournament review #6: ZERO new HIGH/MEDIUM findings | Done |
+| B12 | 2026-06-23T06:53:30Z | 53m | B — Fix text-[10px] in SdsFavorites (last sub-12px text in SDS) | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (149/149), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 50 minutes elapsed (started 05:59:49Z)
-- **(c) Two consecutive clean reviews**: NO — Review #5 found 6 MEDIUM (need 2 more consecutive clean)
+### Exit Condition Check (2026-06-23T06:53Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (159/159), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 53 minutes elapsed (started 05:59:49Z)
+- **(c) Two consecutive clean reviews**: IN PROGRESS — Review #6 clean, need review #7 clean
