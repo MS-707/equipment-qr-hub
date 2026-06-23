@@ -206,7 +206,7 @@ describe('POST /api/safety/review/submit', () => {
       projectName: 'Test Project',
       location: 'Site A',
       submitterName: 'Alice',
-      submitterEmail: 'alice@example.com',
+      submitterEmail: 'test@x.com',
     }))
   })
 })

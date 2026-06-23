@@ -16,7 +16,7 @@ import type { NextAuthOptions } from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import { isFirstLogin } from '@/lib/user-tracker'
-import { sendSlackMessage } from '@/lib/slack-notify'
+import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { isAdmin } from '@/lib/admin'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
         try {
           if (await isFirstLogin(email)) {
             const name = user.name || email.split('@')[0]
-            await sendSlackMessage(`🆕 *${name}* (${email}) just signed into Sage EHS for the first time.`)
+            await sendSlackMessage(`🆕 *${escapeSlack(name)}* (${escapeSlack(email)}) just signed into Sage EHS for the first time.`)
           }
         } catch {
           // notification is best-effort

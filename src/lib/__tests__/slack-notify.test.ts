@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { escapeSlack } from '../slack-notify'
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn())
@@ -59,5 +60,23 @@ describe('sendSlackMessage', () => {
     const { sendSlackMessage } = await import('../slack-notify')
     const result = await sendSlackMessage('test')
     expect(result).toBe('failed')
+  })
+})
+
+describe('escapeSlack', () => {
+  it('escapes ampersands', () => {
+    expect(escapeSlack('A & B')).toBe('A &amp; B')
+  })
+
+  it('escapes angle brackets', () => {
+    expect(escapeSlack('<script>alert(1)</script>')).toBe('&lt;script&gt;alert(1)&lt;/script&gt;')
+  })
+
+  it('escapes mrkdwn link injection', () => {
+    expect(escapeSlack('<https://evil.com|Click here>')).toBe('&lt;https://evil.com|Click here&gt;')
+  })
+
+  it('leaves safe text unchanged', () => {
+    expect(escapeSlack('Hello World 123')).toBe('Hello World 123')
   })
 })

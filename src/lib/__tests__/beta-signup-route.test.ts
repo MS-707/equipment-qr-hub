@@ -8,6 +8,7 @@ vi.mock('@/lib/email-notify', () => ({
 }))
 vi.mock('@/lib/slack-notify', () => ({
   sendSlackMessage: vi.fn(() => Promise.resolve(false)),
+  escapeSlack: vi.fn((s: string) => s),
 }))
 vi.mock('@/lib/rate-limit', () => ({
   rateLimit: vi.fn(() => Promise.resolve({ ok: true, retryAfter: 0 })),

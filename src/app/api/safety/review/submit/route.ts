@@ -6,13 +6,10 @@ import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
 import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 import { createReviewToken } from '@/lib/review-token'
 import { storeReviewSubmission } from '@/lib/review-store'
+import { escapeSlack } from '@/lib/slack-notify'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
-
-function escapeSlack(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
@@ -101,7 +98,7 @@ export async function POST(req: Request) {
   const sanitize = (s: unknown, max = 200) =>
     (typeof s === 'string' ? s : '').replace(/[\r\n]/g, ' ').slice(0, max)
 
-  const submitterEmail = sanitize(record.createdByEmail || session?.user?.email || '', 200)
+  const submitterEmail = sanitize(session?.user?.email || record.createdByEmail || '', 200)
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
@@ -176,12 +173,15 @@ async function syncToNotion(
   const dbId = dbForType(record.type)
   if (!dbId) return { ok: false, error: 'No Notion DB configured for this record type' }
 
+  const safeStr = (v: unknown, max = 200) =>
+    typeof v === 'string' ? v.slice(0, max) : ''
+
   const properties: Record<string, unknown> = {
     ID: { title: [{ text: { content: record.id } }] },
     Type: { select: { name: record.type } },
-    Project: { rich_text: [{ text: { content: record.projectName || '' } }] },
-    Location: { rich_text: [{ text: { content: record.location || '' } }] },
-    'Created By': { rich_text: [{ text: { content: record.createdBy || '' } }] },
+    Project: { rich_text: [{ text: { content: safeStr(record.projectName) } }] },
+    Location: { rich_text: [{ text: { content: safeStr(record.location) } }] },
+    'Created By': { rich_text: [{ text: { content: safeStr(record.createdBy) } }] },
     'Created At': { date: { start: record.createdAt } },
     'Sync Source': { select: { name: 'equipment-qr-hub' } },
     'EHS Review': { select: { name: 'Pending' } },

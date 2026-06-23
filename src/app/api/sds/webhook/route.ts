@@ -12,6 +12,7 @@ import { createHmac, timingSafeEqual } from 'crypto'
 import { rateLimit } from '@/lib/rate-limit'
 import { kv } from '@/lib/kv'
 import type { SdsRecord } from '@/lib/sds-types'
+import { escapeSlack } from '@/lib/slack-notify'
 
 const SLACK_VERSION = 'v0'
 const MAX_TIMESTAMP_AGE = 5 * 60
@@ -195,7 +196,7 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/json' },
       signal: abort.signal,
       body: JSON.stringify({
-        text: `SDS record created: *${(payload.chemical_name || '').slice(0, 200)}* (${sdsId})\nApproved by ${payload.approved_by || 'unknown'} for ${payload.project || 'unspecified project'}`,
+        text: `SDS record created: *${escapeSlack((payload.chemical_name || '').slice(0, 200))}* (${escapeSlack(sdsId)})\nApproved by ${escapeSlack(payload.approved_by || 'unknown')} for ${escapeSlack(payload.project || 'unspecified project')}`,
       }),
     }).catch(() => {}).finally(() => clearTimeout(timer))
   }
