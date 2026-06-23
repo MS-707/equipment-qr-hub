@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Star, Phone } from 'lucide-react'
+import { Star } from 'lucide-react'
 import type { SdsRecord } from '@/lib/sds-types'
 import { SIGNAL_WORD_STYLES } from '@/lib/sds-types'
 import GhsPictogram from './GhsPictogram'
@@ -77,16 +77,6 @@ export default function SdsCard({ record, onToggleFavorite, index }: SdsCardProp
               className={`w-5 h-5 ${record.isFavorite ? 'fill-warn text-warn' : ''}`}
             />
           </button>
-          {record.emergencyPhone && (
-            <a
-              href={`tel:${record.emergencyPhone}`}
-              aria-label={`Call emergency: ${record.emergencyPhone}`}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center
-                         text-fg-4 hover:text-danger transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
-          )}
         </div>
       </div>
     </div>
