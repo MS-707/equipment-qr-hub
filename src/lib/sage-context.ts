@@ -1,4 +1,5 @@
 import { getPtpForDate, getActivePermits, getAllSafetyRecords } from './safety-records'
+import { getAllSdsRecords, getSdsById } from './sds-records'
 import type { PreTaskPlan, AnyPermit } from './safety-types'
 import { localToday } from './datetime'
 
@@ -21,6 +22,8 @@ export interface SageContext {
   ptpSummary: string | null
   permitSummary: string | null
   recentIncidentCount: number
+  sdsSummary: string | null
+  activeChemicalContext: string | null
 }
 
 function summarizePtp(ptp: PreTaskPlan): string {
@@ -97,6 +100,37 @@ function summarizePermits(permits: AnyPermit[]): string {
   return `ACTIVE PERMITS:\n${lines.join('\n')}`
 }
 
+function summarizeSdsLibrary(): string | null {
+  const records = getAllSdsRecords()
+  if (records.length === 0) return null
+  const dangerChemicals = records.filter((r) => r.signalWord === 'Danger')
+  const lines = [
+    `SDS LIBRARY: ${records.length} chemical${records.length !== 1 ? 's' : ''} on site`,
+    dangerChemicals.length > 0
+      ? `DANGER chemicals: ${dangerChemicals.map((r) => r.productName).join(', ')}`
+      : null,
+  ]
+  return lines.filter(Boolean).join('\n')
+}
+
+function summarizeActiveSds(sdsId: string): string | null {
+  const sds = getSdsById(sdsId)
+  if (!sds) return null
+  const lines = [
+    `ACTIVE SDS: ${sds.productName} (${sds.manufacturer})`,
+    `Signal word: ${sds.signalWord}`,
+    sds.casNumbers.length > 0 ? `CAS: ${sds.casNumbers.join(', ')}` : null,
+    sds.ppeRequired.length > 0 ? `PPE required: ${sds.ppeRequired.join(', ')}` : null,
+    `First aid (inhalation): ${sds.firstAid.inhalation}`,
+    `First aid (skin): ${sds.firstAid.skin}`,
+    `First aid (eyes): ${sds.firstAid.eyes}`,
+    `First aid (ingestion): ${sds.firstAid.ingestion}`,
+    sds.emergencyPhone ? `Emergency phone: ${sds.emergencyPhone}` : null,
+    sds.spillProcedure ? `Spill response: ${sds.spillProcedure}` : null,
+  ]
+  return lines.filter(Boolean).join('\n')
+}
+
 export function buildSageContext(
   pageUrl: string,
   userName: string | null
@@ -108,6 +142,9 @@ export function buildSageContext(
     (r) => r.type === 'incident-report' && r.createdAt > sevenDaysAgo
   )
 
+  const sdsMatch = pageUrl.match(/\/sds\/([^/?#]+)/)
+  const activeSdsId = sdsMatch ? decodeURIComponent(sdsMatch[1]) : null
+
   return {
     pageUrl,
     userName,
@@ -115,6 +152,8 @@ export function buildSageContext(
     ptpSummary: ptp ? summarizePtp(ptp) : null,
     permitSummary: permits.length > 0 ? summarizePermits(permits) : null,
     recentIncidentCount: recentIncidents.length,
+    sdsSummary: summarizeSdsLibrary(),
+    activeChemicalContext: activeSdsId ? summarizeActiveSds(activeSdsId) : null,
   }
 }
 
@@ -128,6 +167,8 @@ export function contextToPrompt(ctx: SageContext): string {
     ctx.recentIncidentCount > 0
       ? `Recent incidents (7 days): ${ctx.recentIncidentCount}`
       : null,
+    ctx.sdsSummary ?? null,
+    ctx.activeChemicalContext ?? null,
   ]
   return lines.filter(Boolean).join('\n')
 }
