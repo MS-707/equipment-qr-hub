@@ -33,6 +33,11 @@ export default function SdsLibrary() {
 
   useEffect(() => {
     seedSdsIfNeeded().then(() => load())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    load()
     const unsub = onSdsChange(load)
     const onStorage = () => load()
     window.addEventListener('storage', onStorage)
