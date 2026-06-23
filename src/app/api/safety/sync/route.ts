@@ -106,10 +106,11 @@ export async function POST(req: Request) {
       properties['Severity'] = { select: { name: String((record as { severity?: string }).severity) } }
     }
 
+    const MAX_CHILDREN = 100
     const fullJson = JSON.stringify(record, null, 2)
     const CHUNK_SIZE = 1900
     const children = []
-    for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+    for (let i = 0; i < fullJson.length && children.length < MAX_CHILDREN; i += CHUNK_SIZE) {
       children.push({
         object: 'block' as const,
         type: 'code' as const,

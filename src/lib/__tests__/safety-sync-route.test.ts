@@ -144,6 +144,25 @@ describe('POST /api/safety/sync', () => {
     expect(res.status).toBe(502)
   })
 
+  it('caps Notion children blocks at 100', async () => {
+    process.env.NOTION_API_KEY = 'ntn_test'
+    process.env.NOTION_PTP_DB_ID = 'db-ptp'
+    vi.resetModules()
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ results: [] }) } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'page-big' }) } as Response)
+    const hugeRecord = {
+      ...validPtp,
+      extraField: 'X'.repeat(300_000),
+    }
+    const { POST } = await import('@/app/api/safety/sync/route')
+    const res = await POST(makeReq(hugeRecord))
+    expect(res.status).toBe(200)
+    const createCall = vi.mocked(fetch).mock.calls[1]
+    const body = JSON.parse(createCall[1]?.body as string)
+    expect(body.children.length).toBeLessThanOrEqual(100)
+  })
+
   it('truncates long string fields with safeStr', async () => {
     process.env.NOTION_API_KEY = 'ntn_test'
     process.env.NOTION_PTP_DB_ID = 'db-ptp'

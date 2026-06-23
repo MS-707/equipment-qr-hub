@@ -130,3 +130,14 @@ Found 0 HIGH, 4 MEDIUM. Fixed 3:
 2. **FIXED** — review/submit syncToNotion missing safeStr on Notion properties → added safeStr
 3. **FIXED** — Slack mrkdwn injection in beta signup, auth, sds webhook → extracted escapeSlack to shared utility
 4. DEFERRED — Review token has no reviewer identity (requires token format change, backward compat)
+
+| B41 | 2026-06-23T07:57:00Z | 117m | B — Beta-email tests (4 new, 545 total) + safety-sync children cap test | Done |
+| B42 | 2026-06-23T07:58:00Z | 118m | B — Tournament review #14 fixes (3/4) — **546 total across 52 files** | Done |
+
+### Tournament Review #14 Results (2026-06-23T07:56Z)
+
+Found 0 HIGH, 4 MEDIUM. Fixed 3:
+1. **FIXED** — Safety/sync unbounded Notion children (no MAX_CHILDREN cap) → added MAX_CHILDREN=100 to both safety/sync and review/submit syncToNotion
+2. **FIXED** — Webhook X-Forwarded-For uses spoofable first hop + rate limit before signature check → switched to `.pop()` (proxy-appended) and moved rate limit after HMAC verification
+3. DEFERRED — Beta decide read-modify-write race (admin-only endpoint, low traffic, no concurrent access expected)
+4. DEFERRED — Safety/sync and review/submit no full Zod body validation (individual field validation exists, children cap prevents DoS amplification)

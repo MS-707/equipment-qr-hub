@@ -135,15 +135,6 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Webhook not configured' }, { status: 503 })
   }
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const rl = await rateLimit(`sds-webhook:${ip}`, 30, 60_000)
-  if (!rl.ok) {
-    return Response.json(
-      { error: 'Too many requests' },
-      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
-    )
-  }
-
   const rawBody = await req.text()
   const timestamp = req.headers.get('x-slack-request-timestamp') || ''
   const signature = req.headers.get('x-slack-signature') || ''
@@ -151,6 +142,15 @@ export async function POST(req: Request) {
   if (!verifySlackSignature(rawBody, timestamp, signature)) {
     console.error('[sds/webhook] signature verification failed')
     return Response.json({ error: 'Invalid signature' }, { status: 401 })
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() || 'unknown'
+  const rl = await rateLimit(`sds-webhook:${ip}`, 30, 60_000)
+  if (!rl.ok) {
+    return Response.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    )
   }
 
   let payload: SlackChemicalApproval
