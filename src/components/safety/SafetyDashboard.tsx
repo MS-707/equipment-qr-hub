@@ -35,6 +35,7 @@ import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
 import SyncQueuePanel from './SyncQueuePanel'
 import { localToday } from '@/lib/datetime'
+import { SDS_EXTERNAL_URL } from '@/lib/nav'
 
 function today(): string {
   return localToday()
@@ -47,7 +48,7 @@ const QUICK_ACTIONS: { href: string; label: string; icon: typeof ClipboardList; 
   { href: '/safety/permits/hot-work', label: 'Hot Work', icon: Flame },
   { href: '/safety/permits/confined-space', label: 'Confined Space', icon: PackageOpen },
   { href: '/safety/incident', label: 'Report Incident', icon: AlertTriangle },
-  { href: '/sds', label: 'SDS Library', icon: FlaskConical },
+  { href: SDS_EXTERNAL_URL, label: 'SDS Library', icon: FlaskConical, external: true },
   { href: '/inspections', label: 'Pre-Trip Inspection', icon: Truck },
 ]
 
