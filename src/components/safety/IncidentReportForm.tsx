@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { AlertTriangle, Camera, X, Plus, RotateCcw, Sparkles, Loader2, ChevronRight } from 'lucide-react'
+import { AlertTriangle, Camera, X, Plus, RotateCcw, Sparkles, Loader2, ChevronRight, Info } from 'lucide-react'
 import type { IncidentType, IncidentSeverity, InjuredPerson } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
 import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
@@ -370,11 +370,19 @@ export default function IncidentReportForm() {
           </div>
         </div>
 
+        {/* Mytra reporting culture: every incident gets reported, big or small. */}
+        <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-3 py-2">
+          <Info className="w-4 h-4 text-mytra-purple shrink-0 mt-0.5" />
+          <p className="text-xs text-mytra-purple leading-relaxed">
+            Report every incident — injury, near-miss, property, or environmental — as soon as you safely can, no matter how minor. At Mytra, reporting the small things is how we prevent the serious ones.
+          </p>
+        </div>
+
         {isSerious && (
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
             <p className="text-xs text-warn leading-relaxed">
-              Serious injuries must be reported to your safety officer promptly. Check your local reporting requirements.
+              This one also needs prompt escalation: notify your safety officer right away. Serious and critical events may trigger regulatory reporting — check your local requirements.
             </p>
           </div>
         )}
