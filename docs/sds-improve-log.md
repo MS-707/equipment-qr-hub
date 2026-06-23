@@ -141,3 +141,16 @@ Found 0 HIGH, 4 MEDIUM. Fixed 3:
 2. **FIXED** — Webhook X-Forwarded-For uses spoofable first hop + rate limit before signature check → switched to `.pop()` (proxy-appended) and moved rate limit after HMAC verification
 3. DEFERRED — Beta decide read-modify-write race (admin-only endpoint, low traffic, no concurrent access expected)
 4. DEFERRED — Safety/sync and review/submit no full Zod body validation (individual field validation exists, children cap prevents DoS amplification)
+
+| B43 | 2026-06-23T08:03:00Z | 123m | B — Work-orders CRUD/CSV (21), equipment data (9), admin health (6) — **582 total across 55 files** | Done |
+| B44 | 2026-06-23T08:05:00Z | 125m | B — Shop-management (29), tourState (4) — **615 total across 57 files** | Done |
+| B45 | 2026-06-23T08:07:00Z | 127m | B — Tournament review #15 fixes (1/1) + safety-types (9) — **624 total across 58 files** | Done |
+
+### Tournament Review #15 Results (2026-06-23T08:06Z)
+
+Found 0 HIGH, 1 MEDIUM. Fixed 1:
+1. **FIXED** — Timing-unsafe `!==` comparison of EMAIL_LOGIN_CODE → replaced with `timingSafeEqual`
+
+Sub-audits:
+- ReDoS regex audit: ZERO findings (all patterns safe, no `new RegExp()` calls)
+- Cryptographic audit: FIXED the one MEDIUM, confirmed HMAC/token/webhook crypto correct
