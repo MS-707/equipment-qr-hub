@@ -98,3 +98,7 @@ Found 0 HIGH, 3 MEDIUM. Fixed all 3:
 - **(c) Two consecutive clean reviews**: YES — Reviews #10 and #11 both ZERO new HIGH/MEDIUM findings
 
 Conditions (a) and (c) met. Continuing Phase B cycles until (b) is satisfied at ~11:00Z UTC.
+
+| B30 | 2026-06-23T07:25:00Z | 85m | B — Check-permits route guard tests (6 new) | Done |
+| B31 | 2026-06-23T07:26:00Z | 86m | B — Analyze-atmosphere route guard tests (6 new) | Done |
+| B32 | 2026-06-23T07:27:00Z | 87m | B — Suggest-hazards route guard tests (6 new) — **365 total across 29 files** | Done |
