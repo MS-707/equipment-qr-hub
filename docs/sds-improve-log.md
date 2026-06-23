@@ -171,3 +171,20 @@ Found 0 HIGH, 5 MEDIUM. Fixed all 5:
 
 | B50 | 2026-06-23T12:39:00Z | 399m | B — Audit-ptp + suggest-toolbox route guard tests (12 new) — **702 total across 67 files** | Done |
 | B51 | 2026-06-23T12:41:00Z | 401m | B — Auth module tests (13 new) — **715 total across 68 files** | Done |
+| B52 | 2026-06-23T12:44:00Z | 404m | B — Tournament review #18 fixes (2/3) + SDS types tests (4 new) — **719 total across 69 files** | Done |
+
+### Tournament Review #18 Results (2026-06-23T12:44Z)
+
+Found 0 HIGH, 3 MEDIUM. Fixed 2:
+1. **FIXED** — review/submit record.id missing length/format validation → added 100-char cap + string check
+2. **FIXED** — review/submit record.type not validated against allowed set → added `in DB_MAP` check
+3. DEFERRED — inspections.ts/work-orders.ts bare JSON.parse (accepted tradeoff, low real-world risk)
+
+| B53 | 2026-06-23T12:50:00Z | 410m | B — Tournament review #19 fixes (2/3) — review/submit hardening | Done |
+
+### Tournament Review #19 Results (2026-06-23T12:49Z)
+
+Found 0 HIGH, 3 MEDIUM. Fixed 2:
+1. **FIXED** — review/submit unvalidated createdAt sent to Notion → added regex validation
+2. DEFERRED — Full record JSON body to Notion without field-level sanitization (MAX_CHILDREN bounds it)
+3. **FIXED** — review/submit missing ownership check → added session email stamp + mismatch rejection
