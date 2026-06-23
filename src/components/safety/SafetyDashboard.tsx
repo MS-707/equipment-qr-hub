@@ -47,7 +47,7 @@ const QUICK_ACTIONS: { href: string; label: string; icon: typeof ClipboardList; 
   { href: '/safety/permits/hot-work', label: 'Hot Work', icon: Flame },
   { href: '/safety/permits/confined-space', label: 'Confined Space', icon: PackageOpen },
   { href: '/safety/incident', label: 'Report Incident', icon: AlertTriangle },
-  { href: 'https://sds-five-beta.vercel.app', label: 'SDS Binder', icon: FlaskConical, external: true },
+  { href: '/sds', label: 'SDS Library', icon: FlaskConical },
   { href: '/inspections', label: 'Pre-Trip Inspection', icon: Truck },
 ]
 

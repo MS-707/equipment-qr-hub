@@ -17,6 +17,7 @@ export default function BottomTabBar() {
 
   const badgeCounts: Record<BadgeKey, number> = {
     safety: openSafety,
+    sds: 0,
     orders: openOrders,
   }
 

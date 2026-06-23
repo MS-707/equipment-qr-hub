@@ -2,12 +2,13 @@ import {
   ShieldCheck,
   ClipboardCheck,
   LayoutGrid,
+  FlaskConical,
   ClipboardList,
   QrCode,
   type LucideIcon,
 } from 'lucide-react'
 
-export type BadgeKey = 'safety' | 'orders'
+export type BadgeKey = 'safety' | 'sds' | 'orders'
 
 export interface NavItem {
   href: string
@@ -29,6 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', longLabel: 'Home', icon: ShieldCheck, badge: 'safety' },
   { href: '/inspections', label: 'Pre-Trip', longLabel: 'Pre-Trip', icon: ClipboardCheck },
   { href: '/equipment', label: 'Assets', longLabel: 'Equipment', icon: LayoutGrid },
+  { href: '/sds', label: 'SDS', longLabel: 'Safety Data Sheets', icon: FlaskConical, badge: 'sds' },
   { href: '/work-orders', label: 'Orders', longLabel: 'Work Orders', icon: ClipboardList, badge: 'orders' },
   { href: '/admin/labels', label: 'QR', longLabel: 'QR Labels', icon: QrCode, adminOnly: true },
 ]

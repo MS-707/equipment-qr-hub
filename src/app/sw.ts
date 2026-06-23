@@ -20,7 +20,9 @@ const serwist = new Serwist({
     // Auth and safety APIs must always hit the network — never serve from cache.
     {
       matcher: ({ url }) =>
-        url.pathname.startsWith("/api/auth") || url.pathname.startsWith("/api/safety"),
+        url.pathname.startsWith("/api/auth") ||
+        url.pathname.startsWith("/api/safety") ||
+        url.pathname.startsWith("/api/sds"),
       handler: new NetworkOnly(),
     },
     ...defaultCache,
