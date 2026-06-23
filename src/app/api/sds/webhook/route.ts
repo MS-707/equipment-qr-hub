@@ -103,9 +103,9 @@ function buildWebhookStub(
   const now = new Date().toISOString()
   return {
     id,
-    productName: payload.chemical_name,
-    manufacturer: payload.manufacturer || '',
-    casNumbers: payload.cas_number ? [payload.cas_number] : [],
+    productName: (payload.chemical_name || '').slice(0, 500),
+    manufacturer: (payload.manufacturer || '').slice(0, 200),
+    casNumbers: payload.cas_number ? [payload.cas_number.slice(0, 50)] : [],
     signalWord: 'None',
     pictograms: [],
     hazardStatements: [],
@@ -122,9 +122,9 @@ function buildWebhookStub(
     updatedAt: now,
     syncStatus: 'pending',
     _searchIndex: [
-      payload.chemical_name,
-      payload.manufacturer || '',
-      payload.cas_number || '',
+      (payload.chemical_name || '').slice(0, 500),
+      (payload.manufacturer || '').slice(0, 200),
+      (payload.cas_number || '').slice(0, 50),
     ].join(' ').toLowerCase(),
   }
 }

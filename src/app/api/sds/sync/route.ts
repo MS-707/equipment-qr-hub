@@ -53,9 +53,10 @@ export async function POST(req: Request) {
       }),
     })
     if (existingCheck.ok) {
-      const existing = (await existingCheck.json()) as { results: { id: string }[] }
-      if (existing.results.length > 0) {
-        return Response.json({ ok: true, notionPageId: existing.results[0].id })
+      const existing = await existingCheck.json()
+      const results = Array.isArray(existing?.results) ? existing.results : []
+      if (results.length > 0 && typeof results[0]?.id === 'string') {
+        return Response.json({ ok: true, notionPageId: results[0].id })
       }
     }
 
@@ -98,8 +99,9 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Notion sync failed' }, { status: 502 })
     }
 
-    const page = (await res.json()) as { id: string }
-    return Response.json({ ok: true, notionPageId: page.id })
+    const page = await res.json()
+    const pageId = typeof page?.id === 'string' ? page.id : null
+    return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
     console.error('[sds/sync] unexpected error:', e instanceof Error ? e.message : e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })
