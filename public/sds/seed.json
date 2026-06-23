@@ -1,0 +1,575 @@
+[
+  {
+    "productName": "Portland Cement Type I/II",
+    "manufacturer": "QUIKRETE",
+    "casNumbers": ["65997-15-1"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS05", "GHS07", "GHS08"],
+    "hazardStatements": [
+      "H315 - Causes skin irritation",
+      "H317 - May cause an allergic skin reaction",
+      "H318 - Causes serious eye damage",
+      "H335 - May cause respiratory irritation",
+      "H350i - May cause cancer by inhalation (contains crystalline silica)"
+    ],
+    "precautionaryStatements": [
+      "P260 - Do not breathe dust",
+      "P264 - Wash hands thoroughly after handling",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear protective gloves, eye protection, and dust mask",
+      "P302+P352 - IF ON SKIN: Wash with plenty of water",
+      "P305+P351+P338 - IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses if present and easy to do. Continue rinsing"
+    ],
+    "firstAid": {
+      "inhalation": "Move person to fresh air. If breathing is difficult, give oxygen. If not breathing, give artificial respiration. Seek medical attention if irritation persists.",
+      "skin": "Remove contaminated clothing. Wash skin thoroughly with soap and water for at least 15 minutes. Seek medical attention if irritation or rash develops. Cement burns require immediate medical treatment.",
+      "eyes": "Immediately flush eyes with plenty of water for at least 20 minutes, lifting upper and lower eyelids occasionally. Seek immediate medical attention. Alkaline burns to eyes are medical emergencies.",
+      "ingestion": "Do not induce vomiting. Rinse mouth with water. Give 1-2 glasses of water to dilute. Seek immediate medical attention."
+    },
+    "ppeRequired": [
+      "NIOSH-approved N95 or P100 respirator for dust",
+      "Chemical-resistant gloves (nitrile or neoprene)",
+      "Safety goggles or face shield",
+      "Long-sleeved shirt and long pants",
+      "Waterproof boots"
+    ],
+    "fireExtinguishing": "Portland cement is non-combustible. Use extinguishing media appropriate for surrounding fire. Firefighters should wear SCBA when fighting fires involving cement due to calcium oxide dust generation.",
+    "spillProcedure": "Avoid generating dust. Sweep or vacuum dry material and place in suitable container for disposal. Do not wash into drains or waterways. Wet down spill area to suppress dust. Wear appropriate PPE during cleanup.",
+    "storageHandling": "Store in dry location, away from moisture. Keep containers tightly closed. Avoid dust generation during handling. Use only with adequate ventilation. Shelf life is reduced in humid conditions. Keep away from incompatible materials (acids, aluminum, ammonium salts).",
+    "emergencyPhone": "1-800-282-5828",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Portland Cement Type I/II. Manufacturer: QUIKRETE Holdings, Inc., Atlanta, GA 30329. Recommended use: hydraulic cement for concrete and mortar applications. Emergency telephone: 1-800-282-5828."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Skin Irritation Category 2, Serious Eye Damage Category 1, Skin Sensitization Category 1, STOT Single Exposure Category 3 (respiratory), Carcinogenicity Category 1A (crystalline silica component). Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Portland Cement (CAS 65997-15-1) 100%. Contains calcium oxide (CAS 1305-78-8), crystalline silica as quartz (CAS 14808-60-7) <1%, and hexavalent chromium compounds (trace). When mixed with water, produces calcium hydroxide (pH 12-14)."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Move to fresh air. Skin: Wash with water for 15 min; cement burns require medical attention. Eyes: Flush 20 min, seek immediate medical attention. Ingestion: Do not induce vomiting; drink water; seek medical attention."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Non-combustible material. No special fire hazard. Use extinguishing media appropriate for surrounding materials. Firefighters should use SCBA due to calcium oxide dust."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Avoid generating dust. Sweep or vacuum dry material. Wet down to suppress dust. Wear appropriate PPE. Do not wash into drains."},
+      {"number": 7, "title": "Handling and Storage", "content": "Avoid dust generation. Use adequate ventilation. Store in dry location. Keep containers closed. Incompatible with acids, aluminum, ammonium salts. Shelf life reduced in humid conditions."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: 15 mg/m3 (total dust), 5 mg/m3 (respirable). ACGIH TLV: 1 mg/m3 (respirable, as Portland cement). Crystalline silica PEL: 50 ug/m3. Wear N95/P100 respirator, chemical-resistant gloves, safety goggles, long sleeves, waterproof boots."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Gray to gray-brown powder. Odor: Odorless. pH: 12-14 (in water). Specific gravity: 3.15. Solubility: Slightly soluble (hydrates). Melting point: >1000°C."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal conditions. Reacts exothermically with water. Incompatible with acids, aluminum powder, ammonium salts. Produces calcium hydroxide when mixed with water (highly alkaline)."},
+      {"number": 11, "title": "Toxicological Information", "content": "Acute toxicity: Low via oral and dermal routes. Skin: Causes irritation and potential alkali burns with prolonged wet contact. Eyes: Causes serious damage (alkaline pH). Inhalation: Respiratory irritation. Chronic: Crystalline silica component is an IARC Group 1 carcinogen (lung cancer, silicosis)."},
+      {"number": 12, "title": "Ecological Information", "content": "High pH can be harmful to aquatic organisms. Do not allow runoff to enter waterways. Portland cement is not classified as an environmental hazard under GHS."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Dispose of in accordance with federal, state, and local regulations. Hardened cement can be disposed of as construction debris. Unhardened cement dust should be collected and disposed of as industrial waste."},
+      {"number": 14, "title": "Transport Information", "content": "Not regulated as hazardous material for transportation by DOT, IATA, or IMDG."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. CERCLA: Not listed. SARA 311/312: Acute health hazard, chronic health hazard. California Prop 65: Contains crystalline silica and hexavalent chromium compounds, known to cause cancer."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-01-15. This SDS is compliant with OSHA Hazard Communication Standard 29 CFR 1910.1200 (GHS Rev. 3). HMIS ratings: Health 2, Flammability 0, Physical Hazard 0."}
+    ]
+  },
+  {
+    "productName": "Diesel Fuel No. 2",
+    "manufacturer": "Chevron U.S.A. Inc.",
+    "casNumbers": ["68476-34-6"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS07", "GHS08"],
+    "hazardStatements": [
+      "H226 - Flammable liquid and vapor",
+      "H304 - May be fatal if swallowed and enters airways",
+      "H315 - Causes skin irritation",
+      "H332 - Harmful if inhaled",
+      "H351 - Suspected of causing cancer",
+      "H373 - May cause damage to organs through prolonged or repeated exposure"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P233 - Keep container tightly closed",
+      "P240 - Ground/bond container and receiving equipment",
+      "P241 - Use explosion-proof electrical, ventilating, and lighting equipment",
+      "P242 - Use only non-sparking tools",
+      "P243 - Take precautionary measures against static discharge",
+      "P280 - Wear protective gloves, eye protection",
+      "P301+P310 - IF SWALLOWED: Immediately call a POISON CENTER or physician",
+      "P331 - Do NOT induce vomiting"
+    ],
+    "firstAid": {
+      "inhalation": "Move person to fresh air. If not breathing, give artificial respiration. If breathing is difficult, give oxygen. Seek medical attention if symptoms persist. High vapor concentrations can cause headache, dizziness, nausea, and unconsciousness.",
+      "skin": "Remove contaminated clothing. Wash affected area with soap and water for at least 15 minutes. Seek medical attention if irritation develops or persists. Prolonged or repeated contact may cause dermatitis.",
+      "eyes": "Flush eyes with plenty of water for at least 15 minutes, lifting upper and lower eyelids periodically. Seek medical attention if irritation persists.",
+      "ingestion": "Do NOT induce vomiting — aspiration hazard. Do not give anything by mouth to an unconscious person. If spontaneous vomiting occurs, keep head below hips to prevent aspiration. Call poison center or physician immediately."
+    },
+    "ppeRequired": [
+      "Chemical splash goggles",
+      "Nitrile or neoprene chemical-resistant gloves",
+      "Chemical-resistant apron for splash potential",
+      "Organic vapor respirator if ventilation is inadequate",
+      "Static-dissipative safety footwear"
+    ],
+    "fireExtinguishing": "Use dry chemical, CO2, foam, or water fog. Do NOT use a solid water stream — it may spread the fire. Cool fire-exposed containers with water spray. Vapors may travel to ignition sources and flash back. Use water spray to cool containers and disperse vapors.",
+    "spillProcedure": "Eliminate all ignition sources. Stop leak if safe to do so. Contain spill with earth, sand, or absorbent material. Prevent entry into drains, sewers, and waterways. Absorb with inert material and transfer to suitable container. Report spills as required by federal, state, and local regulations.",
+    "storageHandling": "Store in a cool, dry, well-ventilated area away from heat and ignition sources. Keep containers tightly closed and grounded. Use explosion-proof electrical equipment. Bond and ground containers during transfer. Avoid breathing vapors. Empty containers may contain explosive vapors.",
+    "emergencyPhone": "1-800-424-9300 (CHEMTREC)",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Diesel Fuel No. 2 (Ultra Low Sulfur). Manufacturer: Chevron U.S.A. Inc., San Ramon, CA 94583. Recommended use: Fuel for compression-ignition engines, heating. Emergency telephone: 1-800-424-9300 (CHEMTREC)."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Liquid Category 3, Aspiration Hazard Category 1, Skin Irritation Category 2, Specific Target Organ Toxicity (Repeated Exposure) Category 2, Carcinogenicity Category 2. Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Fuels, diesel, no. 2 (CAS 68476-34-6). Complex mixture of hydrocarbons C9-C20. Contains naphthalene (CAS 91-20-3) <1%. Sulfur content: <15 ppm (ULSD)."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Move to fresh air. Skin: Wash with soap and water. Eyes: Flush 15 min. Ingestion: Do NOT induce vomiting — aspiration hazard. Call poison center immediately."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Flash point: >52°C (125°F). Auto-ignition: 257°C (494°F). Flammable limits: 0.6%-7.5%. Use dry chemical, CO2, foam, or water fog. Do not use solid water stream."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Eliminate ignition sources. Contain with earth/sand/absorbent. Prevent entry to drains. Report spills per regulations. Reportable quantity per CERCLA."},
+      {"number": 7, "title": "Handling and Storage", "content": "Ground and bond containers. Use explosion-proof equipment. Avoid breathing vapors. Store away from heat/ignition sources in well-ventilated area. Empty containers may contain explosive vapors."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: None established for diesel fuel. ACGIH TLV: 100 mg/m3 (as total hydrocarbons). Wear chemical splash goggles, nitrile gloves, organic vapor respirator if needed."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Clear to yellow liquid. Odor: Petroleum hydrocarbon odor. Flash point: >52°C (125°F). Boiling range: 160-390°C. Specific gravity: 0.82-0.87. Vapor pressure: <1 mmHg at 20°C. Insoluble in water."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal conditions. Avoid heat, sparks, flames. Incompatible with strong oxidizers. Hazardous decomposition products: Carbon monoxide, carbon dioxide, incomplete combustion products."},
+      {"number": 11, "title": "Toxicological Information", "content": "Aspiration hazard — small amounts aspirated into lungs during ingestion or vomiting can cause chemical pneumonitis which can be fatal. Skin: Prolonged/repeated contact causes dermatitis. Chronic: Contains components classified as IARC Group 2B (possibly carcinogenic)."},
+      {"number": 12, "title": "Ecological Information", "content": "Toxic to aquatic organisms. Floats on water surface. Prevent contamination of soil, groundwater, and surface water. Bioaccumulation potential is low."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Dispose of in accordance with applicable regulations. Do not dump into sewers or waterways. Spent fuel is a hazardous waste if it exhibits ignitability (D001). Consult local regulations."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1202, Diesel fuel, Class 3, PG III. IMDG: UN1202, Class 3, PG III. ERG Guide No. 128."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. CERCLA RQ: Applies if spilled to navigable waters. SARA 311/312: Fire hazard, acute health hazard, chronic health hazard. RCRA: D001 (ignitability) if discarded."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-03-01. NFPA ratings: Health 1, Flammability 2, Reactivity 0. HMIS ratings: Health 2, Flammability 2, Physical Hazard 0."}
+    ]
+  },
+  {
+    "productName": "Acetylene (Dissolved)",
+    "manufacturer": "Airgas, Inc.",
+    "casNumbers": ["74-86-2"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS04"],
+    "hazardStatements": [
+      "H220 - Extremely flammable gas",
+      "H280 - Contains gas under pressure; may explode if heated"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P377 - Leaking gas fire: Do not extinguish unless leak can be stopped safely",
+      "P381 - Eliminate all ignition sources if safe to do so",
+      "P410+P403 - Protect from sunlight. Store in a well-ventilated place"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air. If not breathing, give artificial respiration. If breathing is difficult, give oxygen. Seek medical attention. High concentrations act as a simple asphyxiant by displacing oxygen.",
+      "skin": "In case of contact with liquefied gas, thaw frosted parts with lukewarm water. Seek medical attention for cold burns/frostbite.",
+      "eyes": "In case of contact with liquefied gas, flush with lukewarm water. Seek medical attention if irritation persists.",
+      "ingestion": "Ingestion of a gas is not normally a route of exposure."
+    },
+    "ppeRequired": [
+      "Safety glasses with side shields",
+      "Leather work gloves for cylinder handling",
+      "Steel-toed safety boots",
+      "Flame-resistant clothing when used for welding/cutting",
+      "Self-contained breathing apparatus (SCBA) for emergency response"
+    ],
+    "fireExtinguishing": "If possible, stop the flow of gas. DO NOT extinguish a leaking gas fire unless the leak can be safely stopped — re-ignition may occur, leading to explosion. Use water spray to cool fire-exposed cylinders. Evacuate area. Acetylene can form explosive mixtures with air at 2.5%-81% concentration range.",
+    "spillProcedure": "Evacuate area immediately. Eliminate all ignition sources. Ventilate area. Do not enter confined spaces without SCBA. Stop leak if safe to do so. Prevent gas from entering sewers, basements, or confined spaces where explosive mixtures may accumulate.",
+    "storageHandling": "Store cylinders upright and secured. Keep away from heat and ignition sources. Separate from oxygen cylinders by at least 20 feet or a 5-foot fire-resistant barrier. Keep valve caps in place when not in use. Never use copper fittings or tubing (acetylene forms explosive copper acetylide). Do not store at temperatures above 52°C (125°F). Use flashback arrestors.",
+    "emergencyPhone": "1-866-734-3438",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Acetylene, Dissolved. Manufacturer: Airgas, Inc., Radnor, PA 19087. Recommended use: Welding, cutting, brazing, metal fabrication. Emergency telephone: 1-866-734-3438."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Gas Category 1, Gases Under Pressure — Dissolved Gas. Simple asphyxiant. Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Acetylene (CAS 74-86-2) >99%. Dissolved in acetone (CAS 67-64-1) within a porous mass inside the cylinder."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Move to fresh air; administer oxygen if needed. Simple asphyxiant at high concentrations. Skin: Treat cold burns with lukewarm water. Eyes: Flush with lukewarm water. Ingestion: Not applicable for gas."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Extremely flammable gas. Flammable range: 2.5%-81% in air. Auto-ignition: 305°C (581°F). Do not extinguish gas fire unless leak can be stopped. Cool cylinders with water spray. Acetylene-air mixtures are detonable."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Evacuate immediately. Eliminate ignition sources. Stop leak if safe. Ventilate area. Do not enter confined spaces without SCBA."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store upright, secured. Keep valve caps on when not in use. Separate from oxygen by 20 ft or 5-ft fire barrier. Never use copper fittings. Do not exceed 15 psig. Use flashback arrestors. Max storage temp: 52°C."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: Simple asphyxiant (no specific PEL). Maintain oxygen above 19.5%. Wear safety glasses, leather gloves, flame-resistant clothing, steel-toed boots. SCBA for emergencies."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Colorless gas. Odor: Garlic-like (due to impurities; pure acetylene is nearly odorless). Molecular weight: 26.04. Boiling point: -84°C. Vapor density: 0.91 (air=1). Flammable range: 2.5%-81%."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Unstable — can decompose explosively at pressures above 15 psig without oxygen present. Avoid heat, sparks, shock. Incompatible with copper, silver, mercury (forms explosive acetylides), strong oxidizers, halogens."},
+      {"number": 11, "title": "Toxicological Information", "content": "Simple asphyxiant. High concentrations displace oxygen, causing dizziness, unconsciousness, death. No systemic toxicity at low concentrations. Impure acetylene may contain phosphine and arsine (toxic)."},
+      {"number": 12, "title": "Ecological Information", "content": "No significant environmental impact expected. Gas dissipates rapidly in atmosphere. Not classified as an environmental hazard."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Allow residual gas to vent slowly in well-ventilated area away from ignition sources, or return cylinder to supplier. Do not dispose of pressurized cylinder. Follow DOT regulations for return."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1001, Acetylene, dissolved, Class 2.1, PG N/A. Labels: Flammable Gas. ERG Guide No. 116."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. CERCLA: Not listed. SARA 311/312: Fire hazard, sudden release of pressure. Clean Air Act: Not listed."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-02-15. NFPA ratings: Health 1, Flammability 4, Reactivity 3 (Special: avoid shock). CGA P-1 requirements apply."}
+    ]
+  },
+  {
+    "productName": "Welding Electrode E7018 (Low Hydrogen)",
+    "manufacturer": "Lincoln Electric",
+    "casNumbers": ["7439-89-6", "7439-96-5"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS07", "GHS08"],
+    "hazardStatements": [
+      "H332 - Harmful if inhaled",
+      "H335 - May cause respiratory irritation",
+      "H317 - May cause an allergic skin reaction",
+      "H350i - May cause cancer by inhalation (welding fume contains manganese and hexavalent chromium)",
+      "H372 - Causes damage to organs (lungs, nervous system) through prolonged or repeated exposure"
+    ],
+    "precautionaryStatements": [
+      "P260 - Do not breathe fumes",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear respiratory protection, protective gloves, eye/face protection",
+      "P284 - Wear respiratory protection",
+      "P304+P340 - IF INHALED: Remove person to fresh air and keep comfortable for breathing",
+      "P308+P313 - IF exposed or concerned: Get medical advice/attention"
+    ],
+    "firstAid": {
+      "inhalation": "Remove to fresh air immediately. If breathing is difficult, give oxygen. If metal fume fever symptoms develop (flu-like symptoms 4-12 hours after exposure), seek medical attention. Chronic overexposure to manganese in welding fume may cause neurological effects.",
+      "skin": "Wash with soap and water. Remove contaminated clothing. For burns from hot metal or slag, cool the burn with water and seek medical attention. Nickel and chromium in fume may cause contact dermatitis in sensitized individuals.",
+      "eyes": "Flush with water for at least 15 minutes. Seek medical attention for flash burns (arc eye/welder's flash). UV radiation from the arc causes photokeratitis.",
+      "ingestion": "Not a likely route of exposure for welding electrodes. If flux coating is ingested, rinse mouth and drink water. Seek medical attention."
+    },
+    "ppeRequired": [
+      "Welding helmet with proper shade lens (minimum Shade 10 for SMAW)",
+      "Respiratory protection — NIOSH-approved P100 half-face or powered air-purifying respirator (PAPR) for welding fumes",
+      "Flame-resistant welding jacket and pants",
+      "Leather welding gloves",
+      "Leather safety boots",
+      "Hearing protection if noise exceeds 85 dBA"
+    ],
+    "fireExtinguishing": "Welding electrodes are not highly flammable. Flux coating may be combustible. Use dry chemical, CO2, or water spray. Welding operations are a fire hazard — maintain fire watch per OSHA 1926.352. Keep combustible materials at least 35 feet from welding.",
+    "spillProcedure": "Pick up dropped electrodes. Sweep up flux coating debris. Avoid generating dust from flux coating. Dispose of electrode stubs properly. No special containment required.",
+    "storageHandling": "Store in dry location. E7018 low-hydrogen electrodes must be kept in heated rod ovens (120-150°C / 250-300°F) after opening to prevent moisture pickup. Re-dry exposed electrodes at 370°C (700°F) for 1 hour. Maximum exposure time outside oven: 4 hours. Moisture contamination causes porosity and hydrogen cracking in welds.",
+    "emergencyPhone": "1-216-481-8100",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Excalibur E7018 Welding Electrode. Manufacturer: Lincoln Electric Company, Cleveland, OH 44117. Recommended use: Shielded metal arc welding (SMAW) of carbon and low-alloy steels. Emergency telephone: 1-216-481-8100."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Specific Target Organ Toxicity (Repeated Exposure) Category 1, Carcinogenicity Category 1A (welding fume), Skin Sensitization Category 1. Signal Word: Danger. Hazard applies to welding fume generated during use."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Core wire: Iron (CAS 7439-89-6) ~65%. Flux coating contains: Calcium carbonate, calcium fluoride, iron powder, manganese (CAS 7439-96-5) 1-5%, silicates. Welding fume may contain iron oxide, manganese oxide, fluorides, and trace hexavalent chromium."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air; seek medical attention for metal fume fever. Skin: Wash; treat burns. Eyes: Flush 15 min; arc eye requires medical attention. Ingestion: Rinse mouth, drink water."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Electrode flux is combustible but not highly flammable. Use dry chemical, CO2, or water spray. Maintain fire watch per OSHA 1926.352 during and 30 min after welding."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Pick up dropped electrodes. Sweep flux debris. Avoid generating dust. No special containment required."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store dry. Keep E7018 in heated rod ovens (120-150°C) after opening. Re-dry exposed electrodes at 370°C for 1 hour. Max 4 hours out of oven. Moisture causes hydrogen cracking in welds."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL for welding fume: 5 mg/m3 (total fume). Manganese PEL: 5 mg/m3 (ceiling). ACGIH TLV for Mn in respirable fume: 0.02 mg/m3. Welding helmet Shade 10+, P100 respirator, FR clothing, leather gloves and boots."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Cylindrical metal rod with gray/brown flux coating. Lengths: 12-18 inches. Diameters: 3/32 to 5/32 inch typical. Melting point of core wire: ~1535°C. Odor: None (fume has metallic odor during welding)."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal storage. Flux coating decomposes during welding, forming shielding gases and slag. Incompatible with strong acids (flux coating may react)."},
+      {"number": 11, "title": "Toxicological Information", "content": "Welding fume is classified as IARC Group 1 carcinogen. Manganese fume: chronic overexposure causes manganism (Parkinson-like neurological disease). Fluorides in fume may cause irritation. Metal fume fever: flu-like symptoms from zinc/copper-contaminated base metals."},
+      {"number": 12, "title": "Ecological Information", "content": "Welding electrode stubs are recyclable metal. Slag and flux residue should not be discharged to waterways. No significant environmental hazard from unused electrodes."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Unused electrodes: Recycle as scrap metal. Slag and flux residue: Dispose per local regulations. Welding fume particulate collected by ventilation filters: May be hazardous waste depending on metal content."},
+      {"number": 14, "title": "Transport Information", "content": "Not regulated as hazardous material for transportation."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous (welding fume). California Prop 65: Welding fume contains chemicals known to cause cancer and reproductive harm (hexavalent chromium, manganese, nickel). SARA 311/312: Acute and chronic health hazard."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-01-20. Always read and follow AWS F1.2 (Laboratory Method for Measuring Fume Generation Rates). Refer to AWS Safety and Health Fact Sheets for additional guidance. ANSI Z49.1 applies to all welding operations."}
+    ]
+  },
+  {
+    "productName": "Muriatic Acid (Hydrochloric Acid 31.45%)",
+    "manufacturer": "Klean-Strip",
+    "casNumbers": ["7647-01-0"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS05", "GHS07"],
+    "hazardStatements": [
+      "H290 - May be corrosive to metals",
+      "H314 - Causes severe skin burns and eye damage",
+      "H335 - May cause respiratory irritation"
+    ],
+    "precautionaryStatements": [
+      "P260 - Do not breathe vapors or mist",
+      "P264 - Wash hands thoroughly after handling",
+      "P280 - Wear protective gloves, protective clothing, eye protection, face protection",
+      "P301+P330+P331 - IF SWALLOWED: Rinse mouth. Do NOT induce vomiting",
+      "P303+P361+P353 - IF ON SKIN: Remove contaminated clothing. Rinse skin with water",
+      "P304+P340 - IF INHALED: Remove person to fresh air and keep comfortable for breathing",
+      "P305+P351+P338 - IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses if present. Continue rinsing",
+      "P310 - Immediately call a POISON CENTER or physician"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air immediately. If breathing is difficult, give oxygen. If not breathing, give artificial respiration (avoid mouth-to-mouth — use barrier device). Seek immediate medical attention. Inhalation of concentrated fumes may cause pulmonary edema (delayed onset up to 48 hours).",
+      "skin": "Remove all contaminated clothing immediately. Flush skin with large quantities of water for at least 20 minutes. Do not apply neutralizing agents. Seek immediate medical attention for acid burns. Chemical burns may not be immediately apparent — delayed pain is common.",
+      "eyes": "Immediately flush with water for at least 30 minutes, holding eyelids open. Remove contact lenses if present after 5 minutes of flushing. Seek immediate medical attention. Acid burns to eyes can cause permanent blindness.",
+      "ingestion": "Do NOT induce vomiting. Do not give anything by mouth to an unconscious person. Rinse mouth with water. If conscious, give small sips of water or milk. Seek immediate medical attention. Corrosive — causes burns to mouth, throat, and stomach."
+    },
+    "ppeRequired": [
+      "Full-face shield AND chemical splash goggles",
+      "Acid-resistant gloves (PVC, neoprene, or butyl rubber)",
+      "Acid-resistant apron or full chemical suit",
+      "Acid-resistant boots",
+      "NIOSH-approved acid gas respirator or SCBA for high concentrations"
+    ],
+    "fireExtinguishing": "Non-combustible, but reacts with most metals to generate flammable hydrogen gas. Use water spray, dry chemical, or CO2 for surrounding fire. Do not direct water stream into acid — violent spattering may occur. Contain runoff. Hydrogen chloride gas released on heating.",
+    "spillProcedure": "Evacuate area. Ventilate. Wear full PPE including acid gas respirator. Contain spill with acid-resistant dike material. Neutralize with soda ash (sodium carbonate), lime, or sodium bicarbonate. Flush area with large amounts of water after neutralization. Do NOT use metal tools for cleanup. Report spills per CERCLA requirements (RQ: 5,000 lbs HCl).",
+    "storageHandling": "Store in a cool, dry, well-ventilated area in original acid-resistant container. Keep away from metals, alkalis, and oxidizers. Do not store above 40°C. Store separately from incompatible materials. Always add acid to water — never water to acid. Keep container tightly closed to prevent fuming.",
+    "emergencyPhone": "1-800-535-5053",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Klean-Strip Muriatic Acid (Hydrochloric Acid 31.45%). Manufacturer: Klean-Strip, Memphis, TN 38118. Recommended use: Etching and cleaning concrete, masonry cleaning, pH adjustment. Emergency telephone: 1-800-535-5053."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Corrosive to Metals Category 1, Skin Corrosion Category 1A, Serious Eye Damage Category 1, STOT Single Exposure Category 3 (respiratory). Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Hydrochloric acid (CAS 7647-01-0) 31.45%, Water (CAS 7732-18-5) balance. Molecular formula: HCl. Molecular weight: 36.46."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air, oxygen if needed; watch for delayed pulmonary edema. Skin: Flush 20 min; do not neutralize on skin. Eyes: Flush 30 min continuously. Ingestion: Do NOT vomit; sips of water; immediate medical attention."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Non-combustible but generates flammable hydrogen gas with metals. HCl gas released when heated. Use water spray, dry chemical, or CO2. Do not direct water stream into acid. Contain runoff."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Evacuate and ventilate. Full PPE with acid gas respirator. Contain with acid-resistant materials. Neutralize with soda ash or lime. Flush with water. CERCLA RQ: 5,000 lbs HCl."},
+      {"number": 7, "title": "Handling and Storage", "content": "Always add acid to water, never reverse. Store in acid-resistant containers in cool, ventilated area. Keep away from metals, alkalis, oxidizers. Keep tightly closed. Do not store above 40°C."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: 5 ppm ceiling (7 mg/m3). ACGIH TLV: 2 ppm ceiling. Full-face shield, acid-resistant gloves (PVC/neoprene/butyl), acid-resistant suit, acid gas respirator."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Clear to slightly yellow liquid. Odor: Pungent, irritating. pH: <1. Specific gravity: 1.16. Boiling point: 48°C (as concentrated HCl solution). Vapor pressure: High (fuming). Completely miscible with water."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable but corrosive. Reacts vigorously with bases, metals (generating H2 gas), oxidizers. Incompatible with alkalis, amines, carbonates (violent reaction), most metals, cyanides (generates HCN). Attacks most common metals."},
+      {"number": 11, "title": "Toxicological Information", "content": "Oral LD50 (rat): 238-277 mg/kg. Corrosive to all tissues contacted. Inhalation LC50 (rat, 1hr): 3124 ppm. Chronic exposure: Dental erosion, bronchitis. HCl is not classified as a carcinogen (IARC Group 3)."},
+      {"number": 12, "title": "Ecological Information", "content": "Harmful to aquatic life. Rapidly neutralized in environment but concentrated discharges alter pH, harming aquatic organisms. LC50 (fish, 96hr): varies by species, generally 25-282 mg/L."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Neutralize before disposal per local regulations. EPA D002 (corrosivity) hazardous waste if pH <2. Contact local environmental agency for disposal requirements. Do not discharge to sewers without neutralization and authorization."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1789, Hydrochloric acid, Class 8, PG II. IMDG: UN1789, Class 8, PG II. ERG Guide No. 157."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. CERCLA RQ: 5,000 lbs. SARA 302 EHS: Yes (TPQ 500 lbs). SARA 311/312: Acute health hazard. SARA 313: Yes (toxic release reporting). California Prop 65: Not listed."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-02-01. NFPA ratings: Health 3, Flammability 0, Reactivity 1. HMIS ratings: Health 3, Flammability 0, Physical Hazard 1. Always pre-wet concrete before applying acid."}
+    ]
+  },
+  {
+    "productName": "WD-40 Multi-Use Product",
+    "manufacturer": "WD-40 Company",
+    "casNumbers": ["64742-47-8", "64742-65-0"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS07", "GHS08"],
+    "hazardStatements": [
+      "H222 - Extremely flammable aerosol",
+      "H229 - Pressurized container: may burst if heated",
+      "H304 - May be fatal if swallowed and enters airways",
+      "H336 - May cause drowsiness or dizziness",
+      "H412 - Harmful to aquatic life with long lasting effects"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P211 - Do not spray on an open flame or other ignition source",
+      "P251 - Pressurized container: Do not pierce or burn even after use",
+      "P261 - Avoid breathing spray mist",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear protective gloves",
+      "P301+P310 - IF SWALLOWED: Immediately call a POISON CENTER",
+      "P331 - Do NOT induce vomiting",
+      "P410+P412 - Protect from sunlight. Do not expose to temperatures exceeding 50°C/122°F"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air. If symptoms persist (headache, dizziness, nausea), seek medical attention. If not breathing, give artificial respiration and seek immediate medical attention.",
+      "skin": "Wash with soap and water. Remove contaminated clothing. Seek medical attention if irritation develops. Product may defat skin with repeated/prolonged contact.",
+      "eyes": "Flush with plenty of water for at least 15 minutes, lifting eyelids. Seek medical attention if irritation persists.",
+      "ingestion": "Do NOT induce vomiting — aspiration hazard. Aspiration of even small amounts into the lungs can cause chemical pneumonitis which may be fatal. Call poison center immediately. Do not give anything by mouth to an unconscious person."
+    },
+    "ppeRequired": [
+      "Safety glasses or goggles",
+      "Chemical-resistant gloves for prolonged contact",
+      "Adequate ventilation — avoid breathing mist/vapors",
+      "No special respiratory protection needed in well-ventilated areas"
+    ],
+    "fireExtinguishing": "Extremely flammable aerosol. Use CO2, dry chemical, or foam. Do not use water jet. Water spray may be used to cool fire-exposed containers. Pressurized container may explode in fire — evacuate area. Vapors may travel to ignition source and flash back.",
+    "spillProcedure": "Eliminate ignition sources. Ventilate area. Absorb liquid with inert absorbent material (sand, vermiculite, earth). Collect in suitable container for disposal. Prevent entry into drains and waterways. Small spills may be wiped up with rags.",
+    "storageHandling": "Store in a cool, well-ventilated area away from heat and ignition sources. Do not store above 50°C (122°F). Do not pierce, burn, or incinerate container even when empty. Keep away from direct sunlight. Pressurized container — protect from physical damage.",
+    "emergencyPhone": "1-888-324-7596",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: WD-40 Multi-Use Product (Aerosol). Manufacturer: WD-40 Company, San Diego, CA 92110. Recommended use: Lubricant, penetrant, moisture displacer, corrosion inhibitor. Emergency telephone: 1-888-324-7596."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Aerosol Category 1, Aspiration Hazard Category 1, STOT Single Exposure Category 3 (narcotic effects), Chronic Aquatic Toxicity Category 3. Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Hydrotreated light distillate (petroleum) (CAS 64742-47-8) 45-50%. Petroleum base oil (severely hydrotreated) (CAS 64742-65-0) <25%. LVP aliphatic hydrocarbon <25%. Carbon dioxide (propellant) (CAS 124-38-9) 2-3%. Non-hazardous ingredients: surfactant, fragrance."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air. Skin: Wash with soap and water. Eyes: Flush 15 min. Ingestion: Do NOT induce vomiting — aspiration hazard. Call poison center immediately."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Flash point: -18°C (liquid). Propellant: CO2 (non-flammable). Flammable aerosol mist. Use CO2, dry chemical, or foam. Containers may explode in fire. Evacuate area."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Eliminate ignition sources. Ventilate. Absorb with inert material. Collect for disposal. Prevent entry into drains."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store below 50°C. Do not pierce or burn container. Keep away from heat, sparks, flames, sunlight. Pressurized container — protect from damage."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL for petroleum distillates: 500 ppm (2000 mg/m3). ACGIH TLV: 200 mg/m3. Wear safety glasses, chemical-resistant gloves for prolonged use. Ensure adequate ventilation."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Light amber liquid, aerosol spray. Odor: Pleasant petroleum odor. Specific gravity: 0.80-0.82 (liquid). Boiling range: 138-252°C (liquid). Flash point: -18°C (liquid, TCC). VOC: 60-65%."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under recommended storage conditions. Avoid heat, sparks, and flames. Incompatible with strong oxidizers and strong acids. Hazardous decomposition: Carbon monoxide, carbon dioxide."},
+      {"number": 11, "title": "Toxicological Information", "content": "Low order of acute toxicity. Petroleum distillates: Aspiration hazard is the primary danger. Inhalation of high vapor concentrations causes CNS depression (drowsiness, dizziness). Repeated skin contact: defatting dermatitis."},
+      {"number": 12, "title": "Ecological Information", "content": "Petroleum hydrocarbons are harmful to aquatic organisms. Product floats on water. Prevent release to environment. Not readily biodegradable."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Do not puncture or incinerate container. Dispose of contents/container in accordance with local, state, and federal regulations. May be considered hazardous waste (D001 ignitability)."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1950, Aerosols, Class 2.1, Limited Quantity. ERG Guide No. 126."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. SARA 311/312: Fire hazard, acute health hazard. VOC compliant in all 50 states. TSCA: All components listed."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-04-01. NFPA ratings: Health 1, Flammability 4, Reactivity 0. HMIS ratings: Health 1, Flammability 4, Physical Hazard 0. This is a consumer product and intended for use per label instructions."}
+    ]
+  },
+  {
+    "productName": "Professional Inverted Marking Paint",
+    "manufacturer": "Rust-Oleum Corporation",
+    "casNumbers": ["67-64-1", "68476-86-8"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS07", "GHS08"],
+    "hazardStatements": [
+      "H222 - Extremely flammable aerosol",
+      "H229 - Pressurized container: may burst if heated",
+      "H319 - Causes serious eye irritation",
+      "H336 - May cause drowsiness or dizziness",
+      "H304 - May be fatal if swallowed and enters airways"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P211 - Do not spray on an open flame or other ignition source",
+      "P251 - Do not pierce or burn even after use",
+      "P261 - Avoid breathing spray mist",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear eye protection",
+      "P312 - Call a POISON CENTER if you feel unwell",
+      "P410+P412 - Protect from sunlight. Do not expose to temperatures exceeding 50°C"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air. If symptoms persist (headache, dizziness, nausea), seek medical attention. If breathing is difficult, give oxygen. Intentional misuse by deliberately inhaling contents can be harmful or fatal.",
+      "skin": "Wash with soap and water. Remove contaminated clothing and wash before reuse. Seek medical attention if irritation persists. Product may defat skin.",
+      "eyes": "Flush with water for at least 15 minutes. Remove contact lenses after the first 5 minutes and continue flushing. Seek medical attention if irritation persists.",
+      "ingestion": "Do NOT induce vomiting — aspiration hazard. Call poison center immediately. Do not give anything by mouth to an unconscious person."
+    },
+    "ppeRequired": [
+      "Safety glasses or goggles",
+      "Chemical-resistant gloves (nitrile)",
+      "Adequate ventilation required — use outdoors or in well-ventilated area",
+      "NIOSH-approved organic vapor respirator if used in confined or poorly ventilated areas"
+    ],
+    "fireExtinguishing": "Extremely flammable aerosol. Use CO2, dry chemical powder, or alcohol-resistant foam. Do not use water jet. Pressurized containers may rocket or explode in fire. Cool fire-exposed containers with water spray. Vapors heavier than air — may accumulate in low areas.",
+    "spillProcedure": "Eliminate all ignition sources. Ventilate area. Absorb with inert absorbent material. Collect in approved container for disposal. Prevent entry into drains and waterways. For large spills, dike area to contain.",
+    "storageHandling": "Store in cool, well-ventilated area below 50°C (122°F). Keep away from heat, sparks, flames. Do not pierce or burn container. Store away from direct sunlight. Contents under pressure — protect from physical damage. Keep out of reach of children.",
+    "emergencyPhone": "1-800-424-9300 (CHEMTREC)",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Rust-Oleum Professional Inverted Marking Paint. Manufacturer: Rust-Oleum Corporation, Vernon Hills, IL 60061. Recommended use: Marking and striping on pavements, construction sites, landscaping. Emergency telephone: 1-800-424-9300 (CHEMTREC)."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Aerosol Category 1, Aspiration Hazard Category 1, Serious Eye Irritation Category 2A, STOT Single Exposure Category 3 (narcotic effects). Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Acetone (CAS 67-64-1) 20-40%. Liquefied petroleum gas (propellant) (CAS 68476-86-8) 15-25%. Xylene (CAS 1330-20-7) 5-15%. Titanium dioxide (CAS 13463-67-7) 5-15% (in white/light colors). Ethylbenzene (CAS 100-41-4) 1-5%."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air; oxygen if needed. Intentional inhalation abuse can be fatal. Skin: Wash with soap and water. Eyes: Flush 15 min. Ingestion: Do NOT induce vomiting — aspiration hazard. Call poison center."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Flash point: <0°C. Extremely flammable aerosol. Use CO2, dry chemical, or foam. Containers may rocket or explode in fire. Vapors heavier than air."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Eliminate ignition sources. Ventilate. Absorb with inert material. Prevent entry into drains. Dike for large spills."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store below 50°C. Keep from heat, sparks, flames, sunlight. Do not pierce or burn container. Contents under pressure."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: Acetone 1000 ppm, Xylene 100 ppm. ACGIH TLV: Acetone 250 ppm, Xylene 100 ppm. Wear safety glasses, nitrile gloves. Organic vapor respirator for confined spaces."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Opaque colored liquid spray. Odor: Strong solvent odor. Specific gravity: 0.75-0.85. Boiling point: 56°C (acetone). Flash point: <0°C. VOC: 350-450 g/L. Vapor density: heavier than air."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under recommended conditions. Avoid heat, sparks, flames. Incompatible with strong oxidizers, strong acids, strong bases. Hazardous decomposition: CO, CO2."},
+      {"number": 11, "title": "Toxicological Information", "content": "Primary hazard is aspiration. Solvents cause CNS depression at high concentrations. Xylene: ototoxic (hearing damage) with chronic overexposure. Titanium dioxide: IARC Group 2B (possibly carcinogenic) by inhalation of dust."},
+      {"number": 12, "title": "Ecological Information", "content": "Harmful to aquatic organisms. Volatile organic compounds contribute to photochemical smog. Prevent release to environment."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Do not puncture or incinerate container. Dispose in accordance with regulations. Dried paint residue: non-hazardous. Liquid waste: may be hazardous (D001 ignitability)."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1950, Aerosols, Class 2.1, Limited Quantity. ERG Guide No. 126."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. SARA 311/312: Fire hazard, acute health hazard, chronic health hazard. SARA 313: Xylene, ethylbenzene reportable. California Prop 65: Contains ethylbenzene (cancer)."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-03-15. NFPA ratings: Health 2, Flammability 4, Reactivity 0. HMIS ratings: Health 2, Flammability 4, Physical Hazard 0."}
+    ]
+  },
+  {
+    "productName": "Propane (Liquefied Petroleum Gas)",
+    "manufacturer": "AmeriGas Partners, L.P.",
+    "casNumbers": ["74-98-6"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS04"],
+    "hazardStatements": [
+      "H220 - Extremely flammable gas",
+      "H280 - Contains gas under pressure; may explode if heated"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P377 - Leaking gas fire: Do not extinguish unless leak can be stopped safely",
+      "P381 - Eliminate all ignition sources if safe to do so",
+      "P410+P403 - Protect from sunlight. Store in a well-ventilated place"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air immediately. If not breathing, give artificial respiration. If breathing is difficult, give oxygen. Seek medical attention. Propane is a simple asphyxiant — high concentrations displace oxygen causing suffocation. Symptoms of oxygen deficiency include rapid breathing, diminished mental alertness, impaired coordination, faulty judgment, and unconsciousness.",
+      "skin": "In case of contact with liquid propane (boiling point -42°C), treat for frostbite. Do not rub affected area. Immerse in or flush with lukewarm water (not hot). Seek medical attention for frostbite.",
+      "eyes": "In case of contact with liquid, flush with lukewarm water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Not a likely route of exposure. If liquefied gas is ingested, do not induce vomiting. Seek medical attention."
+    },
+    "ppeRequired": [
+      "Safety glasses with side shields",
+      "Insulated gloves when handling liquid propane or cold cylinders",
+      "Steel-toed safety boots",
+      "Static-dissipative clothing",
+      "Self-contained breathing apparatus (SCBA) for emergency response in oxygen-deficient atmospheres"
+    ],
+    "fireExtinguishing": "Extremely flammable gas. If safely possible, stop the flow of gas before attempting to extinguish. Use dry chemical or CO2 for small fires. Water spray may be used to cool fire-exposed containers. Do NOT extinguish gas fire unless leak can be stopped — an uncontrolled gas release may lead to explosive reignition. BLEVE (Boiling Liquid Expanding Vapor Explosion) hazard with fire-exposed tanks.",
+    "spillProcedure": "Evacuate area immediately. Eliminate all ignition sources. Propane is heavier than air and will accumulate in low-lying areas, basements, trenches, and excavations. Ventilate area from a safe distance. Do not enter area without SCBA. Stop leak if safe to do so. Let small releases dissipate.",
+    "storageHandling": "Store cylinders outdoors or in well-ventilated areas. Keep away from heat and ignition sources. Store upright and secured. Do not store in basements, below grade, or areas without ventilation. Cylinders must comply with DOT requirements. Maximum fill density: 42% for DOT cylinders. Check connections with soap solution for leaks — never use open flame.",
+    "emergencyPhone": "1-800-424-9300 (CHEMTREC)",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Propane (Liquefied Petroleum Gas, LP Gas). Manufacturer: AmeriGas Partners, L.P., King of Prussia, PA 19406. Recommended use: Fuel gas for heating, welding, cutting, forklifts, temporary construction heat. Emergency telephone: 1-800-424-9300 (CHEMTREC)."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Gas Category 1, Gases Under Pressure — Liquefied Gas. Simple asphyxiant. Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Propane (CAS 74-98-6) >90%. May contain ethane, butane, propylene, and ethyl mercaptan (odorant, CAS 75-08-1) <50 ppm."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air; oxygen if needed. Simple asphyxiant — high concentrations cause suffocation. Skin/eyes: Treat frostbite with lukewarm water. Ingestion: Not a normal route of exposure."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Extremely flammable gas. Flammable range: 2.1%-9.5% in air. Auto-ignition: 450°C (842°F). Stop gas flow before extinguishing. BLEVE hazard with fire-exposed containers. Cool containers with water spray."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Evacuate. Eliminate ignition sources. Heavier than air — accumulates in low areas, basements, trenches. Ventilate from safe distance. SCBA required for entry. Stop leak if safe."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store outdoors or in ventilated area. Keep upright and secured. No basements or below-grade storage. Max fill 42% for DOT cylinders. Check for leaks with soap solution — never open flame."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: 1000 ppm (1800 mg/m3). ACGIH TLV: Simple asphyxiant. Maintain oxygen >19.5%. Safety glasses, insulated gloves for liquid handling, static-dissipative clothing, SCBA for emergencies."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: Colorless liquefied gas. Odor: Odorless (ethyl mercaptan added as odorant — skunk/rotten egg smell). Molecular weight: 44.1. Boiling point: -42°C (-44°F). Vapor density: 1.52 (air=1). Flammable range: 2.1%-9.5%."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal conditions. Avoid heat, sparks, flames. Incompatible with strong oxidizers. Hazardous decomposition: Carbon monoxide, carbon dioxide from incomplete combustion."},
+      {"number": 11, "title": "Toxicological Information", "content": "Simple asphyxiant. Non-toxic at low concentrations. High concentrations displace oxygen causing asphyxiation. Cardiac sensitization possible at very high concentrations (>10,000 ppm). Liquid propane causes cryogenic burns/frostbite."},
+      {"number": 12, "title": "Ecological Information", "content": "No significant environmental impact. Gas dissipates rapidly. Does not bioaccumulate. Not classified as an environmental hazard. Low potential for ground or water contamination."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Vent residual gas safely in well-ventilated area away from ignition sources. Return cylinders to supplier. Do not dispose of pressurized containers. Follow DOT return regulations."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1075, Petroleum gases, liquefied (or Propane), Class 2.1. ERG Guide No. 115."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. CERCLA: Not listed. SARA 311/312: Fire hazard, sudden release of pressure. Clean Air Act Section 112(r): TQ 10,000 lbs."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-01-10. NFPA ratings: Health 1, Flammability 4, Reactivity 0. Odor fade can occur in new tanks or underground leaks — do not rely solely on odorant for leak detection."}
+    ]
+  },
+  {
+    "productName": "Silica Sand (Crystalline Silica / Quartz)",
+    "manufacturer": "U.S. Silica Company",
+    "casNumbers": ["14808-60-7"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS07", "GHS08"],
+    "hazardStatements": [
+      "H350i - May cause cancer by inhalation",
+      "H372 - Causes damage to lungs through prolonged or repeated exposure by inhalation",
+      "H335 - May cause respiratory irritation"
+    ],
+    "precautionaryStatements": [
+      "P201 - Obtain special instructions before use",
+      "P202 - Do not handle until all safety precautions have been read and understood",
+      "P260 - Do not breathe dust",
+      "P264 - Wash hands thoroughly after handling",
+      "P270 - Do not eat, drink or smoke when using this product",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear respiratory protection",
+      "P308+P313 - IF exposed or concerned: Get medical advice/attention",
+      "P405 - Store locked up"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air. If breathing is difficult, give oxygen. Seek medical attention if cough or respiratory symptoms develop. Chronic inhalation of respirable crystalline silica causes silicosis, a progressive and incurable fibrotic lung disease. Inform physician of silica dust exposure history.",
+      "skin": "Wash with soap and water. Silica sand may cause mechanical irritation (abrasion). Seek medical attention if irritation persists.",
+      "eyes": "Flush with water for at least 15 minutes, lifting eyelids. Particles may cause mechanical irritation and corneal abrasion. Seek medical attention if irritation or pain persists. Do not rub eyes.",
+      "ingestion": "Rinse mouth with water. Drink water to dilute. Not expected to be harmful by ingestion. Seek medical attention if discomfort occurs."
+    },
+    "ppeRequired": [
+      "NIOSH-approved N95 or P100 respirator as minimum; half-face or full-face APR with P100 filters for higher exposures",
+      "Safety goggles or safety glasses with side shields",
+      "Work gloves to prevent abrasion",
+      "Long-sleeved shirt and long pants",
+      "In blasting operations: supplied-air abrasive blasting hood per NIOSH 29 CFR 1910.94"
+    ],
+    "fireExtinguishing": "Silica sand is non-combustible and non-explosive. Use extinguishing media appropriate for surrounding fire. Firefighters should wear SCBA in enclosed spaces due to potential dust inhalation.",
+    "spillProcedure": "Avoid generating airborne dust. Do not dry sweep — use vacuum with HEPA filter or wet methods. Shovel material into containers. Wear respiratory protection during cleanup. Do not wash into drains or waterways.",
+    "storageHandling": "Store in dry area. Keep containers closed to prevent moisture absorption and dust generation. Use engineering controls (local exhaust ventilation, wet methods, enclosed systems) to keep airborne dust below PEL. Practice good housekeeping — do not allow dust accumulation on surfaces. Follow OSHA Silica Standard 29 CFR 1926.1153 for construction activities.",
+    "emergencyPhone": "1-800-243-7500",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: Silica Sand (Ground Silica, Crystalline Quartz). Manufacturer: U.S. Silica Company, Katy, TX 77494. Recommended use: Concrete aggregate, sandblasting media, grout, mortar, fill material. Emergency telephone: 1-800-243-7500."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Carcinogenicity Category 1A, Specific Target Organ Toxicity (Repeated Exposure) Category 1 (lungs), STOT Single Exposure Category 3 (respiratory). Signal Word: Danger. Primary hazard is from inhalation of respirable crystalline silica dust."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Quartz / Crystalline Silica (CAS 14808-60-7) >95%. May contain trace amounts of feldspar, iron oxide, and other naturally occurring minerals."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air; seek medical attention if symptomatic. Chronic silica exposure causes silicosis. Skin: Wash; mechanical irritation only. Eyes: Flush 15 min; particles may abrade cornea. Ingestion: Rinse mouth; not harmful by ingestion."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Non-combustible. No fire or explosion hazard. Use media appropriate for surrounding fire."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Do not dry sweep. Use HEPA vacuum or wet methods. Wear respiratory protection. Shovel into containers. Avoid airborne dust generation."},
+      {"number": 7, "title": "Handling and Storage", "content": "Minimize dust generation. Use engineering controls per OSHA 29 CFR 1926.1153. Keep containers closed. Use local exhaust ventilation, wet methods, or enclosed systems. Do not accumulate dust on surfaces."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL: 50 ug/m3 (respirable crystalline silica, 8-hr TWA, construction). Action Level: 25 ug/m3. ACGIH TLV: 25 ug/m3 (respirable, quartz). NIOSH REL: 50 ug/m3. Wear N95/P100 respirator minimum. Blasting: supplied-air hood."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: White to tan granular solid (sand) or fine powder. Odor: Odorless. Specific gravity: 2.65. Melting point: 1710°C (3110°F). pH: 6-8 (in water slurry). Insoluble in water. Hardness: 7 (Mohs scale)."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal conditions. Incompatible with hydrofluoric acid (dissolves silica). Not reactive with common materials. Does not polymerize."},
+      {"number": 11, "title": "Toxicological Information", "content": "Crystalline silica (quartz) is classified as IARC Group 1 (carcinogenic to humans — lung cancer). Chronic inhalation causes silicosis: nodular pulmonary fibrosis. Accelerated silicosis can develop with high exposures in 5-10 years. Acute silicosis possible with massive exposure in weeks to months. Silica exposure is also associated with autoimmune diseases, kidney disease, and tuberculosis susceptibility."},
+      {"number": 12, "title": "Ecological Information", "content": "Naturally occurring mineral. No significant environmental hazard. Inert in the environment. May cause turbidity if discharged to waterways."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Not classified as hazardous waste. Dispose of in accordance with local regulations. May be disposed of in landfill. Dust collected in ventilation filters may require special handling."},
+      {"number": 14, "title": "Transport Information", "content": "Not regulated as hazardous material for transportation by DOT, IATA, or IMDG."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous (silica standard 29 CFR 1926.1153 for construction). MSHA: Regulated. California Prop 65: Crystalline silica (airborne, respirable) is known to cause cancer. SARA 311/312: Chronic health hazard. IARC Group 1 carcinogen."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-02-20. OSHA requires written Exposure Control Plans for crystalline silica in construction. Medical surveillance required for workers exposed above the action level for 30+ days/year. Refer to OSHA Table 1 for task-specific controls."}
+    ]
+  },
+  {
+    "productName": "Concrete Curing Compound (Resin-Based)",
+    "manufacturer": "W.R. Meadows, Inc.",
+    "casNumbers": ["64742-88-7", "64742-95-6"],
+    "signalWord": "Danger",
+    "pictograms": ["GHS02", "GHS07", "GHS08"],
+    "hazardStatements": [
+      "H226 - Flammable liquid and vapor",
+      "H304 - May be fatal if swallowed and enters airways",
+      "H315 - Causes skin irritation",
+      "H336 - May cause drowsiness or dizziness",
+      "H373 - May cause damage to organs through prolonged or repeated exposure",
+      "H411 - Toxic to aquatic life with long lasting effects"
+    ],
+    "precautionaryStatements": [
+      "P210 - Keep away from heat, sparks, open flames, hot surfaces — No smoking",
+      "P233 - Keep container tightly closed",
+      "P240 - Ground/bond container and receiving equipment",
+      "P261 - Avoid breathing vapors",
+      "P271 - Use only outdoors or in a well-ventilated area",
+      "P280 - Wear protective gloves, eye protection",
+      "P301+P310 - IF SWALLOWED: Immediately call a POISON CENTER",
+      "P331 - Do NOT induce vomiting",
+      "P370+P378 - In case of fire: Use dry chemical, CO2, foam, or water spray to extinguish"
+    ],
+    "firstAid": {
+      "inhalation": "Move to fresh air. If breathing is difficult, give oxygen. Seek medical attention if symptoms persist (headache, dizziness, nausea). Prolonged inhalation of solvent vapors may cause central nervous system depression.",
+      "skin": "Remove contaminated clothing. Wash skin thoroughly with soap and water for at least 15 minutes. Seek medical attention if irritation develops. Repeated or prolonged contact may cause defatting dermatitis.",
+      "eyes": "Flush with water for at least 15 minutes, lifting eyelids. Seek medical attention if irritation persists.",
+      "ingestion": "Do NOT induce vomiting — aspiration hazard (contains petroleum distillates). Call poison center immediately. Do not give anything by mouth to an unconscious person."
+    },
+    "ppeRequired": [
+      "Safety glasses or chemical splash goggles",
+      "Chemical-resistant gloves (nitrile)",
+      "Long-sleeved shirt and long pants",
+      "NIOSH-approved organic vapor respirator if used in enclosed or poorly ventilated areas",
+      "In spray application: full-face organic vapor/P100 combination respirator"
+    ],
+    "fireExtinguishing": "Flammable liquid. Use dry chemical, CO2, foam, or water spray. Do not use a solid water stream — may spread fire. Cool fire-exposed containers with water spray. Vapors heavier than air and may travel to ignition source.",
+    "spillProcedure": "Eliminate ignition sources. Ventilate area. Absorb with earth, sand, or absorbent material. Collect in approved containers for disposal. Prevent entry into drains, sewers, and waterways. For large spills, dike to contain. This product is toxic to aquatic organisms — prevent environmental release.",
+    "storageHandling": "Store in cool, dry, well-ventilated area away from heat and ignition sources. Keep containers tightly closed and grounded. Use explosion-proof electrical equipment. Avoid breathing vapors. Empty containers may contain explosive vapor-air mixtures. Do not cut, weld, or heat empty containers.",
+    "emergencyPhone": "1-800-424-9300 (CHEMTREC)",
+    "sections": [
+      {"number": 1, "title": "Identification", "content": "Product: 1600-WHITE Concrete Curing Compound. Manufacturer: W.R. Meadows, Inc., Hampshire, IL 60140. Recommended use: Moisture-retaining membrane-forming curing compound for fresh concrete per ASTM C309, Type 1-D, Class B. Emergency telephone: 1-800-424-9300 (CHEMTREC)."},
+      {"number": 2, "title": "Hazard(s) Identification", "content": "GHS Classification: Flammable Liquid Category 3, Aspiration Hazard Category 1, Skin Irritation Category 2, STOT Single Exposure Category 3 (narcotic), STOT Repeated Exposure Category 2, Aquatic Toxicity (Chronic) Category 2. Signal Word: Danger."},
+      {"number": 3, "title": "Composition / Information on Ingredients", "content": "Medium aliphatic solvent naphtha (CAS 64742-88-7) 40-60%. Solvent naphtha, light aromatic (CAS 64742-95-6) 5-15%. Hydrocarbon resin 15-30%. Titanium dioxide (CAS 13463-67-7) 5-10% (white pigment). Mineral spirits balance."},
+      {"number": 4, "title": "First-Aid Measures", "content": "Inhalation: Fresh air; oxygen if needed. Skin: Wash with soap and water 15 min. Eyes: Flush 15 min. Ingestion: Do NOT induce vomiting — aspiration hazard. Call poison center."},
+      {"number": 5, "title": "Fire-Fighting Measures", "content": "Flash point: 38-43°C (100-110°F). Flammable liquid. Use dry chemical, CO2, foam, or water spray. Do not use solid water stream. Cool containers with water spray."},
+      {"number": 6, "title": "Accidental Release Measures", "content": "Eliminate ignition sources. Absorb with inert material. Prevent entry to drains and waterways — toxic to aquatic life. Dike large spills. Collect for disposal."},
+      {"number": 7, "title": "Handling and Storage", "content": "Store in cool, ventilated area. Keep containers closed and grounded. Use explosion-proof equipment. Avoid breathing vapors. Empty containers may contain explosive vapors."},
+      {"number": 8, "title": "Exposure Controls / Personal Protection", "content": "OSHA PEL for mineral spirits: 500 ppm. ACGIH TLV for Stoddard solvent: 100 ppm. Wear safety glasses, nitrile gloves, organic vapor respirator for enclosed areas. Full-face OV/P100 for spray application."},
+      {"number": 9, "title": "Physical and Chemical Properties", "content": "Appearance: White pigmented liquid. Odor: Petroleum solvent odor. Specific gravity: 0.82-0.88. Flash point: 38-43°C (100-110°F). Boiling range: 149-204°C. VOC: 350-600 g/L. Vapor density: heavier than air."},
+      {"number": 10, "title": "Stability and Reactivity", "content": "Stable under normal conditions. Avoid heat, sparks, flames. Incompatible with strong oxidizers and strong acids. Hazardous decomposition: CO, CO2, hydrocarbon fragments."},
+      {"number": 11, "title": "Toxicological Information", "content": "Primary hazard is aspiration. Petroleum solvent vapors cause CNS depression at high concentrations. Chronic overexposure to solvents may cause kidney and liver damage. Titanium dioxide: IARC Group 2B by inhalation of dust (relevant mainly during manufacturing, not end-use application)."},
+      {"number": 12, "title": "Ecological Information", "content": "Toxic to aquatic organisms with long-lasting effects. Petroleum solvents are harmful to fish and invertebrates. Prevent release to waterways, storm drains, and soil."},
+      {"number": 13, "title": "Disposal Considerations", "content": "Dispose per regulations. Liquid waste is likely hazardous (D001 ignitability). Empty containers: do not cut, weld, or heat. Triple rinse containers before disposal or recycling."},
+      {"number": 14, "title": "Transport Information", "content": "DOT: UN1263, Paint, Class 3, PG III. ERG Guide No. 128."},
+      {"number": 15, "title": "Regulatory Information", "content": "OSHA: Hazardous. SARA 311/312: Fire hazard, acute health hazard, chronic health hazard. VOC regulations may apply — check local/state AQM district rules. TSCA: All components listed."},
+      {"number": 16, "title": "Other Information", "content": "SDS revision date: 2024-03-10. NFPA ratings: Health 1, Flammability 2, Reactivity 0. HMIS ratings: Health 2, Flammability 2, Physical Hazard 0. Apply per ASTM C309. Coverage: approximately 200 sq ft/gallon. Allow adequate ventilation during application and drying."}
+    ]
+  }
+]
