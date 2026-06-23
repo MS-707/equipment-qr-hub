@@ -7,7 +7,7 @@ vi.stubGlobal('localStorage', {
   removeItem: (k: string) => { delete storage[k] },
   clear: () => { for (const k in storage) delete storage[k] },
   get length() { return Object.keys(storage).length },
-  key: (_i: number) => null as string | null,
+  key: () => null as string | null,
 })
 vi.stubGlobal('window', globalThis)
 
