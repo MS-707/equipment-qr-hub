@@ -69,6 +69,40 @@ describe('SdsRecordSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('accepts all 9 valid GHS pictogram codes', () => {
+    const codes = ['GHS01', 'GHS02', 'GHS03', 'GHS04', 'GHS05', 'GHS06', 'GHS07', 'GHS08', 'GHS09']
+    const result = SdsRecordSchema.safeParse({ ...validRecord, pictograms: codes })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts all 4 syncStatus values', () => {
+    for (const status of ['pending', 'synced', 'failed', 'offline'] as const) {
+      const result = SdsRecordSchema.safeParse({ ...validRecord, syncStatus: status })
+      expect(result.success).toBe(true)
+    }
+  })
+
+  it('rejects record with missing firstAid subfield', () => {
+    const result = SdsRecordSchema.safeParse({
+      ...validRecord,
+      firstAid: { inhalation: '', skin: '', eyes: '' },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts empty arrays for optional list fields', () => {
+    const result = SdsRecordSchema.safeParse({
+      ...validRecord,
+      casNumbers: [],
+      pictograms: [],
+      hazardStatements: [],
+      precautionaryStatements: [],
+      ppeRequired: [],
+      sections: [],
+    })
+    expect(result.success).toBe(true)
+  })
+
   it('allows extra fields via passthrough', () => {
     const result = SdsRecordSchema.safeParse({ ...validRecord, futureField: true })
     expect(result.success).toBe(true)
