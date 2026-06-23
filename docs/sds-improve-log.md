@@ -15,3 +15,9 @@ Append-only log of all work units. Source of truth for the design doc: `docs/pla
 | 5 | 2026-06-23T06:09:06Z | 9m | A — Webhook + webhook-queue + sds-sync fixes | Done |
 | 6 | 2026-06-23T06:11:36Z | 12m | A — SageTriage SDS context injection | Done |
 | 7 | 2026-06-23T06:16:05Z | 16m | A — Offline precaching of SDS assets | Done |
+
+## Phase B — Self-Improvement Cycles
+
+| Unit | UTC Timestamp | Elapsed | Phase | Status |
+|------|--------------|---------|-------|--------|
+| B1 | 2026-06-23T06:22:00Z | 22m | B — SDS test coverage (sds-records, sage-context, webhook) | Done |
