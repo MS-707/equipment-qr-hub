@@ -9,3 +9,4 @@ Append-only log of all work units. Source of truth for the design doc: `docs/pla
 | Unit | UTC Timestamp | Elapsed | Phase | Status |
 |------|--------------|---------|-------|--------|
 | 1 | 2026-06-23T05:59:49Z | 0m | A — Zod schemas + safeParseSdsRecords | Done |
+| 2 | 2026-06-23T06:02:15Z | 2m | A — /api/sds/sync route | Done |
