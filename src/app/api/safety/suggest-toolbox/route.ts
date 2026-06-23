@@ -51,7 +51,9 @@ export async function POST(req: Request) {
   }
 
   const location = (body.location ?? '').trim().slice(0, 200)
-  const hazards = Array.isArray(body.hazards) ? body.hazards.slice(0, 20) : []
+  const hazards = Array.isArray(body.hazards)
+    ? body.hazards.slice(0, 20).map((h) => String(h).slice(0, 200))
+    : []
   const weather = (body.weather ?? '').trim().slice(0, 200)
 
   const userMessage = [

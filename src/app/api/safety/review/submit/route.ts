@@ -98,13 +98,16 @@ export async function POST(req: Request) {
   }
 
   // ── Store submission for email-based decisions ────────────────
-  const submitterEmail = record.createdByEmail || session?.user?.email || ''
+  const sanitize = (s: unknown, max = 200) =>
+    (typeof s === 'string' ? s : '').replace(/[\r\n]/g, ' ').slice(0, max)
+
+  const submitterEmail = sanitize(record.createdByEmail || session?.user?.email || '', 200)
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
-    projectName: record.projectName || '',
-    location: record.location || '',
-    submitterName: record.createdBy || 'Unknown',
+    projectName: sanitize(record.projectName),
+    location: sanitize(record.location),
+    submitterName: sanitize(record.createdBy, 200) || 'Unknown',
     submitterEmail,
   })
 

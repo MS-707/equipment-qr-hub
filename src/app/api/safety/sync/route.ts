@@ -80,18 +80,22 @@ export async function POST(req: Request) {
       }),
     })
     if (existingCheck.ok) {
-      const existing = (await existingCheck.json()) as { results: { id: string }[] }
-      if (existing.results.length > 0) {
-        return Response.json({ ok: true, notionPageId: existing.results[0].id })
+      const existing = await existingCheck.json()
+      const results = Array.isArray(existing?.results) ? existing.results : []
+      if (results.length > 0 && typeof results[0]?.id === 'string') {
+        return Response.json({ ok: true, notionPageId: results[0].id })
       }
     }
+
+    const safeStr = (v: unknown, max = 500) =>
+      typeof v === 'string' ? v.slice(0, max) : ''
 
     const properties: Record<string, unknown> = {
       ID: { title: [{ text: { content: record.id } }] },
       Type: { select: { name: record.type } },
-      Project: { rich_text: [{ text: { content: record.projectName || '' } }] },
-      Location: { rich_text: [{ text: { content: record.location || '' } }] },
-      'Created By': { rich_text: [{ text: { content: record.createdBy || '' } }] },
+      Project: { rich_text: [{ text: { content: safeStr(record.projectName, 200) } }] },
+      Location: { rich_text: [{ text: { content: safeStr(record.location, 200) } }] },
+      'Created By': { rich_text: [{ text: { content: safeStr(record.createdBy, 200) } }] },
       'Created At': { date: { start: record.createdAt } },
       'Sync Source': { select: { name: 'equipment-qr-hub' } },
     }
@@ -131,8 +135,9 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Notion sync failed' }, { status: 502 })
     }
 
-    const page = (await res.json()) as { id: string }
-    return Response.json({ ok: true, notionPageId: page.id })
+    const page = await res.json()
+    const pageId = typeof page?.id === 'string' ? page.id : null
+    return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
     console.error('[sync] unexpected error:', e instanceof Error ? e.message : e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })
