@@ -13,7 +13,7 @@ import HelpButton from '@/components/onboarding/HelpButton'
 export default function NavHeader() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const { openOrders, openSafety } = useLiveCounts()
+  const { openOrders, openSafety, newSds } = useLiveCounts()
   const [online, setOnline] = useState(true)
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function NavHeader() {
 
   const badgeCounts: Record<BadgeKey, number> = {
     safety: openSafety,
-    sds: 0,
+    sds: newSds,
     orders: openOrders,
   }
 

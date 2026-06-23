@@ -11,13 +11,13 @@ import { usePendingSyncCount } from '@/hooks/usePendingSyncCount'
 export default function BottomTabBar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const { openOrders, openSafety } = useLiveCounts()
+  const { openOrders, openSafety, newSds } = useLiveCounts()
   const pendingSyncCount = usePendingSyncCount()
   if (pathname.startsWith('/beta')) return null
 
   const badgeCounts: Record<BadgeKey, number> = {
     safety: openSafety,
-    sds: 0,
+    sds: newSds,
     orders: openOrders,
   }
 
