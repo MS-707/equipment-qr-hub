@@ -118,7 +118,7 @@ describe('POST /api/safety/review/submit', () => {
     const res = await POST(makeReq({ record: { id: '' } }))
     expect(res.status).toBe(400)
     const data = await res.json()
-    expect(data.error).toContain('Missing record')
+    expect(data.error).toContain('record id')
   })
 
   it('returns 400 for invalid Notion page ID format', async () => {

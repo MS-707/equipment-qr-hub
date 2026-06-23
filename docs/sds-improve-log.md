@@ -158,3 +158,16 @@ Sub-audits:
 | B46 | 2026-06-23T08:10:00Z | 130m | B — Form-styles (3), inspections CSV (7) — **634 total across 60 files** | Done |
 | B47 | 2026-06-23T08:13:00Z | 133m | B — Suggest-JHA route validation tests (7 new) — **641 total across 61 files** | Done |
 | B48 | 2026-06-23T08:21:00Z | 141m | B — Safety-records edge cases (12 new, fixed Zod schema compliance) — **653 total across 62 files** | Done |
+| B49 | 2026-06-23T08:25:00Z | 145m | B — Tournament review #17 fixes (5 MEDIUM) + inspections/types/use-last-context tests (37 new) — **690 total across 65 files** | Done |
+
+### Tournament Review #17 Results (2026-06-23T08:22Z)
+
+Found 0 HIGH, 5 MEDIUM. Fixed all 5:
+1. **FIXED** — Inspections CSV export missing formula-prefix sanitization → added csvCell()
+2. **FIXED** — Webhook rate-limit using spoofable x-forwarded-for only → prefer x-real-ip
+3. **FIXED** — suggest-hazards existingHazards array unbounded → capped at 50
+4. **FIXED** — safety/sync allows omitting createdByEmail to bypass ownership check → server-side stamp
+5. **FIXED** — review/decide GET returns PII for already-decided reviews → status-only response
+
+| B50 | 2026-06-23T12:39:00Z | 399m | B — Audit-ptp + suggest-toolbox route guard tests (12 new) — **702 total across 67 files** | Done |
+| B51 | 2026-06-23T12:41:00Z | 401m | B — Auth module tests (13 new) — **715 total across 68 files** | Done |

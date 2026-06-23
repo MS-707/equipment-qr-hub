@@ -59,8 +59,11 @@ export async function POST(req: Request) {
 
   const { record, notionPageId } = body
 
-  if (!record?.id || !record?.type) {
-    return Response.json({ error: 'Missing record id or type' }, { status: 400 })
+  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
+    return Response.json({ error: 'Missing or invalid record id' }, { status: 400 })
+  }
+  if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
+    return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
   }
 
   if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
