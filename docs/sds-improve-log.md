@@ -104,3 +104,17 @@ Conditions (a) and (c) met. Continuing Phase B cycles until (b) is satisfied at 
 | B32 | 2026-06-23T07:27:00Z | 87m | B — Suggest-hazards route guard tests (6 new) — **365 total across 29 files** | Done |
 | B33 | 2026-06-23T07:28:00Z | 88m | B — AI route guard tests: incident, audit-ptp, jha, toolbox (14 new) | Done |
 | B34 | 2026-06-23T07:29:00Z | 89m | B — Safety-sync orchestration tests (7 new) — **386 total across 32 files** | Done |
+| B35 | 2026-06-23T07:35:00Z | 95m | B — Parse-document + safety-sync tests (12 new) — **391 total across 33 files** | Done |
+| B36 | 2026-06-23T07:38:00Z | 98m | B — Route guard tests: review submit/decide/status, sage triage, inspections notify, beta signup/decide (64 new) — **455 total across 40 files** | Done |
+| B37 | 2026-06-23T07:41:00Z | 101m | B — Sage-faq + record-share tests (24 new); tournament review #12 fixes (3/7) — **479 total across 42 files** | Done |
+
+### Tournament Review #12 Results (2026-06-23T07:40Z)
+
+Found 3 HIGH, 4 MEDIUM. Fixed 3:
+1. **FIXED** — safety/sync unsafe `as` casts → runtime validation + safeStr sanitizer
+2. DEFERRED — webhook-queue rpop data loss (documented, KV backup exists)
+3. DEFERRED — webhook in-memory dedup Set (documented, KV mitigates when configured)
+4. DEFERRED — review-token colon delimiter (record IDs never contain colons by design)
+5. **FIXED** — review/submit record fields flow unsanitized to email subject → sanitize()
+6. DEFERRED — sds/sync session access (already fixed systemically in B25)
+7. **FIXED** — suggest-toolbox hazards array items not truncated → `.map(h => String(h).slice(0,200))`
