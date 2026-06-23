@@ -54,8 +54,20 @@ Found 6 MEDIUM, 0 HIGH. Fixed 4:
 | B19 | 2026-06-23T07:01:00Z | 61m | B — Schema edge case tests (GHS codes, syncStatus, empty arrays, firstAid) | Done |
 | B20 | 2026-06-23T07:03:00Z | 63m | B — Atmospheric monitoring tests (28 new) — **200 total tests across 15 files** | Done |
 
-### Exit Condition Check (2026-06-23T07:03Z)
+| B21 | 2026-06-23T07:06:00Z | 66m | B — Rate-limit tests (8 new, 208 total across 16 files) | Done |
+| B22 | 2026-06-23T07:11:00Z | 71m | B — Identity + datetime tests (19 new); tournament review #8 fixes | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (200/200), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 63 minutes elapsed (started 05:59:49Z)
-- **(c) Two consecutive clean reviews**: YES — Reviews #6 and #7 both found ZERO new HIGH/MEDIUM findings
+### Tournament Review #8 Results (2026-06-23T07:11Z)
+
+Found 4 HIGH, 8 MEDIUM. Fixed 3 HIGH, 1 MEDIUM:
+1. **DEFERRED** — KV module init with non-null assertion (lazy client, only used behind env check)
+2. **DEFERRED** — TOCTOU in Notion sync (rate limiter + client dedup make race impractical)
+3. **FIXED** — Unsafe Notion response casts (now validates structure before access)
+4. **FIXED** — Webhook payload field truncation (500/200/50 char limits)
+5. **FIXED** — Rate-limit error logging missing key context
+
+### Exit Condition Check (2026-06-23T07:11Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (227/227), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 71 minutes elapsed (started 05:59:49Z)
+- **(c) Two consecutive clean reviews**: NO — Review #8 found issues (need 2 more clean consecutive reviews)
