@@ -35,8 +35,13 @@ const config: Config = {
         danger: 'var(--danger)',
         expired: 'var(--expired)',
       },
+      borderRadius: {
+        card: 'var(--r-lg)',
+        field: 'var(--r-md)',
+      },
       boxShadow: {
         card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
         pop: 'var(--shadow-pop)',
       },
       keyframes: {

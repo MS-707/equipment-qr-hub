@@ -116,6 +116,12 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setError(data.error ?? `Request failed (${res.status})`)
+        setSuggestions([])
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setError(data.error)
@@ -186,6 +192,12 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setFollowUpError(data.error ?? `Request failed (${res.status})`)
+        setSuggestions([])
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setFollowUpError(data.error)
@@ -248,6 +260,11 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setFollowUpError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setFollowUpError(data.error)
@@ -303,7 +320,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Suggestion cards (initial + gap-check reuse) ──── */}
       {suggestions && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">
@@ -353,7 +370,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               disabled={selected.size === 0}
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+                         disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
             >
               <Plus className="w-4 h-4" /> Add selected
             </button>
@@ -361,7 +378,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={dismiss}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Dismiss
             </button>
@@ -374,7 +391,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Follow-up chips bar ─────────────────────────────── */}
       {followUpMode === 'chips' && !suggestions && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2.5">
             <Sparkles className="w-3.5 h-3.5 text-mytra-purple" />
             <span className="text-xs font-medium text-fg-2">What next?</span>
@@ -383,21 +400,21 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
             <button
               type="button"
               onClick={checkForGaps}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Check for gaps
             </button>
             <button
               type="button"
               onClick={suggestPpe}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Suggest PPE
             </button>
             <button
               type="button"
               onClick={checkPermits}
-              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple text-xs rounded-full px-3 py-1.5 hover:bg-mytra-purple/20 transition-colors min-h-[44px]"
             >
               <Sparkles className="w-3 h-3" /> Need a permit?
             </button>
@@ -405,7 +422,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
           <button
             type="button"
             onClick={dismiss}
-            className="block mt-2 text-xs text-fg-4 hover:text-fg-2 transition-colors"
+            className="block mt-2 text-xs text-fg-4 hover:text-fg-2 transition-colors min-h-[44px]"
           >
             Done with Sage
           </button>
@@ -414,7 +431,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Loading state for follow-ups ────────────────────── */}
       {followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center justify-center gap-2 py-2 text-sm text-mytra-purple">
             <Loader2 className="w-4 h-4 animate-spin" /> Sage is thinking...
           </div>
@@ -423,7 +440,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── PPE suggestions ─────────────────────────────────── */}
       {followUpMode === 'ppe' && !followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">Suggested PPE</span>
@@ -462,7 +479,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
                 disabled={selectedPpe.size === 0}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
                            bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                           disabled:opacity-40 disabled:cursor-not-allowed"
+                           disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
               >
                 <Plus className="w-4 h-4" /> Add selected PPE
               </button>
@@ -471,7 +488,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={() => setFollowUpMode('chips')}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Back
             </button>
@@ -481,7 +498,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
 
       {/* ── Permit gap results ──────────────────────────────── */}
       {followUpMode === 'permits' && !followUpLoading && (
-        <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp">
+        <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4 text-mytra-purple" />
             <span className="text-sm font-medium text-fg">Permit check</span>
@@ -515,7 +532,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
                   <p className="text-xs text-fg-2 mb-2">{p.reason}</p>
                   <Link
                     href={PERMIT_LINKS[p.permit_type] ?? '/safety/permits'}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple hover:underline min-h-[44px]"
                   >
                     Open Permit <ArrowRight className="w-3 h-3" />
                   </Link>
@@ -529,7 +546,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={() => setFollowUpMode('chips')}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
-                         text-fg-2 hover:text-fg transition-colors"
+                         text-fg-2 hover:text-fg transition-colors min-h-[44px]"
             >
               Back
             </button>

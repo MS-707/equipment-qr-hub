@@ -80,7 +80,7 @@ export default function CrewSignatureBlock({
       {value.signatures.length > 0 && (
         <div className="space-y-2">
           {value.signatures.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 bg-mytra-card shadow-card border border-mytra-border rounded-lg p-2.5">
+            <div key={s.id} className="flex items-center gap-3 bg-mytra-card shadow-card border border-mytra-border rounded-card p-2.5">
               {value.blobs[s.id] && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -100,7 +100,8 @@ export default function CrewSignatureBlock({
                   type="button"
                   onClick={() => onSupervisorChange(supervisorId === s.id ? null : s.id)}
                   title={`Mark as ${supervisorLabel.toLowerCase()}`}
-                  className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] ${
+                  aria-pressed={supervisorId === s.id}
+                  className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] min-w-[44px] ${
                     supervisorId === s.id
                       ? 'bg-mytra-purple/20 text-mytra-purple border-mytra-purple/40'
                       : 'bg-mytra-bg text-fg-3 border-mytra-border hover:text-fg'
@@ -124,7 +125,7 @@ export default function CrewSignatureBlock({
       )}
 
       {adding ? (
-        <div className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-3 animate-fadeIn">
+        <div className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3 space-y-3 animate-fadeIn">
           <p className="text-xs text-fg-3 leading-relaxed">
             By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.
           </p>
@@ -136,6 +137,7 @@ export default function CrewSignatureBlock({
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               autoCapitalize="words"
+              enterKeyHint="next"
               placeholder="Crew member name"
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                          text-sm text-fg placeholder:text-fg-4

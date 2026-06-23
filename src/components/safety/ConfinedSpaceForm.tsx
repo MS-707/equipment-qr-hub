@@ -85,7 +85,15 @@ export default function ConfinedSpaceForm() {
   )
 
   const critLeft = criticalRemaining(checklist)
-  const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const validFromMs = new Date(validFrom).getTime()
+  const validUntilMs = new Date(validUntil).getTime()
+  const validWindowDuration = validUntilMs - validFromMs
+  const validWindowOk =
+    !Number.isNaN(validFromMs) &&
+    !Number.isNaN(validUntilMs) &&
+    validFromMs >= Date.now() - 5 * 60 * 1000 &&
+    validWindowDuration >= 30 * 60 * 1000 &&
+    validWindowDuration <= 24 * 60 * 60 * 1000
   const atmoUnsafe =
     outOfRange(oxygen, { min: 19.5, max: 23.5 }) ||
     outOfRange(lel, { max: 10 }) ||
@@ -199,19 +207,30 @@ export default function ConfinedSpaceForm() {
 
   const validationErrors = useMemo((): ValidationError[] => {
     const errs: ValidationError[] = []
+    if (!spaceDescription.trim()) errs.push({ label: 'Describe the confined space', fieldId: 'cs-space' })
+    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'cs-location' })
     if (hazards.length === 0) errs.push({ label: 'Identify at least one hazard', fieldId: 'cs-hazards' })
     if (!attendantName.trim()) errs.push({ label: 'Assign an attendant', fieldId: 'cs-attendant' })
     if (!rescuePlan.trim()) errs.push({ label: 'Add a rescue plan', fieldId: 'cs-rescue' })
     if (atmoUnsafe) errs.push({ label: 'Atmosphere outside safe limits', fieldId: 'cs-atmo-o' })
     if (critLeft > 0) errs.push({ label: `Complete ${critLeft} required checklist item${critLeft === 1 ? '' : 's'}`, fieldId: 'cs-checklist' })
-    if (!validWindowOk) errs.push({ label: 'Fix validity window — "until" must be after "from"', fieldId: 'cs-valid-until' })
+    if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
+      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'cs-valid-from' })
+    else if (validFromMs < Date.now() - 5 * 60 * 1000)
+      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'cs-valid-from' })
+    else if (validWindowDuration < 30 * 60 * 1000)
+      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'cs-valid-until' })
+    else if (validWindowDuration > 24 * 60 * 60 * 1000)
+      errs.push({ label: 'Confined space permit cannot exceed 24 hours', fieldId: 'cs-valid-until' })
     if (supervisorId === null) errs.push({ label: 'Designate the entry supervisor', fieldId: 'cs-signatures' })
     if (sigData.signatures.length === 0) errs.push({ label: 'At least one entrant must sign on', fieldId: 'cs-signatures' })
     return errs
-  }, [hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, supervisorId, sigData.signatures.length])
+  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, validFromMs, validUntilMs, validWindowDuration, supervisorId, sigData.signatures.length])
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createConfinedSpacePermit>
     try {
@@ -262,6 +281,8 @@ export default function ConfinedSpaceForm() {
     clearDraft()
     setWasOffline(false)
     const w = defaultValidityWindow(4)
+    setProjectName('')
+    setLocation('')
     setSpaceDescription('')
     setHazards([])
     setOxygen('')
@@ -317,7 +338,7 @@ export default function ConfinedSpaceForm() {
           </button>
         </div>
       )}
-      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Confined Space Entry Permit</h3>
@@ -356,7 +377,7 @@ export default function ConfinedSpaceForm() {
         </div>
       )}
 
-      <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
           Atmospheric test <span className="text-fg-4 normal-case">{'·'} test O₂ → flammable → toxic</span>
         </h4>
@@ -374,8 +395,9 @@ export default function ConfinedSpaceForm() {
                 </label>
                 <input
                   id={fieldId}
-                  type="number"
+                  type="text"
                   inputMode="decimal"
+                  enterKeyHint="next"
                   value={f.value}
                   onChange={(e) => f.set(e.target.value)}
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : warn ? 'border-warn ring-2 ring-warn/30' : ''}`}
@@ -466,7 +488,7 @@ export default function ConfinedSpaceForm() {
             </div>
           )}
           {aiAnalysis && (
-            <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+            <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
               <button
                 type="button"
                 onClick={() => setAiExpanded((v) => !v)}
@@ -504,7 +526,7 @@ export default function ConfinedSpaceForm() {
         </div>
       )}
 
-      <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <div>
           <label htmlFor="cs-attendant" className={labelCls}>Attendant (stationed outside)</label>
           <input
@@ -532,7 +554,7 @@ export default function ConfinedSpaceForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -552,7 +574,7 @@ export default function ConfinedSpaceForm() {
         </div>
       </div>
 
-      <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each entrant confirms understanding. Designate the entry supervisor.</p>
         <CrewSignatureBlock
@@ -574,6 +596,7 @@ export default function ConfinedSpaceForm() {
       <div className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
         <button
           type="button"
+          disabled={!canSubmit}
           onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
           className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >

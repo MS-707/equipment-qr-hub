@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { Flame, RotateCcw } from 'lucide-react'
 import FormStepper, { useActiveStep } from './FormStepper'
 import type { FormStep } from './FormStepper'
@@ -71,7 +71,13 @@ export default function HotWorkPermitForm() {
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const critLeft = criticalRemaining(checklist)
-  const validWindowOk = new Date(validUntil).getTime() > new Date(validFrom).getTime()
+  const validFromMs = new Date(validFrom).getTime()
+  const validUntilMs = new Date(validUntil).getTime()
+  const validWindowOk =
+    !Number.isNaN(validFromMs) &&
+    !Number.isNaN(validUntilMs) &&
+    validFromMs >= Date.now() - 5 * 60 * 1000 &&
+    (validUntilMs - validFromMs) >= 30 * 60 * 1000
   const fireWatchOk = !fireWatchRequired || fireWatchName.trim().length > 0
   const canSubmit =
     workDescription.trim().length > 0 &&
@@ -79,6 +85,7 @@ export default function HotWorkPermitForm() {
     hotWorkTypes.length > 0 &&
     critLeft === 0 &&
     fireWatchOk &&
+    postDuration >= 60 &&
     sigData.signatures.length >= 1 &&
     issuerId !== null &&
     validWindowOk
@@ -105,12 +112,19 @@ export default function HotWorkPermitForm() {
     if (!fireWatchOk) errs.push({ label: 'Fire watch person must be assigned', fieldId: 'hw-fire-watch' })
     if (sigData.signatures.length === 0) errs.push({ label: 'At least one worker must sign on', fieldId: 'signatures-section' })
     if (issuerId === null && sigData.signatures.length > 0) errs.push({ label: 'Designate an issuer', fieldId: 'signatures-section' })
-    if (!validWindowOk) errs.push({ label: '"Valid until" must be after "Valid from"', fieldId: 'hw-valid-until' })
+    if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
+      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'hw-valid-from' })
+    else if (validFromMs < Date.now() - 5 * 60 * 1000)
+      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'hw-valid-from' })
+    else if ((validUntilMs - validFromMs) < 30 * 60 * 1000)
+      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'hw-valid-until' })
     return errs
-  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk])
+  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk, validFromMs, validUntilMs])
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createHotWorkPermit>
     try {
@@ -157,6 +171,8 @@ export default function HotWorkPermitForm() {
     clearDraft()
     setWasOffline(false)
     const w = defaultValidityWindow(8)
+    setProjectName('')
+    setLocation('')
     setWorkDescription('')
     setHotWorkTypes([])
     setChecklist(buildPermitItems('hot-work'))
@@ -203,7 +219,7 @@ export default function HotWorkPermitForm() {
         </div>
       )}
       <FormStepper steps={steps} activeStepId={activeStepId} />
-      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Hot Work Permit</h3>
@@ -231,7 +247,7 @@ export default function HotWorkPermitForm() {
         <ChipMultiSelect options={HOT_WORK_TYPES} selected={hotWorkTypes} onChange={setHotWorkTypes} />
       </section>
 
-      <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
@@ -295,7 +311,7 @@ export default function HotWorkPermitForm() {
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
-      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -315,7 +331,7 @@ export default function HotWorkPermitForm() {
         </div>
       </div>
 
-      <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
         <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the issuer.</p>
         <CrewSignatureBlock
@@ -338,7 +354,8 @@ export default function HotWorkPermitForm() {
         <button
           type="button"
           onClick={() => { if (canSubmit) { setShowValidation(false); setConfirmOpen(true) } else { setShowValidation(true) } }}
-          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover ${!canSubmit ? 'opacity-40' : ''}`}
+          disabled={!canSubmit}
+          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'

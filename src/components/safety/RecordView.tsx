@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy } from 'lucide-react'
+import { ArrowLeft, Printer, RefreshCw, XCircle, Ban, Share2, Check, Copy, Loader2 } from 'lucide-react'
 import type {
   SafetyRecord,
   PreTaskPlan,
@@ -41,6 +41,7 @@ import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import ReviewStatusSection from './ReviewStatusSection'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { RecordViewSkeleton } from '@/components/Skeleton'
 import { useReviewPoller } from '@/lib/review-poll'
 
 /** True if a saved form draft at this key holds any user-entered content. */
@@ -78,6 +79,8 @@ export default function RecordView({ id }: { id: string }) {
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [shared, setShared] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [pendingReissue, setPendingReissue] = useState<{ draftKey: string; formPath: string; draft: Record<string, unknown> } | null>(null)
 
   useReviewPoller()
@@ -126,7 +129,7 @@ export default function RecordView({ id }: { id: string }) {
     return unsub
   }, [id, load])
 
-  if (record === undefined) return <div className="max-w-2xl mx-auto px-4 py-10 text-fg-3 text-sm">Loading…</div>
+  if (record === undefined) return <RecordViewSkeleton />
   if (record === null)
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 text-center">
@@ -147,10 +150,15 @@ export default function RecordView({ id }: { id: string }) {
     setRevokeOpen(false)
   }
   async function handleShare() {
-    const outcome = await shareRecord(r)
-    if (outcome === 'shared' || outcome === 'mailto') {
-      setShared(true)
-      setTimeout(() => setShared(false), 2500)
+    setSharing(true)
+    try {
+      const outcome = await shareRecord(r)
+      if (outcome === 'shared' || outcome === 'mailto') {
+        setShared(true)
+        setTimeout(() => setShared(false), 2500)
+      }
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -228,25 +236,38 @@ export default function RecordView({ id }: { id: string }) {
           {r.syncStatus !== 'synced' && (
             <button
               type="button"
-              onClick={() => trySyncRecord(r.id)}
-              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+              disabled={syncing}
+              aria-busy={syncing}
+              onClick={async () => {
+                setSyncing(true)
+                try { await trySyncRecord(r.id) } finally { setSyncing(false) }
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Retry sync
+              {syncing
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…</>
+                : <><RefreshCw className="w-3.5 h-3.5" /> Retry sync</>}
             </button>
           )}
           <button
             type="button"
+            disabled={sharing}
+            aria-busy={sharing}
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
           >
-            {shared ? <Check className="w-3.5 h-3.5 text-ok" /> : <Share2 className="w-3.5 h-3.5" />}
-            {shared ? 'Shared' : 'Share'}
+            {sharing
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sharing…</>
+              : shared
+                ? <><Check className="w-3.5 h-3.5 text-ok" /> Shared</>
+                : <><Share2 className="w-3.5 h-3.5" /> Share</>}
           </button>
           <button
             type="button"
             onClick={() => {
               if (isStandalone) {
-                window.open(`${window.location.pathname}?print=1`, '_blank')
+                const w = window.open(`${window.location.pathname}?print=1`, '_blank')
+                if (!w) window.print()
               } else {
                 window.print()
               }
@@ -275,9 +296,9 @@ export default function RecordView({ id }: { id: string }) {
       </div>
 
       {/* Header — screen only; print uses the formal header above */}
-      <div className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <div className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-mono text-fg-3">{r.id}</span>
+          <span className="text-xs font-mono text-fg-3 tabular-nums">{r.id}</span>
           <div className="flex items-center gap-1.5">
             {isPermit(r) && <PermitStatusBadge permit={r as AnyPermit} />}
             <ReviewStatusBadge record={r} />
@@ -382,7 +403,7 @@ export default function RecordView({ id }: { id: string }) {
       </div>
 
       {/* History */}
-      <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
         <ul className="space-y-1.5">
           {r.events.filter((e) => isSyncAvailable() || e.action !== 'sync-failed').map((e, i) => (
@@ -439,8 +460,8 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
         </p>
       </Section>
       {ptp.validUntil && ptp.validUntil !== ptp.date && (
-        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
-          <p className="text-xs text-blue-400">
+        <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-mytra-purple">
             This plan covers multiple days. Crew should verbally re-confirm hazards and controls each morning before work begins.
           </p>
         </div>
@@ -524,8 +545,8 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
         </dl>
       </Section>
       {jha.validUntil && jha.validUntil !== jha.dateOfAnalysis && (
-        <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3">
-          <p className="text-xs text-blue-400">
+        <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
+          <p className="text-xs text-mytra-purple">
             This JHA covers multiple days. Review hazards and controls daily as site conditions may change.
           </p>
         </div>
@@ -720,7 +741,7 @@ function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
           </div>
         </div>
       )}
-      <dl className="grid grid-cols-2 gap-2 text-sm mb-2">
+      <dl className="grid grid-cols-2 gap-2 text-sm mb-2 tabular-nums">
         <Field label="O₂ %" value={atmo.oxygenPct || '—'} />
         <Field label="LEL %" value={atmo.lelPct || '—'} />
         <Field label="CO ppm" value={atmo.coPpm || '—'} />
@@ -835,7 +856,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+    <section className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
       <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">{title}</h2>
       {children}
     </section>

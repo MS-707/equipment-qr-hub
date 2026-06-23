@@ -77,7 +77,7 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
       </div>
 
       {auth.restricted && (
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3">
+        <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3">
           {!currentUserAuthorized && (
             <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
               <ShieldAlert className="w-5 h-5 text-danger mt-0.5 shrink-0" />

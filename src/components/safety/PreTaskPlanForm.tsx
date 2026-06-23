@@ -183,6 +183,11 @@ export default function PreTaskPlanForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setToolboxError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setToolboxError(data.error)
@@ -252,6 +257,11 @@ export default function PreTaskPlanForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setAuditError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setAuditError(data.error)
@@ -273,8 +283,10 @@ export default function PreTaskPlanForm() {
   const hasWarnings = auditResult?.findings.some((f) => f.severity === 'warning') ?? false
   const auditBlocksSubmit = hasBlockers || (hasWarnings && !acknowledgedWarnings)
 
+  const submitGuard = useRef(false)
   function handleSubmit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createPreTaskPlan>
     try {
@@ -299,6 +311,7 @@ export default function PreTaskPlanForm() {
         supervisorSignatureId: supervisorId,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
       return
     }
@@ -349,7 +362,7 @@ export default function PreTaskPlanForm() {
           <ArrowLeft className="w-4 h-4" /> Back to plan
         </button>
 
-        <div id="crew-signatures" className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+        <div id="crew-signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
           <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
           <p className="text-xs text-fg-2 mb-3">
             Pass the device around — each crew member signs to acknowledge the plan. Designate
@@ -381,7 +394,7 @@ export default function PreTaskPlanForm() {
             )}
 
             {auditing && (
-              <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-4 shadow-card">
+              <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-4 shadow-card">
                 <div className="flex items-center justify-center gap-2 py-2 text-sm text-mytra-purple">
                   <Loader2 className="w-4 h-4 animate-spin" /> Sage is auditing your plan...
                 </div>
@@ -396,7 +409,7 @@ export default function PreTaskPlanForm() {
             )}
 
             {auditResult && (
-              <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden animate-fadeIn">
+              <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden animate-fadeIn">
                 {auditResult.pass && auditResult.findings.length === 0 ? (
                   <div className="flex items-center gap-2 px-4 py-3 bg-ok/10 border-b border-ok/20">
                     <ShieldCheck className="w-5 h-5 text-ok" />
@@ -563,7 +576,7 @@ export default function PreTaskPlanForm() {
           </div>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Pre-Task / Pre-Build Plan</h3>
@@ -576,7 +589,7 @@ export default function PreTaskPlanForm() {
           </div>
           <div>
             <label htmlFor="ptp-valid-until" className={labelCls}>Valid through</label>
-            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={(() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
+            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={date ? (() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
           </div>
           <div>
             <label className={labelCls}>Shift</label>
@@ -637,7 +650,7 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* Site conditions */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Site Conditions & Emergency</h4>
         <div>
           <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point <span className="text-danger">*</span></label>
@@ -666,7 +679,7 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* Heat illness (T8 §3395) — collapsible for indoor work */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+      <section className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
         <button
           type="button"
           onClick={() => setHeatOpen((v) => !v)}
@@ -701,7 +714,7 @@ export default function PreTaskPlanForm() {
       </section>
 
       {/* Toolbox talk — collapsible for solo work */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+      <section className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
         <button
           type="button"
           onClick={() => setToolboxOpen((v) => !v)}

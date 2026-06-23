@@ -203,9 +203,9 @@ export default function BetaPage() {
                 <div className="flex items-center justify-between px-5 py-3 border-b border-[#1F1F1F]">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-sm font-bold text-white">Sage</span>
-                    <span className="text-[9px] font-semibold text-[#7C5CFF] tracking-wide">EHS</span>
+                    <span className="text-xs font-semibold text-[#7C5CFF] tracking-wide">EHS</span>
                   </div>
-                  <div className="hidden sm:flex items-center gap-5 text-[10px] text-[#9A9A9A]">
+                  <div className="hidden sm:flex items-center gap-5 text-xs text-[#9A9A9A]">
                     <span className="relative text-white font-medium">
                       Home
                       <span className="absolute -bottom-[13px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#572DFF]" />
@@ -214,7 +214,7 @@ export default function BetaPage() {
                     <span>Equipment</span>
                     <span>Work Orders</span>
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[8px] font-semibold text-[#A78BFF]">
+                  <div className="w-6 h-6 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-xs font-semibold text-[#A78BFF]">
                     MS
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function BetaPage() {
                 <div className="px-5 py-5 space-y-4">
                   <div className="flex items-end justify-between">
                     <p className="text-base font-bold text-white">Hello, Mark</p>
-                    <p className="text-[10px] text-[#9A9A9A]">Thursday, June 11</p>
+                    <p className="text-xs text-[#9A9A9A]">Thursday, June 11</p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2.5">
@@ -233,16 +233,16 @@ export default function BetaPage() {
                       { label: 'Incidents', value: '0', sub: 'last 7 days', cls: 'text-white' },
                     ].map(({ label, value, sub, cls }) => (
                       <div key={label} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3">
-                        <p className="text-[8px] uppercase tracking-[0.12em] text-[#9A9A9A]">{label}</p>
+                        <p className="text-xs uppercase tracking-[0.12em] text-[#9A9A9A]">{label}</p>
                         <p className={`text-sm font-semibold mt-0.5 ${cls}`}>{value}</p>
-                        <p className="text-[8px] text-[#666]">{sub}</p>
+                        <p className="text-xs text-[#666]">{sub}</p>
                       </div>
                     ))}
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <p className="text-[9px] uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
+                      <p className="text-xs uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
                         Quick actions
                       </p>
                       <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
@@ -258,7 +258,7 @@ export default function BetaPage() {
                       ].map(({ icon: Icon, label, primary }) => (
                         <div
                           key={label}
-                          className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[10px] font-medium border ${
+                          className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium border ${
                             primary
                               ? 'bg-[#572DFF] border-[#572DFF] text-white'
                               : 'bg-[#141414] border-[#1F1F1F] text-[#C4C4C4]'
@@ -273,7 +273,7 @@ export default function BetaPage() {
 
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <p className="text-[9px] uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
+                      <p className="text-xs uppercase tracking-[0.12em] text-[#9A9A9A] font-semibold">
                         Recent activity
                       </p>
                       <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
@@ -281,19 +281,19 @@ export default function BetaPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5">
                         <div>
-                          <p className="text-[8px] font-mono text-[#9A9A9A]">PTP-0118</p>
-                          <p className="text-[10px] text-white">Conveyor drive install — Line 3</p>
+                          <p className="text-xs font-mono text-[#9A9A9A]">PTP-0118</p>
+                          <p className="text-xs text-white">Conveyor drive install — Line 3</p>
                         </div>
-                        <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-[#34C172]/10 text-[#34C172]">
+                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-[#34C172]/10 text-[#34C172]">
                           Approved
                         </span>
                       </div>
                       <div className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5">
                         <div>
-                          <p className="text-[8px] font-mono text-[#9A9A9A]">HW-0042</p>
-                          <p className="text-[10px] text-white">Bracket welds — Bay 4 mezzanine</p>
+                          <p className="text-xs font-mono text-[#9A9A9A]">HW-0042</p>
+                          <p className="text-xs text-white">Bracket welds — Bay 4 mezzanine</p>
                         </div>
-                        <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-[#F0B53A]/10 text-[#F0B53A]">
+                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-[#F0B53A]/10 text-[#F0B53A]">
                           Active
                         </span>
                       </div>
@@ -320,12 +320,12 @@ export default function BetaPage() {
               <div className="animate-float w-60 rounded-xl border border-[#2E2E2E] bg-[#141414]/90 backdrop-blur-md p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
-                  <p className="text-[10px] font-semibold text-white">Sage suggests</p>
+                  <p className="text-xs font-semibold text-white">Sage suggests</p>
                 </div>
-                <p className="text-[10px] text-[#C4C4C4] leading-relaxed mb-2.5">
+                <p className="text-xs text-[#C4C4C4] leading-relaxed mb-2.5">
                   Pinch points during conveyor alignment — add lockout verification and cut-resistant gloves.
                 </p>
-                <div className="flex items-center gap-1.5 text-[9px] font-mono">
+                <div className="flex items-center gap-1.5 text-xs font-mono">
                   <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
                   <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
                   <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
@@ -345,17 +345,17 @@ export default function BetaPage() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
-                    <p className="text-[10px] font-semibold text-white">Hot Work</p>
+                    <p className="text-xs font-semibold text-white">Hot Work</p>
                   </div>
-                  <span className="flex items-center gap-1 text-[9px] text-[#34C172]">
+                  <span className="flex items-center gap-1 text-xs text-[#34C172]">
                     <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
                     Active
                   </span>
                 </div>
-                <p className="text-[9px] font-mono text-[#9A9A9A] mb-1">HW-0042 · Bay 4 mezzanine</p>
+                <p className="text-xs font-mono text-[#9A9A9A] mb-1">HW-0042 · Bay 4 mezzanine</p>
                 <p className="text-sm font-mono font-semibold text-white tracking-tight">
                   02:14:36{' '}
-                  <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
+                  <span className="text-xs text-[#9A9A9A] font-sans font-normal">remaining</span>
                 </p>
               </div>
             </div>
@@ -371,8 +371,8 @@ export default function BetaPage() {
               >
                 <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
                 <div>
-                  <p className="text-[10px] font-semibold text-white">PTP approved</p>
-                  <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                  <p className="text-xs font-semibold text-white">PTP approved</p>
+                  <p className="text-xs text-[#9A9A9A]">Reviewed by EHS · just now</p>
                 </div>
               </div>
             </div>
@@ -415,16 +415,16 @@ export default function BetaPage() {
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-xs font-bold text-white">Sage</span>
-                          <span className="text-[8px] font-semibold text-[#7C5CFF]">EHS</span>
+                          <span className="text-xs font-semibold text-[#7C5CFF]">EHS</span>
                         </div>
-                        <div className="w-5 h-5 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[7px] font-semibold text-[#A78BFF]">
+                        <div className="w-5 h-5 rounded-full bg-[#572DFF]/20 border border-[#572DFF]/30 flex items-center justify-center text-[8px] font-semibold text-[#A78BFF]">
                           MS
                         </div>
                       </div>
                       <div className="px-4 py-4 space-y-3.5">
                         <div className="flex items-end justify-between">
                           <p className="text-sm font-bold text-white">Hello, Mark</p>
-                          <p className="text-[9px] text-[#9A9A9A]">Thursday, June 11</p>
+                          <p className="text-xs text-[#9A9A9A]">Thursday, June 11</p>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           {[
@@ -433,15 +433,15 @@ export default function BetaPage() {
                             { label: 'Incidents', value: '0', sub: '7 days', cls: 'text-white' },
                           ].map(({ label, value, sub, cls }) => (
                             <div key={label} className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-2.5">
-                              <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A]">{label}</p>
+                              <p className="text-xs uppercase tracking-[0.1em] text-[#9A9A9A]">{label}</p>
                               <p className={`text-xs font-semibold mt-0.5 ${cls}`}>{value}</p>
-                              <p className="text-[8px] text-[#666]">{sub}</p>
+                              <p className="text-xs text-[#666]">{sub}</p>
                             </div>
                           ))}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A] font-semibold">
+                            <p className="text-xs uppercase tracking-[0.1em] text-[#9A9A9A] font-semibold">
                               Quick actions
                             </p>
                             <div className="flex-1 h-px bg-gradient-to-r from-[#2E2E2E] to-transparent" />
@@ -455,7 +455,7 @@ export default function BetaPage() {
                             ].map(({ icon: Icon, label, primary }) => (
                               <div
                                 key={label}
-                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[9px] font-medium border ${
+                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium border ${
                                   primary
                                     ? 'bg-[#572DFF] border-[#572DFF] text-white'
                                     : 'bg-[#141414] border-[#1F1F1F] text-[#C4C4C4]'
@@ -474,8 +474,8 @@ export default function BetaPage() {
                     <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(0)}`}>
                       <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
                       <div>
-                        <p className="text-[10px] font-semibold text-white">PTP approved</p>
-                        <p className="text-[9px] text-[#9A9A9A]">Reviewed by EHS · just now</p>
+                        <p className="text-xs font-semibold text-white">PTP approved</p>
+                        <p className="text-xs text-[#9A9A9A]">Reviewed by EHS · just now</p>
                       </div>
                     </div>
                   </div>
@@ -495,23 +495,23 @@ export default function BetaPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <ListChecks className="w-3 h-3 text-[#7C5CFF]" />
-                          <span className="text-[10px] font-semibold text-white">Job Hazard Analysis</span>
+                          <span className="text-xs font-semibold text-white">Job Hazard Analysis</span>
                         </div>
-                        <span className="text-[8px] font-mono text-[#9A9A9A]">JHA-0027</span>
+                        <span className="text-xs font-mono text-[#9A9A9A]">JHA-0027</span>
                       </div>
                       <div className="px-4 py-4 space-y-3">
                         <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3">
-                          <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A] mb-1">Step 1</p>
-                          <p className="text-[11px] text-white">Align conveyor drive coupling</p>
+                          <p className="text-xs uppercase tracking-[0.1em] text-[#9A9A9A] mb-1">Step 1</p>
+                          <p className="text-xs text-white">Align conveyor drive coupling</p>
                         </div>
                         <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3 space-y-2">
                           <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-white">Pinch points at rotating coupling</p>
+                            <p className="text-xs text-white">Pinch points at rotating coupling</p>
                           </div>
-                          <p className="text-[9px] text-[#9A9A9A]">
+                          <p className="text-xs text-[#9A9A9A]">
                             Controls: LOTO verified · cut-resistant gloves · two-person alignment
                           </p>
-                          <div className="flex items-center gap-1.5 text-[9px] font-mono">
+                          <div className="flex items-center gap-1.5 text-xs font-mono">
                             <span className="px-1.5 py-0.5 rounded bg-[#E66A6A]/10 text-[#E66A6A]">Risk 16</span>
                             <ArrowRight className="w-2.5 h-2.5 text-[#666]" />
                             <span className="px-1.5 py-0.5 rounded bg-[#34C172]/10 text-[#34C172]">Risk 4</span>
@@ -521,7 +521,7 @@ export default function BetaPage() {
                           {['Hard hat', 'Safety glasses', 'Cut-resistant gloves'].map((ppe) => (
                             <span
                               key={ppe}
-                              className="text-[8px] px-2 py-1 rounded-full border border-[#2E2E2E] text-[#C4C4C4]"
+                              className="text-xs px-2 py-1 rounded-full border border-[#2E2E2E] text-[#C4C4C4]"
                             >
                               {ppe}
                             </span>
@@ -534,9 +534,9 @@ export default function BetaPage() {
                     <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(1)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
-                      <p className="text-[10px] font-semibold text-white">Sage suggests</p>
+                      <p className="text-xs font-semibold text-white">Sage suggests</p>
                     </div>
-                    <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
+                    <p className="text-xs text-[#C4C4C4] leading-relaxed">
                       Drafts the hazards, controls, and risk scores for every step you enter.
                     </p>
                     </div>
@@ -557,19 +557,19 @@ export default function BetaPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Flame className="w-3 h-3 text-[#F2934A]" />
-                          <span className="text-[10px] font-semibold text-white">Hot Work Permit</span>
+                          <span className="text-xs font-semibold text-white">Hot Work Permit</span>
                         </div>
-                        <span className="flex items-center gap-1 text-[8px] text-[#34C172]">
+                        <span className="flex items-center gap-1 text-xs text-[#34C172]">
                           <span className="w-1 h-1 rounded-full bg-[#34C172] animate-pulse" />
                           Active
                         </span>
                       </div>
                       <div className="px-4 py-4 space-y-3">
                         <div>
-                          <p className="text-[9px] font-mono text-[#9A9A9A]">HW-0042 · Bay 4 mezzanine</p>
+                          <p className="text-xs font-mono text-[#9A9A9A]">HW-0042 · Bay 4 mezzanine</p>
                           <p className="text-xl font-mono font-semibold text-white tracking-tight mt-1">
                             02:14:36{' '}
-                            <span className="text-[9px] text-[#9A9A9A] font-sans font-normal">remaining</span>
+                            <span className="text-xs text-[#9A9A9A] font-sans font-normal">remaining</span>
                           </p>
                         </div>
                         <div className="space-y-2">
@@ -583,7 +583,7 @@ export default function BetaPage() {
                               className="flex items-center gap-2 bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2"
                             >
                               <CheckCircle2 className="w-3 h-3 text-[#34C172] shrink-0" />
-                              <p className="text-[10px] text-[#C4C4C4]">{item}</p>
+                              <p className="text-xs text-[#C4C4C4]">{item}</p>
                             </div>
                           ))}
                         </div>
@@ -594,9 +594,9 @@ export default function BetaPage() {
                     <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] ${explainerCls(2)}`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Flame className="w-3.5 h-3.5 text-[#F2934A]" />
-                      <p className="text-[10px] font-semibold text-white">Live permits</p>
+                      <p className="text-xs font-semibold text-white">Live permits</p>
                     </div>
-                    <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
+                    <p className="text-xs text-[#C4C4C4] leading-relaxed">
                       Checklists gate issuance — then a live countdown tracks expiry in the field.
                     </p>
                     </div>
@@ -617,13 +617,13 @@ export default function BetaPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <FlaskConical className="w-3 h-3 text-[#7C5CFF]" />
-                          <span className="text-[10px] font-semibold text-white">SDS Binder</span>
+                          <span className="text-xs font-semibold text-white">SDS Binder</span>
                         </div>
-                        <span className="text-[8px] font-mono text-[#9A9A9A]">GHS</span>
+                        <span className="text-xs font-mono text-[#9A9A9A]">GHS</span>
                       </div>
                       <div className="px-4 py-4 space-y-3">
                         <div className="relative">
-                          <div className="w-full bg-[#141414] border border-[#1F1F1F] rounded-lg py-2 px-3 text-[10px] text-[#9A9A9A]">
+                          <div className="w-full bg-[#141414] border border-[#1F1F1F] rounded-lg py-2 px-3 text-xs text-[#9A9A9A]">
                             Search chemicals, products, or CAS #
                           </div>
                         </div>
@@ -638,18 +638,18 @@ export default function BetaPage() {
                               className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5"
                             >
                               <div>
-                                <p className="text-[10px] font-medium text-white">{name}</p>
-                                <p className="text-[8px] font-mono text-[#9A9A9A]">CAS {cas}</p>
+                                <p className="text-xs font-medium text-white">{name}</p>
+                                <p className="text-xs font-mono text-[#9A9A9A]">CAS {cas}</p>
                               </div>
-                              <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-[#F0B53A]/10 text-[#F0B53A]">
+                              <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-[#F0B53A]/10 text-[#F0B53A]">
                                 {hazard}
                               </span>
                             </div>
                           ))}
                         </div>
                         <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3">
-                          <p className="text-[8px] uppercase tracking-[0.1em] text-[#9A9A9A] mb-1">First Aid</p>
-                          <p className="text-[9px] text-[#C4C4C4] leading-relaxed">
+                          <p className="text-xs uppercase tracking-[0.1em] text-[#9A9A9A] mb-1">First Aid</p>
+                          <p className="text-xs text-[#C4C4C4] leading-relaxed">
                             Inhalation: Move to fresh air. Skin: Wash with soap and water for 15 min.
                           </p>
                         </div>
@@ -660,8 +660,8 @@ export default function BetaPage() {
                     <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(3)}`}>
                       <FlaskConical className="w-4 h-4 text-[#7C5CFF] shrink-0" />
                       <div>
-                        <p className="text-[10px] font-semibold text-white">Always available</p>
-                        <p className="text-[9px] text-[#9A9A9A]">SDS lookup works offline at every site</p>
+                        <p className="text-xs font-semibold text-white">Always available</p>
+                        <p className="text-xs text-[#9A9A9A]">SDS lookup works offline at every site</p>
                       </div>
                     </div>
                   </div>
@@ -681,9 +681,9 @@ export default function BetaPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <FileSearch className="w-3 h-3 text-[#7C5CFF]" />
-                          <span className="text-[10px] font-semibold text-white">EHS Review</span>
+                          <span className="text-xs font-semibold text-white">EHS Review</span>
                         </div>
-                        <span className="text-[8px] font-mono text-[#9A9A9A]">Inbox</span>
+                        <span className="text-xs font-mono text-[#9A9A9A]">Inbox</span>
                       </div>
                       <div className="px-4 py-4 space-y-3">
                         <div className="space-y-2">
@@ -697,18 +697,18 @@ export default function BetaPage() {
                               className="flex items-center justify-between bg-[#141414] border border-[#1F1F1F] rounded-md px-3 py-2.5"
                             >
                               <div>
-                                <p className="text-[8px] font-mono text-[#9A9A9A]">{id}</p>
-                                <p className="text-[10px] text-white">{title}</p>
+                                <p className="text-xs font-mono text-[#9A9A9A]">{id}</p>
+                                <p className="text-xs text-white">{title}</p>
                               </div>
-                              <span className={`text-[8px] font-medium px-1.5 py-0.5 rounded-full ${cls}`}>
+                              <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${cls}`}>
                                 {status}
                               </span>
                             </div>
                           ))}
                         </div>
                         <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-3 text-center">
-                          <p className="text-[10px] text-[#C4C4C4] mb-2">Reviewers approve from email</p>
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#34C172] text-white text-[9px] font-medium">
+                          <p className="text-xs text-[#C4C4C4] mb-2">Reviewers approve from email</p>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#34C172] text-white text-xs font-medium">
                             <CheckCircle2 className="w-3 h-3" />
                             Confirm Approval
                           </div>
@@ -720,8 +720,8 @@ export default function BetaPage() {
                     <div className={`w-56 rounded-xl border border-[#2E2E2E] bg-[#141414]/95 backdrop-blur-md p-3 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-2.5 ${explainerCls(4)}`}>
                       <CheckCircle2 className="w-4 h-4 text-[#34C172] shrink-0" />
                       <div>
-                        <p className="text-[10px] font-semibold text-white">One-tap review</p>
-                        <p className="text-[9px] text-[#9A9A9A]">Managers approve from an email link</p>
+                        <p className="text-xs font-semibold text-white">One-tap review</p>
+                        <p className="text-xs text-[#9A9A9A]">Managers approve from an email link</p>
                       </div>
                     </div>
                   </div>
@@ -738,7 +738,7 @@ export default function BetaPage() {
                   onClick={() => { setPaused(true); setSlide(i) }}
                   aria-current={i === slide ? 'true' : undefined}
                   aria-label={`Show ${label} slide`}
-                  className={`text-[10px] font-medium px-3 py-1.5 rounded-full border transition-colors min-h-[44px] ${
+                  className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors min-h-[44px] ${
                     i === slide
                       ? 'border-[#572DFF]/50 bg-[#572DFF]/10 text-[#A78BFF]'
                       : 'border-[#2E2E2E] text-[#9A9A9A]'

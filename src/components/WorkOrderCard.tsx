@@ -16,6 +16,7 @@ import {
 import { WorkOrder, PM_TYPE_COLORS, WorkOrderStatus } from '@/lib/types'
 import { updateWorkOrder, deleteWorkOrder, isOverdue } from '@/lib/work-orders'
 import { getEquipmentById } from '@/lib/equipment'
+import { haptic } from '@/lib/haptic'
 import { useSession } from 'next-auth/react'
 
 interface WorkOrderCardProps {
@@ -59,7 +60,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   function cycleStatus() {
     const currentIdx = STATUS_FLOW.indexOf(workOrder.status)
-    const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length]
+    if (currentIdx >= STATUS_FLOW.length - 1) return
+    const nextStatus = STATUS_FLOW[currentIdx + 1]
     updateWorkOrder(workOrder.id, { status: nextStatus })
     onUpdate()
   }
@@ -72,6 +74,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
   function handleDelete() {
     if (!confirmDelete) {
       setConfirmDelete(true)
+      haptic('warning')
       deleteTimerRef.current = setTimeout(() => setConfirmDelete(false), 3000)
       return
     }
@@ -88,7 +91,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   return (
     <div
-      className={`relative bg-mytra-card border rounded-lg overflow-hidden transition-all duration-200 press-scale shadow-card ${
+      className={`relative bg-mytra-card border rounded-card overflow-hidden transition-all duration-200 shadow-card ${
         overdue ? 'border-danger/50' : 'border-mytra-border'
       }`}
     >
@@ -118,7 +121,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
               >
                 {workOrder.pmType} PM
               </span>
-              <span className="text-xs text-fg-4 font-mono">
+              <span className="text-xs text-fg-4 font-mono tabular-nums">
                 {workOrder.id}
               </span>
               {overdue && (
@@ -161,7 +164,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
         {/* Due date + assignee */}
         <div className="flex items-center gap-3 mt-2 text-xs text-fg-4">
           {workOrder.dueDate && (
-            <span className={overdue ? 'text-danger' : ''}>
+            <span className={`tabular-nums ${overdue ? 'text-danger' : ''}`}>
               Due {workOrder.dueDate}
             </span>
           )}
@@ -169,7 +172,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
             <span>Assigned: {workOrder.assignedTo}</span>
           )}
           {workOrder.completedDate && (
-            <span className="text-ok">
+            <span className="text-ok tabular-nums">
               Completed {workOrder.completedDate}
             </span>
           )}
@@ -219,7 +222,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 onBlur={saveNotes}
                 rows={2}
                 placeholder="Issues found, parts replaced, observations..."
-                className="w-full bg-mytra-input border border-mytra-border rounded py-2 px-3
+                className="w-full bg-mytra-input border border-mytra-border rounded-field py-2 px-3
                            text-xs text-fg placeholder:text-fg-4 resize-none
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
               />
@@ -237,7 +240,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                   const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
                   const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
                   navigator.clipboard.writeText(`${title}\n\n${desc}`)
-                    .then(() => setCopyMsg('Copied to clipboard'))
+                    .then(() => { setCopyMsg('Copied to clipboard'); haptic('success') })
                     .catch(() => setCopyMsg('Copy failed — please copy manually'))
                 }}
               >

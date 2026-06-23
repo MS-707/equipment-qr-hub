@@ -48,7 +48,7 @@ export default function SwUpdateBanner() {
       <button
         type="button"
         onClick={apply}
-        className="text-xs font-semibold text-mytra-purple hover:underline whitespace-nowrap"
+        className="text-xs font-semibold text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] flex items-center"
       >
         Update now
       </button>

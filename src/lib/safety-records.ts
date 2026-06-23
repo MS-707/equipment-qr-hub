@@ -25,7 +25,7 @@ import type {
   IncidentReport,
   CrewSignature,
 } from '@/lib/safety-types'
-import { isPermit } from '@/lib/safety-types'
+import { isPermit, isJHA } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
 import { safeParseSafetyRecords } from '@/lib/schemas'
 
@@ -709,13 +709,21 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
     'ID', 'Type', 'Project', 'Location', 'Created_By', 'Created_At',
     'Status_Or_Result', 'Signatures', 'Sync_Status',
     'Review_Status', 'Reviewed_By', 'Review_Decided_At',
+    'JHA_Step_Count', 'JHA_Hazard_Summary',
   ]
   const rows = records.map((r) => {
     let statusOrResult = ''
     let sigCount = 0
+    let jhaStepCount = ''
+    let jhaHazardSummary = ''
     if (r.type === 'ptp') {
       statusOrResult = 'logged'
       sigCount = (r as PreTaskPlan).crewSignatures.length
+    } else if (isJHA(r)) {
+      statusOrResult = 'logged'
+      const filled = r.steps.filter((s) => s.taskActivity.trim().length > 0)
+      jhaStepCount = String(filled.length)
+      jhaHazardSummary = filled.map((s) => s.hazards.trim()).filter(Boolean).join('; ').slice(0, 500)
     } else if (isPermit(r)) {
       statusOrResult = permitDisplayStatus(r as AnyPermit)
       const p = r as AnyPermit
@@ -727,6 +735,7 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
       csvCell(r.id), csvCell(r.type), csvCell(r.projectName), csvCell(r.location),
       csvCell(r.createdBy), csvCell(r.createdAt), csvCell(statusOrResult), csvCell(sigCount), csvCell(r.syncStatus),
       csvCell(r.reviewStatus ?? ''), csvCell(r.reviewerName ?? ''), csvCell(r.reviewDecidedAt ?? ''),
+      csvCell(jhaStepCount), csvCell(jhaHazardSummary),
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')
@@ -793,7 +802,7 @@ export async function clearAllLocalData(): Promise<void> {
   }
   draftKeys.forEach((k) => localStorage.removeItem(k))
 
-  localStorage.removeItem('sage-identity')
+  localStorage.removeItem('eqr-current-user')
 
   try {
     const db = await openBlobDB()

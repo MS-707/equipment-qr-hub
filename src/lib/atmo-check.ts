@@ -121,22 +121,22 @@ function checkCo(reading: number): AtmoAlert {
       guidance: `CO at ${reading} ppm is Immediately Dangerous to Life — EVACUATE, emergency rescue only with SCBA`,
     }
   }
-  if (reading >= 50) {
+  if (reading >= 35) {
     return {
       gas: 'CO',
       reading,
-      threshold: '50 ppm',
+      threshold: '35 ppm (NIOSH REL)',
       severity: 'danger',
-      guidance: `CO at ${reading} ppm is dangerously elevated — DO NOT ENTER, ventilate immediately`,
+      guidance: `CO at ${reading} ppm exceeds the NIOSH REL of 35 ppm — DO NOT ENTER, ventilate immediately`,
     }
   }
   if (reading >= 25) {
     return {
       gas: 'CO',
       reading,
-      threshold: '25 ppm',
+      threshold: '25 ppm (ACGIH TLV)',
       severity: 'warning',
-      guidance: `CO at ${reading} ppm exceeds the safe limit of 25 ppm — increase ventilation and retest`,
+      guidance: `CO at ${reading} ppm exceeds the action level of 25 ppm — increase ventilation and retest before entry`,
     }
   }
   return {

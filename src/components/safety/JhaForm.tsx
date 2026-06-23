@@ -132,17 +132,18 @@ export default function JhaForm() {
     setDocName(file.name)
 
     try {
+      if (file.size > 3 * 1024 * 1024) {
+        setDocError('File too large — keep it under 3 MB.')
+        setDocLoading(false)
+        return
+      }
+
       const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
       const payload: { documentText?: string; documentBase64?: string; fileName: string } = {
         fileName: file.name,
       }
 
       if (isPdf) {
-        if (file.size > 3 * 1024 * 1024) {
-          setDocError('PDF too large — keep it under 3MB.')
-          setDocLoading(false)
-          return
-        }
         payload.documentBase64 = await fileToBase64(file)
       } else {
         const text = await file.text()
@@ -163,11 +164,12 @@ export default function JhaForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
-      const data = await res.json()
       if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Failed to parse document' }))
         setDocError(data.error || 'Failed to parse document')
         return
       }
+      const data = await res.json()
 
       if (data.suggestedTitle && !jobTitle.trim()) setJobTitle(data.suggestedTitle)
       if (data.suggestedLocation && !location.trim()) setLocation(data.suggestedLocation)
@@ -222,6 +224,11 @@ export default function JhaForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        setSageError(data.error ?? `Request failed (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data?.error) {
         setSageError(data.error)
@@ -238,9 +245,9 @@ export default function JhaForm() {
           next[i] = {
             ...next[i],
             hazards: next[i].hazards.trim() ? next[i].hazards : a.hazards,
-            riskLevel: a.riskLevel ?? next[i].riskLevel,
+            riskLevel: next[i].riskLevel !== 'medium' ? next[i].riskLevel : (a.riskLevel ?? next[i].riskLevel),
             controls: next[i].controls.trim() ? next[i].controls : a.controls,
-            residualRiskLevel: a.residualRiskLevel ?? next[i].residualRiskLevel,
+            residualRiskLevel: next[i].residualRiskLevel ? next[i].residualRiskLevel : (a.residualRiskLevel ?? next[i].residualRiskLevel),
             source: 'sage',
           }
         })
@@ -257,8 +264,10 @@ export default function JhaForm() {
     }
   }
 
+  const submitGuard = useRef(false)
   function handleSubmit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     let record: ReturnType<typeof createJobHazardAnalysis>
     try {
@@ -277,6 +286,7 @@ export default function JhaForm() {
         preparedBySignatureId: null,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save — device storage may be full.')
       return
     }
@@ -290,6 +300,8 @@ export default function JhaForm() {
     clearDraft()
     setWasOffline(false)
     setJobTitle('')
+    setDateOfAnalysis(todayStr())
+    setValidUntil('')
     setDepartment('')
     setLocation('')
     setReferenceDoc('')
@@ -320,7 +332,7 @@ export default function JhaForm() {
 
       {/* Document upload */}
       {SAGE_ENABLED && !submittedId && (
-        <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card space-y-3">
+        <div className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card space-y-3">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-mytra-purple" />
             <h3 className="text-sm font-semibold text-fg">Import from document</h3>
@@ -382,7 +394,7 @@ export default function JhaForm() {
       )}
 
       {/* Job / task information */}
-      <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ListChecks className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Job / Task Information</h3>
@@ -398,7 +410,7 @@ export default function JhaForm() {
           </div>
           <div>
             <label htmlFor="jha-valid-until" className={labelCls}>Valid through</label>
-            <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={(() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
+            <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={dateOfAnalysis ? (() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label htmlFor="jha-dept" className={labelCls}>Department / Team</label>
@@ -438,7 +450,7 @@ export default function JhaForm() {
         </p>
 
         {steps.map((step, i) => (
-          <div key={step.id} className="bg-mytra-card border border-mytra-border rounded-lg p-3 space-y-3 shadow-card">
+          <div key={step.id} className="bg-mytra-card border border-mytra-border rounded-card p-3 space-y-3 shadow-card">
             <div className="flex items-start gap-2">
               <span className="shrink-0 w-6 h-6 rounded-full bg-mytra-purple/15 text-mytra-purple text-xs font-semibold flex items-center justify-center mt-0.5">
                 {i + 1}
@@ -518,7 +530,7 @@ export default function JhaForm() {
               <button
                 type="button"
                 onClick={() => updateStep(step.id, { showDetail: true })}
-                className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1"
+                className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1 min-h-[44px]"
               >
                 <Plus className="w-3 h-3" />
                 Add hazards &amp; controls
@@ -568,7 +580,7 @@ export default function JhaForm() {
       </section>
 
       {/* Additional notes */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Special Conditions / Notes</h4>
         <textarea
           rows={2}
@@ -717,7 +729,7 @@ function matrixLevel(s: number, l: number): RiskLevel {
 function RiskMatrixGuide() {
   const [open, setOpen] = useState(false)
   return (
-    <div className="bg-mytra-card border border-mytra-border rounded-lg shadow-card overflow-hidden">
+    <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}

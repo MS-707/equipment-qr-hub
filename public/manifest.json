@@ -2,6 +2,7 @@
   "name": "Sage",
   "short_name": "Sage",
   "description": "AI-powered EHS safety documentation — Pre-Task Plans, permits, incident reporting, and hazard analysis for R&D and engineering teams",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

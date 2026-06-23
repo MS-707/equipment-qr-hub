@@ -102,14 +102,14 @@ function ReviewActionInner() {
         </div>
 
         {stage === 'loading' && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-8 text-center">
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-card p-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#572DFF] mx-auto mb-3" />
             <p className="text-sm text-[#9A9A9A]">Loading review details...</p>
           </div>
         )}
 
         {stage === 'confirm' && info && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-6 space-y-4">
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-card p-6 space-y-4">
             <div className="text-center">
               {isApprove ? (
                 <CheckCircle2 className="w-10 h-10 text-[#34C172] mx-auto mb-2" />
@@ -176,14 +176,14 @@ function ReviewActionInner() {
         )}
 
         {stage === 'submitting' && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-8 text-center">
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-card p-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#572DFF] mx-auto mb-3" />
             <p className="text-sm text-[#9A9A9A]">Processing your decision...</p>
           </div>
         )}
 
         {stage === 'done' && result && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-8 text-center space-y-3">
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-card p-8 text-center space-y-3">
             {result.status === 'approved' ? (
               <CheckCircle2 className="w-12 h-12 text-[#34C172] mx-auto" />
             ) : (
@@ -195,7 +195,7 @@ function ReviewActionInner() {
             <p className="text-sm text-[#9A9A9A]">
               {result.status === 'approved'
                 ? `This ${info?.recordLabel || 'record'} has been approved.`
-                : `This ${info?.recordLabel || 'record'} has been denied.`}
+                : `This ${info?.recordLabel || 'record'} needs revision.`}
             </p>
             {result.employeeNotified && (
               <p className="text-xs text-[#34C172]">
@@ -225,7 +225,7 @@ function ReviewActionInner() {
         )}
 
         {stage === 'error' && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-lg p-8 text-center space-y-3">
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-card p-8 text-center space-y-3">
             <AlertTriangle className="w-12 h-12 text-[#E6A23C] mx-auto" />
             <h1 className="text-lg font-semibold">Unable to Process</h1>
             <p className="text-sm text-[#9A9A9A]">{error}</p>

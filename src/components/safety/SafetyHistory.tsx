@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search } from 'lucide-react'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
-import { isPTP, isPermit, isIncident } from '@/lib/safety-types'
+import { isPTP, isIncident } from '@/lib/safety-types'
 import { getAllSafetyRecords, onSafetyChange, exportSafetyToCsv } from '@/lib/safety-records'
 import SafetyRecordCard from './SafetyRecordCard'
 import { RecordCardSkeleton } from '@/components/Skeleton'
@@ -49,9 +49,11 @@ export default function SafetyHistory() {
       if (!q) return true
       const searchable = [r.id, r.location, r.projectName, r.createdBy]
       if (isPTP(r)) searchable.push(r.scopeOfWork)
-      if (isPermit(r) && 'workDescription' in r) searchable.push((r as { workDescription: string }).workDescription)
+      if ('workDescription' in r) searchable.push((r as { workDescription: string }).workDescription)
+      if ('spaceDescription' in r) searchable.push((r as { spaceDescription: string }).spaceDescription)
+      if ('jobTitle' in r) searchable.push((r as { jobTitle: string }).jobTitle)
       if (isIncident(r)) searchable.push(r.description)
-      return searchable.some((s) => s.toLowerCase().includes(q))
+      return searchable.some((s) => s != null && s.toLowerCase().includes(q))
     })
   }, [records, filter, query])
 
@@ -103,7 +105,7 @@ export default function SafetyHistory() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search safety records"
-          placeholder="Search id, location, project, person…"
+          placeholder="Search id, location, project, person, description…"
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-9 pr-3 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         />
       </div>

@@ -32,5 +32,5 @@ export default function PermitTimer({ validUntil, status }: PermitTimerProps) {
   if (status === 'revoked') return <span className="text-xs text-danger">Revoked</span>
 
   const { text, expired, urgent } = remainingLabel(validUntil)
-  return <span className={`text-xs font-medium ${expired ? 'text-expired' : urgent ? 'text-warn' : 'text-fg-2'}`}>{text}</span>
+  return <span className={`text-xs font-medium tabular-nums ${expired ? 'text-expired' : urgent ? 'text-warn' : 'text-fg-2'}`}>{text}</span>
 }

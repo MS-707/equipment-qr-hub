@@ -66,7 +66,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
 
   if (!status || status === 'recalled') {
     return (
-      <section className="no-print bg-mytra-card border border-mytra-border rounded-lg p-4 shadow-card">
+      <section className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
         <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">EHS Review</h2>
         <button
           type="button"
@@ -93,7 +93,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
 
   if (status === 'submitted') {
     return (
-      <section className="bg-warn/5 border border-warn/20 rounded-lg p-4 shadow-card">
+      <section className="bg-warn/5 border border-warn/20 rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
           <span
@@ -125,7 +125,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
 
   if (status === 'approved') {
     return (
-      <section className="bg-ok/5 border border-ok/20 rounded-lg p-4 shadow-card">
+      <section className="bg-ok/5 border border-ok/20 rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
           <span
@@ -149,7 +149,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
   if (status === 'rejected') {
     return (
       <>
-        <section className="bg-danger/5 border border-danger/20 rounded-lg p-4 shadow-card">
+        <section className="bg-danger/5 border border-danger/20 rounded-card p-4 shadow-card">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
             <span

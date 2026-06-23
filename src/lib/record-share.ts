@@ -264,7 +264,7 @@ export async function shareRecord(r: SafetyRecord): Promise<ShareOutcome> {
   // Fallback: open the user's mail client with the body pre-filled.
   if (typeof window !== 'undefined') {
     const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`
-    window.location.href = mailto
+    window.open(mailto, '_self')
     return 'mailto'
   }
 

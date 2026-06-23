@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSession, signIn, getProviders } from 'next-auth/react'
 import { ShieldCheck, WifiOff, Loader2 } from 'lucide-react'
-import { setCurrentIdentity, getCurrentIdentity } from '@/lib/identity'
+import { setCurrentIdentity, getCurrentIdentity, isIdentityStale } from '@/lib/identity'
 
 type ProvidersMap = Awaited<ReturnType<typeof getProviders>>
 
@@ -73,7 +73,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   // Unauthenticated
   const cached = getCurrentIdentity()
 
-  if (!online && cached) {
+  if (!online && cached && !isIdentityStale()) {
     return (
       <>
         <div className="no-print bg-warn/10 border-b border-warn/20 px-4 py-2 text-center">
@@ -142,7 +142,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="mb-4 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">
             <p className="text-xs text-danger/80">
               {authError === 'AccessDenied'
-                ? "That account isn't on an approved domain. Use your company email."
+                ? needsCode
+                  ? "Sign-in failed. Check that your email is on an approved domain and the access code is correct."
+                  : "That account isn't on an approved domain. Use your company email."
                 : 'Sign-in failed. Please try again.'}
             </p>
           </div>

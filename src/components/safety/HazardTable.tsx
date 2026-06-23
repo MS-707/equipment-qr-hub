@@ -15,7 +15,7 @@ const RISK_LEVELS: RiskLevel[] = ['low', 'medium', 'high', 'critical']
 
 export default function HazardTable({ hazards, onChange }: HazardTableProps) {
   function update(id: string, patch: Partial<HazardEntry>) {
-    onChange(hazards.map((h) => (h.id === id ? { ...h, ...patch, source: patch.description || patch.controlMeasure ? 'manual' : h.source } : h)))
+    onChange(hazards.map((h) => (h.id === id ? { ...h, ...patch, source: (patch.description || patch.controlMeasure) ? 'manual' : h.source } : h)))
   }
 
   function remove(id: string) {
@@ -59,7 +59,7 @@ export default function HazardTable({ hazards, onChange }: HazardTableProps) {
       ) : (
         <div className="space-y-2">
           {hazards.map((h) => (
-            <div key={h.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-lg p-3 space-y-2">
+            <div key={h.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3 space-y-2">
               <div className="flex items-start gap-2">
                 <input
                   type="text"

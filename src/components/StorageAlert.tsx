@@ -25,7 +25,7 @@ export default function StorageAlert() {
         <button
           type="button"
           onClick={() => setVisible(false)}
-          className="ml-2 text-white/70 hover:text-white text-sm shrink-0"
+          className="ml-2 text-white/70 hover:text-white text-sm shrink-0 min-h-[44px] flex items-center"
         >
           Dismiss
         </button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { haptic } from '@/lib/haptic'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -67,7 +68,7 @@ export default function ConfirmDialog({
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={inputPrompt}
           autoFocus
-          className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
+          className="w-full bg-mytra-input border border-mytra-border rounded-field py-2.5 px-3
                      text-sm text-fg placeholder:text-fg-4 mb-4
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
         />
@@ -85,7 +86,10 @@ export default function ConfirmDialog({
         </button>
         <button
           type="button"
-          onClick={() => onConfirm(inputPrompt ? inputValue : undefined)}
+          onClick={() => {
+            haptic(variant === 'danger' ? 'warning' : 'tap')
+            onConfirm(inputPrompt ? inputValue : undefined)
+          }}
           className={`flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors
             ${variant === 'danger'
               ? 'bg-danger text-white hover:bg-danger/90'

@@ -181,6 +181,10 @@ export default function IncidentReportForm() {
         signal: ctrl.signal,
       })
       clearTimeout(timer)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Request failed' }))
+        throw new Error(data.error ?? `Request failed (${res.status})`)
+      }
       const data = await res.json()
       if (data?.error) {
         throw new Error(data.error)
@@ -216,8 +220,10 @@ export default function IncidentReportForm() {
     setAnalysisSource(null)
   }
 
+  const submitGuard = useRef(false)
   function submit() {
-    if (!canSubmit) return
+    if (!canSubmit || submitGuard.current) return
+    submitGuard.current = true
     setSaveError(null)
     const reporterSignatureId = reporterSig ? cryptoRandomId() : null
     let record: ReturnType<typeof createIncidentReport>
@@ -240,6 +246,7 @@ export default function IncidentReportForm() {
         reporterSignatureId,
       })
     } catch (e) {
+      submitGuard.current = false
       setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
       return
     }
@@ -313,7 +320,7 @@ export default function IncidentReportForm() {
           </button>
         </div>
       )}
-      <div className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-4 shadow-card">
+      <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
           <h3 className="text-sm font-semibold text-fg">Incident / Near-Miss Report</h3>
@@ -453,7 +460,7 @@ export default function IncidentReportForm() {
         )}
 
         {analysisResult && (
-          <div className="bg-mytra-card border border-mytra-purple/30 rounded-lg p-3 shadow-card animate-fadeInUp space-y-4">
+          <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-3 shadow-card animate-fadeInUp space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-mytra-purple" />
@@ -482,7 +489,7 @@ export default function IncidentReportForm() {
                       <button
                         type="button"
                         onClick={() => adoptRootCause(rc.cause)}
-                        className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                        className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                       >
                         Use this
                       </button>
@@ -527,7 +534,7 @@ export default function IncidentReportForm() {
                             <button
                               type="button"
                               onClick={() => adoptCorrectiveAction(ca.action)}
-                              className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap"
+                              className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                             >
                               Use this
                             </button>
@@ -548,7 +555,7 @@ export default function IncidentReportForm() {
       </div>
 
       {/* Witnesses */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Witnesses</h4>
         <div className="flex gap-2">
           <input
@@ -567,7 +574,7 @@ export default function IncidentReportForm() {
             placeholder="Witness name"
             className={inputCls}
           />
-          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg">
+          <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg min-h-[44px]">
             <Plus className="w-4 h-4" />
           </button>
         </div>
@@ -576,7 +583,7 @@ export default function IncidentReportForm() {
             {witnesses.map((w, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-fg-2">
                 {w}
-                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} className="text-fg-3 hover:text-danger">
+                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label="Remove witness" className="text-fg-3 hover:text-danger w-11 h-11 flex items-center justify-center -mr-1">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -586,7 +593,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Photos */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-2 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
         <p className="text-xs text-fg-3">Tip: capture a wide shot, a close-up, and any equipment involved</p>
         <div className="flex flex-wrap gap-2">
@@ -626,7 +633,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Root cause & corrective */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
         <div>
           <label htmlFor="ir-root-cause" className={labelCls}>Root cause analysis</label>
@@ -639,7 +646,7 @@ export default function IncidentReportForm() {
       </section>
 
       {/* Reporter signature */}
-      <section className="bg-mytra-card border border-mytra-border rounded-lg p-4 space-y-3 shadow-card">
+      <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
         <div>
           <label htmlFor="ir-reporter-name" className={labelCls}>Name</label>

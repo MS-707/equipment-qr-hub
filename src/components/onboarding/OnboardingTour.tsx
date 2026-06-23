@@ -121,6 +121,24 @@ export default function OnboardingTour() {
     }
   }, [phase])
 
+  // Keyboard navigation for tour phase.
+  useEffect(() => {
+    if (phase !== 'tour') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { finish(); return }
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault()
+        setStepIndex((i) => (i >= steps.length - 1 ? (finish(), i) : i + 1))
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setStepIndex((i) => Math.max(0, i - 1))
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, steps.length, finish])
+
   if (phase === 'idle') return null
 
   // ── Welcome splash ──────────────────────────────
