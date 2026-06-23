@@ -6,7 +6,7 @@
  * the record `pending` so it retries later.
  */
 
-import { getSdsById, getAllSdsRecords, updateSdsRecord } from '@/lib/sds-records'
+import { getSdsById, getAllSdsRecords, updateSdsRecord, createSdsRecord } from '@/lib/sds-records'
 import { notifySyncResult } from '@/components/SyncToast'
 
 let syncDisabledUntil = 0
@@ -110,10 +110,35 @@ export async function syncAllPendingSds({ notify = false }: { notify?: boolean }
   }
 }
 
+export async function checkWebhookQueue(): Promise<number> {
+  try {
+    const res = await fetch('/api/sds/webhook-queue')
+    if (!res.ok) return 0
+    const { records } = await res.json()
+    if (!Array.isArray(records) || records.length === 0) return 0
+    const existing = getAllSdsRecords()
+    const existingIds = new Set(existing.map((r) => r.id))
+    let added = 0
+    for (const stub of records) {
+      if (stub?.id && !existingIds.has(stub.id)) {
+        createSdsRecord(stub)
+        added++
+      }
+    }
+    return added
+  } catch {
+    return 0
+  }
+}
+
 export function installSdsSyncListeners(): () => void {
   if (typeof window === 'undefined') return () => {}
   void syncAllPendingSds()
-  const onReconnect = () => { void syncAllPendingSds({ notify: true }) }
+  void checkWebhookQueue()
+  const onReconnect = () => {
+    void syncAllPendingSds({ notify: true })
+    void checkWebhookQueue()
+  }
   window.addEventListener('online', onReconnect)
   return () => window.removeEventListener('online', onReconnect)
 }
