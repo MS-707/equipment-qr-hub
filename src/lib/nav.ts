@@ -19,6 +19,8 @@ export interface NavItem {
   icon: LucideIcon
   badge?: BadgeKey
   adminOnly?: boolean
+  /** Hidden from the desktop top bar but kept on the mobile bottom tab bar. */
+  hideOnDesktop?: boolean
 }
 
 /**
@@ -30,7 +32,10 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', longLabel: 'Home', icon: ShieldCheck, badge: 'safety' },
   { href: '/inspections', label: 'Pre-Trip', longLabel: 'Pre-Trip', icon: ClipboardCheck },
   { href: '/equipment', label: 'Assets', longLabel: 'Equipment', icon: LayoutGrid },
-  { href: '/sds', label: 'SDS', longLabel: 'Safety Data Sheets', icon: FlaskConical, badge: 'sds' },
+  // SDS is module-tier, not a primary desktop tab — reached via the dashboard
+  // "SDS Library" tile on desktop, but kept on the mobile tab bar so field
+  // workers retain one-tap chemical-safety access.
+  { href: '/sds', label: 'SDS', longLabel: 'Safety Data Sheets', icon: FlaskConical, badge: 'sds', hideOnDesktop: true },
   { href: '/work-orders', label: 'Orders', longLabel: 'Work Orders', icon: ClipboardList, badge: 'orders' },
   { href: '/admin/labels', label: 'QR', longLabel: 'QR Labels', icon: QrCode, adminOnly: true },
 ]
