@@ -118,3 +118,15 @@ Found 3 HIGH, 4 MEDIUM. Fixed 3:
 5. **FIXED** — review/submit record fields flow unsanitized to email subject → sanitize()
 6. DEFERRED — sds/sync session access (already fixed systemically in B25)
 7. **FIXED** — suggest-toolbox hazards array items not truncated → `.map(h => String(h).slice(0,200))`
+
+| B38 | 2026-06-23T07:43:00Z | 103m | B — Nav, haptic, api-auth tests (16 new) — **495 total across 45 files** | Done |
+| B39 | 2026-06-23T07:46:00Z | 106m | B — Sage-context, training, slack-notify, email-notify, media tests (31 new) — **526 total across 50 files** | Done |
+| B40 | 2026-06-23T07:51:00Z | 111m | B — Tournament review #13 fixes (3/4) + escapeSlack tests — **530 total across 50 files** | Done |
+
+### Tournament Review #13 Results (2026-06-23T07:49Z)
+
+Found 0 HIGH, 4 MEDIUM. Fixed 3:
+1. **FIXED** — createdByEmail trusted over session email for notification routing → prefer session email
+2. **FIXED** — review/submit syncToNotion missing safeStr on Notion properties → added safeStr
+3. **FIXED** — Slack mrkdwn injection in beta signup, auth, sds webhook → extracted escapeSlack to shared utility
+4. DEFERRED — Review token has no reviewer identity (requires token format change, backward compat)
