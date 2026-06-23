@@ -11,7 +11,11 @@ if (!revision) revision = crypto.randomUUID();
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
-  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+  additionalPrecacheEntries: [
+    { url: "/~offline", revision },
+    { url: "/sds/seed.json", revision },
+    { url: "/sds/ghs-sprites.svg", revision },
+  ],
 });
 
 /** @type {import('next').NextConfig} */
