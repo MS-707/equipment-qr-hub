@@ -50,6 +50,11 @@ export async function POST(req: Request) {
     )
   }
 
+  const cl = parseInt(req.headers.get('content-length') || '0', 10)
+  if (cl > 512_000) {
+    return Response.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   let body: { record: SafetyRecord; notionPageId: string | null }
   try {
     body = await req.json()
@@ -65,7 +70,7 @@ export async function POST(req: Request) {
   if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
     return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
   }
-  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
+  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
     return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 

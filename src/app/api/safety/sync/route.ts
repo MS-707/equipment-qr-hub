@@ -30,6 +30,11 @@ export async function POST(req: Request) {
 
   const key = process.env.NOTION_API_KEY
 
+  const cl = parseInt(req.headers.get('content-length') || '0', 10)
+  if (cl > 512_000) {
+    return Response.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   let record: SafetyRecord
   try {
     record = (await req.json()) as SafetyRecord
@@ -43,7 +48,7 @@ export async function POST(req: Request) {
   if (!record?.type || typeof record.type !== 'string' || !DB_MAP[record.type]) {
     return Response.json({ error: 'Invalid record type' }, { status: 400 })
   }
-  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
+  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
     return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
