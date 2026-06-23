@@ -375,3 +375,87 @@ describe('cryptoRandomId', () => {
     expect(id).toHaveLength(32)
   })
 })
+
+describe('readAll empty array handling', () => {
+  it('returns empty array for valid empty store without triggering corruption path', async () => {
+    store['eqr-sds-records'] = '[]'
+    const mod = await importModule()
+    const result = mod.getAllSdsRecords()
+    expect(result).toEqual([])
+    expect(vi.mocked(window.dispatchEvent)).not.toHaveBeenCalled()
+  })
+
+  it('dispatches corruption event for truly corrupt data', async () => {
+    store['eqr-sds-records'] = '{bad json}'
+    const mod = await importModule()
+    const result = mod.getAllSdsRecords()
+    expect(result).toEqual([])
+    expect(vi.mocked(window.dispatchEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'eqr:storage-corruption' })
+    )
+  })
+})
+
+describe('archiveOldSyncedSdsRecords', () => {
+  it('removes synced records older than 180 days', async () => {
+    const old = makeStoredRecord({
+      id: 'SDS-2026-0001',
+      syncStatus: 'synced',
+      updatedAt: '2025-11-01T00:00:00.000Z',
+    })
+    const recent = makeStoredRecord({
+      id: 'SDS-2026-0002',
+      productName: 'Recent Chemical',
+      syncStatus: 'synced',
+      updatedAt: '2026-06-20T00:00:00.000Z',
+    })
+    store['eqr-sds-records'] = JSON.stringify([old, recent])
+    const mod = await importModule()
+    mod.archiveOldSyncedSdsRecords()
+    const result = mod.getAllSdsRecords()
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('SDS-2026-0002')
+  })
+
+  it('preserves favorited records regardless of age', async () => {
+    const oldFav = makeStoredRecord({
+      id: 'SDS-2026-0001',
+      syncStatus: 'synced',
+      isFavorite: true,
+      updatedAt: '2025-01-01T00:00:00.000Z',
+    })
+    store['eqr-sds-records'] = JSON.stringify([oldFav])
+    const mod = await importModule()
+    mod.archiveOldSyncedSdsRecords()
+    const result = mod.getAllSdsRecords()
+    expect(result).toHaveLength(1)
+  })
+
+  it('preserves pending/failed records regardless of age', async () => {
+    const oldPending = makeStoredRecord({
+      id: 'SDS-2026-0001',
+      syncStatus: 'pending',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+    })
+    const oldFailed = makeStoredRecord({
+      id: 'SDS-2026-0002',
+      productName: 'Failed Chemical',
+      syncStatus: 'failed',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+    })
+    store['eqr-sds-records'] = JSON.stringify([oldPending, oldFailed])
+    const mod = await importModule()
+    mod.archiveOldSyncedSdsRecords()
+    const result = mod.getAllSdsRecords()
+    expect(result).toHaveLength(2)
+  })
+
+  it('does nothing when all records are within retention', async () => {
+    const recent = makeStoredRecord({ syncStatus: 'synced', updatedAt: '2026-06-22T00:00:00.000Z' })
+    store['eqr-sds-records'] = JSON.stringify([recent])
+    const mod = await importModule()
+    mod.archiveOldSyncedSdsRecords()
+    const result = mod.getAllSdsRecords()
+    expect(result).toHaveLength(1)
+  })
+})
