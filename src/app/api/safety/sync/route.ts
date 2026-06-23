@@ -47,9 +47,9 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
-  if (session!.user!.email) {
+  if (session?.user?.email) {
     const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
-    if (recordEmail && recordEmail !== session!.user!.email) {
+    if (recordEmail && recordEmail !== session?.user?.email) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
     }
   }

@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`hazards:${session!.user!.email}`, 10, 60_000)
+  const rl = await rateLimit(`hazards:${session?.user?.email || 'unknown'}`, 10, 60_000)
   if (!rl.ok) {
     return Response.json({ hazards: [], error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }

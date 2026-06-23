@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`review:${session!.user!.email}`, 5, 60_000)
+  const rl = await rateLimit(`review:${session?.user?.email || 'unknown'}`, 5, 60_000)
   if (!rl.ok) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
   }
 
   // ── Store submission for email-based decisions ────────────────
-  const submitterEmail = record.createdByEmail || session!.user!.email || ''
+  const submitterEmail = record.createdByEmail || session?.user?.email || ''
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,

@@ -27,7 +27,6 @@ import {
   getSafetyRecordsByType,
   getRecordsForDate,
   getPtpForDate,
-  getActivePermits,
   createPreTaskPlan,
   createIncidentReport,
   createHeightPermit,
@@ -48,7 +47,7 @@ import {
   isExpired,
   getOpenSafetyCount,
 } from '../safety-records'
-import type { PreTaskPlan, HeightPermit as HeightPermitT } from '@/lib/safety-types'
+import type { HeightPermit as HeightPermitT } from '@/lib/safety-types'
 
 const ptpInput = {
   location: 'Site A',

@@ -66,8 +66,18 @@ Found 4 HIGH, 8 MEDIUM. Fixed 3 HIGH, 1 MEDIUM:
 4. **FIXED** — Webhook payload field truncation (500/200/50 char limits)
 5. **FIXED** — Rate-limit error logging missing key context
 
-### Exit Condition Check (2026-06-23T07:11Z)
+| B23 | 2026-06-23T07:13:00Z | 73m | B — Schemas tests (21 new) + incident-patterns tests (17 new) | Done |
+| B24 | 2026-06-23T07:16:00Z | 76m | B — Safety-records CRUD/lifecycle tests (38 new) — **303 total across 21 files** | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (227/227), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 71 minutes elapsed (started 05:59:49Z)
-- **(c) Two consecutive clean reviews**: NO — Review #8 found issues (need 2 more clean consecutive reviews)
+### Tournament Review #9 Results (2026-06-23T07:15Z)
+
+Found 0 HIGH, 3 MEDIUM. Fixed all 3:
+1. **FIXED** — Missing `approved_by` fallback in webhook Slack message
+2. **FIXED** — Fire-and-forget fetch without timeout (added 5s AbortController)
+3. **FIXED** — Non-null assertions `session!.user!.email` → safe optional chaining
+
+### Exit Condition Check (2026-06-23T07:16Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (303/303), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 76 minutes elapsed (started 05:59:49Z)
+- **(c) Two consecutive clean reviews**: NO — Review #9 found 3 MEDIUM (need 2 consecutive clean reviews)
