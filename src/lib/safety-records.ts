@@ -804,6 +804,11 @@ export async function clearAllLocalData(): Promise<void> {
 
   localStorage.removeItem('eqr-current-user')
 
+  localStorage.removeItem('eqr-sds-records')
+  localStorage.removeItem('eqr-sds-records-backup')
+  localStorage.removeItem('eqr-sds-counter')
+  localStorage.removeItem('eqr-sds-seeded')
+
   try {
     const db = await openBlobDB()
     const tx = db.transaction(PHOTO_STORE, 'readwrite')

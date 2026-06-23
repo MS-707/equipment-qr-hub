@@ -147,6 +147,8 @@ function buildSearchIndex(r: Omit<SdsRecord, '_searchIndex' | 'id' | 'isFavorite
     r.productName,
     r.manufacturer,
     r.casNumbers.join(' '),
+    r.signalWord,
+    r.ppeRequired.join(' '),
     r.hazardStatements.join(' '),
   ]
     .join(' ')
@@ -239,6 +241,26 @@ export function toggleFavorite(id: string): SdsRecord | undefined {
   writeAll(all)
   notify()
   return all[idx]
+}
+
+// ── Sync state updates ─────────────────────────────────────
+
+export function markSdsSynced(id: string, notionPageId: string): void {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return
+  all[idx] = { ...all[idx], syncStatus: 'synced', notionPageId, updatedAt: nowIso() } as SdsRecord
+  writeAll(all)
+  notify()
+}
+
+export function markSdsSyncFailed(id: string): void {
+  const all = readAll()
+  const idx = all.findIndex((r) => r.id === id)
+  if (idx === -1) return
+  all[idx] = { ...all[idx], syncStatus: 'failed', updatedAt: nowIso() }
+  writeAll(all)
+  notify()
 }
 
 // ── Seed data ───────────────────────────────────────────────

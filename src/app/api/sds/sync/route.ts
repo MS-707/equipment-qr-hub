@@ -1,27 +1,32 @@
 import type { SdsRecord } from '@/lib/sds-types'
+import { SdsRecordSchema } from '@/lib/sds-schemas'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const NOTION_VERSION = '2022-06-28'
 
 export async function POST(req: Request) {
-  const { error } = await requireSession()
+  const { session, error } = await requireSession()
   if (error) return error
+
+  const rl = await rateLimit(`sds-sync:${session.user.email}`, 10, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const key = process.env.NOTION_API_KEY
   const dbId = process.env.NOTION_SDS_DB_ID
 
   let record: SdsRecord
   try {
-    record = (await req.json()) as SdsRecord
+    const body = await req.json()
+    const parsed = SdsRecordSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json({ error: 'Invalid SDS record', details: parsed.error.issues.slice(0, 3) }, { status: 400 })
+    }
+    record = parsed.data as SdsRecord
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
-  }
-
-  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
-    return Response.json({ error: 'Invalid record id' }, { status: 400 })
-  }
-  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
-    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
   if (!key || !dbId) {

@@ -145,6 +145,14 @@ describe('searchSds', () => {
     expect(mod.searchSds('nonexistent')).toHaveLength(0)
   })
 
+  it('matches PPE and signal word in search index', async () => {
+    const mod = await importModule()
+    const record = mod.createSdsRecord(validInput)
+    expect(record._searchIndex).toContain('safety glasses')
+    expect(record._searchIndex).toContain('gloves')
+    expect(record._searchIndex).toContain('danger')
+  })
+
   it('matches multiple terms (AND)', async () => {
     store['eqr-sds-records'] = JSON.stringify([makeStoredRecord()])
     const mod = await importModule()
@@ -285,6 +293,48 @@ describe('backup recovery', () => {
     store['eqr-sds-records'] = 'corrupt'
     store['eqr-sds-records-backup'] = 'also corrupt'
     const mod = await importModule()
+    expect(mod.getAllSdsRecords()).toEqual([])
+  })
+})
+
+describe('markSdsSynced', () => {
+  it('sets syncStatus to synced and stores notionPageId', async () => {
+    store['eqr-sds-records'] = JSON.stringify([makeStoredRecord({ syncStatus: 'pending' })])
+    const mod = await importModule()
+    mod.markSdsSynced('SDS-2026-0001', 'notion-page-123')
+    const record = mod.getSdsById('SDS-2026-0001')
+    expect(record?.syncStatus).toBe('synced')
+    expect((record as Record<string, unknown>)?.notionPageId).toBe('notion-page-123')
+  })
+
+  it('no-ops for nonexistent id', async () => {
+    const mod = await importModule()
+    mod.markSdsSynced('nope', 'notion-page-123')
+    expect(mod.getAllSdsRecords()).toEqual([])
+  })
+
+  it('notifies listeners', async () => {
+    store['eqr-sds-records'] = JSON.stringify([makeStoredRecord()])
+    const mod = await importModule()
+    const fn = vi.fn()
+    mod.onSdsChange(fn)
+    mod.markSdsSynced('SDS-2026-0001', 'np-1')
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('markSdsSyncFailed', () => {
+  it('sets syncStatus to failed', async () => {
+    store['eqr-sds-records'] = JSON.stringify([makeStoredRecord({ syncStatus: 'pending' })])
+    const mod = await importModule()
+    mod.markSdsSyncFailed('SDS-2026-0001')
+    const record = mod.getSdsById('SDS-2026-0001')
+    expect(record?.syncStatus).toBe('failed')
+  })
+
+  it('no-ops for nonexistent id', async () => {
+    const mod = await importModule()
+    mod.markSdsSyncFailed('nope')
     expect(mod.getAllSdsRecords()).toEqual([])
   })
 })

@@ -104,11 +104,14 @@ function summarizeSdsLibrary(): string | null {
   const records = getAllSdsRecords()
   if (records.length === 0) return null
   const dangerChemicals = records.filter((r) => r.signalWord === 'Danger')
+  const MAX_DANGER_NAMES = 10
+  const dangerNames = dangerChemicals.slice(0, MAX_DANGER_NAMES).map((r) => r.productName)
+  const dangerLine = dangerChemicals.length > 0
+    ? `DANGER chemicals: ${dangerNames.join(', ')}${dangerChemicals.length > MAX_DANGER_NAMES ? ` and ${dangerChemicals.length - MAX_DANGER_NAMES} more` : ''}`
+    : null
   const lines = [
     `SDS LIBRARY: ${records.length} chemical${records.length !== 1 ? 's' : ''} on site`,
-    dangerChemicals.length > 0
-      ? `DANGER chemicals: ${dangerChemicals.map((r) => r.productName).join(', ')}`
-      : null,
+    dangerLine,
   ]
   return lines.filter(Boolean).join('\n')
 }

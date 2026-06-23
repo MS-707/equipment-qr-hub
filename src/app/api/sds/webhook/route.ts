@@ -55,6 +55,7 @@ interface SlackChemicalApproval {
 }
 
 const processedEvents = new Set<string>()
+const MAX_IN_MEMORY_EVENTS = 1000
 
 async function isDuplicate(eventId: string): Promise<boolean> {
   if (!process.env.KV_REST_API_URL) {
@@ -69,6 +70,10 @@ async function isDuplicate(eventId: string): Promise<boolean> {
 }
 
 async function markProcessed(eventId: string): Promise<void> {
+  if (processedEvents.size >= MAX_IN_MEMORY_EVENTS) {
+    const first = processedEvents.values().next().value
+    if (first) processedEvents.delete(first)
+  }
   processedEvents.add(eventId)
   if (process.env.KV_REST_API_URL) {
     try {
@@ -169,14 +174,15 @@ export async function POST(req: Request) {
   const sdsId = await nextServerSdsId()
   const sdsStub = buildWebhookStub(sdsId, payload)
 
-  if (process.env.KV_REST_API_URL) {
-    try {
-      await kv.lpush('sds-webhook-queue', JSON.stringify(sdsStub))
-      await kv.set(`sds:${sdsId}`, JSON.stringify(sdsStub), { ex: 7 * 86400 })
-    } catch (e) {
-      console.error('[sds/webhook] KV store error:', e instanceof Error ? e.message : e)
-      return Response.json({ error: 'Storage temporarily unavailable' }, { status: 502 })
-    }
+  if (!process.env.KV_REST_API_URL) {
+    return Response.json({ error: 'KV storage not configured — record not persisted' }, { status: 503 })
+  }
+  try {
+    await kv.lpush('sds-webhook-queue', JSON.stringify(sdsStub))
+    await kv.set(`sds:${sdsId}`, JSON.stringify(sdsStub), { ex: 7 * 86400 })
+  } catch (e) {
+    console.error('[sds/webhook] KV store error:', e instanceof Error ? e.message : e)
+    return Response.json({ error: 'Storage temporarily unavailable' }, { status: 502 })
   }
 
   await markProcessed(payload.event_id)

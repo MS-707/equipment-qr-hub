@@ -6,7 +6,8 @@
  * the record `pending` so it retries later.
  */
 
-import { getSdsById, getAllSdsRecords, updateSdsRecord, createSdsRecord } from '@/lib/sds-records'
+import { getSdsById, getAllSdsRecords, markSdsSynced, markSdsSyncFailed, createSdsRecord } from '@/lib/sds-records'
+import { SdsRecordSchema } from '@/lib/sds-schemas'
 import { notifySyncResult } from '@/components/SyncToast'
 
 let syncDisabledUntil = 0
@@ -15,27 +16,6 @@ export function isSdsSyncAvailable(): boolean {
   return Date.now() >= syncDisabledUntil
 }
 
-function markSdsSynced(id: string, notionPageId: string): void {
-  updateSdsRecord(id, {} as never)
-  const r = getSdsById(id)
-  if (!r) return
-  const all = JSON.parse(localStorage.getItem('eqr-sds-records') || '[]')
-  const idx = all.findIndex((rec: { id: string }) => rec.id === id)
-  if (idx !== -1) {
-    all[idx] = { ...all[idx], syncStatus: 'synced', notionPageId }
-    localStorage.setItem('eqr-sds-records', JSON.stringify(all))
-    try { localStorage.setItem('eqr-sds-records-backup', JSON.stringify(all)) } catch { /* non-fatal */ }
-  }
-}
-
-function markSdsSyncFailed(id: string): void {
-  const all = JSON.parse(localStorage.getItem('eqr-sds-records') || '[]')
-  const idx = all.findIndex((rec: { id: string }) => rec.id === id)
-  if (idx !== -1) {
-    all[idx] = { ...all[idx], syncStatus: 'failed' }
-    localStorage.setItem('eqr-sds-records', JSON.stringify(all))
-  }
-}
 
 async function attemptSdsSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSdsById(id)
@@ -120,9 +100,17 @@ export async function checkWebhookQueue(): Promise<number> {
     const existingIds = new Set(existing.map((r) => r.id))
     let added = 0
     for (const stub of records) {
-      if (stub?.id && !existingIds.has(stub.id)) {
-        createSdsRecord(stub)
+      if (!stub?.id || existingIds.has(stub.id)) continue
+      const validated = SdsRecordSchema.safeParse(stub)
+      if (!validated.success) {
+        console.warn('[sds-sync] Dropping invalid webhook queue record:', stub.id)
+        continue
+      }
+      try {
+        createSdsRecord(validated.data)
         added++
+      } catch {
+        console.warn('[sds-sync] Failed to create record from queue:', stub.id)
       }
     }
     return added

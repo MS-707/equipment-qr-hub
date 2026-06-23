@@ -21,3 +21,4 @@ Append-only log of all work units. Source of truth for the design doc: `docs/pla
 | Unit | UTC Timestamp | Elapsed | Phase | Status |
 |------|--------------|---------|-------|--------|
 | B1 | 2026-06-23T06:22:00Z | 22m | B — SDS test coverage (sds-records, sage-context, webhook) | Done |
+| B2 | 2026-06-23T06:27:00Z | 27m | B — Tournament review #1: fix 9 HIGH/MEDIUM findings | Done |
