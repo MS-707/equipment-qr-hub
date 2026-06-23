@@ -70,7 +70,8 @@ function readAll(): SdsRecord[] {
   if (!raw) return []
   const parsed = safeParseSdsRecords(raw)
   if (parsed.length > 0) return parsed
-  console.error('[sds-records] Primary store corrupt or empty — attempting backup restore.')
+  if (raw.trim() === '[]') return []
+  console.error('[sds-records] Primary store corrupt — attempting backup restore.')
   const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
   if (backup) {
     const recovered = safeParseSdsRecords(backup)
@@ -249,7 +250,7 @@ export function markSdsSynced(id: string, notionPageId: string): void {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
   if (idx === -1) return
-  all[idx] = { ...all[idx], syncStatus: 'synced', notionPageId, updatedAt: nowIso() } as SdsRecord
+  all[idx] = { ...all[idx], syncStatus: 'synced', notionPageId, updatedAt: nowIso() }
   writeAll(all)
   notify()
 }
@@ -261,6 +262,23 @@ export function markSdsSyncFailed(id: string): void {
   all[idx] = { ...all[idx], syncStatus: 'failed', updatedAt: nowIso() }
   writeAll(all)
   notify()
+}
+
+// ── Archival ───────────────────────────────────────────────
+
+const SDS_ARCHIVE_DAYS = 180
+
+export function archiveOldSyncedSdsRecords(): void {
+  if (typeof window === 'undefined') return
+  const all = readAll()
+  const cutoff = Date.now() - SDS_ARCHIVE_DAYS * 24 * 60 * 60 * 1000
+  const keep = all.filter(
+    (r) => r.isFavorite || r.syncStatus !== 'synced' || new Date(r.updatedAt).getTime() >= cutoff
+  )
+  if (keep.length < all.length) {
+    writeAll(keep)
+    notify()
+  }
 }
 
 // ── Seed data ───────────────────────────────────────────────

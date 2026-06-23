@@ -43,6 +43,7 @@ export interface SdsRecord {
   isFavorite: boolean
   createdAt: string
   updatedAt: string
+  notionPageId?: string | null
   syncStatus: 'pending' | 'synced' | 'failed' | 'offline'
   _searchIndex: string
 }

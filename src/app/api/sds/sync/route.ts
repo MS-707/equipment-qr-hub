@@ -70,8 +70,9 @@ export async function POST(req: Request) {
 
     const fullJson = JSON.stringify(record, null, 2)
     const CHUNK_SIZE = 1900
+    const MAX_CHILDREN = 100
     const children = []
-    for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+    for (let i = 0; i < fullJson.length && children.length < MAX_CHILDREN; i += CHUNK_SIZE) {
       children.push({
         object: 'block' as const,
         type: 'code' as const,

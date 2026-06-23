@@ -42,6 +42,7 @@ export const SdsRecordSchema = z.object({
   isFavorite: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  notionPageId: z.string().nullable().optional(),
   syncStatus: SyncStatusSchema,
   _searchIndex: z.string(),
 }).passthrough()
