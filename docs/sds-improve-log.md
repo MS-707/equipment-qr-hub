@@ -50,8 +50,12 @@ Found 6 MEDIUM, 0 HIGH. Fixed 4:
 | B16 | 2026-06-23T06:58:00Z | 58m | B — Sync edge case tests (toast, offline, dedup) + sage truncation test | Done |
 | B17 | 2026-06-23T06:59:00Z | 59m | B — SDS lifecycle integration tests (5 tests, 168 total across 14 files) | Done |
 
-### Exit Condition Check (2026-06-23T06:59Z)
+| B18 | 2026-06-23T07:00:00Z | 60m | B — SDS search: add ID field to Notion query "any" filter | Done |
+| B19 | 2026-06-23T07:01:00Z | 61m | B — Schema edge case tests (GHS codes, syncStatus, empty arrays, firstAid) | Done |
+| B20 | 2026-06-23T07:03:00Z | 63m | B — Atmospheric monitoring tests (28 new) — **200 total tests across 15 files** | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (168/168), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 59 minutes elapsed (started 05:59:49Z)
+### Exit Condition Check (2026-06-23T07:03Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (200/200), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 63 minutes elapsed (started 05:59:49Z)
 - **(c) Two consecutive clean reviews**: YES — Reviews #6 and #7 both found ZERO new HIGH/MEDIUM findings
