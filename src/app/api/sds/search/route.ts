@@ -51,6 +51,7 @@ export async function GET(req: Request) {
   }
 
   const fieldFilters: Record<string, unknown> = {
+    id: { property: 'ID', title: { contains: q } },
     name: { property: 'Product Name', rich_text: { contains: q } },
     manufacturer: { property: 'Manufacturer', rich_text: { contains: q } },
   }
