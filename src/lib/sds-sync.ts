@@ -107,7 +107,14 @@ export async function checkWebhookQueue(): Promise<number> {
         continue
       }
       try {
-        createSdsRecord(validated.data)
+        const input = { ...validated.data } as Record<string, unknown>
+        delete input.id
+        delete input.isFavorite
+        delete input.createdAt
+        delete input.updatedAt
+        delete input.syncStatus
+        delete input._searchIndex
+        createSdsRecord(input as Parameters<typeof createSdsRecord>[0])
         added++
       } catch {
         console.warn('[sds-sync] Failed to create record from queue:', stub.id)

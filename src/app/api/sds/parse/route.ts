@@ -100,8 +100,8 @@ export async function POST(req: Request) {
   if (!documentBase64) {
     return Response.json({ error: 'No PDF provided' }, { status: 400 })
   }
-  if (documentBase64.length > 6_700_000) {
-    return Response.json({ error: 'PDF too large — keep it under 5MB' }, { status: 413 })
+  if (documentBase64.length > 5_600_000) {
+    return Response.json({ error: 'PDF too large — keep it under 4MB' }, { status: 413 })
   }
 
   const fileName = (body.fileName ?? 'uploaded SDS').slice(0, 200)
