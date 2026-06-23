@@ -48,8 +48,8 @@ const minRecord = {
   type: 'ptp',
   projectName: 'Test Project',
   location: 'Site A',
-  createdBy: 'Alice',
-  createdByEmail: 'alice@example.com',
+  createdBy: 'Test',
+  createdByEmail: 'test@x.com',
   createdAt: '2026-06-23T00:00:00Z',
 }
 
@@ -205,7 +205,7 @@ describe('POST /api/safety/review/submit', () => {
       recordType: 'ptp',
       projectName: 'Test Project',
       location: 'Site A',
-      submitterName: 'Alice',
+      submitterName: 'Test',
       submitterEmail: 'test@x.com',
     }))
   })

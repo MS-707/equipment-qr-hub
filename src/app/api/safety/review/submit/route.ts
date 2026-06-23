@@ -65,6 +65,18 @@ export async function POST(req: Request) {
   if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
     return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
   }
+  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
+    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
+  }
+
+  const sessionEmail = session?.user?.email
+  if (sessionEmail) {
+    const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
+    if (recordEmail && recordEmail !== sessionEmail) {
+      return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
+    }
+    ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
+  }
 
   if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
     return Response.json({ error: 'Invalid Notion page ID' }, { status: 400 })
