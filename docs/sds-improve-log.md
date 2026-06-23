@@ -46,8 +46,12 @@ Found 6 MEDIUM, 0 HIGH. Fixed 4:
 | B13 | 2026-06-23T06:55:00Z | 55m | B — Tournament review #7: ZERO new HIGH/MEDIUM findings | Done |
 | B14 | 2026-06-23T06:56:00Z | 56m | B — Add Next.js metadata to SDS pages | Done |
 
-### Exit Condition Check (2026-06-23T06:56Z)
+| B15 | 2026-06-23T06:57:00Z | 57m | B — Tournament review #7: ZERO new HIGH/MEDIUM findings | Done |
+| B16 | 2026-06-23T06:58:00Z | 58m | B — Sync edge case tests (toast, offline, dedup) + sage truncation test | Done |
+| B17 | 2026-06-23T06:59:00Z | 59m | B — SDS lifecycle integration tests (5 tests, 168 total across 14 files) | Done |
 
-- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (159/159), build (clean), pushed
-- **(b) 5+ hours elapsed since Unit 1**: NO — 56 minutes elapsed (started 05:59:49Z)
+### Exit Condition Check (2026-06-23T06:59Z)
+
+- **(a) Phase A complete**: YES — all 7 units done, lint (0 errors), test (168/168), build (clean), pushed
+- **(b) 5+ hours elapsed since Unit 1**: NO — 59 minutes elapsed (started 05:59:49Z)
 - **(c) Two consecutive clean reviews**: YES — Reviews #6 and #7 both found ZERO new HIGH/MEDIUM findings
