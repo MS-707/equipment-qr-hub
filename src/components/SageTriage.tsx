@@ -35,25 +35,42 @@ const QUICK_CHIPS = [
   { label: 'PPE help', q: 'What PPE do I need for this task?' },
 ]
 
-function loadHistory(): ChatMessage[] {
+interface StoredSession {
+  messages: ChatMessage[]
+  followUps: string[]
+}
+
+function loadHistory(): StoredSession {
+  const empty: StoredSession = { messages: [], followUps: [] }
   try {
     const ts = sessionStorage.getItem(TS_KEY)
     if (ts && Date.now() - Number(ts) > IDLE_MS) {
       sessionStorage.removeItem(HISTORY_KEY)
       sessionStorage.removeItem(TS_KEY)
-      return []
+      return empty
     }
     const raw = sessionStorage.getItem(HISTORY_KEY)
-    return raw ? JSON.parse(raw) : []
+    if (!raw) return empty
+    const parsed = JSON.parse(raw)
+    // Back-compat: the old shape was a bare array of messages.
+    const messages: ChatMessage[] = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.messages) ? parsed.messages : []
+    // Only restore follow-up chips when the thread is awaiting the user
+    // (last turn was the assistant's) — otherwise they don't apply.
+    const lastRole = messages[messages.length - 1]?.role
+    const followUps =
+      lastRole === 'assistant' && Array.isArray(parsed?.followUps) ? parsed.followUps : []
+    return { messages, followUps }
   } catch {
-    return []
+    return empty
   }
 }
 
-function saveHistory(msgs: ChatMessage[]) {
+function saveHistory(msgs: ChatMessage[], followUps: string[] = []) {
   try {
     const trimmed = msgs.slice(-10)
-    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ messages: trimmed, followUps }))
     sessionStorage.setItem(TS_KEY, String(Date.now()))
   } catch { /* private browsing or full storage */ }
 }
@@ -100,7 +117,9 @@ function SageTriageInner() {
   messagesRef.current = messages
 
   useEffect(() => {
-    setMessages(loadHistory())
+    const restored = loadHistory()
+    setMessages(restored.messages)
+    setFollowUps(restored.followUps)
     // Show the discovery hint for the first few app launches until Sage is opened.
     if (!localStorage.getItem(SEEN_KEY)) {
       const launches = Number(localStorage.getItem(LAUNCH_KEY) || '0')
@@ -212,12 +231,13 @@ function SageTriageInner() {
         role: 'assistant',
         content: faqAnswer ?? "I'm offline right now. For emergencies, call 911. You can still use the app offline — the bottom tabs (Home, Pre-Trip, Assets, Orders) all work without a connection.",
       }
+      const offlineFollowUps = faqAnswer ? ['Start a PTP', 'What PPE do I need?', 'Report an incident'] : []
       setMessages(prev => {
         const updated = [...prev, reply]
-        saveHistory(updated)
+        saveHistory(updated, offlineFollowUps)
         return updated
       })
-      setFollowUps(faqAnswer ? ['Start a PTP', 'What PPE do I need?', 'Report an incident'] : [])
+      setFollowUps(offlineFollowUps)
       setLoading(false)
       return
     }
@@ -246,7 +266,7 @@ function SageTriageInner() {
       let suggestions: string[] = []
       if (!res.ok || !replyText) {
         const faqAnswer = matchFaq(trimmed)
-        replyText = faqAnswer ?? 'Sorry, I couldn\'t process that right now. Try again or check the FAQ chips above.'
+        replyText = faqAnswer ?? 'Sorry, I couldn\'t process that right now. Try again, or tap one of the suggestions below.'
       } else {
         suggestions = Array.isArray(data.followUps) ? data.followUps.slice(0, 3) : []
       }
@@ -256,7 +276,7 @@ function SageTriageInner() {
       }
       setMessages(prev => {
         const updated = [...prev, reply]
-        saveHistory(updated)
+        saveHistory(updated, suggestions)
         return updated
       })
       setFollowUps(suggestions)
@@ -270,7 +290,7 @@ function SageTriageInner() {
       }
       setMessages(prev => {
         const updated = [...prev, reply]
-        saveHistory(updated)
+        saveHistory(updated, [])
         return updated
       })
     } finally {
@@ -287,6 +307,18 @@ function SageTriageInner() {
   const greeting = identity?.name
     ? `Hi ${identity.name.split(' ')[0]}. What can I help you with?`
     : 'Hi there. What can I help you with?'
+
+  // Suggestion-chip precedence: show chips only while Sage is awaiting the user
+  // (empty thread, or the last turn was the assistant's). Contextual follow-ups
+  // win when present; otherwise fall back to the starter chips so a returning or
+  // post-error user always has a low-effort tap path back into common tasks.
+  const lastRole = messages.length > 0 ? messages[messages.length - 1].role : null
+  const awaitingUser = !loading && (messages.length === 0 || lastRole === 'assistant')
+  const chipMode: 'followups' | 'starter' | 'none' = !awaitingUser
+    ? 'none'
+    : followUps.length > 0
+      ? 'followups'
+      : 'starter'
 
   return (
     <>
@@ -371,23 +403,6 @@ function SageTriageInner() {
               </div>
             </div>
 
-            {/* Quick chips when no history */}
-            {messages.length === 0 && (
-              <div className="flex flex-wrap gap-1.5 pl-8">
-                {QUICK_CHIPS.map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => sendMessage(chip.q)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-mytra-purple/30
-                               text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
             {/* Chat messages */}
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
@@ -408,8 +423,8 @@ function SageTriageInner() {
               </div>
             ))}
 
-            {/* Follow-up suggestion chips */}
-            {followUps.length > 0 && !loading && (
+            {/* Suggestion chips — contextual follow-ups, else starter prompts as fallback */}
+            {chipMode === 'followups' && (
               <div className="flex flex-wrap gap-1.5 pl-8 animate-fadeIn">
                 {followUps.map((suggestion) => (
                   <button
@@ -420,6 +435,21 @@ function SageTriageInner() {
                                text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
                   >
                     {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+            {chipMode === 'starter' && (
+              <div className="flex flex-wrap gap-1.5 pl-8 animate-fadeIn">
+                {QUICK_CHIPS.map((chip) => (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    onClick={() => sendMessage(chip.q)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-mytra-purple/30
+                               text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
+                  >
+                    {chip.label}
                   </button>
                 ))}
               </div>
