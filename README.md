@@ -175,8 +175,11 @@ The application does not implement role-based access control (RBAC) at this stag
 | **Notion API** | Record sync & storage | Full record JSON (no binary blobs) | No (optional) |
 | **Resend** | EHS review email notifications | Record summary text, recipient email | No (optional) |
 | **Slack** | EHS review channel notifications | Record summary text | No (optional) |
+| **Sentry** | Error monitoring (crash/stack traces) | Error events, stack traces | No (dormant unless `NEXT_PUBLIC_SENTRY_DSN` is set) |
 
-No analytics, telemetry, error tracking (e.g., Sentry), or ad services are integrated.
+Sentry error monitoring is integrated but **dormant by default** — it sends nothing
+unless `NEXT_PUBLIC_SENTRY_DSN` is configured. No third-party analytics, product
+telemetry, or ad services are integrated.
 
 ---
 

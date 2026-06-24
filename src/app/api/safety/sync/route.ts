@@ -30,6 +30,11 @@ export async function POST(req: Request) {
 
   const key = process.env.NOTION_API_KEY
 
+  const cl = parseInt(req.headers.get('content-length') || '0', 10)
+  if (cl > 512_000) {
+    return Response.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   let record: SafetyRecord
   try {
     record = (await req.json()) as SafetyRecord
@@ -43,15 +48,17 @@ export async function POST(req: Request) {
   if (!record?.type || typeof record.type !== 'string' || !DB_MAP[record.type]) {
     return Response.json({ error: 'Invalid record type' }, { status: 400 })
   }
-  if (typeof record.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(record.createdAt)) {
+  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
     return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
-  if (session!.user!.email) {
+  const sessionEmail = session?.user?.email
+  if (sessionEmail) {
     const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
-    if (recordEmail && recordEmail !== session!.user!.email) {
+    if (recordEmail && recordEmail !== sessionEmail) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
     }
+    ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
   }
 
   const dbId = dbForType(record.type)
@@ -80,18 +87,22 @@ export async function POST(req: Request) {
       }),
     })
     if (existingCheck.ok) {
-      const existing = (await existingCheck.json()) as { results: { id: string }[] }
-      if (existing.results.length > 0) {
-        return Response.json({ ok: true, notionPageId: existing.results[0].id })
+      const existing = await existingCheck.json()
+      const results = Array.isArray(existing?.results) ? existing.results : []
+      if (results.length > 0 && typeof results[0]?.id === 'string') {
+        return Response.json({ ok: true, notionPageId: results[0].id })
       }
     }
+
+    const safeStr = (v: unknown, max = 500) =>
+      typeof v === 'string' ? v.slice(0, max) : ''
 
     const properties: Record<string, unknown> = {
       ID: { title: [{ text: { content: record.id } }] },
       Type: { select: { name: record.type } },
-      Project: { rich_text: [{ text: { content: record.projectName || '' } }] },
-      Location: { rich_text: [{ text: { content: record.location || '' } }] },
-      'Created By': { rich_text: [{ text: { content: record.createdBy || '' } }] },
+      Project: { rich_text: [{ text: { content: safeStr(record.projectName, 200) } }] },
+      Location: { rich_text: [{ text: { content: safeStr(record.location, 200) } }] },
+      'Created By': { rich_text: [{ text: { content: safeStr(record.createdBy, 200) } }] },
       'Created At': { date: { start: record.createdAt } },
       'Sync Source': { select: { name: 'equipment-qr-hub' } },
     }
@@ -102,10 +113,11 @@ export async function POST(req: Request) {
       properties['Severity'] = { select: { name: String((record as { severity?: string }).severity) } }
     }
 
+    const MAX_CHILDREN = 100
     const fullJson = JSON.stringify(record, null, 2)
     const CHUNK_SIZE = 1900
     const children = []
-    for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+    for (let i = 0; i < fullJson.length && children.length < MAX_CHILDREN; i += CHUNK_SIZE) {
       children.push({
         object: 'block' as const,
         type: 'code' as const,
@@ -131,8 +143,9 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Notion sync failed' }, { status: 502 })
     }
 
-    const page = (await res.json()) as { id: string }
-    return Response.json({ ok: true, notionPageId: page.id })
+    const page = await res.json()
+    const pageId = typeof page?.id === 'string' ? page.id : null
+    return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
     console.error('[sync] unexpected error:', e instanceof Error ? e.message : e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })

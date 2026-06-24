@@ -27,22 +27,16 @@ export default function BottomTabBar() {
       aria-label="Tab bar"
     >
       <div className="flex items-stretch">
-        {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, icon: Icon, badge }) => {
-          const isActive = isNavItemActive(href, pathname)
+        {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, icon: Icon, badge, external }) => {
+          const isActive = !external && isNavItemActive(href, pathname)
           const badgeCount = badge ? badgeCounts[badge] : 0
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => haptic('tap')}
-              data-tour-tab={href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[var(--tab-bar-h)]
+          const cls = `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[var(--tab-bar-h)]
                          transition-colors duration-200 press-scale ${
                 isActive ? 'text-mytra-purple' : 'text-fg-3 active:text-fg-2'
-              }`}
-              aria-current={isActive ? 'page' : undefined}
-            >
+              }`
+          const inner = (
+            <>
               <span className="relative">
                 <Icon className="w-7 h-7" />
                 {badgeCount > 0 && (
@@ -57,6 +51,35 @@ export default function BottomTabBar() {
               </span>
               <span className="text-[13px] font-medium leading-tight">{label}</span>
               {isActive && <span className="w-8 h-[3px] rounded-full bg-mytra-purple" />}
+            </>
+          )
+
+          if (external) {
+            return (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => haptic('tap')}
+                data-tour-tab={href}
+                className={cls}
+              >
+                {inner}
+              </a>
+            )
+          }
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => haptic('tap')}
+              data-tour-tab={href}
+              className={cls}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {inner}
             </Link>
           )
         })}

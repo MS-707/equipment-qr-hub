@@ -10,6 +10,10 @@
 
 export type SlackOutcome = 'sent' | 'not-configured' | 'failed'
 
+export function escapeSlack(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 export function isSlackConfigured(): boolean {
   return !!process.env.SLACK_WEBHOOK_URL
 }
