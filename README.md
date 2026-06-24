@@ -1,28 +1,13 @@
 # Sage EHS
 
-**Full-stack EHS management for teams that don't need a six-figure platform.**
-
-Sage EHS replaces paper-based pre-task plans, permits, job hazard analyses, incident reports, and equipment inspections with an AI-powered, offline-capable PWA that integrates with the tools your team already uses — Notion, Slack, Google Workspace, and email.
+Mytra's internal EHS platform. Replaces paper-based pre-task plans, permits, job hazard analyses, incident reports, and equipment inspections with an AI-powered, offline-capable PWA that plugs into our existing stack — Notion, Slack, Google Workspace, and email.
 
 **Live:** [equipment-qr-hub.vercel.app](https://equipment-qr-hub.vercel.app)
 
 ---
 
-## Why Sage EHS
-
-Most EHS platforms are built for companies with dedicated safety departments and six-figure software budgets. VelocityEHS, Intelex, SafetyCulture — they're solid tools, but they start at $40–60K/year with per-seat licensing that makes no sense when your whole company is 30 people. The real alternative for small and mid-size construction firms isn't a cheaper enterprise tool. It's paper. Clipboards, filing cabinets, PTPs scanned into a shared drive, JHAs tracked in Excel. That's what we were doing, and it's what most crews our size still do.
-
-Sage EHS exists because we needed something in between. Not a stripped-down version of an enterprise platform, but a right-sized tool built around how small crews actually work in the field. It's a PWA — nothing to install from an app store, just open a browser and pin it to your home screen. It works offline because jobsites don't have reliable connectivity. It syncs with Notion because that's where we already manage projects, and it authenticates through Google Workspace because that's what we already use. No new silo, no new login, no training session required.
-
-We also leaned into AI where it actually helps. Sage's AI assistant handles hazard identification and safety documentation — not to replace judgment, but to make a two-person safety team as effective as a ten-person one. The enterprise platforms are just starting to talk about this. We shipped it.
-
-This isn't a product built by a software company guessing at what field crews need. It's built by the people filling out the permits.
-
----
-
 ## Table of Contents
 
-- [Why Sage EHS](#why-sage-ehs)
 - [Features](#features)
 - [Integrations](#integrations)
 - [Getting Started](#getting-started)
