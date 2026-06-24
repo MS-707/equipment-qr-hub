@@ -94,6 +94,7 @@ All API routes are Next.js serverless functions running on Vercel's edge/serverl
 | `/api/safety/suggest-hazards` | AI hazard suggestions for PTP | Anthropic API |
 | `/api/safety/suggest-jha` | AI JHA step analysis | Anthropic API |
 | `/api/safety/parse-document` | AI document import for JHA | Anthropic API |
+| `/api/sage/triage` | AI conversational triage assistant | Anthropic API |
 | `/api/auth/[...nextauth]` | Authentication (NextAuth.js) | Google OAuth |
 | `/api/beta/signup` | Beta signup form submission | Notion API |
 
@@ -147,6 +148,7 @@ When AI features are enabled and a user triggers a suggestion:
 |------|---------|----------|
 | **Google OAuth** | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` set | Production — SSO via company Google Workspace |
 | **Email login** | `ALLOW_EMAIL_LOGIN=1` set | Pilot/testing — domain-restricted, shared access code |
+| **Dev login** | `ALLOW_DEV_LOGIN=1` or Google OAuth not configured | Local dev / demos — name + email form, no OAuth required |
 | **Offline fallback** | No connectivity + cached identity | Field work — attributes records to last verified login |
 
 ### Domain Restriction
@@ -203,6 +205,8 @@ All secrets are stored as Vercel environment variables and injected at build/run
 | `ALLOW_EMAIL_LOGIN` | Set to `1` to enable email login (pilot mode) |
 | `EMAIL_LOGIN_CODE` | Shared access code for email login (required in production) |
 | `ALLOWED_EMAIL_DOMAINS` | Comma-separated allowlist (default: `mytra.ai`) |
+| `ALLOW_DEV_LOGIN` | `1` to force dev login; `0` to force off; unset = auto (on when Google not configured) |
+| `ADMIN_EMAILS` | Comma-separated admin emails (server-only, never shipped to client) |
 
 ### AI (optional, feature-flagged)
 
@@ -219,6 +223,8 @@ All secrets are stored as Vercel environment variables and injected at build/run
 | `EHS_NOTIFY_EMAIL` | Recipient address for EHS review emails |
 | `EHS_NOTIFY_FROM` | Verified sender (e.g., `Sage EHS <sage@yourdomain.com>`) |
 | `NEXT_PUBLIC_EHS_REVIEW` | Set to `1` to show "Submit for EHS Review" button |
+| `REVIEW_TOKEN_SECRET` | HMAC secret for review tokens (falls back to `NEXTAUTH_SECRET`) |
+| `SLACK_WEBHOOK_URL` | General Slack webhook (first-login alerts, beta signups) |
 
 ### Notion Sync (optional)
 
@@ -229,12 +235,29 @@ All secrets are stored as Vercel environment variables and injected at build/run
 | `NOTION_JHA_DB_ID` | JHA database ID |
 | `NOTION_PERMITS_DB_ID` | Permits database ID |
 | `NOTION_INCIDENTS_DB_ID` | Incidents database ID |
+| `NOTION_INSPECTIONS_DB_ID` | Pre-trip inspections database ID |
 
 ### Slack (optional)
 
 | Variable | Purpose |
 |----------|---------|
 | `SLACK_EHS_WEBHOOK_URL` | Incoming webhook URL for #ehs channel |
+
+### Sentry (optional, dormant by default)
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry project DSN — enables error monitoring when set |
+| `SENTRY_AUTH_TOKEN` | Org-level auth token for source map upload |
+| `SENTRY_ORG` | Sentry organization slug |
+| `SENTRY_PROJECT` | Sentry project slug |
+
+### Upstash Redis (optional)
+
+| Variable | Purpose |
+|----------|---------|
+| `KV_REST_API_URL` | Upstash Redis REST URL (beta signups, rate limiting) |
+| `KV_REST_API_TOKEN` | Upstash Redis REST token |
 
 ---
 
@@ -247,11 +270,15 @@ All secrets are stored as Vercel environment variables and injected at build/run
 | Styling | Tailwind CSS | 3.4 |
 | Icons | Lucide React | latest |
 | Auth | NextAuth.js | 4 |
-| AI | Anthropic Claude SDK | latest |
+| AI | Anthropic Claude SDK | ^0.100 |
+| Validation | Zod | 4 |
 | Email | Resend REST API | - |
 | Sync | Notion API, Slack webhooks | - |
+| Error monitoring | Sentry (`@sentry/nextjs`) | ^10.58 |
+| Cache / KV | Upstash Redis | - |
 | Deployment | Vercel (serverless) | - |
-| PWA | next-pwa / service worker | - |
+| PWA | Serwist (`@serwist/next`) | ^9.5 |
+| Testing | Vitest | - |
 
 ### Build & Runtime
 
