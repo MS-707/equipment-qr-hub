@@ -19,9 +19,9 @@ export default function PrivacyPolicy() {
       </div>
 
       <p className="text-sm text-fg-2">
-        Sage EHS is built by Mytra AI, Inc. This policy explains what data we collect,
-        how we store it, and what choices you have. We wrote it in plain language so
-        everyone on your crew can understand it.
+        This policy explains what data Sage EHS collects, how we store it, and what
+        choices you have. We wrote it in plain language so everyone on your team can
+        understand it.
       </p>
 
       {/* Data We Collect */}
@@ -149,11 +149,7 @@ export default function PrivacyPolicy() {
         <h2 className="text-lg font-semibold text-fg">Your Data Rights</h2>
         <p className="text-sm text-fg-2">
           You can export your safety records at any time using the CSV export feature
-          built into the app. If you need to request access to, correction of, or
-          deletion of your data, contact us at{' '}
-          <a href="mailto:privacy@mytra.ai" className="text-mytra-purple hover:underline">
-            privacy@mytra.ai
-          </a>.
+          built into the app.
         </p>
       </section>
 
@@ -167,17 +163,6 @@ export default function PrivacyPolicy() {
         </p>
       </section>
 
-      {/* Contact */}
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold text-fg">Contact Us</h2>
-        <p className="text-sm text-fg-2">
-          If you have questions about this privacy policy or how your data is handled,
-          reach out to us at{' '}
-          <a href="mailto:privacy@mytra.ai" className="text-mytra-purple hover:underline">
-            privacy@mytra.ai
-          </a>.
-        </p>
-      </section>
     </main>
   )
 }
