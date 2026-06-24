@@ -62,13 +62,11 @@ export async function decideReview(
   const cappedNote = note ? note.slice(0, 500) : undefined
 
   if (kvEnabled()) {
-    const lockKey = `${KV_PREFIX}${recordId}:decided`
-    const locked = await kv.set(lockKey, action, { nx: true, ex: 60 * 60 * 24 * 30 })
-    if (!locked) {
-      return await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`) ?? undefined
-    }
     const sub = await kv.get<ReviewSubmission>(`${KV_PREFIX}${recordId}`)
     if (!sub) return undefined
+    const lockKey = `${KV_PREFIX}${recordId}:${sub.submittedAt}:decided`
+    const locked = await kv.set(lockKey, action, { nx: true, ex: 60 * 60 * 24 * 30 })
+    if (!locked) return sub
     sub.status = action
     sub.decidedAt = new Date().toISOString()
     sub.decidedBy = decidedBy

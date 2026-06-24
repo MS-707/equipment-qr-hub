@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`atmo-analyze:${session!.user!.email}`, 5, 60_000)
+  const rl = await rateLimit(`atmo-analyze:${session?.user?.email || 'unknown'}`, 5, 60_000)
   if (!rl.ok) {
     return Response.json(
       { error: 'Too many requests' },

@@ -6,13 +6,10 @@ import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
 import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 import { createReviewToken } from '@/lib/review-token'
 import { storeReviewSubmission } from '@/lib/review-store'
+import { escapeSlack } from '@/lib/slack-notify'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
-
-function escapeSlack(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
@@ -35,7 +32,7 @@ export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const rl = await rateLimit(`review:${session!.user!.email}`, 5, 60_000)
+  const rl = await rateLimit(`review:${session?.user?.email || 'unknown'}`, 5, 60_000)
   if (!rl.ok) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
@@ -53,6 +50,11 @@ export async function POST(req: Request) {
     )
   }
 
+  const cl = parseInt(req.headers.get('content-length') || '0', 10)
+  if (cl > 512_000) {
+    return Response.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   let body: { record: SafetyRecord; notionPageId: string | null }
   try {
     body = await req.json()
@@ -62,8 +64,23 @@ export async function POST(req: Request) {
 
   const { record, notionPageId } = body
 
-  if (!record?.id || !record?.type) {
-    return Response.json({ error: 'Missing record id or type' }, { status: 400 })
+  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
+    return Response.json({ error: 'Missing or invalid record id' }, { status: 400 })
+  }
+  if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
+    return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
+  }
+  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
+    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
+  }
+
+  const sessionEmail = session?.user?.email
+  if (sessionEmail) {
+    const recordEmail = ('createdByEmail' in record ? (record as { createdByEmail?: string }).createdByEmail : null)
+    if (recordEmail && recordEmail !== sessionEmail) {
+      return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
+    }
+    ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
   }
 
   if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
@@ -98,13 +115,16 @@ export async function POST(req: Request) {
   }
 
   // ── Store submission for email-based decisions ────────────────
-  const submitterEmail = record.createdByEmail || session!.user!.email || ''
+  const sanitize = (s: unknown, max = 200) =>
+    (typeof s === 'string' ? s : '').replace(/[\r\n]/g, ' ').slice(0, max)
+
+  const submitterEmail = sanitize(session?.user?.email || record.createdByEmail || '', 200)
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
-    projectName: record.projectName || '',
-    location: record.location || '',
-    submitterName: record.createdBy || 'Unknown',
+    projectName: sanitize(record.projectName),
+    location: sanitize(record.location),
+    submitterName: sanitize(record.createdBy, 200) || 'Unknown',
     submitterEmail,
   })
 
@@ -173,21 +193,25 @@ async function syncToNotion(
   const dbId = dbForType(record.type)
   if (!dbId) return { ok: false, error: 'No Notion DB configured for this record type' }
 
+  const safeStr = (v: unknown, max = 200) =>
+    typeof v === 'string' ? v.slice(0, max) : ''
+
   const properties: Record<string, unknown> = {
     ID: { title: [{ text: { content: record.id } }] },
     Type: { select: { name: record.type } },
-    Project: { rich_text: [{ text: { content: record.projectName || '' } }] },
-    Location: { rich_text: [{ text: { content: record.location || '' } }] },
-    'Created By': { rich_text: [{ text: { content: record.createdBy || '' } }] },
+    Project: { rich_text: [{ text: { content: safeStr(record.projectName) } }] },
+    Location: { rich_text: [{ text: { content: safeStr(record.location) } }] },
+    'Created By': { rich_text: [{ text: { content: safeStr(record.createdBy) } }] },
     'Created At': { date: { start: record.createdAt } },
     'Sync Source': { select: { name: 'equipment-qr-hub' } },
     'EHS Review': { select: { name: 'Pending' } },
   }
 
+  const MAX_CHILDREN = 100
   const fullJson = JSON.stringify(record, null, 2)
   const CHUNK_SIZE = 1900
   const children: { object: 'block'; type: 'code'; code: { language: string; rich_text: { type: 'text'; text: { content: string } }[] } }[] = []
-  for (let i = 0; i < fullJson.length; i += CHUNK_SIZE) {
+  for (let i = 0; i < fullJson.length && children.length < MAX_CHILDREN; i += CHUNK_SIZE) {
     children.push({
       object: 'block',
       type: 'code',

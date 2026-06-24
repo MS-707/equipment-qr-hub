@@ -1,6 +1,6 @@
 import { addSignup, type BetaSignup } from '@/lib/beta'
 import { sendEhsNotification } from '@/lib/email-notify'
-import { sendSlackMessage } from '@/lib/slack-notify'
+import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
@@ -75,9 +75,9 @@ export async function POST(req: Request) {
       ].join('\n'),
     }),
     sendSlackMessage(
-      `📋 *Beta signup:* ${name} (${email})\n` +
-      `${company} · ${role}${crewSize ? ` · ${crewSize}` : ''}\n` +
-      `${reason ? `> ${reason}\n` : ''}` +
+      `📋 *Beta signup:* ${escapeSlack(name)} (${escapeSlack(email)})\n` +
+      `${escapeSlack(company)} · ${escapeSlack(role)}${crewSize ? ` · ${escapeSlack(crewSize)}` : ''}\n` +
+      `${reason ? `> ${escapeSlack(reason)}\n` : ''}` +
       `<${appUrl}/admin/beta|Review in admin>`
     ),
   ])
