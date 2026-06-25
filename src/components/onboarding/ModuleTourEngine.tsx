@@ -40,27 +40,51 @@ export default function ModuleTourEngine() {
   const [tourId, setTourId] = useState<string | null>(null)
   const [stepIndex, setStepIndex] = useState(0)
   const [rect, setRect] = useState<DOMRect | null>(null)
+  // 'entering' = first step appearing, 'idle' = stable, 'exiting' = fading out before step change
+  const [phase, setPhase] = useState<'entering' | 'idle' | 'exiting'>('entering')
+  const pendingStepRef = useRef<number | null>(null)
 
   const finish = useCallback(() => {
     if (tourId) markTourSeen(tourId)
     setActive(false)
     setStepIndex(0)
     setTourId(null)
+    setPhase('entering')
     window.dispatchEvent(new Event(TOUR_ENDED_EVENT))
   }, [tourId])
+
+  const goToStep = useCallback((next: number) => {
+    // Fade out current highlight, then switch step after fade completes
+    pendingStepRef.current = next
+    setPhase('exiting')
+  }, [])
+
+  // When phase becomes 'exiting', wait for the fade-out, then apply the step change
+  useEffect(() => {
+    if (phase !== 'exiting') return
+    const timer = setTimeout(() => {
+      const next = pendingStepRef.current
+      if (next !== null) {
+        setStepIndex(next)
+        pendingStepRef.current = null
+      }
+      setPhase('entering')
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [phase])
 
   const startTour = useCallback((id: string, attempt = 0) => {
     const tour = findTourForRoute(pathname)
     if (!tour || tour.id !== id) return
     const available = tour.steps.filter((s) => findVisible(s.target))
     if (available.length === 0) {
-      // Targets may not have rendered yet (data still loading) — retry briefly.
       if (attempt < 3) setTimeout(() => startTour(id, attempt + 1), 400 * (attempt + 1))
       return
     }
     setSteps(available)
     setTourId(id)
     setStepIndex(0)
+    setPhase('entering')
     setActive(true)
     window.dispatchEvent(new Event(TOUR_ACTIVE_EVENT))
   }, [pathname])
@@ -103,8 +127,7 @@ export default function ModuleTourEngine() {
     }
 
     // Track the target every frame until it stops moving (smooth scroll, late
-    // layout), then lock scroll. A single delayed measure used to snapshot
-    // mid-scroll coordinates, parking the spotlight on the wrong content.
+    // layout), then lock scroll and reveal.
     let raf = 0
     let last: DOMRect | null = null
     let stableFrames = 0
@@ -129,6 +152,8 @@ export default function ModuleTourEngine() {
       if ((stableFrames >= 6 && r) || Date.now() - startedAt > 1500) {
         if (r) setRect(r)
         document.body.style.overflow = 'hidden'
+        // Rect is stable — reveal the highlight
+        setPhase('idle')
         return
       }
       raf = requestAnimationFrame(track)
@@ -152,13 +177,14 @@ export default function ModuleTourEngine() {
   useEffect(() => {
     if (!active) return
     const onKey = (e: KeyboardEvent) => {
+      if (phase === 'exiting') return
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         if (stepIndex === steps.length - 1) finish()
-        else setStepIndex((i) => i + 1)
+        else goToStep(stepIndex + 1)
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
-        if (stepIndex > 0) setStepIndex((i) => i - 1)
+        if (stepIndex > 0) goToStep(stepIndex - 1)
       } else if (e.key === 'Escape') {
         e.preventDefault()
         finish()
@@ -166,7 +192,7 @@ export default function ModuleTourEngine() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [active, stepIndex, steps.length, finish])
+  }, [active, stepIndex, steps.length, finish, goToStep, phase])
 
   if (!active || steps.length === 0) return null
 
@@ -179,28 +205,35 @@ export default function ModuleTourEngine() {
   const targetCenterX = rect ? rect.left + rect.width / 2 : vw / 2
   const tooltipLeft = Math.max(12, Math.min(targetCenterX - tooltipWidth / 2, vw - tooltipWidth - 12))
 
+  // Visible only when idle (rect stable and not mid-transition)
+  const visible = phase === 'idle' && rect !== null
+
   return (
     <div className="fixed inset-0 z-[70] animate-fadeIn">
       <div className="absolute inset-0" />
 
       {rect && (
         <div
-          className="absolute border-2 border-mytra-purple rounded-xl pointer-events-none transition-all duration-200 ease-out"
+          className="absolute border-2 border-mytra-purple rounded-xl pointer-events-none"
           style={{
             top: rect.top - PAD,
             left: rect.left - PAD,
             width: rect.width + PAD * 2,
             height: rect.height + PAD * 2,
             boxShadow: '0 0 0 9999px rgba(0,0,0,0.72)',
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 150ms ease-in-out',
           }}
         />
       )}
 
       <div
-        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4 transition-all duration-200 ease-out"
+        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4"
         style={{
           width: tooltipWidth,
           left: rect ? tooltipLeft : '50%',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 150ms ease-in-out',
           ...(rect
             ? placeAbove
               ? { top: rect.top - GAP, transform: 'translateY(-100%)' }
@@ -234,7 +267,8 @@ export default function ModuleTourEngine() {
             {stepIndex > 0 && (
               <button
                 type="button"
-                onClick={() => setStepIndex((i) => i - 1)}
+                onClick={() => goToStep(stepIndex - 1)}
+                disabled={phase === 'exiting'}
                 className="min-h-[40px] px-3 rounded-lg text-sm font-medium text-fg-3 hover:text-fg transition-colors inline-flex items-center gap-1"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
@@ -242,7 +276,8 @@ export default function ModuleTourEngine() {
             )}
             <button
               type="button"
-              onClick={() => (isLast ? finish() : setStepIndex((i) => i + 1))}
+              onClick={() => (isLast ? finish() : goToStep(stepIndex + 1))}
+              disabled={phase === 'exiting'}
               className="min-h-[40px] px-4 rounded-lg text-sm font-semibold bg-mytra-purple text-white
                          hover:bg-mytra-purple-hover transition-colors inline-flex items-center gap-1.5"
             >
