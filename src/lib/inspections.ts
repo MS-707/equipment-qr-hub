@@ -145,6 +145,8 @@ export function buildBlankItems(checklistType: ChecklistType): InspectionItemRes
     result: null,
     notes: '',
     photo: null,
+    naReasonCode: null,
+    naJustification: '',
   }))
 }
 
@@ -174,6 +176,9 @@ export function submitInspection(data: {
     (item) => item.critical && item.result === 'fail'
   )
   const hasAnyFail = data.items.some((item) => item.result === 'fail')
+  const criticalNaCount = data.items.filter(
+    (item) => item.critical && item.result === 'na'
+  ).length
 
   let workOrderId: string | null = null
 
@@ -217,6 +222,7 @@ export function submitInspection(data: {
     items: data.items.map((i) => ({ ...i, photo: null })),
     result: hasAnyFail ? 'fail' : 'pass',
     hasCriticalFail,
+    criticalNaCount,
     workOrderId,
     createdAt: new Date().toISOString(),
     syncStatus: 'pending',
@@ -249,18 +255,30 @@ export function exportInspectionsToCsv(records: InspectionRecord[]): string {
   const headers = [
     'Inspection_ID', 'Equipment_ID', 'Inspector', 'Shift',
     'Hour_Meter', 'Checklist_Type', 'Result', 'Critical_Fail',
-    'Failed_Items', 'Work_Order_ID', 'Date', 'Sync_Status',
+    'Critical_NA', 'Failed_Items', 'NA_Critical_Items',
+    'Work_Order_ID', 'Date', 'Sync_Status',
   ]
   const rows = records.map((r) => {
     const failedItems = r.items
       .filter((i) => i.result === 'fail')
       .map((i) => i.label)
       .join('; ')
+    const naCriticalItems = r.items
+      .filter((i) => i.critical && i.result === 'na')
+      .map((i) => {
+        const reason = i.naReasonCode || 'no reason'
+        const detail = i.naJustification ? ` — ${i.naJustification}` : ''
+        return `${i.label} (${reason}${detail})`
+      })
+      .join('; ')
+    const critNaCount = r.criticalNaCount ?? r.items.filter((i) => i.critical && i.result === 'na').length
     return [
       csvCell(r.id), csvCell(r.equipmentId), csvCell(r.inspectorName), csvCell(r.shift),
       csvCell(r.hourMeterReading), csvCell(r.checklistType), csvCell(r.result),
       csvCell(r.hasCriticalFail ? 'YES' : 'NO'),
-      csvCell(failedItems), csvCell(r.workOrderId), csvCell(r.createdAt), csvCell(r.syncStatus),
+      csvCell(critNaCount > 0 ? `YES (${critNaCount})` : 'NO'),
+      csvCell(failedItems), csvCell(naCriticalItems),
+      csvCell(r.workOrderId), csvCell(r.createdAt), csvCell(r.syncStatus),
     ].join(',')
   })
   return [headers.join(','), ...rows].join('\n')

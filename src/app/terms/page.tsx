@@ -19,18 +19,18 @@ export default function TermsOfService() {
       </div>
 
       <p className="text-sm text-fg-2">
-        These terms govern your use of Sage EHS, a product of Mytra AI, Inc. By using
-        the app, you agree to these terms. If you do not agree, do not use the service.
+        These terms govern your use of Sage EHS. By using the platform, you agree to
+        these terms. If you do not agree, do not use the service.
       </p>
 
       {/* What Sage EHS Is */}
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-fg">What Sage EHS Is</h2>
         <p className="text-sm text-fg-2">
-          Sage EHS is a construction safety documentation and management tool. It helps
-          teams create pre-task plans, job hazard analyses, work permits, incident
-          reports, and other safety records. The app works offline and can sync records
-          to your organization&apos;s systems when connected.
+          Sage EHS is an environment, health, and safety (EHS) management platform. It
+          helps teams create pre-task plans, job hazard analyses, work permits, incident
+          reports, equipment inspections, and other safety records. The platform works
+          offline and syncs records to your organization&apos;s systems when connected.
         </p>
       </section>
 
@@ -49,7 +49,7 @@ export default function TermsOfService() {
           personnel before being acted on.
         </p>
         <p className="text-sm text-fg-2">
-          Mytra AI does not warrant the accuracy, completeness, or reliability of any
+          We do not warrant the accuracy, completeness, or reliability of any
           AI-generated content. AI output may contain errors, omit hazards, or suggest
           controls that are not appropriate for your specific situation. Always apply
           professional judgment.
@@ -75,8 +75,8 @@ export default function TermsOfService() {
         <p className="text-sm text-fg-2">
           You and your organization retain ownership of all safety records, incident
           reports, signatures, and other data you create in Sage EHS. By using the
-          service, you grant Mytra AI, Inc. a limited license to process, store, and
-          transmit your data solely to provide and improve the service.
+          service, you grant us a limited license to process, store, and transmit your
+          data solely to provide and improve the service.
         </p>
       </section>
 
@@ -97,16 +97,14 @@ export default function TermsOfService() {
         <h2 className="text-lg font-semibold text-fg">Limitation of Liability</h2>
         <p className="text-sm text-fg-2">
           Sage EHS is provided &quot;as is&quot; and &quot;as available&quot; without
-          warranties of any kind, either express or implied. Mytra AI, Inc. is not
-          liable for any safety outcomes, workplace incidents, injuries, regulatory
-          penalties, or other damages arising from the use of or inability to use the
-          service.
+          warranties of any kind, either express or implied. We are not liable for any
+          safety outcomes, workplace incidents, injuries, regulatory penalties, or other
+          damages arising from the use of or inability to use the service.
         </p>
         <p className="text-sm text-fg-2">
-          To the maximum extent permitted by law, Mytra AI, Inc.&apos;s total liability
-          for any claims related to the service is limited to the amount you paid for
-          the service in the twelve months preceding the claim, or $100, whichever is
-          greater.
+          To the maximum extent permitted by law, our total liability for any claims
+          related to the service is limited to the amount you paid for the service in
+          the twelve months preceding the claim, or $100, whichever is greater.
         </p>
       </section>
 
@@ -124,9 +122,9 @@ export default function TermsOfService() {
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-fg">Governing Law</h2>
         <p className="text-sm text-fg-2">
-          These terms are governed by the laws of the State of Texas, without regard to
+          These terms are governed by the laws of the State of California, without regard to
           conflict-of-law principles. Any disputes will be resolved in the state or
-          federal courts located in Texas.
+          federal courts located in California.
         </p>
       </section>
 
@@ -140,16 +138,6 @@ export default function TermsOfService() {
         </p>
       </section>
 
-      {/* Contact */}
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold text-fg">Contact Us</h2>
-        <p className="text-sm text-fg-2">
-          If you have questions about these terms, contact us at{' '}
-          <a href="mailto:legal@mytra.ai" className="text-mytra-purple hover:underline">
-            legal@mytra.ai
-          </a>.
-        </p>
-      </section>
     </main>
   )
 }

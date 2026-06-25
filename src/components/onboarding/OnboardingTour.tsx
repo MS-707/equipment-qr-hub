@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { Sparkles, ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
 
@@ -52,6 +52,9 @@ export default function OnboardingTour() {
   const [stepIndex, setStepIndex] = useState(0)
   const [steps, setSteps] = useState<TourStep[]>([])
   const [rect, setRect] = useState<DOMRect | null>(null)
+  // 'entering' = measuring target, 'visible' = stable, 'stepping' = crossfading between steps
+  const [spotPhase, setSpotPhase] = useState<'entering' | 'visible' | 'stepping'>('entering')
+  const pendingStepRef = useRef<number | null>(null)
 
   const finish = useCallback(() => {
     try {
@@ -63,6 +66,24 @@ export default function OnboardingTour() {
     setStepIndex(0)
   }, [])
 
+  const goToStep = useCallback((next: number) => {
+    pendingStepRef.current = next
+    setSpotPhase('stepping')
+  }, [])
+
+  useEffect(() => {
+    if (spotPhase !== 'stepping') return
+    const timer = setTimeout(() => {
+      const next = pendingStepRef.current
+      if (next !== null) {
+        setStepIndex(next)
+        pendingStepRef.current = null
+      }
+      setSpotPhase('entering')
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [spotPhase])
+
   const startTour = useCallback(() => {
     const available = STEPS.filter((s) => findVisible(s.target))
     if (available.length === 0) {
@@ -71,6 +92,7 @@ export default function OnboardingTour() {
     }
     setSteps(available)
     setStepIndex(0)
+    setSpotPhase('entering')
     setPhase('tour')
   }, [finish])
 
@@ -95,7 +117,6 @@ export default function OnboardingTour() {
     return () => window.removeEventListener(START_TOUR_EVENT, onStart)
   }, [])
 
-  // Measure the current target whenever the step changes or the window resizes.
   useLayoutEffect(() => {
     if (phase !== 'tour') return
     const measure = () => {
@@ -103,9 +124,12 @@ export default function OnboardingTour() {
       setRect(el ? el.getBoundingClientRect() : null)
     }
     measure()
+    // Reveal after a frame so position is applied before fade-in
+    const raf = requestAnimationFrame(() => setSpotPhase('visible'))
     window.addEventListener('resize', measure)
     window.addEventListener('orientationchange', measure)
     return () => {
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
       window.removeEventListener('orientationchange', measure)
     }
@@ -121,23 +145,24 @@ export default function OnboardingTour() {
     }
   }, [phase])
 
-  // Keyboard navigation for tour phase.
   useEffect(() => {
     if (phase !== 'tour') return
     const onKey = (e: KeyboardEvent) => {
+      if (spotPhase === 'stepping') return
       if (e.key === 'Escape') { finish(); return }
       if (e.key === 'ArrowRight' || e.key === 'Enter') {
         e.preventDefault()
-        setStepIndex((i) => (i >= steps.length - 1 ? (finish(), i) : i + 1))
+        if (stepIndex >= steps.length - 1) finish()
+        else goToStep(stepIndex + 1)
       }
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        setStepIndex((i) => Math.max(0, i - 1))
+        if (stepIndex > 0) goToStep(stepIndex - 1)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, steps.length, finish])
+  }, [phase, stepIndex, steps.length, finish, goToStep, spotPhase])
 
   if (phase === 'idle') return null
 
@@ -176,43 +201,44 @@ export default function OnboardingTour() {
     )
   }
 
-  // ── Coach-mark tour ─────────────────────────────
   const step = steps[stepIndex]
   const isLast = stepIndex === steps.length - 1
   const vw = typeof window !== 'undefined' ? window.innerWidth : 0
   const vh = typeof window !== 'undefined' ? window.innerHeight : 0
 
-  // Place the tooltip above the target if it sits in the lower half of the screen.
   const placeAbove = rect ? rect.top > vh / 2 : false
   const tooltipWidth = Math.min(300, vw - 24)
   const targetCenterX = rect ? rect.left + rect.width / 2 : vw / 2
   const tooltipLeft = Math.max(12, Math.min(targetCenterX - tooltipWidth / 2, vw - tooltipWidth - 12))
 
+  const spotVisible = spotPhase === 'visible' && rect !== null
+
   return (
     <div className="fixed inset-0 z-[70] animate-fadeIn">
-      {/* Click-catcher backdrop (transparent — dimming comes from the spotlight box-shadow) */}
       <div className="absolute inset-0" />
 
-      {/* Spotlight cutout */}
       {rect && (
         <div
-          className="absolute border-2 border-mytra-purple rounded-xl pointer-events-none transition-all duration-200"
+          className="absolute border-2 border-mytra-purple rounded-xl pointer-events-none"
           style={{
             top: rect.top - PAD,
             left: rect.left - PAD,
             width: rect.width + PAD * 2,
             height: rect.height + PAD * 2,
             boxShadow: '0 0 0 9999px rgba(0,0,0,0.72)',
+            opacity: spotVisible ? 1 : 0,
+            transition: 'opacity 150ms ease-in-out',
           }}
         />
       )}
 
-      {/* Tooltip */}
       <div
         className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4"
         style={{
           width: tooltipWidth,
           left: rect ? tooltipLeft : '50%',
+          opacity: spotVisible ? 1 : 0,
+          transition: 'opacity 150ms ease-in-out',
           ...(rect
             ? placeAbove
               ? { top: rect.top - GAP, transform: 'translateY(-100%)' }
@@ -246,7 +272,8 @@ export default function OnboardingTour() {
             {stepIndex > 0 && (
               <button
                 type="button"
-                onClick={() => setStepIndex((i) => i - 1)}
+                onClick={() => goToStep(stepIndex - 1)}
+                disabled={spotPhase === 'stepping'}
                 className="min-h-[40px] px-3 rounded-lg text-sm font-medium text-fg-3 hover:text-fg transition-colors inline-flex items-center gap-1"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
@@ -254,7 +281,8 @@ export default function OnboardingTour() {
             )}
             <button
               type="button"
-              onClick={() => (isLast ? finish() : setStepIndex((i) => i + 1))}
+              onClick={() => (isLast ? finish() : goToStep(stepIndex + 1))}
+              disabled={spotPhase === 'stepping'}
               className="min-h-[40px] px-4 rounded-lg text-sm font-semibold bg-mytra-purple text-white
                          hover:bg-mytra-purple-hover transition-colors inline-flex items-center gap-1.5"
             >
