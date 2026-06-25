@@ -15,6 +15,7 @@ const mockRecord: InspectionRecord = {
   ],
   result: 'fail',
   hasCriticalFail: false,
+  criticalNaCount: 0,
   workOrderId: 'WO-2026-0001',
   createdAt: '2026-06-23T08:00:00Z',
   syncStatus: 'synced',
@@ -29,7 +30,9 @@ describe('exportInspectionsToCsv', () => {
     expect(headers).toContain('Equipment_ID')
     expect(headers).toContain('Inspector')
     expect(headers).toContain('Critical_Fail')
+    expect(headers).toContain('Critical_NA')
     expect(headers).toContain('Failed_Items')
+    expect(headers).toContain('NA_Critical_Items')
   })
 
   it('includes record data in CSV row', () => {
@@ -77,5 +80,30 @@ describe('exportInspectionsToCsv', () => {
     const record = { ...mockRecord, inspectorName: '=CMD()' }
     const csv = exportInspectionsToCsv([record])
     expect(csv).toContain("\"'=CMD()\"")
+  })
+
+  it('shows NO for zero critical N/A', () => {
+    const csv = exportInspectionsToCsv([mockRecord])
+    const row = csv.split('\n')[1]
+    const cols = row.split(',')
+    const critNaCol = cols[8]
+    expect(critNaCol).toContain('NO')
+  })
+
+  it('shows YES with count for critical N/A items', () => {
+    const record: InspectionRecord = {
+      ...mockRecord,
+      criticalNaCount: 2,
+      items: [
+        { id: 'brake', label: 'Brakes', category: 'Brakes', result: 'na', notes: '', critical: true, photo: null, naReasonCode: 'not-installed', naJustification: 'Unit has no brakes' },
+        { id: 'horn', label: 'Horn', category: 'Horn', result: 'na', notes: '', critical: true, photo: null, naReasonCode: 'cannot-access', naJustification: '' },
+        { id: 'lights', label: 'Lights', category: 'Lights', result: 'pass', notes: '', critical: false, photo: null },
+      ],
+    }
+    const csv = exportInspectionsToCsv([record])
+    const row = csv.split('\n')[1]
+    expect(row).toContain('YES (2)')
+    expect(row).toContain('Brakes (not-installed')
+    expect(row).toContain('Horn (cannot-access)')
   })
 })

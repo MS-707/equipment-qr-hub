@@ -135,6 +135,19 @@ export type Shift = 'Day' | 'Swing' | 'Night'
 
 export type InspectionResult = 'pass' | 'fail' | 'na'
 
+export type NaReasonCode =
+  | 'not-installed'
+  | 'cannot-access'
+  | 'maintenance-in-progress'
+  | 'other'
+
+export const NA_REASON_LABELS: Record<NaReasonCode, string> = {
+  'not-installed': 'Not installed on this unit',
+  'cannot-access': 'Cannot access for inspection',
+  'maintenance-in-progress': 'Maintenance in progress',
+  'other': 'Other (specify below)',
+}
+
 export interface InspectionItemResult {
   id: string
   label: string
@@ -143,6 +156,8 @@ export interface InspectionItemResult {
   result: InspectionResult | null
   notes: string
   photo: string | null
+  naReasonCode?: NaReasonCode | null
+  naJustification?: string
 }
 
 export type InspectionSyncStatus = 'pending' | 'synced' | 'failed' | 'offline'
@@ -157,6 +172,7 @@ export interface InspectionRecord {
   items: InspectionItemResult[]
   result: 'pass' | 'fail'
   hasCriticalFail: boolean
+  criticalNaCount: number
   workOrderId: string | null
   createdAt: string
   syncStatus: InspectionSyncStatus

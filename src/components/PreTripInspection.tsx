@@ -19,6 +19,8 @@ import {
   InspectionResult,
   InspectionItemResult,
   InspectionRecord,
+  NaReasonCode,
+  NA_REASON_LABELS,
   getChecklistType,
 } from '@/lib/types'
 import { getChecklist } from '@/data/inspection-checklists'
@@ -43,12 +45,17 @@ const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
 // ── ChecklistItemRow ───────────────────────────────────────
 
+const NA_REASON_CODES: NaReasonCode[] = ['not-installed', 'cannot-access', 'maintenance-in-progress', 'other']
+
 interface ChecklistItemRowProps {
   item: { id: string; label: string; category: string; critical: boolean }
   state: InspectionItemResult
   notesMissing: boolean
+  naMissing: boolean
   onResult: (result: InspectionResult) => void
   onNotes: (notes: string) => void
+  onNaReason: (code: NaReasonCode) => void
+  onNaJustification: (text: string) => void
   onRemovePhoto: () => void
   onCameraClick: (itemId: string) => void
 }
@@ -57,12 +64,16 @@ function ChecklistItemRow({
   item,
   state,
   notesMissing,
+  naMissing,
   onResult,
   onNotes,
+  onNaReason,
+  onNaJustification,
   onRemovePhoto,
   onCameraClick,
 }: ChecklistItemRowProps) {
   const isFail = state.result === 'fail'
+  const isCriticalNa = item.critical && state.result === 'na'
 
   return (
     <div className="bg-mytra-card border border-mytra-border rounded-card p-3">
@@ -115,6 +126,50 @@ function ChecklistItemRow({
           N/A
         </button>
       </div>
+
+      {/* Critical N/A justification section */}
+      {isCriticalNa && (
+        <div className="mt-3 space-y-2 animate-fadeIn">
+          <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
+            <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+            <p className="text-xs text-warn/80 leading-relaxed">
+              This is a safety-critical item. You must provide a reason for marking it N/A.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            {NA_REASON_CODES.map((code) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => onNaReason(code)}
+                className={`w-full text-left text-xs py-2.5 px-3 rounded-md transition-colors duration-150 min-h-[44px] flex items-center ${
+                  state.naReasonCode === code
+                    ? 'bg-mytra-purple/15 border border-mytra-purple/30 text-fg font-medium'
+                    : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/30'
+                }`}
+              >
+                {NA_REASON_LABELS[code]}
+              </button>
+            ))}
+          </div>
+
+          {state.naReasonCode && (
+            <textarea
+              rows={2}
+              maxLength={2000}
+              value={state.naJustification || ''}
+              onChange={(e) => onNaJustification(e.target.value)}
+              placeholder={state.naReasonCode === 'other' ? 'Explain why this item is not applicable...' : 'Additional details (optional)...'}
+              aria-label="N/A justification"
+              className={`w-full bg-mytra-input border rounded-lg py-2.5 px-3
+                         text-sm text-fg placeholder:text-fg-4 resize-none
+                         focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
+                         ${naMissing ? 'border-danger ring-2 ring-danger/50' : 'border-mytra-border'}`}
+            />
+          )}
+        </div>
+      )}
 
       {/* Fail expanded section */}
       {isFail && (
@@ -282,11 +337,13 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
   const [submittedRecord, setSubmittedRecord] = useState<{
     result: 'pass' | 'fail'
     hasCriticalFail: boolean
+    criticalNaCount: number
     workOrderId: string | null
   } | null>(null)
 
-  // Notes validation
+  // Notes / N/A validation
   const [missingNotes, setMissingNotes] = useState<Set<string>>(new Set())
+  const [missingNaJustification, setMissingNaJustification] = useState<Set<string>>(new Set())
 
   // History
   const [history, setHistory] = useState<InspectionRecord[]>([])
@@ -406,7 +463,15 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
   const handleResult = useCallback((itemId: string, result: InspectionResult) => {
     setItems((prev) =>
-      prev.map((it) => (it.id === itemId ? { ...it, result } : it))
+      prev.map((it) => {
+        if (it.id !== itemId) return it
+        const updated = { ...it, result }
+        if (result !== 'na') {
+          updated.naReasonCode = null
+          updated.naJustification = ''
+        }
+        return updated
+      })
     )
   }, [])
 
@@ -428,6 +493,32 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     setItems((prev) =>
       prev.map((it) => (it.id === itemId ? { ...it, photo } : it))
     )
+  }, [])
+
+  const handleNaReason = useCallback((itemId: string, code: NaReasonCode) => {
+    setItems((prev) =>
+      prev.map((it) => (it.id === itemId ? { ...it, naReasonCode: code } : it))
+    )
+    setMissingNaJustification((prev) => {
+      if (!prev.has(itemId)) return prev
+      const next = new Set(prev)
+      next.delete(itemId)
+      return next
+    })
+  }, [])
+
+  const handleNaJustification = useCallback((itemId: string, text: string) => {
+    setItems((prev) =>
+      prev.map((it) => (it.id === itemId ? { ...it, naJustification: text } : it))
+    )
+    if (text.trim()) {
+      setMissingNaJustification((prev) => {
+        if (!prev.has(itemId)) return prev
+        const next = new Set(prev)
+        next.delete(itemId)
+        return next
+      })
+    }
   }, [])
 
   const handleRemovePhoto = useCallback((itemId: string) => {
@@ -461,6 +552,9 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
   const criticalFailCount = items.filter(
     (it) => it.critical && it.result === 'fail'
   ).length
+  const criticalNaCount = items.filter(
+    (it) => it.critical && it.result === 'na'
+  ).length
   const allAnswered = answeredItems === totalItems
   const remaining = totalItems - answeredItems
 
@@ -478,6 +572,19 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       return
     }
 
+    // Validate N/A justification on critical items
+    const criticalNaWithoutReason = items
+      .filter((it) => it.critical && it.result === 'na' && !it.naReasonCode)
+      .map((it) => it.id)
+    const criticalNaOtherWithoutText = items
+      .filter((it) => it.critical && it.result === 'na' && it.naReasonCode === 'other' && !(it.naJustification || '').trim())
+      .map((it) => it.id)
+    const allNaMissing = [...criticalNaWithoutReason, ...criticalNaOtherWithoutText]
+    if (allNaMissing.length > 0) {
+      setMissingNaJustification(new Set(allNaMissing))
+      return
+    }
+
     const record = submitInspection({
       equipmentId: equipment.itemNumber,
       inspectorName,
@@ -490,6 +597,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     setSubmittedRecord({
       result: record.result,
       hasCriticalFail: record.hasCriticalFail,
+      criticalNaCount: record.criticalNaCount,
       workOrderId: record.workOrderId,
     })
     setStep('result')
@@ -671,9 +779,18 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <span className="text-xs text-fg-3">
                 {answeredItems}/{totalItems} items checked
               </span>
-              {criticalFailCount > 0 && (
-                <span className="text-xs text-danger font-medium">
-                  {criticalFailCount} critical {criticalFailCount === 1 ? 'fail' : 'fails'}
+              {(criticalFailCount > 0 || criticalNaCount > 0) && (
+                <span className="text-xs font-medium flex items-center gap-2">
+                  {criticalFailCount > 0 && (
+                    <span className="text-danger">
+                      {criticalFailCount} critical {criticalFailCount === 1 ? 'fail' : 'fails'}
+                    </span>
+                  )}
+                  {criticalNaCount > 0 && (
+                    <span className="text-warn">
+                      {criticalNaCount} critical N/A
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -704,8 +821,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                         item={checkItem}
                         state={itemState}
                         notesMissing={missingNotes.has(checkItem.id)}
+                        naMissing={missingNaJustification.has(checkItem.id)}
                         onResult={(result) => handleResult(checkItem.id, result)}
                         onNotes={(notes) => handleNotes(checkItem.id, notes)}
+                        onNaReason={(code) => handleNaReason(checkItem.id, code)}
+                        onNaJustification={(text) => handleNaJustification(checkItem.id, text)}
                         onRemovePhoto={() => handleRemovePhoto(checkItem.id)}
                         onCameraClick={handleCameraClick}
                       />
@@ -743,9 +863,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
             >
               {missingNotes.size > 0
                 ? 'Add notes to failed items'
-                : allAnswered
-                  ? 'Submit Inspection'
-                  : `${remaining} item${remaining === 1 ? '' : 's'} remaining`}
+                : missingNaJustification.size > 0
+                  ? 'Provide N/A justification for critical items'
+                  : allAnswered
+                    ? 'Submit Inspection'
+                    : `${remaining} item${remaining === 1 ? '' : 's'} remaining`}
             </button>
           </div>
         </div>
@@ -762,6 +884,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <p className="text-sm text-ok/80">
                 You&apos;re good to go. Inspection logged.
               </p>
+              {submittedRecord.criticalNaCount > 0 && (
+                <p className="text-xs text-warn mt-3">
+                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — EHS has been notified.
+                </p>
+              )}
             </div>
           )}
 
@@ -773,6 +900,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <p className="text-sm text-warn/80 mb-3">
                 Maintenance has been notified. You may operate with caution.
               </p>
+              {submittedRecord.criticalNaCount > 0 && (
+                <p className="text-xs text-warn mb-3">
+                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — EHS has been notified.
+                </p>
+              )}
               {submittedRecord.workOrderId && (
                 <p className="text-xs text-fg-3">
                   Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
@@ -789,6 +921,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               <p className="text-sm text-danger/80 mb-3">
                 This unit has been taken out of service for maintenance. Thanks for keeping everyone safe.
               </p>
+              {submittedRecord.criticalNaCount > 0 && (
+                <p className="text-xs text-warn mb-3">
+                  {submittedRecord.criticalNaCount} additional safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A.
+                </p>
+              )}
               {submittedRecord.workOrderId && (
                 <p className="text-xs text-fg-3">
                   Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
