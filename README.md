@@ -1,6 +1,6 @@
 # Sage EHS
 
-An internal EHS platform. Replaces paper-based pre-task plans, permits, job hazard analyses, incident reports, and equipment inspections with an AI-powered, offline-capable PWA that plugs into our existing stack — Notion, Slack, Google Workspace, and email.
+An internal EHS platform. Replaces paper-based pre-task plans, permits, job hazard analyses, incident reports, and equipment inspections with an AI-powered, offline-capable PWA that plugs into an organization's existing stack — Notion, Slack, Google Workspace, and email.
 
 **Live:** [equipment-qr-hub.vercel.app](https://equipment-qr-hub.vercel.app)
 
