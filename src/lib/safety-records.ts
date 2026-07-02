@@ -27,11 +27,13 @@ import type {
 } from '@/lib/safety-types'
 import { isPermit, isJHA } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
-import { safeParseSafetyRecords } from '@/lib/schemas'
+import { partitionSafetyRecords, type InvalidRecordEntry } from '@/lib/schemas'
 
 const STORAGE_KEY = 'eqr-safety-records'
 const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
 const COUNTER_KEY = 'eqr-safety-counters'
+const QUARANTINE_KEY = 'eqr-safety-records-quarantine'
+const QUARANTINE_CAP = 50
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
@@ -113,22 +115,102 @@ export async function getBlobs(recordId: string, slotIds: string[]): Promise<Rec
 
 // ── Internal record helpers ──────────────────────────────────
 
+// ── Quarantine for records that fail validation ──────────────
+// A record written by an older/newer app version must never be silently
+// deleted: reads filter it out, and the next writeAll would persist the
+// filtered array to primary AND backup. Instead, unreadable records are
+// parked here — recoverable by a future version or manual export.
+
+export interface QuarantineEntry {
+  id: string
+  quarantinedAt: string
+  issues: string[]
+  record: unknown
+}
+
+/** Stable fingerprint for records without a usable string id (djb2). */
+function contentFingerprint(record: unknown): string {
+  const s = JSON.stringify(record) ?? 'null'
+  let h = 5381
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) + h + s.charCodeAt(i)) | 0
+  }
+  return `unknown-${(h >>> 0).toString(36)}`
+}
+
+export function getQuarantinedRecords(): QuarantineEntry[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(QUARANTINE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function quarantineInvalidRecords(invalid: InvalidRecordEntry[]): void {
+  if (typeof window === 'undefined' || invalid.length === 0) return
+  try {
+    let existing = getQuarantinedRecords()
+    const known = new Set(existing.map((q) => q.id))
+    const added: string[] = []
+    for (const entry of invalid) {
+      const recId = (entry.record as { id?: unknown } | null)?.id
+      const id = typeof recId === 'string' && recId ? recId : contentFingerprint(entry.record)
+      if (known.has(id)) continue
+      existing.push({
+        id,
+        quarantinedAt: new Date().toISOString(),
+        issues: entry.issues,
+        record: entry.record,
+      })
+      known.add(id)
+      added.push(id)
+    }
+    if (added.length === 0) return
+    if (existing.length > QUARANTINE_CAP) {
+      existing = existing.slice(existing.length - QUARANTINE_CAP)
+    }
+    try {
+      localStorage.setItem(QUARANTINE_KEY, JSON.stringify(existing))
+    } catch (e) {
+      // Quota — keep the records in the primary store untouched rather than
+      // lose them (they simply keep failing validation on future reads).
+      console.error('[safety-records] Quarantine write failed:', e)
+      return
+    }
+    console.warn(`[safety-records] Quarantined ${added.length} unreadable record(s):`, added)
+    try {
+      window.dispatchEvent(
+        new CustomEvent('eqr:records-quarantined', { detail: { ids: added, total: existing.length } })
+      )
+    } catch { /* SSR guard */ }
+  } catch (e) {
+    console.error('[safety-records] Quarantine failed:', e)
+  }
+}
+
 function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
-  const records = safeParseSafetyRecords(raw)
-  if (records.length > 0) {
-    return records.map((r) => ({ reviewStatus: undefined, ...r }))
+  const partition = partitionSafetyRecords(raw)
+  if (partition) {
+    // Blob is a readable array — park any drifted records in quarantine so
+    // the next writeAll (which persists the filtered array) can't erase them.
+    if (partition.invalid.length > 0) quarantineInvalidRecords(partition.invalid)
+    return partition.valid.map((r) => ({ reviewStatus: undefined, ...r }))
   }
-  console.error('[safety-records] Primary store corrupt or empty — attempting backup restore.')
+  console.error('[safety-records] Primary store corrupt — attempting backup restore.')
   const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
   if (backup) {
-    const recovered = safeParseSafetyRecords(backup)
-    if (recovered.length > 0) {
-      console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+    const recovered = partitionSafetyRecords(backup)
+    if (recovered) {
+      if (recovered.invalid.length > 0) quarantineInvalidRecords(recovered.invalid)
+      console.warn(`[safety-records] Restored ${recovered.valid.length} record(s) from backup.`)
       try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
-      return recovered.map((r) => ({ reviewStatus: undefined, ...r }))
+      return recovered.valid.map((r) => ({ reviewStatus: undefined, ...r }))
     }
     console.error('[safety-records] Backup also corrupt. Returning empty store.')
   }
@@ -794,6 +876,7 @@ export function pruneOldDrafts(): number {
 export async function clearAllLocalData(): Promise<void> {
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(STORAGE_KEY_BACKUP)
+  localStorage.removeItem(QUARANTINE_KEY)
 
   const draftKeys = []
   for (let i = 0; i < localStorage.length; i++) {

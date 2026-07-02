@@ -31,10 +31,9 @@ const CrewSignatureSchema = z.object({
 }).passthrough()
 
 const AuditEventSchema = z.object({
-  action: z.enum([
-    'created', 'submitted', 'closed', 'revoked', 'synced', 'sync-failed', 'amended',
-    'submitted-for-review', 'review-decided', 'review-recalled',
-  ]),
+  // Deliberately NOT a closed enum: an audit action written by a newer (or
+  // rolled-back) app version must never invalidate the whole legal record.
+  action: z.string().max(100),
   by: z.string(),
   byEmail: z.string().nullable(),
   at: z.string(),
@@ -240,28 +239,60 @@ export const IdentitySchema = z.object({
   verifiedAt: z.string(),
 }).passthrough()
 
-export function safeParseSafetyRecords(raw: string): SafetyRecord[] {
+export interface InvalidRecordEntry {
+  record: unknown
+  issues: string[]
+}
+
+export interface PartitionedRecords {
+  valid: SafetyRecord[]
+  invalid: InvalidRecordEntry[]
+}
+
+/**
+ * Parse a raw store payload, separating readable records from unreadable
+ * ones. Returns null when the whole blob is corrupt (not JSON / not an
+ * array). Callers own what happens to `invalid` — the store quarantines them
+ * rather than discarding, because a validation-filtered array that gets
+ * written back would otherwise permanently delete legal records on schema
+ * drift.
+ */
+export function partitionSafetyRecords(raw: string): PartitionedRecords | null {
   try {
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
+    if (!Array.isArray(parsed)) return null
     const valid: SafetyRecord[] = []
-    for (let i = 0; i < parsed.length; i++) {
-      const result = SafetyRecordSchema.safeParse(parsed[i])
+    const invalid: InvalidRecordEntry[] = []
+    for (const entry of parsed) {
+      const result = SafetyRecordSchema.safeParse(entry)
       if (result.success) {
         valid.push(result.data as SafetyRecord)
       } else {
-        console.warn(
-          `[safety-records] Dropped invalid record at index ${i}` +
-          (parsed[i]?.id ? ` (id=${parsed[i].id})` : '') +
-          ':',
-          result.error.issues,
-        )
+        invalid.push({
+          record: entry,
+          issues: result.error.issues
+            .slice(0, 5)
+            .map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`),
+        })
       }
     }
-    return valid
+    return { valid, invalid }
   } catch {
-    return []
+    return null
   }
+}
+
+export function safeParseSafetyRecords(raw: string): SafetyRecord[] {
+  const partition = partitionSafetyRecords(raw)
+  if (!partition) return []
+  for (const entry of partition.invalid) {
+    const id = (entry.record as { id?: unknown } | null)?.id
+    console.warn(
+      `[safety-records] Invalid record${typeof id === 'string' ? ` (id=${id})` : ''}:`,
+      entry.issues,
+    )
+  }
+  return partition.valid
 }
 
 export function safeParseIdentity(raw: string): Identity | null {
