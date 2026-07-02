@@ -178,11 +178,12 @@ Fixed-position divs with no `role="dialog"`, no `aria-modal`, no focus managemen
 
 ## Phase F — Performance (felt on old iPhones / LTE)
 
-### F1 — AuthGate blocks first paint on a network round-trip — `TODO`
+### F1 — AuthGate blocks first paint on a network round-trip — `DONE`
 **Profession:** Performance engineer
-**Files:** `src/components/AuthGate.tsx`, `src/components/providers/AuthProvider.tsx`
+**Files:** `src/components/AuthGate.tsx`
 Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, even with a fresh cached identity. Also fetches `/api/auth/providers` on every mount regardless of auth state.
 **Accept:** children render optimistically when `getCurrentIdentity()` is fresh while the session check completes in background (offline branch already trusts the cache — extend the pattern); `getProviders()` called only when `status === 'unauthenticated'`; behavior verified signed-in, signed-out, and offline.
+**Outcome:** The loading branch now renders children immediately when a fresh (non-stale, 30d TTL) cached identity exists — extending the trust the offline branch already places in it — with a `mounted` gate to avoid SSR hydration mismatch (server can't read localStorage; costs one paint frame, not a network RTT). Expired sessions reconcile to the sign-in screen when the background check resolves; the identity cache is left intact for offline attribution. `getProviders()` gated to `status === 'unauthenticated'` — was one extra request per gated page navigation. Verified via Playwright: fresh-cache cold load paints dashboard content before the session resolves and reconciles to sign-in when unauthenticated; the providers request only appears after session resolution; no-cache load never leaks content. Gate: 683 tests, lint 0, build clean.
 
 ### F2 — Full zod re-validation of the record store on every read — `TODO`
 **Profession:** Performance engineer

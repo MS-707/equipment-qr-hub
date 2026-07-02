@@ -21,6 +21,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const [providers, setProviders] = useState<ProvidersMap>(null)
   const [online, setOnline] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [devName, setDevName] = useState('')
   const [devEmail, setDevEmail] = useState('')
@@ -32,9 +33,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const needsCode = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
-    getProviders()
-      .then(setProviders)
-      .catch(() => setProviders(null))
+    setMounted(true)
     setOnline(navigator.onLine)
     const on = () => setOnline(true)
     const off = () => setOnline(false)
@@ -49,6 +48,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Providers are only needed to render the sign-in screen — fetching them on
+  // every mount added a network request to every gated page navigation.
+  useEffect(() => {
+    if (status !== 'unauthenticated') return
+    getProviders()
+      .then(setProviders)
+      .catch(() => setProviders(null))
+  }, [status])
+
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       setCurrentIdentity({
@@ -62,6 +70,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (status === 'authenticated') return <>{children}</>
 
   if (status === 'loading') {
+    // Optimistic render: a fresh cached identity means this device signed in
+    // recently — paint the page immediately and let the session round-trip
+    // reconcile in the background (an expired session re-renders into the
+    // sign-in screen). Removes one network RTT from every cold page open on
+    // slow field connections. The `mounted` gate avoids an SSR hydration
+    // mismatch (the server can't read localStorage).
+    if (mounted && getCurrentIdentity() && !isIdentityStale()) {
+      return <>{children}</>
+    }
     return (
       <Centered>
         <Loader2 className="w-6 h-6 text-mytra-purple animate-spin" />
