@@ -27,6 +27,13 @@
   --danger: #E66A6A;
   --expired: #F2934A;
 
+  /* Text-grade semantic colors: ≥4.5:1 on tinted card backgrounds in both
+     themes. Use for safety-critical message TEXT; the base tokens remain for
+     fills, borders, and icons. */
+  --ok-strong: #5BD695;
+  --warn-strong: #FFC53D;
+  --danger-strong: #F08C8C;
+
   --risk-critical: #E66A6A;
   --risk-high: #F2934A;
   --risk-medium: #E6C24A;
@@ -64,6 +71,9 @@
   --shadow-card: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-raised: 0 4px 12px rgba(0,0,0,0.75);
   --shadow-pop: 0 8px 24px rgba(0,0,0,0.55);
+  --ok-strong: #5BD695;
+  --warn-strong: #FFC53D;
+  --danger-strong: #F08C8C;
   color-scheme: dark;
 }
 
@@ -86,6 +96,9 @@
   --warn: #E8A317;
   --danger: #D14343;
   --expired: #DA7B2B;
+  --ok-strong: #15703D;
+  --warn-strong: #8A6100;
+  --danger-strong: #B22B2B;
   --risk-critical: #D14343;
   --risk-high: #DA7B2B;
   --risk-medium: #C99211;

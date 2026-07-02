@@ -403,20 +403,20 @@ export default function ConfinedSpaceForm() {
                   className={`${inputCls} ${bad ? 'border-danger ring-2 ring-danger/30' : warn ? 'border-warn ring-2 ring-warn/30' : ''}`}
                 />
                 {alert && sev === 'safe' && f.value.trim() !== '' && (
-                  <p className="flex items-center gap-1 text-xs text-ok mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  <p className="flex items-center gap-1 text-sm text-ok-strong mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                     Within limits
                   </p>
                 )}
                 {alert && sev === 'warning' && (
-                  <p className="flex items-center gap-1 text-xs text-warn mt-0.5">
-                    <AlertTriangle className="w-3.5 h-3.5" />
+                  <p className="flex items-start gap-1 text-sm text-warn-strong mt-0.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     {alert.guidance}
                   </p>
                 )}
                 {alert && (sev === 'danger' || sev === 'idlh') && (
-                  <p className="flex items-center gap-1 text-xs text-danger mt-0.5 font-semibold">
-                    <AlertTriangle className="w-3.5 h-3.5" />
+                  <p className="flex items-start gap-1 text-sm text-danger-strong mt-0.5 font-semibold">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     {alert.guidance}
                   </p>
                 )}

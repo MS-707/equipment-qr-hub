@@ -66,11 +66,12 @@ After submit the DOM swaps with no `aria-live`, no focus move — an "Out of Ser
 **Accept:** result container announced (`role="status"`/focus-on-heading with `tabIndex={-1}`) and `haptic()` fired per verdict, matching the PtpDone pattern.
 **Outcome:** Result container gets `role="status"`; all three verdict headings carry `ref` + `tabIndex={-1}` + `outline-none` (only one renders); focus moves to the heading on entry and verdict-matched haptics fire — success (All Clear), warning (Issues Noted), error (Out of Service; the heavier pattern is deliberate for a stop-work order). Effect keys on `submittedRecord` so a New Inspection → resubmit re-announces. Mirrors PtpDone exactly. Gate: 641 tests, lint 0, build clean.
 
-### A7 — Safety-critical guidance text is 12px alpha-faded (illegible in sunlight) — `TODO`
+### A7 — Safety-critical guidance text is 12px alpha-faded (illegible in sunlight) — `DONE`
 **Profession:** Visual design / accessibility
 **Files:** `src/components/PreTripInspection.tsx`, `src/components/safety/ConfinedSpaceForm.tsx`, `src/app/globals.css`
 "This will send this unit to maintenance" is `text-xs text-warn/80` (~2.4:1 in light theme). Result explanations use `/80` alpha on semantic colors. Gas-reading verdicts are 12px.
 **Accept:** `/80` alpha removed from message text (tinted backgrounds carry the tone), safety-critical guidance at `text-sm`; verify warn-on-white ≥ 4.5:1 in light theme (add a darker warn text token if needed).
+**Outcome:** New text-grade tokens `--ok-strong / --warn-strong / --danger-strong` in all three theme blocks (light: `#15703D`/`#8A6100`/`#B22B2B` — computed 6.2/5.6/6.4:1 on white; dark: `#5BD695`/`#FFC53D`/`#F08C8C` — 8-12:1) exposed as Tailwind `text-*-strong`; base tokens stay for fills/borders/icons. Applied at `text-sm` with alphas removed to: both critical-item banners, N/A justification warning, all three result explanations, critical-N/A notices, EHS notify sent/failed lines, save-error text, and ConfinedSpaceForm gas verdicts (Within limits / warning / danger guidance, icons pinned with shrink-0). Gate: 641 tests, lint 0, build clean.
 
 ---
 

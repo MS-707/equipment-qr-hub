@@ -179,7 +179,7 @@ function ChecklistItemRow({
           {item.critical && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
-              <p className="text-xs text-warn/80 leading-relaxed">
+              <p className="text-sm text-warn-strong leading-relaxed">
                 This is a safety-critical item — flagging it will send this unit to maintenance.
               </p>
             </div>
@@ -927,7 +927,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             {saveError && (
               <div role="alert" className="flex items-start gap-2 bg-danger/10 border border-danger/30 rounded-lg px-3 py-2.5 mb-2">
                 <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
-                <p className="text-sm text-danger">
+                <p className="text-sm text-danger-strong">
                   Inspection NOT saved: {saveError} Your answers are still here — fix the issue and submit again.
                 </p>
               </div>
@@ -960,11 +960,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
               <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
               <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">All Clear</h3>
-              <p className="text-sm text-ok/80">
+              <p className="text-sm text-ok-strong">
                 You&apos;re good to go. Inspection logged.
               </p>
               {submittedRecord.criticalNaCount > 0 && (
-                <p className="text-xs text-warn mt-3">
+                <p className="text-sm text-warn-strong mt-3">
                   {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
                 </p>
               )}
@@ -976,11 +976,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="bg-warn/10 border border-warn/20 rounded-lg p-6 text-center">
               <Wrench className="w-12 h-12 text-warn mx-auto mb-3" />
               <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-warn mb-1 outline-none">Issues Noted</h3>
-              <p className="text-sm text-warn/80 mb-3">
+              <p className="text-sm text-warn-strong mb-3">
                 Maintenance has been notified. You may operate with caution.
               </p>
               {submittedRecord.criticalNaCount > 0 && (
-                <p className="text-xs text-warn mb-3">
+                <p className="text-sm text-warn-strong mb-3">
                   {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
                 </p>
               )}
@@ -997,11 +997,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="bg-danger/10 border border-danger/20 rounded-lg p-6 text-center">
               <Shield className="w-12 h-12 text-danger mx-auto mb-3" />
               <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-danger mb-1 outline-none">Out of Service</h3>
-              <p className="text-sm text-danger/80 mb-3">
+              <p className="text-sm text-danger-strong mb-3">
                 This unit has been taken out of service for maintenance. Thanks for keeping everyone safe.
               </p>
               {submittedRecord.criticalNaCount > 0 && (
-                <p className="text-xs text-warn mb-3">
+                <p className="text-sm text-warn-strong mb-3">
                   {submittedRecord.criticalNaCount} additional safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A.
                 </p>
               )}
@@ -1015,12 +1015,12 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
           {/* EHS email outcome — only surfaced when email is configured */}
           {notifyStatus === 'sent' && (
-            <p className="text-xs text-ok text-center">EHS has been notified by email.</p>
+            <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
           )}
           {notifyStatus === 'failed' && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
-              <p className="text-sm text-warn">
+              <p className="text-sm text-warn-strong">
                 The EHS email notification could not be sent (offline or server issue).
                 Your inspection is saved on this device — let your EHS contact know directly if this involved a safety-critical item.
               </p>
