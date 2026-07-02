@@ -204,10 +204,11 @@ Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, 
 **Accept:** active stroke appends segments incrementally (`lineTo` new segment only); full redraw only on resize/clear/restore; stroke rendering visually unchanged.
 **Outcome:** New `drawSegment`/`drawDot` primitives: pointerdown paints the starting dot, each pointermove strokes only `prev → current` — the O(points²) clearRect + full-replay per move is gone from the hot path on both the inline and expanded canvases. Full redraws remain for resize (ResizeObserver), clear, expanded open/save, and restore; export path unchanged. Round caps/joins at identical width make per-segment strokes visually indistinguishable from a stroked polyline. Verified on the height-permit form in a production build: a 200-point synthetic drag renders one continuous unbroken stroke (screenshot + 1448 inked pixels), clear works. Gate: 686 tests, lint 0, build clean.
 
-### F5 — Inspection draft loses last answers when app backgrounds within 2s debounce — `TODO`
+### F5 — Inspection draft loses last answers when app backgrounds within 2s debounce — `DONE`
 **Profession:** Reliability engineer
 **Files:** `src/components/PreTripInspection.tsx`
 **Accept:** `pagehide`/`visibilitychange` flush mirroring `use-draft.ts:60-70`; backgrounding immediately after a tap preserves that answer.
+**Outcome:** Draft state mirrored into a ref; new `flushDraft()` writes it synchronously and is now both the debounce target and the handler for `pagehide` + `visibilitychange(hidden)` — home swipe, screen lock, or app switch persists the last tap instantly while steady-state typing keeps the 2s debounce. Photo-stripping and shape-guard behavior unchanged. Verified on a production build: answer → immediate visibilitychange → reload restores the draft banner AND the answered item (previously lost inside the debounce window). Gate: 686 tests, lint 0, build clean.
 
 ---
 

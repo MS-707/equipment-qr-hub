@@ -451,24 +451,52 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     }
   }, [draftKey, checklistType])
 
+  // Ref-mirrored snapshot so pagehide/visibilitychange can flush the CURRENT
+  // draft synchronously — the 2s debounce alone lost the last answers when
+  // the phone was locked or backgrounded right after a tap.
+  const draftStateRef = useRef({ step, inspectorName, shift, hourMeter, items })
+  draftStateRef.current = { step, inspectorName, shift, hourMeter, items }
+
+  const flushDraft = useCallback(() => {
+    const s = draftStateRef.current
+    if (s.step === 'result') return
+    try {
+      const hasProgress = s.items.some((it) => it.result !== null)
+      if (!hasProgress) return
+      // Strip photo data URLs — they can be megabytes each and would blow
+      // the localStorage quota. Pass/fail/notes are what's costly to re-enter;
+      // photos can be re-added on the failed items after a restore.
+      const lean = s.items.map((it) => ({ ...it, photo: null }))
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({ step: s.step, inspectorName: s.inspectorName, shift: s.shift, hourMeter: s.hourMeter, items: lean })
+      )
+    } catch {}
+  }, [draftKey])
+
   useEffect(() => {
     if (step === 'result') {
       localStorage.removeItem(draftKey)
       return
     }
-    const timer = setTimeout(() => {
-      try {
-        const hasProgress = items.some((it) => it.result !== null)
-        if (!hasProgress) return
-        // Strip photo data URLs — they can be megabytes each and would blow
-        // the localStorage quota. Pass/fail/notes are what's costly to re-enter;
-        // photos can be re-added on the failed items after a restore.
-        const lean = items.map((it) => ({ ...it, photo: null }))
-        localStorage.setItem(draftKey, JSON.stringify({ step, inspectorName, shift, hourMeter, items: lean }))
-      } catch {}
-    }, DRAFT_SAVE_DELAY)
+    const timer = setTimeout(flushDraft, DRAFT_SAVE_DELAY)
     return () => clearTimeout(timer)
   })
+
+  // Flush immediately when the app backgrounds (home swipe, screen lock, app
+  // switch) — mirrors useFormDraft's pagehide/visibilitychange behavior.
+  useEffect(() => {
+    const onPageHide = () => flushDraft()
+    const onVisibility = () => {
+      if (document.hidden) flushDraft()
+    }
+    window.addEventListener('pagehide', onPageHide)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', onPageHide)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [flushDraft])
 
   function discardDraft() {
     localStorage.removeItem(draftKey)
