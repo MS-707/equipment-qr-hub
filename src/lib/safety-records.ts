@@ -37,7 +37,10 @@ const QUARANTINE_CAP = 50
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY) notify()
+    if (e.key === STORAGE_KEY) {
+      invalidateReadCache()
+      notify()
+    }
   })
 }
 
@@ -191,16 +194,36 @@ function quarantineInvalidRecords(invalid: InvalidRecordEntry[]): void {
   }
 }
 
+// Parse+validate cache keyed on the raw store string: the dashboard reads the
+// store several times per load and re-validating hundreds of records with zod
+// each time is felt main-thread work on old phones. Returned arrays are
+// copies (callers push/sort them); record objects are shared and treated as
+// immutable everywhere (mutations replace via spread).
+let readCache: { raw: string; records: SafetyRecord[] } | null = null
+
+function invalidateReadCache(): void {
+  readCache = null
+}
+
+/** Test hook — the parse cache is module-level state that outlives a
+ *  stubbed-localStorage reset between tests. */
+export function _resetReadCacheForTests(): void {
+  invalidateReadCache()
+}
+
 function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
+  if (readCache && readCache.raw === raw) return [...readCache.records]
   const partition = partitionSafetyRecords(raw)
   if (partition) {
     // Blob is a readable array — park any drifted records in quarantine so
     // the next writeAll (which persists the filtered array) can't erase them.
     if (partition.invalid.length > 0) quarantineInvalidRecords(partition.invalid)
-    return partition.valid.map((r) => ({ reviewStatus: undefined, ...r }))
+    const records = partition.valid.map((r) => ({ reviewStatus: undefined, ...r }))
+    readCache = { raw, records }
+    return [...records]
   }
   console.error('[safety-records] Primary store corrupt — attempting backup restore.')
   const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
@@ -222,6 +245,7 @@ function readAll(): SafetyRecord[] {
 
 function writeAll(records: SafetyRecord[]): void {
   if (typeof window === 'undefined') return
+  invalidateReadCache()
   const serialized = JSON.stringify(records)
   try {
     // Write backup first so the last known-good copy is never newer than primary.
@@ -915,6 +939,7 @@ export function pruneOldDrafts(): number {
 // ── Data deletion (GDPR right-to-erasure) ────────────────────
 
 export async function clearAllLocalData(): Promise<void> {
+  invalidateReadCache()
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(STORAGE_KEY_BACKUP)
   localStorage.removeItem(QUARANTINE_KEY)

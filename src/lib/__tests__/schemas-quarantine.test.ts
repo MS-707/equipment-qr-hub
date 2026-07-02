@@ -29,7 +29,7 @@ vi.mock('@/lib/identity', () => ({
 }))
 
 import { partitionSafetyRecords } from '@/lib/schemas'
-import { getAllSafetyRecords, getQuarantinedRecords } from '@/lib/safety-records'
+import { getAllSafetyRecords, getQuarantinedRecords, _resetReadCacheForTests } from '@/lib/safety-records'
 
 const PRIMARY = 'eqr-safety-records'
 
@@ -64,6 +64,7 @@ const validPtp = {
 beforeEach(() => {
   store = {}
   dispatched.length = 0
+  _resetReadCacheForTests()
 })
 
 describe('AuditEvent.action drift tolerance', () => {

@@ -36,6 +36,8 @@ import {
   archiveOldSyncedRecords,
   getSafetyRecordById,
   createIncidentReport,
+  getAllSafetyRecords,
+  _resetReadCacheForTests,
 } from '@/lib/safety-records'
 import type { SafetyRecord } from '@/lib/safety-types'
 
@@ -83,6 +85,7 @@ function seed(...records: Record<string, unknown>[]) {
 
 beforeEach(() => {
   store = {}
+  _resetReadCacheForTests()
 })
 
 describe('mutations re-queue for sync', () => {
@@ -178,6 +181,29 @@ describe('archiveOldSyncedRecords guard', () => {
     healed.status = 'closed'
     seed(healed)
     expect(archiveOldSyncedRecords()).toBe(1)
+  })
+})
+
+describe('readAll cache (F2)', () => {
+  it('copy-on-read: callers mutating results cannot corrupt the cache', () => {
+    seed(syncedPermit())
+    const list = getAllSafetyRecords()
+    list.pop()
+    expect(getAllSafetyRecords()).toHaveLength(1)
+  })
+
+  it('reflects direct store changes (cache keyed on the raw string)', () => {
+    seed(syncedPermit('WAH-2026-0001'))
+    expect(getAllSafetyRecords()).toHaveLength(1)
+    seed(syncedPermit('WAH-2026-0001'), syncedPermit('WAH-2026-0002'))
+    expect(getAllSafetyRecords()).toHaveLength(2)
+  })
+
+  it('reflects API writes immediately (writeAll invalidation)', () => {
+    seed(syncedPermit())
+    closePermit('WAH-2026-0001', { name: 'Closer', email: null })
+    const rec = getSafetyRecordById('WAH-2026-0001')
+    expect((rec as { status?: string })?.status).toBe('closed')
   })
 })
 

@@ -185,11 +185,12 @@ Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, 
 **Accept:** children render optimistically when `getCurrentIdentity()` is fresh while the session check completes in background (offline branch already trusts the cache — extend the pattern); `getProviders()` called only when `status === 'unauthenticated'`; behavior verified signed-in, signed-out, and offline.
 **Outcome:** The loading branch now renders children immediately when a fresh (non-stale, 30d TTL) cached identity exists — extending the trust the offline branch already places in it — with a `mounted` gate to avoid SSR hydration mismatch (server can't read localStorage; costs one paint frame, not a network RTT). Expired sessions reconcile to the sign-in screen when the background check resolves; the identity cache is left intact for offline attribution. `getProviders()` gated to `status === 'unauthenticated'` — was one extra request per gated page navigation. Verified via Playwright: fresh-cache cold load paints dashboard content before the session resolves and reconciles to sign-in when unauthenticated; the providers request only appears after session resolution; no-cache load never leaks content. Gate: 683 tests, lint 0, build clean.
 
-### F2 — Full zod re-validation of the record store on every read — `TODO`
+### F2 — Full zod re-validation of the record store on every read — `DONE`
 **Profession:** Performance engineer
 **Files:** `src/lib/safety-records.ts`
 `readAll` re-parses + re-validates hundreds of records 4-5x per dashboard load, on every safety-change event.
 **Accept:** module-level cache keyed on the raw localStorage string, invalidated in `writeAll` and the cross-tab `storage` listener; corruption-recovery path unchanged; existing store tests pass unmodified.
+**Outcome:** `readAll` caches the parsed+validated array keyed on the raw string; hits return a shallow copy (copy-on-read — callers push/sort results; record objects are shared but treated as immutable everywhere, mutations replace via spread). Invalidated in `writeAll`, the cross-tab `storage` listener, and `clearAllLocalData`; the corruption/backup path never caches. Quarantine semantics unchanged (a cache hit means that exact raw was already quarantine-scanned). Dashboard load now validates once instead of 5×; subsequent reads are a string compare. `_resetReadCacheForTests` hook added — module state outlives stubbed-store resets between tests. 3 new cache tests; all 78 existing store/quarantine/archiver tests pass. Gate: 686 tests, lint 0, build clean.
 
 ### F3 — `/equipment/[id]` statically bundles all 8 tab panels (QR-scan landing route, 175 kB) — `TODO`
 **Profession:** Performance engineer
