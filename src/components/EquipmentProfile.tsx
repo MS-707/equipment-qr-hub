@@ -79,18 +79,25 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
     window.history.replaceState(null, '', url.toString())
   }
 
+  // While an inspection checklist is in progress, swipe navigation is fully
+  // suspended: a stray gloved swipe is an SPA navigation (no beforeunload)
+  // that would silently drop answers still inside the draft debounce.
+  const [inspectionActive, setInspectionActive] = useState(false)
+
   const goNext = useCallback(() => {
+    if (inspectionActive) return
     const idx = TAB_IDS.indexOf(activeTab)
     if (idx < TAB_IDS.length - 1) handleTabChange(TAB_IDS[idx + 1])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, TAB_IDS])
+  }, [activeTab, TAB_IDS, inspectionActive])
 
   const goPrev = useCallback(() => {
+    if (inspectionActive) return
     const idx = TAB_IDS.indexOf(activeTab)
     if (idx > 0) handleTabChange(TAB_IDS[idx - 1])
     else router.back()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, TAB_IDS, router])
+  }, [activeTab, TAB_IDS, router, inspectionActive])
 
   const swipeHandlers = useSwipe(goNext, goPrev)
 
@@ -161,12 +168,13 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
           className={`mt-5 ${tabDirection === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}`}
-          {...swipeHandlers}
+          {...(inspectionActive ? {} : swipeHandlers)}
         >
           {activeTab === 'pre-trip' && (
             <PreTripInspection
               equipment={equipment}
               onStatusChange={handleInspectionStatusChange}
+              onChecklistActiveChange={setInspectionActive}
             />
           )}
           {activeTab === 'training' && (

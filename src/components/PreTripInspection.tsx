@@ -315,9 +315,16 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
 interface PreTripInspectionProps {
   equipment: EquipmentItem
   onStatusChange?: () => void
+  /**
+   * Fires with true while the operator is mid-checklist. Hosts that support
+   * swipe navigation (EquipmentProfile tabs) MUST suspend it during an active
+   * inspection — a stray swipe is an SPA navigation that bypasses
+   * beforeunload and silently drops un-debounced answers.
+   */
+  onChecklistActiveChange?: (active: boolean) => void
 }
 
-export default function PreTripInspection({ equipment, onStatusChange }: PreTripInspectionProps) {
+export default function PreTripInspection({ equipment, onStatusChange, onChecklistActiveChange }: PreTripInspectionProps) {
   const checklistType = getChecklistType(equipment)
   const checklist = getChecklist(checklistType)
   const isManualPalletJack = checklistType === 'manual-pallet-jack'
@@ -431,6 +438,15 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [step])
+
+  // Tell the host when a checklist is in progress (covers draft restore too,
+  // which can enter 'checklist' directly on mount). Cleared on unmount.
+  useEffect(() => {
+    onChecklistActiveChange?.(step === 'checklist')
+  }, [step, onChecklistActiveChange])
+  useEffect(() => {
+    return () => { onChecklistActiveChange?.(false) }
+  }, [onChecklistActiveChange])
 
   // Authorization state — only needed during identify step, subscribes to changes
   const [operatorAuthorized, setOperatorAuthorized] = useState(true)
@@ -807,8 +823,10 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       )}
 
       {/* ── CHECKLIST STEP ─────────────────────────────────── */}
+      {/* data-no-swipe: structural guard — swipes over an active checklist
+          must never trigger host tab/back navigation (see useSwipe). */}
       {step === 'checklist' && (
-        <div className="animate-fadeIn space-y-4">
+        <div className="animate-fadeIn space-y-4" data-no-swipe>
           {/* Progress bar */}
           <div className="bg-mytra-card border border-mytra-border rounded-card p-3">
             <div className="flex items-center justify-between mb-2">
