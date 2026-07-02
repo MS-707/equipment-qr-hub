@@ -14,6 +14,9 @@ export interface ReviewSubmission {
   decidedAt?: string
   decidedBy?: string
   note?: string
+  /** Notion page for this record, when Notion is configured — the decide
+   *  route PATCHes the decision onto it so device polling picks it up. */
+  notionPageId?: string
 }
 
 const KV_PREFIX = 'review:'
@@ -31,6 +34,7 @@ export async function storeReviewSubmission(data: {
   location: string
   submitterName: string
   submitterEmail: string
+  notionPageId?: string
 }): Promise<ReviewSubmission> {
   const submission: ReviewSubmission = {
     ...data,

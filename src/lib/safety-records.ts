@@ -787,7 +787,9 @@ export function markReviewRecalled(
 // ── EHS review read helpers ─────────────────────────────────
 
 export function getReviewPendingRecords(): SafetyRecord[] {
-  return readAll().filter((r) => r.reviewStatus === 'submitted' && r.notionPageId)
+  // No notionPageId filter: records submitted in email/Slack-only deployments
+  // have no page, and their decisions come back via the KV record-id fallback.
+  return readAll().filter((r) => r.reviewStatus === 'submitted')
 }
 
 export function getReviewActionableRecords(): { approved: SafetyRecord[]; rejected: SafetyRecord[] } {

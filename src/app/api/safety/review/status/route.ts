@@ -1,8 +1,11 @@
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { getReviewSubmission } from '@/lib/review-store'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
+// PTP-2026-0001 / INS-2026-0042-a3f2 style local record ids
+const RECORD_ID_RE = /^[A-Z]{2,4}-\d{4}-\d{4}(-[a-z0-9]{4})?$/i
 
 interface NotionProperty {
   type: string
@@ -30,24 +33,43 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
-  const notionKey = process.env.NOTION_API_KEY
-  if (!notionKey) {
-    return Response.json({ decisions: {} })
+  const url = new URL(req.url)
+  const decisions: Record<string, ReviewResult> = {}
+
+  // KV fallback keyed by record id — covers records that never got a Notion
+  // page (email/Slack-only deployments), which previously could NEVER see
+  // their review decision.
+  const recordsParam = url.searchParams.get('records')
+  if (recordsParam) {
+    const recordIds = recordsParam.split(',').filter(Boolean).slice(0, 20)
+      .filter((id) => RECORD_ID_RE.test(id))
+    await Promise.all(
+      recordIds.map(async (recordId) => {
+        try {
+          const sub = await getReviewSubmission(recordId)
+          if (sub && sub.status !== 'pending') {
+            decisions[recordId] = {
+              status: sub.status,
+              reviewerName: sub.decidedBy,
+              reviewNote: sub.note,
+            }
+          }
+        } catch { /* skip — retried next poll */ }
+      })
+    )
   }
 
-  const url = new URL(req.url)
+  const notionKey = process.env.NOTION_API_KEY
   const pagesParam = url.searchParams.get('pages')
-  if (!pagesParam) {
-    return Response.json({ decisions: {} })
+  if (!notionKey || !pagesParam) {
+    return Response.json({ decisions })
   }
 
   const pageIds = pagesParam.split(',').filter(Boolean).slice(0, 20)
     .filter((id) => NOTION_ID_RE.test(id))
   if (pageIds.length === 0) {
-    return Response.json({ decisions: {} })
+    return Response.json({ decisions })
   }
-
-  const decisions: Record<string, ReviewResult> = {}
 
   await Promise.all(
     pageIds.map(async (pageId) => {

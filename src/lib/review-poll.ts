@@ -51,19 +51,24 @@ async function doPoll(): Promise<void> {
   const pageIds = pending
     .map((r) => r.notionPageId)
     .filter((id): id is string => !!id)
+  // Records with no Notion page (email/Slack-only deployments) are looked up
+  // by record id against the KV review store instead.
+  const recordIds = pending.filter((r) => !r.notionPageId).map((r) => r.id)
 
-  if (pageIds.length === 0) return
+  if (pageIds.length === 0 && recordIds.length === 0) return
 
   try {
-    const res = await fetch(`/api/safety/review/status?pages=${pageIds.join(',')}`)
+    const params = new URLSearchParams()
+    if (pageIds.length > 0) params.set('pages', pageIds.join(','))
+    if (recordIds.length > 0) params.set('records', recordIds.join(','))
+    const res = await fetch(`/api/safety/review/status?${params.toString()}`)
     if (!res.ok) return
 
     const data = (await res.json()) as { decisions: Record<string, ReviewResult> }
     setLastPollTime()
 
     for (const record of pending) {
-      if (!record.notionPageId) continue
-      const decision = data.decisions[record.notionPageId]
+      const decision = data.decisions[record.notionPageId ?? record.id]
       if (!decision) continue
 
       if (decision.status === 'approved') {

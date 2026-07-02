@@ -147,6 +147,51 @@ describe('POST /api/safety/review/decide', () => {
     )
   })
 
+  it('PATCHes the decision onto the Notion page so device polling sees it', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    process.env.NOTION_API_KEY = 'notion-key'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockResolvedValue({
+      ...pendingSubmission,
+      status: 'approved',
+      decidedBy: 'EHS reviewer (via email link)',
+      decidedAt: '2026-06-23T01:00:00Z',
+      notionPageId: '9c911f57-0000-4000-8000-000000000000',
+    })
+    vi.mocked(fetch).mockResolvedValue({ ok: true, text: async () => '' } as Response)
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(200)
+    const patchCall = vi.mocked(fetch).mock.calls.find(([u]) =>
+      String(u).includes('/v1/pages/9c911f57-0000-4000-8000-000000000000')
+    )
+    expect(patchCall).toBeDefined()
+    const body = JSON.parse(patchCall![1]?.body as string)
+    expect(body.properties['EHS Review'].select.name).toBe('Approved')
+    expect(body.properties['Reviewed By'].rich_text[0].text.content).toContain('EHS reviewer')
+    delete process.env.NOTION_API_KEY
+  })
+
+  it('decision stands even when the Notion PATCH fails', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    process.env.NOTION_API_KEY = 'notion-key'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'reject', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockResolvedValue({
+      ...pendingSubmission,
+      status: 'rejected',
+      notionPageId: '9c911f57-0000-4000-8000-000000000000',
+    })
+    vi.mocked(fetch).mockRejectedValue(new Error('Notion down'))
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.status).toBe('rejected')
+    delete process.env.NOTION_API_KEY
+  })
+
   it('rejects with a note (truncated to 500 chars)', async () => {
     process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
     vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'reject', ts: 0 })

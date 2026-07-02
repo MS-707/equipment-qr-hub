@@ -57,6 +57,12 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
 
+  // Propagate the decision to the record's Notion page (best-effort): the
+  // device poller reads the 'EHS Review' property, so without this PATCH an
+  // email-link decision left the worker's local record "Awaiting sign-on"
+  // forever. The decision itself stands even if Notion is down.
+  await patchNotionDecision(decided)
+
   let emailed = false
   if (isEmailConfigured() && decided.submitterEmail) {
     emailed = await sendDecisionEmail(decided)
@@ -119,6 +125,32 @@ export async function GET(req: Request) {
     status: submission.status,
     action: parsed.action,
   })
+}
+
+async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmission): Promise<void> {
+  const key = process.env.NOTION_API_KEY
+  if (!key || !sub.notionPageId) return
+  try {
+    const properties: Record<string, unknown> = {
+      'EHS Review': { select: { name: sub.status === 'approved' ? 'Approved' : 'Rejected' } },
+      'Reviewed By': { rich_text: [{ text: { content: (sub.decidedBy ?? 'EHS reviewer').slice(0, 200) } }] },
+    }
+    if (sub.note) {
+      properties['EHS Review Note'] = { rich_text: [{ text: { content: sub.note.slice(0, 500) } }] }
+    }
+    const res = await fetch(`https://api.notion.com/v1/pages/${sub.notionPageId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ properties }),
+    })
+    if (!res.ok) console.error('[review-decide] Notion PATCH error:', await res.text())
+  } catch (e) {
+    console.error('[review-decide] Notion PATCH failed:', e instanceof Error ? e.message : e)
+  }
 }
 
 async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmission): Promise<boolean> {
