@@ -346,6 +346,10 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
   // so "EHS knows" is never assumed when nothing was delivered.
   const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'failed'>('idle')
 
+  // Local save failure (storage quota/corruption) — the inspection was NOT
+  // persisted; keep the operator on the checklist with their answers intact.
+  const [saveError, setSaveError] = useState<string | null>(null)
+
   // Notes / N/A validation
   const [missingNotes, setMissingNotes] = useState<Set<string>>(new Set())
   const [missingNaJustification, setMissingNaJustification] = useState<Set<string>>(new Set())
@@ -590,14 +594,27 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
       return
     }
 
-    const record = submitInspection({
-      equipmentId: equipment.itemNumber,
-      inspectorName,
-      shift,
-      hourMeterReading: hourMeter ? parseFloat(hourMeter) : null,
-      checklistType,
-      items,
-    })
+    let record: InspectionRecord
+    try {
+      record = submitInspection({
+        equipmentId: equipment.itemNumber,
+        inspectorName,
+        shift,
+        hourMeterReading: hourMeter ? parseFloat(hourMeter) : null,
+        checklistType,
+        items,
+      })
+      setSaveError(null)
+    } catch (e) {
+      // Storage full or corrupt — the record was NOT saved. Stay on the
+      // checklist (answers + draft intact) and tell the operator plainly.
+      setSaveError(
+        e instanceof Error
+          ? e.message
+          : 'The inspection could not be saved to this device. Try again.'
+      )
+      return
+    }
 
     setSubmittedRecord({
       result: record.result,
@@ -872,6 +889,14 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
 
           {/* Sticky submit button */}
           <div data-tour-module="inspection-submit" className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
+            {saveError && (
+              <div role="alert" className="flex items-start gap-2 bg-danger/10 border border-danger/30 rounded-lg px-3 py-2.5 mb-2">
+                <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+                <p className="text-sm text-danger">
+                  Inspection NOT saved: {saveError} Your answers are still here — fix the issue and submit again.
+                </p>
+              </div>
+            )}
             <button
               type="button"
               onClick={handleSubmit}

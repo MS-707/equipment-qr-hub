@@ -3,11 +3,21 @@
 import { useState, useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
+const STORE_LABELS: Record<string, string> = {
+  'eqr-safety-records': 'Safety records',
+  'eqr-inspections': 'Inspection records',
+}
+
 export default function StorageAlert() {
   const [visible, setVisible] = useState(false)
+  const [storeLabel, setStoreLabel] = useState('Safety records')
 
   useEffect(() => {
-    const handler = () => setVisible(true)
+    const handler = (e: Event) => {
+      const key = (e as CustomEvent).detail?.key as string | undefined
+      if (key && STORE_LABELS[key]) setStoreLabel(STORE_LABELS[key])
+      setVisible(true)
+    }
     window.addEventListener('eqr:storage-corruption', handler)
     return () => window.removeEventListener('eqr:storage-corruption', handler)
   }, [])
@@ -19,7 +29,7 @@ export default function StorageAlert() {
       <div className="max-w-2xl mx-auto flex items-center gap-2 justify-center">
         <AlertTriangle className="w-4 h-4 shrink-0" />
         <p className="text-sm font-medium">
-          Safety records could not be loaded — storage may be corrupted. Your data backup is being
+          {storeLabel} could not be loaded — storage may be corrupted. Your data backup is being
           restored. If records are missing, contact your safety officer.
         </p>
         <button
