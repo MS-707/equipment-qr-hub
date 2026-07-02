@@ -30,6 +30,7 @@ import {
   submitInspection,
   getInspectionsByEquipment,
   onInspectionChange,
+  queueNotifyPayload,
 } from '@/lib/inspections'
 import { compressPhoto } from '@/lib/media'
 import { haptic } from '@/lib/haptic'
@@ -350,9 +351,10 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   } | null>(null)
 
   // EHS email notification outcome — 'skipped' means email isn't configured
-  // server-side (nothing to surface); 'failed' must be shown to the operator
-  // so "EHS knows" is never assumed when nothing was delivered.
-  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'failed'>('idle')
+  // server-side (nothing to surface); 'queued' means it will auto-send on
+  // reconnect; 'failed' must be shown so "EHS knows" is never assumed when
+  // nothing was delivered.
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'queued' | 'failed'>('idle')
 
   // Local save failure (storage quota/corruption) — the inspection was NOT
   // persisted; keep the operator on the checklist with their answers intact.
@@ -667,28 +669,32 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
     // Email the completed inspection to EHS. Non-blocking, but the outcome is
     // tracked so the result screen never claims a notification that failed.
-    // Strip photos to keep the payload small; the email is a text summary.
+    // Retryable failures (offline, 5xx) queue for the reconnect flush; a 400
+    // is permanently invalid and reports failed rather than poisoning the
+    // queue. Strip photos to keep the payload small.
+    const notifyPayload = {
+      record: { ...record, items: record.items.map((i) => ({ ...i, photo: null })) },
+      equipmentName: equipment.name,
+      equipmentCategory: equipment.category,
+    }
     setNotifyStatus('pending')
     fetch('/api/inspections/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        record: { ...record, items: record.items.map((i) => ({ ...i, photo: null })) },
-        equipmentName: equipment.name,
-        equipmentCategory: equipment.category,
-      }),
+      body: JSON.stringify(notifyPayload),
     })
       .then(async (res) => {
         if (!res.ok) {
-          setNotifyStatus('failed')
+          if (res.status === 400) setNotifyStatus('failed')
+          else setNotifyStatus(queueNotifyPayload(notifyPayload) ? 'queued' : 'failed')
           return
         }
         const data = await res.json()
         if (data.emailed) setNotifyStatus('sent')
         else if (data.reason === 'not-configured') setNotifyStatus('skipped')
-        else setNotifyStatus('failed')
+        else setNotifyStatus(queueNotifyPayload(notifyPayload) ? 'queued' : 'failed')
       })
-      .catch(() => setNotifyStatus('failed'))
+      .catch(() => setNotifyStatus(queueNotifyPayload(notifyPayload) ? 'queued' : 'failed'))
 
     // Notify parent if status changed (critical fail sets Out of Service)
     if (record.hasCriticalFail && onStatusChange) {
@@ -1034,6 +1040,14 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           )}
           {notifyStatus === 'sent' && (
             <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
+          )}
+          {notifyStatus === 'queued' && (
+            <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
+              <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-sm text-warn-strong">
+                The EHS email is queued and will send automatically when your connection returns.
+              </p>
+            </div>
           )}
           {notifyStatus === 'failed' && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">

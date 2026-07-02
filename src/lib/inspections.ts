@@ -335,6 +335,104 @@ export function submitInspection(
   return { ...record, items: data.items }
 }
 
+// ── EHS notify queue (offline resilience) ─────────────
+// The notify email is fire-once from the result screen; if the device is
+// offline or the server hiccups, the payload queues here and flushes on the
+// 'online' event / next app load — mirroring the safety-sync listener
+// pattern. Without this, offline inspections never reached the EHS inbox.
+
+const NOTIFY_QUEUE_KEY = 'eqr-notify-queue'
+const NOTIFY_QUEUE_CAP = 50
+const NOTIFY_MAX_ATTEMPTS = 3
+
+interface QueuedNotify {
+  payload: unknown
+  attempts: number
+  queuedAt: string
+}
+
+function readNotifyQueue(): QueuedNotify[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(NOTIFY_QUEUE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeNotifyQueue(queue: QueuedNotify[]): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    localStorage.setItem(NOTIFY_QUEUE_KEY, JSON.stringify(queue))
+    return true
+  } catch (e) {
+    console.error('Failed to persist notify queue:', e)
+    return false
+  }
+}
+
+/** Returns true when the payload is durably queued. */
+export function queueNotifyPayload(payload: unknown): boolean {
+  const queue = readNotifyQueue()
+  queue.push({ payload, attempts: 0, queuedAt: new Date().toISOString() })
+  while (queue.length > NOTIFY_QUEUE_CAP) queue.shift()
+  return writeNotifyQueue(queue)
+}
+
+export function getNotifyQueueLength(): number {
+  return readNotifyQueue().length
+}
+
+let notifyFlushing = false
+
+export async function flushNotifyQueue(): Promise<void> {
+  if (typeof window === 'undefined' || notifyFlushing) return
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return
+  const queue = readNotifyQueue()
+  if (queue.length === 0) return
+  notifyFlushing = true
+  try {
+    const remaining: QueuedNotify[] = []
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i]
+      try {
+        const res = await fetch('/api/inspections/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.payload),
+        })
+        // 2xx (sent or not-configured) → delivered/no-op, dequeue.
+        // 400 → permanently invalid payload; drop it rather than poison the
+        // queue with something that can never succeed.
+        if (res.ok || res.status === 400) continue
+        item.attempts += 1
+        if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
+      } catch {
+        // Network dropped mid-flush — keep this item and everything after it
+        // untouched for the next 'online' event.
+        item.attempts += 1
+        if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
+        remaining.push(...queue.slice(i + 1))
+        break
+      }
+    }
+    writeNotifyQueue(remaining)
+  } finally {
+    notifyFlushing = false
+  }
+}
+
+/** Wire background flushing: once at load, again on reconnect. */
+export function installNotifyListeners(): () => void {
+  if (typeof window === 'undefined') return () => {}
+  void flushNotifyQueue()
+  const onOnline = () => { void flushNotifyQueue() }
+  window.addEventListener('online', onOnline)
+  return () => window.removeEventListener('online', onOnline)
+}
+
 // ── Export helpers ────────────────────────────────────
 
 function csvCell(v: unknown): string {
