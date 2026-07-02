@@ -198,10 +198,11 @@ Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, 
 **Accept:** non-default tab panels behind `next/dynamic` (keep pre-trip static — primary field flow); route first-load drops measurably; tab switch shows skeleton not blank.
 **Outcome:** Five non-default panels (PMSchedule, PmTracker, TrainingInfo, TrainingTracker, ComplianceInfo) behind `next/dynamic` with a shared pulse `TabPanelSkeleton`; PreTripInspection stays static on the QR-scan critical path. Honest A/B on identical HEAD: route JS 10.9→8.43 kB, first-load 182→180 kB gz — real but well under the audit's 10-20 kB estimate (the panels were lighter than assumed; the dominant weight is the offline equipment-data chunk, a deliberate offline-first cost). Kept for the deferred parse/execute of five components on the slow-network landing route. Verified on a production server: all three tabs load their content, skeleton (not blank) during load, zero overflow at 390px. Gate: 686 tests, lint 0, build clean.
 
-### F4 — SignaturePad full-canvas redraw per pointermove — `TODO`
+### F4 — SignaturePad full-canvas redraw per pointermove — `DONE`
 **Profession:** Graphics/perf engineer
 **Files:** `src/components/SignaturePad.tsx`
 **Accept:** active stroke appends segments incrementally (`lineTo` new segment only); full redraw only on resize/clear/restore; stroke rendering visually unchanged.
+**Outcome:** New `drawSegment`/`drawDot` primitives: pointerdown paints the starting dot, each pointermove strokes only `prev → current` — the O(points²) clearRect + full-replay per move is gone from the hot path on both the inline and expanded canvases. Full redraws remain for resize (ResizeObserver), clear, expanded open/save, and restore; export path unchanged. Round caps/joins at identical width make per-segment strokes visually indistinguishable from a stroked polyline. Verified on the height-permit form in a production build: a 200-point synthetic drag renders one continuous unbroken stroke (screenshot + 1448 inked pixels), clear works. Gate: 686 tests, lint 0, build clean.
 
 ### F5 — Inspection draft loses last answers when app backgrounds within 2s debounce — `TODO`
 **Profession:** Reliability engineer
