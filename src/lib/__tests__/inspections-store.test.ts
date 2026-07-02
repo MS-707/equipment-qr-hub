@@ -71,7 +71,7 @@ beforeEach(() => {
 describe('submitInspection persistence', () => {
   it('persists the record and mirrors it to the backup key', () => {
     const rec = submit()
-    expect(rec.id).toMatch(/^INS-\d{4}-\d{4}$/)
+    expect(rec.id).toMatch(/^INS-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(JSON.parse(store[PRIMARY])).toHaveLength(1)
     expect(store[BACKUP]).toBe(store[PRIMARY])
   })
@@ -153,6 +153,17 @@ describe('nextId under quota pressure', () => {
     const b = submit()
     expect(a.id).toMatch(/^INS-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(b.id).toMatch(/^INS-\d{4}-\d{4}-[a-z0-9]{4}$/i)
+    expect(a.id).not.toBe(b.id)
+  })
+
+  it('two tabs reading the same counter value still mint distinct IDs', () => {
+    const a = submit()
+    // Simulate tab B whose counter read predates tab A's increment
+    delete store['eqr-ins-counter']
+    const b = submit()
+    // Same sequential part (the cross-tab collision the counter can't prevent)…
+    expect(a.id.slice(0, 13)).toBe(b.id.slice(0, 13))
+    // …but the full IDs never collide
     expect(a.id).not.toBe(b.id)
   })
 })

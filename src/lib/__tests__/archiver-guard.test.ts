@@ -35,6 +35,7 @@ import {
   hasUnsyncedMutations,
   archiveOldSyncedRecords,
   getSafetyRecordById,
+  createIncidentReport,
 } from '@/lib/safety-records'
 import type { SafetyRecord } from '@/lib/safety-types'
 
@@ -177,5 +178,33 @@ describe('archiveOldSyncedRecords guard', () => {
     healed.status = 'closed'
     seed(healed)
     expect(archiveOldSyncedRecords()).toBe(1)
+  })
+})
+
+describe('ID collision-proofing (C2)', () => {
+  const incidentInput = {
+    location: 'Yard',
+    projectName: 'Project X',
+    incidentType: 'near-miss' as const,
+    severity: 'minor' as const,
+    occurredAt: '2026-07-02T08:00:00.000Z',
+    description: 'Test',
+    immediateActions: '',
+    witnesses: [],
+    rootCause: '',
+    correctiveActions: '',
+    reportedToCalOsha: false,
+    photoSlots: [],
+    reporterSignatureId: null,
+  }
+
+  it('always suffixes IDs so same-counter tabs cannot collide', () => {
+    const a = createIncidentReport(incidentInput)
+    // Simulate a second tab whose counter read predates the increment
+    delete store['eqr-safety-counters']
+    const b = createIncidentReport(incidentInput)
+    expect(a.id).toMatch(/^INC-\d{4}-\d{4}-[a-z0-9]{4}$/i)
+    expect(a.id.slice(0, 13)).toBe(b.id.slice(0, 13)) // same sequential part
+    expect(a.id).not.toBe(b.id) // never the same record
   })
 })

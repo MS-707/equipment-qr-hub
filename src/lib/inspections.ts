@@ -142,15 +142,13 @@ function nextId(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  let persisted = false
   try {
     localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
-    persisted = true
-  } catch { /* quota — fall back to a collision-proof suffix below */ }
-  const seq = `INS-${year}-${String(stored.count).padStart(4, '0')}`
-  // If the counter could not advance, sequential IDs would repeat forever on
-  // a full device — disambiguate with a random suffix.
-  return persisted ? seq : `${seq}-${cryptoRandomId().slice(0, 4)}`
+  } catch { /* quota — the random suffix below still guarantees uniqueness */ }
+  // ALWAYS suffix: the counter read-increment-write is not atomic across
+  // tabs; a shared sequential ID would map two inspections onto one server
+  // record. Sequential part stays human-readable.
+  return `INS-${year}-${String(stored.count).padStart(4, '0')}-${cryptoRandomId().slice(0, 4)}`
 }
 
 // ── Change notification (pub/sub) ────────────────────

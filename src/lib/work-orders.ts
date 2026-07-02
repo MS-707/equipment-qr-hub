@@ -7,6 +7,7 @@
  */
 
 import { WorkOrder, PmType, WorkOrderStatus } from '@/lib/types'
+import { cryptoRandomId } from '@/lib/safety-records'
 
 const STORAGE_KEY = 'eqr-work-orders'
 const COUNTER_KEY = 'eqr-wo-counter'
@@ -54,8 +55,9 @@ function nextNumber(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
-  return `WO-${year}-${String(stored.count).padStart(4, '0')}`
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* suffix below keeps IDs unique */ }
+  // ALWAYS suffix — counter increments are not atomic across tabs.
+  return `WO-${year}-${String(stored.count).padStart(4, '0')}-${cryptoRandomId().slice(0, 4)}`
 }
 
 // ── Change notification (pub/sub) ────────────────────────

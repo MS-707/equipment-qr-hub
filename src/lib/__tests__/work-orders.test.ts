@@ -53,7 +53,7 @@ describe('work-orders', () => {
       pmType: 'Daily',
       tasks: 'Check oil level',
     })
-    expect(wo.id).toMatch(/^WO-\d{4}-\d{4}$/)
+    expect(wo.id).toMatch(/^WO-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(wo.status).toBe('Not Started')
     expect(wo.equipmentId).toBe(101)
     expect(wo.tasks).toBe('Check oil level')
@@ -184,8 +184,9 @@ describe('work-orders', () => {
   it('increments counter across multiple creates', () => {
     const wo1 = createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'A' })
     const wo2 = createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'B' })
-    const num1 = parseInt(wo1.id.split('-').pop()!)
-    const num2 = parseInt(wo2.id.split('-').pop()!)
+    // ID shape: WO-<year>-<seq>-<rand> — the sequential part is segment 3
+    const num1 = parseInt(wo1.id.split('-')[2])
+    const num2 = parseInt(wo2.id.split('-')[2])
     expect(num2).toBe(num1 + 1)
   })
 })

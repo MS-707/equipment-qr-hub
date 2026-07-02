@@ -259,17 +259,15 @@ function nextId(type: SafetyRecordType): string {
   if (!c || c.year !== year) c = { year, count: 0 }
   c.count += 1
   counters[prefix] = c
-  let persisted = false
   try {
     localStorage.setItem(COUNTER_KEY, JSON.stringify(counters))
-    persisted = true
-  } catch { /* quota — use fallback suffix below */ }
+  } catch { /* quota — the random suffix below still guarantees uniqueness */ }
   const seq = String(c.count).padStart(4, '0')
-  if (!persisted) {
-    const rand = Math.random().toString(36).slice(2, 6)
-    return `${prefix}-${year}-${seq}-${rand}`
-  }
-  return `${prefix}-${year}-${seq}`
+  // ALWAYS suffix: the counter read-increment-write is not atomic across
+  // tabs, and two records minted with the same ID dedup onto one Notion page
+  // (the second record's content is never uploaded). The sequential part
+  // stays human-readable; the suffix makes collisions impossible.
+  return `${prefix}-${year}-${seq}-${cryptoRandomId().slice(0, 4)}`
 }
 
 function identityStamp(): { createdBy: string; createdByEmail: string | null } {
