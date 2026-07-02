@@ -358,6 +358,10 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   // persisted; keep the operator on the checklist with their answers intact.
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // Defect photos live only in IndexedDB (records store photo: null) — a
+  // failed write means the evidence is gone and the operator must know.
+  const [photoSaveFailed, setPhotoSaveFailed] = useState(false)
+
   // Announce the verdict: move focus to the result heading (screen readers
   // hear "Out of Service" instead of silence) and give glove-friendly haptic
   // feedback matched to severity. Mirrors the PtpDone pattern.
@@ -629,14 +633,18 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
     let record: InspectionRecord
     try {
-      record = submitInspection({
-        equipmentId: equipment.itemNumber,
-        inspectorName,
-        shift,
-        hourMeterReading: hourMeter ? parseFloat(hourMeter) : null,
-        checklistType,
-        items,
-      })
+      setPhotoSaveFailed(false)
+      record = submitInspection(
+        {
+          equipmentId: equipment.itemNumber,
+          inspectorName,
+          shift,
+          hourMeterReading: hourMeter ? parseFloat(hourMeter) : null,
+          checklistType,
+          items,
+        },
+        { onPhotoSaveError: () => setPhotoSaveFailed(true) }
+      )
       setSaveError(null)
     } catch (e) {
       // Storage full or corrupt — the record was NOT saved. Stay on the
@@ -696,6 +704,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     setItems(buildBlankItems(checklistType))
     setSubmittedRecord(null)
     setNotifyStatus('idle')
+    setPhotoSaveFailed(false)
     setHourMeter('')
     setDraftRestored(false)
   }
@@ -1014,6 +1023,15 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           )}
 
           {/* EHS email outcome — only surfaced when email is configured */}
+          {photoSaveFailed && (
+            <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
+              <Camera className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-sm text-warn-strong">
+                Defect photos could not be saved to this device (storage may be full).
+                The inspection record itself is saved — retake photos for the work order if needed.
+              </p>
+            </div>
+          )}
           {notifyStatus === 'sent' && (
             <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
           )}

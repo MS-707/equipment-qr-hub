@@ -93,10 +93,11 @@ After submit the DOM swaps with no `aria-live`, no focus move — an "Out of Ser
 
 ## Phase C — Data & sync correctness (P1)
 
-### C1 — Blob persistence is fire-and-forget (photos/signatures silently lost) — `TODO`
+### C1 — Blob persistence is fire-and-forget (photos/signatures silently lost) — `DONE`
 **Profession:** Data-reliability engineer
 **Files:** `src/lib/inspections.ts` (`savePhotos`), `src/lib/work-orders.ts`, `src/lib/shop-management.ts`
 **Accept:** `savePhotos` awaits `tx.oncomplete` and rejects on `tx.onerror` (mirror `putBlobs` in safety-records); photo-save failure surfaces on the result screen (non-blocking notice); `work-orders.ts` `writeAll` rethrows quota; `shop-management.ts` uses `cryptoRandomId` and rethrows quota on user-initiated saves.
+**Outcome:** `savePhotos` now awaits the transaction (resolves on `oncomplete`, rejects on `onerror`/`onabort`) — was fire-and-forget puts with `db.close()` while writes were in flight. `submitInspection` gains an `onPhotoSaveError` hook; the result screen shows a warn notice ("record saved — retake photos for the work order") keyed per submission. `work-orders.writeAll` rethrows quota with a human message (a dropped WO orphans the defect trail); `shop-management` `randomId()` deleted in favor of `cryptoRandomId()` and `writeJson` rethrows quota on compliance saves. 4 new tests (fake-IDB commit/abort contract, hook firing, WO quota throw). Gate: 653 tests, lint 0, build clean.
 
 ### C2 — Multi-tab races lose records / mint duplicate IDs — `TODO`
 **Profession:** Data-reliability engineer

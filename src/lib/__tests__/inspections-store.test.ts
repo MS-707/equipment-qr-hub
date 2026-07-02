@@ -36,8 +36,8 @@ vi.mock('@/lib/equipment', () => ({
   getEquipmentById: vi.fn(() => ({ name: 'Test Forklift' })),
 }))
 
-import { submitInspection, getAllInspections } from '@/lib/inspections'
-import { createWorkOrder, } from '@/lib/work-orders'
+import { submitInspection, getAllInspections, savePhotos } from '@/lib/inspections'
+import { createWorkOrder } from '@/lib/work-orders'
 import type { InspectionItemResult } from '@/lib/types'
 
 const PRIMARY = 'eqr-inspections'
@@ -154,5 +154,78 @@ describe('nextId under quota pressure', () => {
     expect(a.id).toMatch(/^INS-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(b.id).toMatch(/^INS-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(a.id).not.toBe(b.id)
+  })
+})
+
+// ── savePhotos IndexedDB transaction contract ─────────────────
+
+type Handler = (() => void) | null
+
+function stubIndexedDB({ fail = false } = {}): { puts: string[] } {
+  const puts: string[] = []
+  const makeTx = () => {
+    const tx = {
+      error: null as DOMException | null,
+      oncomplete: null as Handler,
+      onerror: null as Handler,
+      onabort: null as Handler,
+      objectStore: () => ({ put: (_v: unknown, k: string) => { puts.push(k) } }),
+    }
+    setTimeout(() => {
+      if (fail) {
+        tx.error = new DOMException('quota', 'QuotaExceededError')
+        tx.onabort?.()
+      } else {
+        tx.oncomplete?.()
+      }
+    }, 0)
+    return tx
+  }
+  const db = {
+    transaction: makeTx,
+    close: () => {},
+    objectStoreNames: { contains: () => true },
+    createObjectStore: () => ({}),
+  }
+  const open = () => {
+    const req = { result: db, onupgradeneeded: null as Handler, onsuccess: null as Handler, onerror: null as Handler }
+    setTimeout(() => { req.onsuccess?.() }, 0)
+    return req
+  }
+  vi.stubGlobal('indexedDB', { open })
+  return { puts }
+}
+
+describe('savePhotos transaction contract', () => {
+  it('resolves after the transaction commits, with a put per photo', async () => {
+    const { puts } = stubIndexedDB()
+    const withPhotos = items('fail').map((it) => ({ ...it, photo: 'data:image/jpeg;base64,xx' }))
+    await expect(savePhotos('INS-2026-0001', withPhotos)).resolves.toBeUndefined()
+    expect(puts).toEqual(['INS-2026-0001:it-1', 'INS-2026-0001:it-2'])
+  })
+
+  it('rejects when the transaction aborts (quota) instead of silently dropping evidence', async () => {
+    stubIndexedDB({ fail: true })
+    const withPhotos = items('fail').map((it) => ({ ...it, photo: 'data:image/jpeg;base64,xx' }))
+    await expect(savePhotos('INS-2026-0001', withPhotos)).rejects.toThrow()
+  })
+
+  it('fires onPhotoSaveError so the UI can warn the operator', async () => {
+    stubIndexedDB({ fail: true })
+    const onPhotoSaveError = vi.fn()
+    const failItems: InspectionItemResult[] = items('fail').map((it) => ({ ...it, photo: 'data:image/jpeg;base64,xx' }))
+    submitInspection(
+      {
+        equipmentId: 17,
+        inspectorName: 'Dana',
+        shift: 'Day',
+        hourMeterReading: 100,
+        checklistType: 'electric-forklift',
+        items: failItems,
+      },
+      { onPhotoSaveError }
+    )
+    await new Promise((r) => setTimeout(r, 20))
+    expect(onPhotoSaveError).toHaveBeenCalledOnce()
   })
 })

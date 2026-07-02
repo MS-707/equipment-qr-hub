@@ -10,6 +10,8 @@
  * The public API is the swap-point; replace the storage internals later.
  */
 
+import { cryptoRandomId } from '@/lib/safety-records'
+
 // ── Types ────────────────────────────────────────────────────
 
 export interface AuthorizedUser {
@@ -80,13 +82,17 @@ function writeJson(key: string, data: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(data))
   } catch (e) {
+    // Re-throw so user-initiated saves (authorizations, training records)
+    // can surface the failure instead of silently dropping compliance data.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
     console.error(`Failed to write ${key}:`, e)
+    if (isQuota) {
+      throw new Error('Device storage is full. Free up space before saving.')
+    }
+    throw e
   }
-}
-
-function randomId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
-  return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
 function nowIso(): string {
@@ -221,7 +227,7 @@ export function recordPmCompletion(input: {
 }): PmCompletion {
   const all = readJson<PmCompletion[]>(PM_COMPLETIONS_KEY, [])
   const record: PmCompletion = {
-    id: randomId(),
+    id: cryptoRandomId(),
     ...input,
     completedAt: nowIso(),
   }
@@ -274,7 +280,7 @@ export function addTrainingRecord(input: {
 }): TrainingRecord {
   const all = getAllTrainingRecords()
   const record: TrainingRecord = {
-    id: randomId(),
+    id: cryptoRandomId(),
     employeeEmail: input.employeeEmail,
     employeeName: input.employeeName,
     topic: input.topic,

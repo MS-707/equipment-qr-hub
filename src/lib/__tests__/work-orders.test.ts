@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const storage: Record<string, string> = {}
+let quotaKeys = new Set<string>()
 vi.stubGlobal('localStorage', {
   getItem: (k: string) => storage[k] ?? null,
-  setItem: (k: string, v: string) => { storage[k] = v },
+  setItem: (k: string, v: string) => {
+    if (quotaKeys.has(k)) throw new DOMException('quota', 'QuotaExceededError')
+    storage[k] = v
+  },
   removeItem: (k: string) => { delete storage[k] },
   clear: () => { for (const k in storage) delete storage[k] },
   get length() { return Object.keys(storage).length },
@@ -13,6 +17,7 @@ vi.stubGlobal('window', globalThis)
 
 beforeEach(() => {
   for (const k in storage) delete storage[k]
+  quotaKeys = new Set()
 })
 
 import {
@@ -33,6 +38,13 @@ import {
 describe('work-orders', () => {
   it('returns empty list initially', () => {
     expect(getAllWorkOrders()).toEqual([])
+  })
+
+  it('throws a human-readable error when storage quota is exceeded', () => {
+    quotaKeys = new Set(['eqr-work-orders'])
+    expect(() =>
+      createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'Fix brakes', assignedTo: null })
+    ).toThrow(/storage is full/i)
   })
 
   it('creates a work order with auto-generated ID', () => {

@@ -27,8 +27,17 @@ function writeAll(orders: WorkOrder[]): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
-  } catch {
-    console.error('Failed to save work orders — storage may be full')
+  } catch (e) {
+    // Re-throw so callers can surface the failure — a silently dropped work
+    // order orphans the defect trail behind a critical inspection failure.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+    console.error('Failed to save work orders:', e)
+    if (isQuota) {
+      throw new Error('Device storage is full. Free up space before creating work orders.')
+    }
+    throw e
   }
 }
 

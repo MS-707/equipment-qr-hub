@@ -40,6 +40,14 @@ export async function savePhotos(recordId: string, items: InspectionItemResult[]
   for (const item of photos) {
     store.put(item.photo, `${recordId}:${item.id}`)
   }
+  // Await transaction commit — the record stores photo: null, so IndexedDB is
+  // the ONLY copy of defect evidence. A quota abort must reject to the caller,
+  // not vanish while the puts are still in flight.
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
+    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'))
+  })
   db.close()
 }
 
@@ -217,14 +225,22 @@ export function getAllInspections(): InspectionRecord[] {
   )
 }
 
-export function submitInspection(data: {
-  equipmentId: number
-  inspectorName: string
-  shift: Shift
-  hourMeterReading: number | null
-  checklistType: ChecklistType
-  items: InspectionItemResult[]
-}): InspectionRecord {
+export function submitInspection(
+  data: {
+    equipmentId: number
+    inspectorName: string
+    shift: Shift
+    hourMeterReading: number | null
+    checklistType: ChecklistType
+    items: InspectionItemResult[]
+  },
+  hooks?: {
+    /** Photo persistence is async and best-effort; this fires if defect
+     *  photos could NOT be written to IndexedDB so the UI can tell the
+     *  operator their evidence didn't save. */
+    onPhotoSaveError?: (e: unknown) => void
+  }
+): InspectionRecord {
   const hasCriticalFail = data.items.some(
     (item) => item.critical && item.result === 'fail'
   )
@@ -311,10 +327,11 @@ export function submitInspection(data: {
 
   notify()
 
-  // Save photos to IndexedDB (fire-and-forget)
-  savePhotos(recordId, data.items).catch((e) =>
+  // Save photos to IndexedDB (async; failures surface via the hook)
+  savePhotos(recordId, data.items).catch((e) => {
     console.error('Failed to save photos to IndexedDB:', e)
-  )
+    hooks?.onPhotoSaveError?.(e)
+  })
 
   // Return record with original photos still in memory for result screen
   return { ...record, items: data.items }
