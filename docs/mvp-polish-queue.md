@@ -214,11 +214,12 @@ Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, 
 
 ## Phase G — Install polish (best-effort)
 
-### G1 — Manifest + splash gaps — `TODO`
+### G1 — Manifest + splash gaps — `DONE`
 **Profession:** PWA engineer
-**Files:** `public/manifest.json`, `src/app/layout.tsx`, `public/splash/*`
+**Files:** `public/manifest.json`, `src/app/layout.tsx`, `public/splash/*`, `public/icons/icon-maskable-192x192.png` (new)
 Missing splash profiles for iPhone 12-14/mini/XR/Pro Max and iPad Pro 12.9 (blank flash at launch); no maskable 192 icon; `orientation: portrait-primary` locks landscape iPad.
 **Accept:** splash set covers the missing common profiles (generate programmatically — solid bg + centered icon is acceptable; if no image tooling available, mark DEFERRED with exact specs needed); maskable 192 added; orientation lock removed or justified; manifest validates.
+**Outcome:** Generated 5 missing splash PNGs with sharp (`#0A0A0A` fill + centered 512 icon at 28% width, palette-compressed to 3-8 KB each; preview visually verified): 1170×2532 (iPhone 12-14), 1125×2436 (X/XS/11 Pro/mini), 828×1792 (XR/11), 1242×2688 (XS Max/11 Pro Max), 2048×2732 (iPad Pro 12.9) — layout.tsx now carries the full 11-profile media-query set. Maskable 192 icon derived from the maskable 512 and added to the manifest. `orientation: portrait-primary` removed — landscape iPad is a real jobsite posture (tablet on a mount). Manifest validates as JSON with icons/shortcuts intact. Gate: 686 tests, lint 0, build clean.
 
 ---
 
