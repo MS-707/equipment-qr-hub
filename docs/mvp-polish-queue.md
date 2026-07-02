@@ -167,11 +167,12 @@ IndexedDB/localStorage evictable under pressure (this is the system of record); 
 **Accept:** StatusToggle is a real `<button>`; stepper jumps land visible (`scroll-mt` on `[data-step]` or `block:'center'`); ConfirmDialog title/body wired via `aria-labelledby`/`aria-describedby`; UserMenu supports ArrowUp/Down/Escape/Home/End; crew name input gets `autoComplete="off"`.
 **Outcome:** StatusToggle split into a real `<button>` for admins (Enter/Space free, focus-visible ring) and a plain span for viewers — keyboard users can finally mark equipment Out of Service. FormStepper jumps use `block:'center'` (matches ValidationSummary; headings land clear of the ~120px sticky header+stepper). ConfirmDialog wires title/body via `useId` + `aria-labelledby`/`aria-describedby` so "Revoke Permit?" is announced on open. UserMenu gains roving-focus keyboard nav (ArrowUp/Down wrap, Home/End, Escape closes and returns focus to the trigger) and closes on `touchstart` outside, not just `mousedown`. Crew name input gets `autoComplete="off"` so the crew-roster datalist wins over iOS owner-name autofill during pass-the-device sign-on. Incident dismiss was covered in E1. Gate: 683 tests, lint 0, build clean.
 
-### E4 — Tour overlays lack dialog semantics — `TODO`
+### E4 — Tour overlays lack dialog semantics — `DONE`
 **Profession:** Accessibility specialist
 **Files:** `ModuleTourEngine.tsx`, `OnboardingTour.tsx`
 Fixed-position divs with no `role="dialog"`, no `aria-modal`, no focus management — Tab lands on obscured page content; SRs never hear tooltips. ConfirmDialog/SageTriage use native `<dialog>` correctly.
 **Accept:** tooltips get `role="dialog" aria-modal="true"` with labelled title, focus moves into the tooltip on step change and returns on finish; Tab cycles within tooltip controls.
+**Outcome:** Both tour tooltips are `role="dialog" aria-modal="true"` with `useId`-wired `aria-labelledby`/`aria-describedby`. Focus moves to the tooltip container on every step reveal (synced to the crossfade so VoiceOver announces title+body per step) and returns to the invoking element on finish/Esc (activeElement captured at tour start). Tab/Shift+Tab cycle within the tooltip's controls via a keydown trap. Native `<dialog>` was considered but would break the spotlight box-shadow cutout layering — the manual pattern matches what the crossfade architecture needs. Verified in-browser: dialog role announced, per-step focus lands on the dialog, Escape restores focus to the Tour button. Gate: 683 tests, lint 0, build clean.
 
 ---
 

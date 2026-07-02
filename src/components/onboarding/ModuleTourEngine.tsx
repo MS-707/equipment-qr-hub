@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useId } from 'react'
 import { usePathname } from 'next/navigation'
 import { ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { findTourForRoute, type ModuleTourStep } from '@/tours'
@@ -43,6 +43,10 @@ export default function ModuleTourEngine() {
   // 'entering' = first step appearing, 'idle' = stable, 'exiting' = fading out before step change
   const [phase, setPhase] = useState<'entering' | 'idle' | 'exiting'>('entering')
   const pendingStepRef = useRef<number | null>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+  const bodyId = useId()
 
   const finish = useCallback(() => {
     if (tourId) markTourSeen(tourId)
@@ -51,6 +55,9 @@ export default function ModuleTourEngine() {
     setTourId(null)
     setPhase('entering')
     window.dispatchEvent(new Event(TOUR_ENDED_EVENT))
+    // Return focus to whatever launched the tour (the Tour button)
+    restoreFocusRef.current?.focus()
+    restoreFocusRef.current = null
   }, [tourId])
 
   const goToStep = useCallback((next: number) => {
@@ -81,6 +88,7 @@ export default function ModuleTourEngine() {
       if (attempt < 3) setTimeout(() => startTour(id, attempt + 1), 400 * (attempt + 1))
       return
     }
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setSteps(available)
     setTourId(id)
     setStepIndex(0)
@@ -194,6 +202,26 @@ export default function ModuleTourEngine() {
     return () => window.removeEventListener('keydown', onKey)
   }, [active, stepIndex, steps.length, finish, goToStep, phase])
 
+  // Move focus into the tooltip when a step reveals so screen readers
+  // announce it (synced to the crossfade), and trap Tab inside — the page
+  // behind is visually obscured but otherwise reachable.
+  useEffect(() => {
+    if (active && phase === 'idle') tooltipRef.current?.focus()
+  }, [active, phase, stepIndex])
+
+  const trapTab = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return
+    const focusables = tooltipRef.current?.querySelectorAll<HTMLElement>('button, [href]')
+    if (!focusables || focusables.length === 0) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus()
+    }
+  }, [])
+
   if (!active || steps.length === 0) return null
 
   const step = steps[stepIndex]
@@ -228,7 +256,14 @@ export default function ModuleTourEngine() {
       )}
 
       <div
-        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4"
+        ref={tooltipRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        tabIndex={-1}
+        onKeyDown={trapTab}
+        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4 outline-none"
         style={{
           width: tooltipWidth,
           left: rect ? tooltipLeft : '50%',
@@ -242,7 +277,7 @@ export default function ModuleTourEngine() {
         }}
       >
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm font-semibold text-fg">{step.title}</h3>
+          <h3 id={titleId} className="text-sm font-semibold text-fg">{step.title}</h3>
           <button
             type="button"
             onClick={finish}
@@ -252,7 +287,7 @@ export default function ModuleTourEngine() {
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-sm text-fg-2 mt-1 leading-relaxed">{step.body}</p>
+        <p id={bodyId} className="text-sm text-fg-2 mt-1 leading-relaxed">{step.body}</p>
 
         <div className="flex items-center justify-between mt-4">
           <div className="flex gap-1.5">
