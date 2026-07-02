@@ -25,16 +25,22 @@ beforeEach(() => {
   vi.mocked(sendEhsNotification).mockResolvedValue('not-configured')
 })
 
+// Mirrors the real client payload: numeric equipmentId (equipment.itemNumber),
+// workOrderId null on passing inspections. Keep in lockstep with
+// InspectionRecord in lib/types.ts — see inspection-notify-schema.test.ts for
+// the full round-trip suite.
 const validBody = {
   record: {
-    id: 'INS-001',
-    equipmentId: 'EQ-001',
+    id: 'INS-2026-0001',
+    equipmentId: 17,
     inspectorName: 'Alice',
-    shift: 'day',
+    shift: 'Day',
     hourMeterReading: 1234,
     createdAt: '2026-06-23T08:00:00Z',
     result: 'pass' as const,
     hasCriticalFail: false,
+    criticalNaCount: 0,
+    workOrderId: null,
     items: [
       { id: 'item-1', label: 'Brakes', result: 'pass' as const },
       { id: 'item-2', label: 'Lights', result: 'pass' as const },

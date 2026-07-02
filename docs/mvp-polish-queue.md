@@ -24,11 +24,12 @@
 
 ## Phase A — Stop the bleeding (P0)
 
-### A1 — Fix EHS notify route schema (currently rejects EVERY inspection) — `TODO`
+### A1 — Fix EHS notify route schema (currently rejects EVERY inspection) — `DONE`
 **Profession:** Backend/API engineer
 **Files:** `src/app/api/inspections/notify/route.ts`, `src/components/PreTripInspection.tsx`
 `equipmentId` is `z.string()` but records carry a number (`types.ts` — `equipment.itemNumber`); `workOrderId: z.string().optional()` rejects `null` (every passing inspection). Route 400s on essentially all real submissions while the UI claims "EHS has been notified."
 **Accept:** schema accepts real record shape (number + nullable); client reads `res.ok` and the `emailed` field and shows a visible non-blocking "EHS notification could not be sent" state on failure; round-trip test that validates an actual `submitInspection`-shaped payload against the Zod schema.
+**Outcome:** Schema extracted to `src/lib/inspection-notify-schema.ts` (route files can't export symbols) with `equipmentId: z.number()`, `workOrderId` nullable, notes cap raised 1000→2000 to match the client textarea. Client now tracks notify outcome (`pending/sent/skipped/failed`); result screen shows "EHS has been notified by email" only on confirmed send, a warn banner on failure, and the static critical-N/A copy no longer claims delivery ("flagged for EHS review"). Root cause of the shipped bug found in the old route test fixture: it used `equipmentId: 'EQ-001'`, validating the schema against itself instead of the real payload — fixture fixed, plus 9 new round-trip tests in `inspection-notify-schema.test.ts`. Gate: 605 tests pass, build + lint clean.
 
 ### A2 — Inspection store hardening (silent data loss with a green checkmark) — `TODO`
 **Profession:** Data-reliability engineer

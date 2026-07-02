@@ -341,6 +341,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     workOrderId: string | null
   } | null>(null)
 
+  // EHS email notification outcome — 'skipped' means email isn't configured
+  // server-side (nothing to surface); 'failed' must be shown to the operator
+  // so "EHS knows" is never assumed when nothing was delivered.
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'failed'>('idle')
+
   // Notes / N/A validation
   const [missingNotes, setMissingNotes] = useState<Set<string>>(new Set())
   const [missingNaJustification, setMissingNaJustification] = useState<Set<string>>(new Set())
@@ -602,9 +607,11 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     })
     setStep('result')
 
-    // Email the completed inspection to EHS (fire-and-forget, env-gated server-side).
+    // Email the completed inspection to EHS. Non-blocking, but the outcome is
+    // tracked so the result screen never claims a notification that failed.
     // Strip photos to keep the payload small; the email is a text summary.
-    void fetch('/api/inspections/notify', {
+    setNotifyStatus('pending')
+    fetch('/api/inspections/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -612,7 +619,18 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
         equipmentName: equipment.name,
         equipmentCategory: equipment.category,
       }),
-    }).catch(() => { /* offline — inspection is saved locally regardless */ })
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setNotifyStatus('failed')
+          return
+        }
+        const data = await res.json()
+        if (data.emailed) setNotifyStatus('sent')
+        else if (data.reason === 'not-configured') setNotifyStatus('skipped')
+        else setNotifyStatus('failed')
+      })
+      .catch(() => setNotifyStatus('failed'))
 
     // Notify parent if status changed (critical fail sets Out of Service)
     if (record.hasCriticalFail && onStatusChange) {
@@ -627,6 +645,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
     setStep('identify')
     setItems(buildBlankItems(checklistType))
     setSubmittedRecord(null)
+    setNotifyStatus('idle')
     setHourMeter('')
     setDraftRestored(false)
   }
@@ -886,7 +905,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               </p>
               {submittedRecord.criticalNaCount > 0 && (
                 <p className="text-xs text-warn mt-3">
-                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — EHS has been notified.
+                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
                 </p>
               )}
             </div>
@@ -902,7 +921,7 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
               </p>
               {submittedRecord.criticalNaCount > 0 && (
                 <p className="text-xs text-warn mb-3">
-                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — EHS has been notified.
+                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
                 </p>
               )}
               {submittedRecord.workOrderId && (
@@ -931,6 +950,20 @@ export default function PreTripInspection({ equipment, onStatusChange }: PreTrip
                   Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
                 </p>
               )}
+            </div>
+          )}
+
+          {/* EHS email outcome — only surfaced when email is configured */}
+          {notifyStatus === 'sent' && (
+            <p className="text-xs text-ok text-center">EHS has been notified by email.</p>
+          )}
+          {notifyStatus === 'failed' && (
+            <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
+              <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
+              <p className="text-sm text-warn">
+                The EHS email notification could not be sent (offline or server issue).
+                Your inspection is saved on this device — let your EHS contact know directly if this involved a safety-critical item.
+              </p>
             </div>
           )}
 

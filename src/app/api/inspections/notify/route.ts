@@ -6,10 +6,10 @@
  * so the inspection flow is never blocked. Mirrors the safety review email path.
  */
 
-import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
+import { NotifyBodySchema, type NotifyBody } from '@/lib/inspection-notify-schema'
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -20,36 +20,6 @@ function fmt(iso: string): string {
     minute: '2-digit',
   })
 }
-
-const InspectionItemSchema = z.object({
-  id: z.string().max(100),
-  label: z.string().max(200),
-  result: z.enum(['pass', 'fail', 'na']),
-  critical: z.boolean().optional(),
-  notes: z.string().max(1000).optional(),
-  naReasonCode: z.string().max(50).nullable().optional(),
-  naJustification: z.string().max(2000).optional(),
-})
-
-const NotifyBodySchema = z.object({
-  record: z.object({
-    id: z.string().max(100),
-    equipmentId: z.string().max(100),
-    inspectorName: z.string().max(200),
-    shift: z.string().max(50),
-    hourMeterReading: z.number().nullable().optional(),
-    createdAt: z.string().max(50),
-    result: z.enum(['pass', 'fail']),
-    hasCriticalFail: z.boolean(),
-    criticalNaCount: z.number().optional(),
-    workOrderId: z.string().max(100).optional(),
-    items: z.array(InspectionItemSchema).max(200),
-  }),
-  equipmentName: z.string().max(200).optional(),
-  equipmentCategory: z.string().max(200).optional(),
-})
-
-type NotifyBody = z.infer<typeof NotifyBodySchema>
 
 function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } {
   const r = b.record
