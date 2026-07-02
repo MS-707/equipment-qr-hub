@@ -26,7 +26,10 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.vercel-storage.com https://*.upstash.io https://*.ingest.sentry.io; frame-ancestors 'none'" },
+          // connect-src: KV/upstash is server-only (lib/kv.ts) — deliberately
+          // NOT whitelisted for the browser. base-uri/form-action matter more
+          // than usual because script-src allows 'unsafe-inline'.
+          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.vercel-storage.com https://*.ingest.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" },
         ],
       },
       {

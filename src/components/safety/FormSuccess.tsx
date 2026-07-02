@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, WifiOff, Send, Loader2 } from 'lucide-react'
+import { CheckCircle2, WifiOff, Send, Loader2, AlertTriangle } from 'lucide-react'
 import { haptic } from '@/lib/haptic'
+import type { ReviewSubmitState } from '@/lib/review-submit'
 
 interface FormSuccessProps {
   id: string
@@ -13,10 +14,15 @@ interface FormSuccessProps {
   newLabel?: string
   offline?: boolean
   onSubmitForReview?: () => Promise<void>
-  reviewAutoSubmitted?: boolean
+  /**
+   * Auto-submission outcome, driven by the ACTUAL POST result — never a
+   * hardcoded flag. 'failed' renders a retry affordance via onRetryReview.
+   */
+  reviewAutoSubmitted?: ReviewSubmitState | null
+  onRetryReview?: () => void
 }
 
-export default function FormSuccess({ id, title, message, onNew, newLabel = 'New', offline, onSubmitForReview, reviewAutoSubmitted }: FormSuccessProps) {
+export default function FormSuccess({ id, title, message, onNew, newLabel = 'New', offline, onSubmitForReview, reviewAutoSubmitted, onRetryReview }: FormSuccessProps) {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewDone, setReviewDone] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -52,10 +58,35 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
         </div>
       )}
 
-      {reviewAutoSubmitted && (
+      {reviewAutoSubmitted === 'pending' && (
+        <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5" role="status">
+          <Loader2 className="w-4 h-4 text-mytra-purple shrink-0 animate-spin" />
+          <p className="text-xs text-mytra-purple">Submitting for EHS review…</p>
+        </div>
+      )}
+
+      {reviewAutoSubmitted === 'submitted' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Automatically submitted for EHS review</p>
+          <p className="text-xs text-mytra-purple">Submitted for EHS review</p>
+        </div>
+      )}
+
+      {reviewAutoSubmitted === 'failed' && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5" role="alert">
+          <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-sm text-warn-strong flex-1">
+            Could not submit for EHS review (offline or server issue). The record is saved on this device.
+          </p>
+          {onRetryReview && (
+            <button
+              type="button"
+              onClick={onRetryReview}
+              className="shrink-0 min-h-[44px] px-3 rounded-lg text-sm font-semibold text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
+            >
+              Retry
+            </button>
+          )}
         </div>
       )}
 

@@ -13,7 +13,7 @@ export default function LastUsedChip({ label, value, currentValue, onApply }: La
     <button
       type="button"
       onClick={() => onApply(value)}
-      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full
+      className="inline-flex items-center gap-1 text-sm px-3 py-2.5 min-h-[44px] rounded-full
                  bg-mytra-purple/10 border border-mytra-purple/20 text-mytra-purple
                  hover:bg-mytra-purple/20 transition-colors"
     >

@@ -431,7 +431,7 @@ function SageTriageInner() {
                     key={suggestion}
                     type="button"
                     onClick={() => sendMessage(suggestion)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-mytra-purple/30
+                    className="text-sm px-3.5 py-2.5 min-h-[44px] rounded-full border border-mytra-purple/30
                                text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
                   >
                     {suggestion}
@@ -446,7 +446,7 @@ function SageTriageInner() {
                     key={chip.label}
                     type="button"
                     onClick={() => sendMessage(chip.q)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-mytra-purple/30
+                    className="text-sm px-3.5 py-2.5 min-h-[44px] rounded-full border border-mytra-purple/30
                                text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
                   >
                     {chip.label}

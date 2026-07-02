@@ -2,16 +2,39 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { ClipboardCheck, BookOpen } from 'lucide-react'
+import { ClipboardCheck, BookOpen, Download } from 'lucide-react'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { getAllEquipment } from '@/lib/equipment'
-import { getLastEquipmentId } from '@/lib/inspections'
+import { getLastEquipmentId, getAllInspections, exportInspectionsToCsv, onInspectionChange } from '@/lib/inspections'
 import { requiresPreTrip, INSPECTION_CATEGORIES, EquipmentItem } from '@/lib/types'
 import PreTripInspection from '@/components/PreTripInspection'
 
 export default function InspectionsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [inspectionCount, setInspectionCount] = useState(0)
+
+  // Track record count so the export button reflects reality
+  useEffect(() => {
+    const refresh = () => setInspectionCount(getAllInspections().length)
+    refresh()
+    return onInspectionChange(refresh)
+  }, [])
+
+  function handleExportCsv() {
+    const records = getAllInspections()
+    if (records.length === 0) return
+    const csv = exportInspectionsToCsv(records)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `inspections-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
 
   // Get inspectable equipment grouped by category
   const inspectableUnits = useMemo(() => {
@@ -49,6 +72,19 @@ export default function InspectionsPage() {
         <ClipboardCheck className="w-6 h-6 text-mytra-purple" />
         <h1 className="text-xl font-bold text-fg">Pre-Trip Inspections</h1>
         <ModuleTourButton tourId="inspections" />
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          disabled={inspectionCount === 0}
+          title={inspectionCount === 0 ? 'No inspections recorded yet' : `Export ${inspectionCount} inspection${inspectionCount === 1 ? '' : 's'} as CSV`}
+          aria-label="Export inspections as CSV"
+          className="ml-auto inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1.5
+                     min-h-[44px] text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">Export CSV</span>
+        </button>
       </div>
 
       {/* Equipment selector */}

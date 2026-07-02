@@ -27,15 +27,20 @@ import type {
 } from '@/lib/safety-types'
 import { isPermit, isJHA } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
-import { safeParseSafetyRecords } from '@/lib/schemas'
+import { partitionSafetyRecords, type InvalidRecordEntry } from '@/lib/schemas'
 
 const STORAGE_KEY = 'eqr-safety-records'
 const STORAGE_KEY_BACKUP = 'eqr-safety-records-backup'
 const COUNTER_KEY = 'eqr-safety-counters'
+const QUARANTINE_KEY = 'eqr-safety-records-quarantine'
+const QUARANTINE_CAP = 50
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY) notify()
+    if (e.key === STORAGE_KEY) {
+      invalidateReadCache()
+      notify()
+    }
   })
 }
 
@@ -113,22 +118,122 @@ export async function getBlobs(recordId: string, slotIds: string[]): Promise<Rec
 
 // ── Internal record helpers ──────────────────────────────────
 
+// ── Quarantine for records that fail validation ──────────────
+// A record written by an older/newer app version must never be silently
+// deleted: reads filter it out, and the next writeAll would persist the
+// filtered array to primary AND backup. Instead, unreadable records are
+// parked here — recoverable by a future version or manual export.
+
+export interface QuarantineEntry {
+  id: string
+  quarantinedAt: string
+  issues: string[]
+  record: unknown
+}
+
+/** Stable fingerprint for records without a usable string id (djb2). */
+function contentFingerprint(record: unknown): string {
+  const s = JSON.stringify(record) ?? 'null'
+  let h = 5381
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) + h + s.charCodeAt(i)) | 0
+  }
+  return `unknown-${(h >>> 0).toString(36)}`
+}
+
+export function getQuarantinedRecords(): QuarantineEntry[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(QUARANTINE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function quarantineInvalidRecords(invalid: InvalidRecordEntry[]): void {
+  if (typeof window === 'undefined' || invalid.length === 0) return
+  try {
+    let existing = getQuarantinedRecords()
+    const known = new Set(existing.map((q) => q.id))
+    const added: string[] = []
+    for (const entry of invalid) {
+      const recId = (entry.record as { id?: unknown } | null)?.id
+      const id = typeof recId === 'string' && recId ? recId : contentFingerprint(entry.record)
+      if (known.has(id)) continue
+      existing.push({
+        id,
+        quarantinedAt: new Date().toISOString(),
+        issues: entry.issues,
+        record: entry.record,
+      })
+      known.add(id)
+      added.push(id)
+    }
+    if (added.length === 0) return
+    if (existing.length > QUARANTINE_CAP) {
+      existing = existing.slice(existing.length - QUARANTINE_CAP)
+    }
+    try {
+      localStorage.setItem(QUARANTINE_KEY, JSON.stringify(existing))
+    } catch (e) {
+      // Quota — keep the records in the primary store untouched rather than
+      // lose them (they simply keep failing validation on future reads).
+      console.error('[safety-records] Quarantine write failed:', e)
+      return
+    }
+    console.warn(`[safety-records] Quarantined ${added.length} unreadable record(s):`, added)
+    try {
+      window.dispatchEvent(
+        new CustomEvent('eqr:records-quarantined', { detail: { ids: added, total: existing.length } })
+      )
+    } catch { /* SSR guard */ }
+  } catch (e) {
+    console.error('[safety-records] Quarantine failed:', e)
+  }
+}
+
+// Parse+validate cache keyed on the raw store string: the dashboard reads the
+// store several times per load and re-validating hundreds of records with zod
+// each time is felt main-thread work on old phones. Returned arrays are
+// copies (callers push/sort them); record objects are shared and treated as
+// immutable everywhere (mutations replace via spread).
+let readCache: { raw: string; records: SafetyRecord[] } | null = null
+
+function invalidateReadCache(): void {
+  readCache = null
+}
+
+/** Test hook — the parse cache is module-level state that outlives a
+ *  stubbed-localStorage reset between tests. */
+export function _resetReadCacheForTests(): void {
+  invalidateReadCache()
+}
+
 function readAll(): SafetyRecord[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return []
-  const records = safeParseSafetyRecords(raw)
-  if (records.length > 0) {
-    return records.map((r) => ({ reviewStatus: undefined, ...r }))
+  if (readCache && readCache.raw === raw) return [...readCache.records]
+  const partition = partitionSafetyRecords(raw)
+  if (partition) {
+    // Blob is a readable array — park any drifted records in quarantine so
+    // the next writeAll (which persists the filtered array) can't erase them.
+    if (partition.invalid.length > 0) quarantineInvalidRecords(partition.invalid)
+    const records = partition.valid.map((r) => ({ reviewStatus: undefined, ...r }))
+    readCache = { raw, records }
+    return [...records]
   }
-  console.error('[safety-records] Primary store corrupt or empty — attempting backup restore.')
+  console.error('[safety-records] Primary store corrupt — attempting backup restore.')
   const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
   if (backup) {
-    const recovered = safeParseSafetyRecords(backup)
-    if (recovered.length > 0) {
-      console.warn(`[safety-records] Restored ${recovered.length} record(s) from backup.`)
+    const recovered = partitionSafetyRecords(backup)
+    if (recovered) {
+      if (recovered.invalid.length > 0) quarantineInvalidRecords(recovered.invalid)
+      console.warn(`[safety-records] Restored ${recovered.valid.length} record(s) from backup.`)
       try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
-      return recovered.map((r) => ({ reviewStatus: undefined, ...r }))
+      return recovered.valid.map((r) => ({ reviewStatus: undefined, ...r }))
     }
     console.error('[safety-records] Backup also corrupt. Returning empty store.')
   }
@@ -140,6 +245,7 @@ function readAll(): SafetyRecord[] {
 
 function writeAll(records: SafetyRecord[]): void {
   if (typeof window === 'undefined') return
+  invalidateReadCache()
   const serialized = JSON.stringify(records)
   try {
     // Write backup first so the last known-good copy is never newer than primary.
@@ -177,17 +283,15 @@ function nextId(type: SafetyRecordType): string {
   if (!c || c.year !== year) c = { year, count: 0 }
   c.count += 1
   counters[prefix] = c
-  let persisted = false
   try {
     localStorage.setItem(COUNTER_KEY, JSON.stringify(counters))
-    persisted = true
-  } catch { /* quota — use fallback suffix below */ }
+  } catch { /* quota — the random suffix below still guarantees uniqueness */ }
   const seq = String(c.count).padStart(4, '0')
-  if (!persisted) {
-    const rand = Math.random().toString(36).slice(2, 6)
-    return `${prefix}-${year}-${seq}-${rand}`
-  }
-  return `${prefix}-${year}-${seq}`
+  // ALWAYS suffix: the counter read-increment-write is not atomic across
+  // tabs, and two records minted with the same ID dedup onto one Notion page
+  // (the second record's content is never uploaded). The sequential part
+  // stays human-readable; the suffix makes collisions impossible.
+  return `${prefix}-${year}-${seq}-${cryptoRandomId().slice(0, 4)}`
 }
 
 function identityStamp(): { createdBy: string; createdByEmail: string | null } {
@@ -469,6 +573,16 @@ export function createIncidentReport(input: IncidentInput): IncidentReport {
 
 // ── Permit lifecycle transitions (append-only) ───────────────
 
+/**
+ * Post-creation mutations must re-queue for sync. Without this, the server
+ * keeps only the creation-time snapshot (permit forever "active", review
+ * outcomes missing) and the retention archiver eventually deletes the local
+ * copy — the only place the mutation ever existed.
+ */
+function dirtySyncStatus(rec: SafetyRecord): SafetyRecord['syncStatus'] {
+  return rec.syncStatus === 'synced' ? 'pending' : rec.syncStatus
+}
+
 export function closePermit(id: string, by: { name: string; email: string | null }, note?: string): SafetyRecord | undefined {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
@@ -481,6 +595,7 @@ export function closePermit(id: string, by: { name: string; email: string | null
     status: 'closed',
     closedAt: at,
     closedBy: by.name,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at, note: note || undefined }],
   }
   writeAll(all)
@@ -504,6 +619,7 @@ export function revokePermit(
     status: 'revoked',
     closedAt: at,
     closedBy: by.name,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'revoked', by: by.name, byEmail: by.email, at, note }],
   }
   writeAll(all)
@@ -594,6 +710,7 @@ export function markSubmittedForReview(
   all[idx] = {
     ...rec,
     reviewStatus: 'submitted',
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'submitted-for-review', by: by.name, byEmail: by.email, at }],
   }
   writeAll(all)
@@ -619,6 +736,7 @@ export function markReviewApproved(
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
     reviewDecidedAt: at,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-decided',
       by: decision.reviewerName,
@@ -649,6 +767,7 @@ export function markReviewRejected(
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
     reviewDecidedAt: at,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-decided',
       by: decision.reviewerName,
@@ -675,6 +794,7 @@ export function markReviewRecalled(
   all[idx] = {
     ...rec,
     reviewStatus: 'recalled',
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-recalled',
       by: by.name,
@@ -691,7 +811,9 @@ export function markReviewRecalled(
 // ── EHS review read helpers ─────────────────────────────────
 
 export function getReviewPendingRecords(): SafetyRecord[] {
-  return readAll().filter((r) => r.reviewStatus === 'submitted' && r.notionPageId)
+  // No notionPageId filter: records submitted in email/Slack-only deployments
+  // have no page, and their decisions come back via the KV record-id fallback.
+  return readAll().filter((r) => r.reviewStatus === 'submitted')
 }
 
 export function getReviewActionableRecords(): { approved: SafetyRecord[]; rejected: SafetyRecord[] } {
@@ -745,6 +867,27 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
 
 const RETENTION_DAYS = 90
 
+/**
+ * True when the record carries audit events newer than its last successful
+ * sync — i.e. the server copy is stale. Such records must never be archived:
+ * the local copy is the only place the mutation (closure, revocation, review
+ * outcome) exists. Guards records mutated by app versions that didn't reset
+ * syncStatus on mutation.
+ */
+export function hasUnsyncedMutations(r: SafetyRecord): boolean {
+  let lastSyncedAt = 0
+  for (const e of r.events) {
+    if (e.action === 'synced') {
+      const t = new Date(e.at).getTime()
+      if (t > lastSyncedAt) lastSyncedAt = t
+    }
+  }
+  if (lastSyncedAt === 0) return r.syncStatus !== 'synced'
+  return r.events.some(
+    (e) => e.action !== 'synced' && new Date(e.at).getTime() > lastSyncedAt
+  )
+}
+
 export function archiveOldSyncedRecords(): number {
   const all = readAll()
   const cutoff = Date.now() - RETENTION_DAYS * 86_400_000
@@ -753,7 +896,11 @@ export function archiveOldSyncedRecords(): number {
   for (const r of all) {
     const lastEvent = r.events[r.events.length - 1]
     const ts = lastEvent?.at ?? r.createdAt
-    if (r.syncStatus === 'synced' && new Date(ts).getTime() < cutoff) {
+    if (
+      r.syncStatus === 'synced' &&
+      !hasUnsyncedMutations(r) &&
+      new Date(ts).getTime() < cutoff
+    ) {
       removed++
     } else {
       toKeep.push(r)
@@ -792,8 +939,10 @@ export function pruneOldDrafts(): number {
 // ── Data deletion (GDPR right-to-erasure) ────────────────────
 
 export async function clearAllLocalData(): Promise<void> {
+  invalidateReadCache()
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(STORAGE_KEY_BACKUP)
+  localStorage.removeItem(QUARANTINE_KEY)
 
   const draftKeys = []
   for (let i = 0; i < localStorage.length; i++) {

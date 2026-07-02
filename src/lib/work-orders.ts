@@ -7,6 +7,7 @@
  */
 
 import { WorkOrder, PmType, WorkOrderStatus } from '@/lib/types'
+import { cryptoRandomId } from '@/lib/safety-records'
 
 const STORAGE_KEY = 'eqr-work-orders'
 const COUNTER_KEY = 'eqr-wo-counter'
@@ -27,8 +28,17 @@ function writeAll(orders: WorkOrder[]): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
-  } catch {
-    console.error('Failed to save work orders — storage may be full')
+  } catch (e) {
+    // Re-throw so callers can surface the failure — a silently dropped work
+    // order orphans the defect trail behind a critical inspection failure.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+    console.error('Failed to save work orders:', e)
+    if (isQuota) {
+      throw new Error('Device storage is full. Free up space before creating work orders.')
+    }
+    throw e
   }
 }
 
@@ -45,8 +55,9 @@ function nextNumber(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
-  return `WO-${year}-${String(stored.count).padStart(4, '0')}`
+  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* suffix below keeps IDs unique */ }
+  // ALWAYS suffix — counter increments are not atomic across tabs.
+  return `WO-${year}-${String(stored.count).padStart(4, '0')}-${cryptoRandomId().slice(0, 4)}`
 }
 
 // ── Change notification (pub/sub) ────────────────────────

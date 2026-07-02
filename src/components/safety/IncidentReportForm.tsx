@@ -4,8 +4,9 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { AlertTriangle, Camera, X, Plus, RotateCcw, Sparkles, Loader2, ChevronRight, Info } from 'lucide-react'
 import type { IncidentType, IncidentSeverity, InjuredPerson } from '@/lib/safety-types'
 import { INCIDENT_SEVERITY_COLORS } from '@/lib/safety-types'
-import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId, markSubmittedForReview } from '@/lib/safety-records'
+import { createIncidentReport, saveSignatures, savePhotosForRecord, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
 import LastUsedChip from './LastUsedChip'
@@ -96,6 +97,7 @@ export default function IncidentReportForm() {
   const [reporterName, setReporterName] = useState('')
   const [reporterSig, setReporterSig] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [reviewState, setReviewState] = useState<ReviewSubmitState | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
@@ -258,14 +260,9 @@ export default function IncidentReportForm() {
     }
     void trySyncRecord(record.id)
     saveLastContext({ projectName, location })
-    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
-      const identity = getCurrentIdentity()
-      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
-      fetch('/api/safety/review/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ record, notionPageId: record.notionPageId }),
-      }).then((res) => { if (res.ok) markSubmittedForReview(record.id, by) }).catch(() => {})
+    if (isReviewEnabled()) {
+      setReviewState('pending')
+      void submitForReview(record.id).then(setReviewState)
     }
     clearDraft()
     setWasOffline(!navigator.onLine)
@@ -302,7 +299,11 @@ export default function IncidentReportForm() {
         onNew={reset}
         newLabel="Start new report"
         offline={wasOffline}
-        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
+        reviewAutoSubmitted={reviewState}
+        onRetryReview={() => {
+          setReviewState('pending')
+          void submitForReview(submittedId).then(setReviewState)
+        }}
       />
     )
   }
@@ -477,7 +478,7 @@ export default function IncidentReportForm() {
                   <span className="text-xs bg-warn/10 text-warn px-1.5 py-0.5 rounded">offline</span>
                 )}
               </div>
-              <button type="button" onClick={dismissAnalysis} className="text-fg-4 hover:text-fg-2 transition-colors">
+              <button type="button" onClick={dismissAnalysis} aria-label="Dismiss analysis" className="text-fg-4 hover:text-fg-2 transition-colors w-11 h-11 -m-2 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -612,9 +613,12 @@ export default function IncidentReportForm() {
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
-                className="absolute -top-2 -right-2 w-7 h-7 bg-danger rounded-full flex items-center justify-center hover:bg-danger/80 transition-colors"
+                aria-label="Remove photo"
+                className="absolute -top-3 -right-3 w-11 h-11 rounded-full flex items-center justify-center group"
               >
-                <X className="w-3 h-3 text-white" />
+                <span className="w-7 h-7 bg-danger rounded-full flex items-center justify-center group-hover:bg-danger/80 transition-colors">
+                  <X className="w-3.5 h-3.5 text-white" />
+                </span>
               </button>
             </div>
           ))}

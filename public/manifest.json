@@ -1,20 +1,31 @@
 {
   "name": "Sage",
   "short_name": "Sage",
-  "description": "AI-powered EHS safety documentation — Pre-Task Plans, permits, incident reporting, and hazard analysis for R&D and engineering teams",
+  "description": "AI-powered EHS safety documentation \u2014 Pre-Task Plans, permits, incident reporting, and hazard analysis for R&D and engineering teams",
   "id": "/",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait-primary",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#0A0A0A",
   "theme_color": "#0A0A0A",
-  "categories": ["business", "utilities"],
+  "categories": [
+    "business",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
@@ -34,14 +45,24 @@
       "short_name": "PTP",
       "description": "Create a new Pre-Task Plan",
       "url": "/safety/ptp",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Report Incident",
       "short_name": "Incident",
       "description": "Report a safety incident or near-miss",
       "url": "/safety/incident",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

@@ -12,9 +12,10 @@ import {
   PackageOpen,
   AlertTriangle,
   Loader2,
+  CloudOff,
 } from 'lucide-react'
 import { getAllSafetyRecords, onSafetyChange } from '@/lib/safety-records'
-import { retrySyncRecord, retryAllPending, isSyncAvailable } from '@/lib/safety-sync'
+import { retrySyncRecord, retryAllPending, getSyncAvailableAt } from '@/lib/safety-sync'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
 
@@ -48,11 +49,13 @@ export default function SyncQueuePanel() {
   const [pending, setPending] = useState<SafetyRecord[]>([])
   const [syncing, setSyncing] = useState<Set<string>>(new Set())
   const [syncingAll, setSyncingAll] = useState(false)
+  const [unavailableUntil, setUnavailableUntil] = useState(0)
   const prevCountRef = useRef(0)
 
   const load = useCallback(() => {
     const records = getAllSafetyRecords().filter(isPending)
     setPending(records)
+    setUnavailableUntil(getSyncAvailableAt())
     if (prevCountRef.current > 0 && records.length === 0) {
       setExpanded(false)
     }
@@ -69,7 +72,13 @@ export default function SyncQueuePanel() {
     }
   }, [load])
 
-  if (pending.length === 0 || !isSyncAvailable()) return null
+  // Hide only when the queue is genuinely empty. During the 503 backoff the
+  // panel STAYS visible with an explicit "retrying" state — vanishing for
+  // five minutes read as "everything synced" when nothing had.
+  if (pending.length === 0) return null
+
+  const syncUnavailable = unavailableUntil > Date.now()
+  const retryMins = Math.max(1, Math.ceil((unavailableUntil - Date.now()) / 60_000))
 
   const handleRetry = async (id: string) => {
     setSyncing((prev) => new Set(prev).add(id))
@@ -102,9 +111,14 @@ export default function SyncQueuePanel() {
         onClick={() => setExpanded((v) => !v)}
         className="flex items-center gap-2 w-full px-4 py-2.5 min-h-[44px] text-left"
       >
-        <RefreshCw className="w-4 h-4 text-warn shrink-0" />
-        <p className="text-xs text-warn flex-1 tabular-nums">
+        {syncUnavailable ? (
+          <CloudOff className="w-4 h-4 text-fg-3 shrink-0" />
+        ) : (
+          <RefreshCw className="w-4 h-4 text-warn shrink-0" />
+        )}
+        <p className={`text-xs flex-1 tabular-nums ${syncUnavailable ? 'text-fg-3' : 'text-warn'}`}>
           {pending.length} record{pending.length !== 1 ? 's' : ''} pending sync
+          {syncUnavailable && ` — sync unavailable, retrying in ${retryMins} min`}
         </p>
         {expanded ? (
           <ChevronUp className="w-4 h-4 text-fg-3 shrink-0" />
@@ -149,10 +163,10 @@ export default function SyncQueuePanel() {
                   </div>
                   <button
                     type="button"
-                    disabled={isSyncing}
+                    disabled={isSyncing || syncUnavailable}
                     onClick={() => handleRetry(r.id)}
                     className="shrink-0 text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover
-                               disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1.5 min-h-[36px] min-w-[44px]
+                               disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1.5 min-h-[44px] min-w-[44px]
                                rounded-md hover:bg-mytra-purple/10 transition-colors"
                   >
                     Retry
@@ -164,7 +178,7 @@ export default function SyncQueuePanel() {
           <div className="px-4 py-3 border-t border-mytra-border">
             <button
               type="button"
-              disabled={syncingAll}
+              disabled={syncingAll || syncUnavailable}
               onClick={handleRetryAll}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-50 disabled:cursor-not-allowed

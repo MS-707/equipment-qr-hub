@@ -185,13 +185,35 @@ describe('POST /api/safety/review/submit', () => {
     process.env.NOTION_PTP_DB_ID = 'db-123'
     vi.resetModules()
     vi.mocked(fetch)
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'new-page-id' }) } as Response)
-      .mockResolvedValueOnce({ ok: true, text: async () => '' } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ results: [] }) } as Response) // dedup query: no hit
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'new-page-id' }) } as Response) // create
+      .mockResolvedValueOnce({ ok: true, text: async () => '' } as Response) // PATCH Pending
     const { POST } = await import('@/app/api/safety/review/submit/route')
     const res = await POST(makeReq({ record: minRecord, notionPageId: null }))
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.notionPageId).toBe('new-page-id')
+  })
+
+  it('dedups by record ID instead of creating a second Notion page', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    process.env.NOTION_API_KEY = 'ntn_test'
+    process.env.NOTION_PTP_DB_ID = 'db-123'
+    vi.resetModules()
+    vi.mocked(fetch)
+      // dedup query finds the page the concurrent /api/safety/sync created
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ results: [{ id: 'race-winner-page' }] }) } as Response)
+      .mockResolvedValueOnce({ ok: true, text: async () => '' } as Response) // PATCH Pending
+    const { POST } = await import('@/app/api/safety/review/submit/route')
+    const res = await POST(makeReq({ record: minRecord, notionPageId: null }))
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.notionPageId).toBe('race-winner-page')
+    // No page-create POST happened
+    const createCalls = vi.mocked(fetch).mock.calls.filter(
+      ([u, init]) => String(u) === 'https://api.notion.com/v1/pages' && init?.method === 'POST'
+    )
+    expect(createCalls).toHaveLength(0)
   })
 
   it('stores review submission with correct fields', async () => {

@@ -25,16 +25,22 @@ beforeEach(() => {
   vi.mocked(sendEhsNotification).mockResolvedValue('not-configured')
 })
 
+// Mirrors the real client payload: numeric equipmentId (equipment.itemNumber),
+// workOrderId null on passing inspections. Keep in lockstep with
+// InspectionRecord in lib/types.ts — see inspection-notify-schema.test.ts for
+// the full round-trip suite.
 const validBody = {
   record: {
-    id: 'INS-001',
-    equipmentId: 'EQ-001',
+    id: 'INS-2026-0001',
+    equipmentId: 17,
     inspectorName: 'Alice',
-    shift: 'day',
+    shift: 'Day',
     hourMeterReading: 1234,
     createdAt: '2026-06-23T08:00:00Z',
     result: 'pass' as const,
     hasCriticalFail: false,
+    criticalNaCount: 0,
+    workOrderId: null,
     items: [
       { id: 'item-1', label: 'Brakes', result: 'pass' as const },
       { id: 'item-2', label: 'Lights', result: 'pass' as const },
@@ -110,6 +116,20 @@ describe('POST /api/inspections/notify', () => {
     expect(data.outcome).toBe('sent')
     expect(sendEhsNotification).toHaveBeenCalledWith(expect.objectContaining({
       subject: expect.stringContaining('Forklift #3'),
+    }))
+  })
+
+  it('stamps the verified submitter from the session, not client input', async () => {
+    vi.mocked(isEmailConfigured).mockReturnValue(true)
+    vi.mocked(sendEhsNotification).mockResolvedValue('sent')
+    const { POST } = await import('@/app/api/inspections/notify/route')
+    const forged = {
+      ...validBody,
+      record: { ...validBody.record, inspectorName: 'Someone Else' },
+    }
+    await POST(makeReq(forged))
+    expect(sendEhsNotification).toHaveBeenCalledWith(expect.objectContaining({
+      text: expect.stringContaining('Submitted by (verified): test@x.com'),
     }))
   })
 

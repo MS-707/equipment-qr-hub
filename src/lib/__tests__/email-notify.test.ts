@@ -86,4 +86,30 @@ describe('sendEhsNotification', () => {
     const result = await sendEhsNotification({ subject: 'Test', text: 'Body' })
     expect(result).toBe('failed')
   })
+
+  it('strips CR/LF from subjects at the send chokepoint (header injection)', async () => {
+    process.env.RESEND_API_KEY = 'test-key'
+    vi.resetModules()
+    vi.mocked(fetch).mockResolvedValue({ ok: true } as Response)
+    const { sendEhsNotification } = await import('../email-notify')
+    await sendEhsNotification({
+      subject: 'Inspection — Forklift\r\nBcc: attacker@evil.example',
+      text: 'Body',
+    })
+    const callBody = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string)
+    expect(callBody.subject).toBe('Inspection — Forklift Bcc: attacker@evil.example')
+    expect(callBody.subject).not.toMatch(/[\r\n]/)
+  })
+})
+
+describe('sanitizeSubject', () => {
+  it('collapses CR, LF, and Unicode line separators to single spaces', async () => {
+    const { sanitizeSubject } = await import('../email-notify')
+    expect(sanitizeSubject('a\rb\nc\r\nd e f')).toBe('a b c d e f')
+  })
+
+  it('trims and leaves clean subjects untouched', async () => {
+    const { sanitizeSubject } = await import('../email-notify')
+    expect(sanitizeSubject('  Pre-Trip Inspection — PASS [INS-1]  ')).toBe('Pre-Trip Inspection — PASS [INS-1]')
+  })
 })

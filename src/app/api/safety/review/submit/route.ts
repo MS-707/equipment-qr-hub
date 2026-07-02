@@ -126,6 +126,9 @@ export async function POST(req: Request) {
     location: sanitize(record.location),
     submitterName: sanitize(record.createdBy, 200) || 'Unknown',
     submitterEmail,
+    // Lets the email-link decide route PATCH the Notion page so the device
+    // poller sees the decision instead of eternal "Pending".
+    notionPageId: pageId || undefined,
   })
 
   // ── Email notification (primary EHS channel) ─────────────────
@@ -152,9 +155,12 @@ export async function POST(req: Request) {
       '────────────────────',
     ].join('\n')
 
+    // Server-stamped from the authenticated session — never client input.
+    // Lets EHS distinguish the record's claimed author from who submitted it.
+    const verifiedLine = submitterEmail ? `Submitted by (verified): ${submitterEmail}\n\n` : ''
     const outcome = await sendEhsNotification({
       subject: `EHS Review Requested — ${buildRecordSubject(record)}`,
-      text: buildRecordText(record) + '\n' + actionBlock,
+      text: verifiedLine + buildRecordText(record) + '\n' + actionBlock,
     })
     emailed = outcome === 'sent'
   }
@@ -192,6 +198,31 @@ async function syncToNotion(
 ): Promise<{ ok: true; pageId: string } | { ok: false; error: string }> {
   const dbId = dbForType(record.type)
   if (!dbId) return { ok: false, error: 'No Notion DB configured for this record type' }
+
+  // Dedup by record ID before creating: forms fire the plain /api/safety/sync
+  // POST and this review submit concurrently — without this query, whichever
+  // lost the race created a second page for the same record.
+  try {
+    const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Notion-Version': NOTION_VERSION,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        filter: { property: 'ID', title: { equals: record.id } },
+        page_size: 1,
+      }),
+    })
+    if (existingCheck.ok) {
+      const existing = await existingCheck.json()
+      const results = Array.isArray(existing?.results) ? existing.results : []
+      if (results.length > 0 && typeof results[0]?.id === 'string') {
+        return { ok: true, pageId: results[0].id }
+      }
+    }
+  } catch { /* fall through to create */ }
 
   const safeStr = (v: unknown, max = 200) =>
     typeof v === 'string' ? v.slice(0, max) : ''

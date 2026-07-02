@@ -34,6 +34,9 @@ const config: Config = {
         warn: 'var(--warn)',
         danger: 'var(--danger)',
         expired: 'var(--expired)',
+        'ok-strong': 'var(--ok-strong)',
+        'warn-strong': 'var(--warn-strong)',
+        'danger-strong': 'var(--danger-strong)',
       },
       borderRadius: {
         card: 'var(--r-lg)',

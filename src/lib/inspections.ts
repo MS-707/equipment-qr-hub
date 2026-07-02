@@ -9,8 +9,10 @@ import { InspectionRecord, InspectionItemResult, ChecklistType, Shift } from '@/
 import { getAllItems } from '@/data/inspection-checklists'
 import { createWorkOrder } from '@/lib/work-orders'
 import { updateEquipmentStatus, getEquipmentById } from '@/lib/equipment'
+import { cryptoRandomId } from '@/lib/safety-records'
 
 const STORAGE_KEY = 'eqr-inspections'
+const STORAGE_KEY_BACKUP = 'eqr-inspections-backup'
 const COUNTER_KEY = 'eqr-ins-counter'
 const INSPECTOR_KEY = 'eqr-last-inspector'
 const LAST_EQUIPMENT_KEY = 'eqr-last-equipment'
@@ -38,6 +40,14 @@ export async function savePhotos(recordId: string, items: InspectionItemResult[]
   for (const item of photos) {
     store.put(item.photo, `${recordId}:${item.id}`)
   }
+  // Await transaction commit — the record stores photo: null, so IndexedDB is
+  // the ONLY copy of defect evidence. A quota abort must reject to the caller,
+  // not vanish while the puts are still in flight.
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
+    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'))
+  })
   db.close()
 }
 
@@ -57,22 +67,66 @@ export async function getPhotos(recordId: string, itemIds: string[]): Promise<Re
 
 // ── Internal helpers ─────────────────────────────────
 
+/** Parse a raw store payload; null means corrupt/unusable (vs a valid empty array). */
+function safeParseInspections(raw: string): InspectionRecord[] | null {
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return null
+    // Light shape filter — records must at least be objects with a string id
+    // so downstream .filter/.map callers can't crash on garbage entries.
+    return parsed.filter(
+      (r): r is InspectionRecord =>
+        typeof r === 'object' && r !== null && typeof (r as { id?: unknown }).id === 'string'
+    )
+  } catch {
+    return null
+  }
+}
+
 function readAll(): InspectionRecord[] {
   if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return []
+  const records = safeParseInspections(raw)
+  if (records !== null) return records
+  console.error('[inspections] Primary store corrupt — attempting backup restore.')
+  const backup = localStorage.getItem(STORAGE_KEY_BACKUP)
+  if (backup) {
+    const recovered = safeParseInspections(backup)
+    if (recovered !== null) {
+      console.warn(`[inspections] Restored ${recovered.length} record(s) from backup.`)
+      try { localStorage.setItem(STORAGE_KEY, backup) } catch { /* quota — leave as-is */ }
+      return recovered
+    }
+    console.error('[inspections] Backup also corrupt. Returning empty store.')
   }
+  try {
+    window.dispatchEvent(new CustomEvent('eqr:storage-corruption', { detail: { key: STORAGE_KEY } }))
+  } catch { /* SSR guard */ }
+  return []
 }
 
 function writeAll(records: InspectionRecord[]): void {
   if (typeof window === 'undefined') return
+  const serialized = JSON.stringify(records)
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+    // Write backup first so the last known-good copy is never newer than primary.
+    // Ignore quota errors on the backup — it is best-effort.
+    try { localStorage.setItem(STORAGE_KEY_BACKUP, serialized) } catch { /* non-fatal */ }
+    localStorage.setItem(STORAGE_KEY, serialized)
   } catch (e) {
+    // Re-throw so submitInspection's caller can surface the failure instead
+    // of showing a success screen for a record that was never persisted.
+    const isQuota =
+      e instanceof DOMException &&
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')
     console.error('Failed to save inspections:', e)
+    if (isQuota) {
+      throw new Error(
+        'Device storage is full. Free up space or export your inspections before continuing.'
+      )
+    }
+    throw e
   }
 }
 
@@ -88,8 +142,13 @@ function nextId(): string {
     stored = { year, count: 0 }
   }
   stored.count += 1
-  try { localStorage.setItem(COUNTER_KEY, JSON.stringify(stored)) } catch { /* non-fatal */ }
-  return `INS-${year}-${String(stored.count).padStart(4, '0')}`
+  try {
+    localStorage.setItem(COUNTER_KEY, JSON.stringify(stored))
+  } catch { /* quota — the random suffix below still guarantees uniqueness */ }
+  // ALWAYS suffix: the counter read-increment-write is not atomic across
+  // tabs; a shared sequential ID would map two inspections onto one server
+  // record. Sequential part stays human-readable.
+  return `INS-${year}-${String(stored.count).padStart(4, '0')}-${cryptoRandomId().slice(0, 4)}`
 }
 
 // ── Change notification (pub/sub) ────────────────────
@@ -164,14 +223,22 @@ export function getAllInspections(): InspectionRecord[] {
   )
 }
 
-export function submitInspection(data: {
-  equipmentId: number
-  inspectorName: string
-  shift: Shift
-  hourMeterReading: number | null
-  checklistType: ChecklistType
-  items: InspectionItemResult[]
-}): InspectionRecord {
+export function submitInspection(
+  data: {
+    equipmentId: number
+    inspectorName: string
+    shift: Shift
+    hourMeterReading: number | null
+    checklistType: ChecklistType
+    items: InspectionItemResult[]
+  },
+  hooks?: {
+    /** Photo persistence is async and best-effort; this fires if defect
+     *  photos could NOT be written to IndexedDB so the UI can tell the
+     *  operator their evidence didn't save. */
+    onPhotoSaveError?: (e: unknown) => void
+  }
+): InspectionRecord {
   const hasCriticalFail = data.items.some(
     (item) => item.critical && item.result === 'fail'
   )
@@ -180,36 +247,9 @@ export function submitInspection(data: {
     (item) => item.critical && item.result === 'na'
   ).length
 
-  let workOrderId: string | null = null
-
-  // Auto-create work order if any item failed
-  if (hasAnyFail) {
-    const failedItems = data.items.filter((item) => item.result === 'fail')
-    const failSummary = failedItems
-      .map((item) => `${item.label}${item.notes ? ': ' + item.notes : ''}`)
-      .join('; ')
-
-    const equipment = getEquipmentById(data.equipmentId)
-    const eqName = equipment?.name ?? `Equipment #${data.equipmentId}`
-
-    const wo = createWorkOrder({
-      equipmentId: data.equipmentId,
-      pmType: 'Daily',
-      tasks: `[${eqName}] Pre-trip defects: ${failSummary}`,
-      assignedTo: null,
-    })
-    workOrderId = wo.id
-
-    // Auto-set equipment to Out of Service if critical fail
-    if (hasCriticalFail) {
-      updateEquipmentStatus(data.equipmentId, 'Out of Service')
-    }
-  }
-
-  // Save inspector name and equipment for next time
-  setLastInspector(data.inspectorName)
-  setLastEquipmentId(data.equipmentId)
-
+  // Persist the inspection FIRST. writeAll throws on quota — when it does,
+  // no side effects (work order, out-of-service flip) have happened yet, so
+  // the caller can show a save-error with nothing to unwind.
   const recordId = nextId()
 
   const record: InspectionRecord = {
@@ -223,7 +263,7 @@ export function submitInspection(data: {
     result: hasAnyFail ? 'fail' : 'pass',
     hasCriticalFail,
     criticalNaCount,
-    workOrderId,
+    workOrderId: null,
     createdAt: new Date().toISOString(),
     syncStatus: 'pending',
     notionPageId: null,
@@ -232,15 +272,165 @@ export function submitInspection(data: {
   const all = readAll()
   all.push(record)
   writeAll(all)
+
+  // Record is durable — derived artifacts from here are best-effort.
+  let workOrderId: string | null = null
+  if (hasAnyFail) {
+    try {
+      const failedItems = data.items.filter((item) => item.result === 'fail')
+      const failSummary = failedItems
+        .map((item) => `${item.label}${item.notes ? ': ' + item.notes : ''}`)
+        .join('; ')
+
+      const equipment = getEquipmentById(data.equipmentId)
+      const eqName = equipment?.name ?? `Equipment #${data.equipmentId}`
+
+      const wo = createWorkOrder({
+        equipmentId: data.equipmentId,
+        pmType: 'Daily',
+        tasks: `[${eqName}] Pre-trip defects: ${failSummary}`,
+        assignedTo: null,
+      })
+      workOrderId = wo.id
+
+      // Auto-set equipment to Out of Service if critical fail
+      if (hasCriticalFail) {
+        updateEquipmentStatus(data.equipmentId, 'Out of Service')
+      }
+    } catch (e) {
+      // The inspection itself is saved; a missing work order is recoverable
+      // from the record's failed items.
+      console.error('Failed to create work order for inspection:', e)
+    }
+  }
+
+  if (workOrderId) {
+    record.workOrderId = workOrderId
+    try {
+      const stored = readAll()
+      const idx = stored.findIndex((r) => r.id === recordId)
+      if (idx !== -1) {
+        stored[idx] = { ...stored[idx], workOrderId }
+        writeAll(stored)
+      }
+    } catch (e) {
+      // Link write failed — inspection and work order both exist independently.
+      console.error('Failed to link work order to inspection:', e)
+    }
+  }
+
+  // Save inspector name and equipment for next time
+  setLastInspector(data.inspectorName)
+  setLastEquipmentId(data.equipmentId)
+
   notify()
 
-  // Save photos to IndexedDB (fire-and-forget)
-  savePhotos(recordId, data.items).catch((e) =>
+  // Save photos to IndexedDB (async; failures surface via the hook)
+  savePhotos(recordId, data.items).catch((e) => {
     console.error('Failed to save photos to IndexedDB:', e)
-  )
+    hooks?.onPhotoSaveError?.(e)
+  })
 
   // Return record with original photos still in memory for result screen
   return { ...record, items: data.items }
+}
+
+// ── EHS notify queue (offline resilience) ─────────────
+// The notify email is fire-once from the result screen; if the device is
+// offline or the server hiccups, the payload queues here and flushes on the
+// 'online' event / next app load — mirroring the safety-sync listener
+// pattern. Without this, offline inspections never reached the EHS inbox.
+
+const NOTIFY_QUEUE_KEY = 'eqr-notify-queue'
+const NOTIFY_QUEUE_CAP = 50
+const NOTIFY_MAX_ATTEMPTS = 3
+
+interface QueuedNotify {
+  payload: unknown
+  attempts: number
+  queuedAt: string
+}
+
+function readNotifyQueue(): QueuedNotify[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(NOTIFY_QUEUE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeNotifyQueue(queue: QueuedNotify[]): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    localStorage.setItem(NOTIFY_QUEUE_KEY, JSON.stringify(queue))
+    return true
+  } catch (e) {
+    console.error('Failed to persist notify queue:', e)
+    return false
+  }
+}
+
+/** Returns true when the payload is durably queued. */
+export function queueNotifyPayload(payload: unknown): boolean {
+  const queue = readNotifyQueue()
+  queue.push({ payload, attempts: 0, queuedAt: new Date().toISOString() })
+  while (queue.length > NOTIFY_QUEUE_CAP) queue.shift()
+  return writeNotifyQueue(queue)
+}
+
+export function getNotifyQueueLength(): number {
+  return readNotifyQueue().length
+}
+
+let notifyFlushing = false
+
+export async function flushNotifyQueue(): Promise<void> {
+  if (typeof window === 'undefined' || notifyFlushing) return
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return
+  const queue = readNotifyQueue()
+  if (queue.length === 0) return
+  notifyFlushing = true
+  try {
+    const remaining: QueuedNotify[] = []
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i]
+      try {
+        const res = await fetch('/api/inspections/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.payload),
+        })
+        // 2xx (sent or not-configured) → delivered/no-op, dequeue.
+        // 400 → permanently invalid payload; drop it rather than poison the
+        // queue with something that can never succeed.
+        if (res.ok || res.status === 400) continue
+        item.attempts += 1
+        if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
+      } catch {
+        // Network dropped mid-flush — keep this item and everything after it
+        // untouched for the next 'online' event.
+        item.attempts += 1
+        if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
+        remaining.push(...queue.slice(i + 1))
+        break
+      }
+    }
+    writeNotifyQueue(remaining)
+  } finally {
+    notifyFlushing = false
+  }
+}
+
+/** Wire background flushing: once at load, again on reconnect. */
+export function installNotifyListeners(): () => void {
+  if (typeof window === 'undefined') return () => {}
+  void flushNotifyQueue()
+  const onOnline = () => { void flushNotifyQueue() }
+  window.addEventListener('online', onOnline)
+  return () => window.removeEventListener('online', onOnline)
 }
 
 // ── Export helpers ────────────────────────────────────

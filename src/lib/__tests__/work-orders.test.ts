@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const storage: Record<string, string> = {}
+let quotaKeys = new Set<string>()
 vi.stubGlobal('localStorage', {
   getItem: (k: string) => storage[k] ?? null,
-  setItem: (k: string, v: string) => { storage[k] = v },
+  setItem: (k: string, v: string) => {
+    if (quotaKeys.has(k)) throw new DOMException('quota', 'QuotaExceededError')
+    storage[k] = v
+  },
   removeItem: (k: string) => { delete storage[k] },
   clear: () => { for (const k in storage) delete storage[k] },
   get length() { return Object.keys(storage).length },
@@ -13,6 +17,7 @@ vi.stubGlobal('window', globalThis)
 
 beforeEach(() => {
   for (const k in storage) delete storage[k]
+  quotaKeys = new Set()
 })
 
 import {
@@ -35,13 +40,20 @@ describe('work-orders', () => {
     expect(getAllWorkOrders()).toEqual([])
   })
 
+  it('throws a human-readable error when storage quota is exceeded', () => {
+    quotaKeys = new Set(['eqr-work-orders'])
+    expect(() =>
+      createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'Fix brakes', assignedTo: null })
+    ).toThrow(/storage is full/i)
+  })
+
   it('creates a work order with auto-generated ID', () => {
     const wo = createWorkOrder({
       equipmentId: 101,
       pmType: 'Daily',
       tasks: 'Check oil level',
     })
-    expect(wo.id).toMatch(/^WO-\d{4}-\d{4}$/)
+    expect(wo.id).toMatch(/^WO-\d{4}-\d{4}-[a-z0-9]{4}$/i)
     expect(wo.status).toBe('Not Started')
     expect(wo.equipmentId).toBe(101)
     expect(wo.tasks).toBe('Check oil level')
@@ -172,8 +184,9 @@ describe('work-orders', () => {
   it('increments counter across multiple creates', () => {
     const wo1 = createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'A' })
     const wo2 = createWorkOrder({ equipmentId: 101, pmType: 'Daily', tasks: 'B' })
-    const num1 = parseInt(wo1.id.split('-').pop()!)
-    const num2 = parseInt(wo2.id.split('-').pop()!)
+    // ID shape: WO-<year>-<seq>-<rand> — the sequential part is segment 3
+    const num1 = parseInt(wo1.id.split('-')[2])
+    const num2 = parseInt(wo2.id.split('-')[2])
     expect(num2).toBe(num1 + 1)
   })
 })

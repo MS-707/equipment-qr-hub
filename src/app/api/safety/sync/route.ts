@@ -8,6 +8,7 @@
 
 import type { SafetyRecord } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -27,6 +28,14 @@ function dbForType(type: string): string | undefined {
 export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
+
+  // 30/min leaves headroom for a legitimate bulk flush after coming back
+  // online (syncAllPending is sequential) while capping Notion-quota abuse —
+  // every call costs a query plus a create/update upstream.
+  const rl = await rateLimit(`sync:${session?.user?.email || 'unknown'}`, 30, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const key = process.env.NOTION_API_KEY
 
@@ -72,28 +81,13 @@ export async function POST(req: Request) {
     )
   }
 
-  try {
-    // Dedup: check if this record was already synced (retry-safe)
-    const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Notion-Version': NOTION_VERSION,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        filter: { property: 'ID', title: { equals: record.id } },
-        page_size: 1,
-      }),
-    })
-    if (existingCheck.ok) {
-      const existing = await existingCheck.json()
-      const results = Array.isArray(existing?.results) ? existing.results : []
-      if (results.length > 0 && typeof results[0]?.id === 'string') {
-        return Response.json({ ok: true, notionPageId: results[0].id })
-      }
-    }
+  const notionHeaders = {
+    Authorization: `Bearer ${key}`,
+    'Notion-Version': NOTION_VERSION,
+    'Content-Type': 'application/json',
+  }
 
+  try {
     const safeStr = (v: unknown, max = 500) =>
       typeof v === 'string' ? v.slice(0, max) : ''
 
@@ -112,30 +106,97 @@ export async function POST(req: Request) {
     if ('severity' in record) {
       properties['Severity'] = { select: { name: String((record as { severity?: string }).severity) } }
     }
+    if (record.reviewStatus) {
+      properties['EHS Review'] = { select: { name: String(record.reviewStatus) } }
+    }
 
     const MAX_CHILDREN = 100
     const fullJson = JSON.stringify(record, null, 2)
     const CHUNK_SIZE = 1900
-    const children = []
-    for (let i = 0; i < fullJson.length && children.length < MAX_CHILDREN; i += CHUNK_SIZE) {
-      children.push({
-        object: 'block' as const,
-        type: 'code' as const,
-        code: {
-          language: 'json',
-          rich_text: [{ type: 'text' as const, text: { content: fullJson.slice(i, i + CHUNK_SIZE) } }],
-        },
+    const jsonBlocks = (heading?: string) => {
+      const blocks: unknown[] = []
+      if (heading) {
+        blocks.push({
+          object: 'block' as const,
+          type: 'heading_3' as const,
+          heading_3: { rich_text: [{ type: 'text' as const, text: { content: heading } }] },
+        })
+      }
+      for (let i = 0; i < fullJson.length && blocks.length < MAX_CHILDREN; i += CHUNK_SIZE) {
+        blocks.push({
+          object: 'block' as const,
+          type: 'code' as const,
+          code: {
+            language: 'json',
+            rich_text: [{ type: 'text' as const, text: { content: fullJson.slice(i, i + CHUNK_SIZE) } }],
+          },
+        })
+      }
+      return blocks
+    }
+
+    // Find the existing page: trust a well-formed client pageId, else query
+    // by ID title (retry-safe dedup).
+    let existingPageId: string | null = null
+    const claimed = record.notionPageId
+    if (typeof claimed === 'string' && /^[0-9a-f]{8}-?[0-9a-f-]{4,28}$/i.test(claimed)) {
+      existingPageId = claimed
+    } else {
+      const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+        method: 'POST',
+        headers: notionHeaders,
+        body: JSON.stringify({
+          filter: { property: 'ID', title: { equals: record.id } },
+          page_size: 1,
+        }),
       })
+      if (existingCheck.ok) {
+        const existing = await existingCheck.json()
+        const results = Array.isArray(existing?.results) ? existing.results : []
+        if (results.length > 0 && typeof results[0]?.id === 'string') {
+          existingPageId = results[0].id
+        }
+      }
+    }
+
+    if (existingPageId) {
+      // UPDATE path: the record was mutated after its first sync (permit
+      // closed/revoked, review decided). Refresh the queryable properties and
+      // append the new snapshot — appending preserves the prior snapshots as
+      // an audit trail instead of destroying them.
+      const propRes = await fetch(`https://api.notion.com/v1/pages/${existingPageId}`, {
+        method: 'PATCH',
+        headers: notionHeaders,
+        body: JSON.stringify({ properties }),
+      })
+      if (!propRes.ok) {
+        // A stale/foreign client pageId 404s here — fall through to create
+        // only when the page truly doesn't exist; other errors are sync fails.
+        if (propRes.status !== 404) {
+          console.error('[sync] Notion property update error:', await propRes.text())
+          return Response.json({ error: 'Notion sync failed' }, { status: 502 })
+        }
+        existingPageId = null
+      } else {
+        const appendRes = await fetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, {
+          method: 'PATCH',
+          headers: notionHeaders,
+          body: JSON.stringify({
+            children: jsonBlocks(`Updated snapshot — ${new Date().toISOString()}`),
+          }),
+        })
+        if (!appendRes.ok) {
+          console.error('[sync] Notion snapshot append error:', await appendRes.text())
+          return Response.json({ error: 'Notion sync failed' }, { status: 502 })
+        }
+        return Response.json({ ok: true, notionPageId: existingPageId, updated: true })
+      }
     }
 
     const res = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Notion-Version': NOTION_VERSION,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ parent: { database_id: dbId }, properties, children }),
+      headers: notionHeaders,
+      body: JSON.stringify({ parent: { database_id: dbId }, properties, children: jsonBlocks() }),
     })
 
     if (!res.ok) {

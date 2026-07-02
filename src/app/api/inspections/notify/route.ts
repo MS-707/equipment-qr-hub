@@ -6,10 +6,10 @@
  * so the inspection flow is never blocked. Mirrors the safety review email path.
  */
 
-import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured } from '@/lib/email-notify'
+import { NotifyBodySchema, type NotifyBody } from '@/lib/inspection-notify-schema'
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -21,37 +21,7 @@ function fmt(iso: string): string {
   })
 }
 
-const InspectionItemSchema = z.object({
-  id: z.string().max(100),
-  label: z.string().max(200),
-  result: z.enum(['pass', 'fail', 'na']),
-  critical: z.boolean().optional(),
-  notes: z.string().max(1000).optional(),
-  naReasonCode: z.string().max(50).nullable().optional(),
-  naJustification: z.string().max(2000).optional(),
-})
-
-const NotifyBodySchema = z.object({
-  record: z.object({
-    id: z.string().max(100),
-    equipmentId: z.string().max(100),
-    inspectorName: z.string().max(200),
-    shift: z.string().max(50),
-    hourMeterReading: z.number().nullable().optional(),
-    createdAt: z.string().max(50),
-    result: z.enum(['pass', 'fail']),
-    hasCriticalFail: z.boolean(),
-    criticalNaCount: z.number().optional(),
-    workOrderId: z.string().max(100).optional(),
-    items: z.array(InspectionItemSchema).max(200),
-  }),
-  equipmentName: z.string().max(200).optional(),
-  equipmentCategory: z.string().max(200).optional(),
-})
-
-type NotifyBody = z.infer<typeof NotifyBodySchema>
-
-function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } {
+function buildInspectionEmail(b: NotifyBody, verifiedSubmitter: string | null): { subject: string; text: string } {
   const r = b.record
   const equip = b.equipmentName || `Equipment #${r.equipmentId}`
   const critNaCount = r.criticalNaCount ?? 0
@@ -65,6 +35,9 @@ function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } 
   lines.push(`Ref: ${r.id}`)
   lines.push(`Equipment: ${equip}${b.equipmentCategory ? ` (${b.equipmentCategory})` : ''}`)
   lines.push(`Inspector: ${r.inspectorName}`)
+  // Server-stamped from the authenticated session — never client input. Lets
+  // EHS distinguish the claimed inspector name from who actually submitted.
+  if (verifiedSubmitter) lines.push(`Submitted by (verified): ${verifiedSubmitter}`)
   lines.push(`Shift: ${r.shift}`)
   if (r.hourMeterReading != null) lines.push(`Hour meter: ${r.hourMeterReading}`)
   lines.push(`Completed: ${fmt(r.createdAt)}`)
@@ -131,7 +104,7 @@ export async function POST(req: Request) {
   }
   const body = parsed.data
 
-  const { subject, text } = buildInspectionEmail(body)
+  const { subject, text } = buildInspectionEmail(body, session?.user?.email ?? null)
   const outcome = await sendEhsNotification({ subject, text })
 
   return Response.json({ emailed: outcome === 'sent', outcome })

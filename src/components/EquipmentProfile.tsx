@@ -8,16 +8,30 @@ import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { useSwipe } from '@/hooks/useSwipe'
 import { EquipmentItem, EquipmentStatus, CATEGORY_COLORS, requiresMachineGuarding, requiresPreTrip } from '@/lib/types'
 import { getEquipmentById } from '@/lib/equipment'
+import dynamic from 'next/dynamic'
 import TabNav from '@/components/TabNav'
 import StatusToggle from '@/components/StatusToggle'
-import PMSchedule from '@/components/PMSchedule'
-import PmTracker from '@/components/PmTracker'
 import ManualCard from '@/components/ManualCard'
-import TrainingInfo from '@/components/TrainingInfo'
-import TrainingTracker from '@/components/TrainingTracker'
-import ComplianceInfo from '@/components/ComplianceInfo'
 import PreTripInspection from '@/components/PreTripInspection'
 import AuthorizedUsers from '@/components/AuthorizedUsers'
+
+// This route is the QR-scan landing page — the slow-network entry point.
+// Pre-trip stays static (it IS the field flow); the other tab panels load on
+// demand so their code stops taxing first paint.
+function TabPanelSkeleton() {
+  return (
+    <div className="space-y-3" aria-hidden="true">
+      <div className="h-24 rounded-card bg-mytra-card border border-mytra-border animate-pulse" />
+      <div className="h-40 rounded-card bg-mytra-card border border-mytra-border animate-pulse" />
+    </div>
+  )
+}
+// next/dynamic requires inline object literals for its options
+const PMSchedule = dynamic(() => import('@/components/PMSchedule'), { loading: () => <TabPanelSkeleton />, ssr: false })
+const PmTracker = dynamic(() => import('@/components/PmTracker'), { loading: () => <TabPanelSkeleton />, ssr: false })
+const TrainingInfo = dynamic(() => import('@/components/TrainingInfo'), { loading: () => <TabPanelSkeleton />, ssr: false })
+const TrainingTracker = dynamic(() => import('@/components/TrainingTracker'), { loading: () => <TabPanelSkeleton />, ssr: false })
+const ComplianceInfo = dynamic(() => import('@/components/ComplianceInfo'), { loading: () => <TabPanelSkeleton />, ssr: false })
 
 interface EquipmentProfileProps {
   equipment: EquipmentItem
@@ -79,18 +93,25 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
     window.history.replaceState(null, '', url.toString())
   }
 
+  // While an inspection checklist is in progress, swipe navigation is fully
+  // suspended: a stray gloved swipe is an SPA navigation (no beforeunload)
+  // that would silently drop answers still inside the draft debounce.
+  const [inspectionActive, setInspectionActive] = useState(false)
+
   const goNext = useCallback(() => {
+    if (inspectionActive) return
     const idx = TAB_IDS.indexOf(activeTab)
     if (idx < TAB_IDS.length - 1) handleTabChange(TAB_IDS[idx + 1])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, TAB_IDS])
+  }, [activeTab, TAB_IDS, inspectionActive])
 
   const goPrev = useCallback(() => {
+    if (inspectionActive) return
     const idx = TAB_IDS.indexOf(activeTab)
     if (idx > 0) handleTabChange(TAB_IDS[idx - 1])
     else router.back()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, TAB_IDS, router])
+  }, [activeTab, TAB_IDS, router, inspectionActive])
 
   const swipeHandlers = useSwipe(goNext, goPrev)
 
@@ -161,12 +182,13 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
           id={`tabpanel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
           className={`mt-5 ${tabDirection === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}`}
-          {...swipeHandlers}
+          {...(inspectionActive ? {} : swipeHandlers)}
         >
           {activeTab === 'pre-trip' && (
             <PreTripInspection
               equipment={equipment}
               onStatusChange={handleInspectionStatusChange}
+              onChecklistActiveChange={setInspectionActive}
             />
           )}
           {activeTab === 'training' && (

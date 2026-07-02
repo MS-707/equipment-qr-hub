@@ -59,6 +59,46 @@ export default function SignaturePad({
     [],
   )
 
+  // Incremental drawing for the active stroke: pointermove strokes ONLY the
+  // new segment instead of clearRect + replaying every stroke — a long
+  // signature on a 3x-DPR canvas was O(points²) work and visibly stuttered
+  // on older iPads. Full redraws remain for resize/clear/restore. Round
+  // caps/joins at the same width make per-segment strokes visually identical
+  // to a single stroked polyline.
+  const drawSegment = useCallback(
+    (canvas: HTMLCanvasElement | null, from: Point, to: Point) => {
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const dpr = window.devicePixelRatio || 1
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.lineJoin = 'round'
+      ctx.lineCap = 'round'
+      ctx.lineWidth = 2.5
+      ctx.strokeStyle = penColor
+      ctx.beginPath()
+      ctx.moveTo(from.x, from.y)
+      ctx.lineTo(to.x, to.y)
+      ctx.stroke()
+    },
+    [penColor],
+  )
+
+  const drawDot = useCallback(
+    (canvas: HTMLCanvasElement | null, p: Point) => {
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const dpr = window.devicePixelRatio || 1
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.fillStyle = penColor
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2)
+      ctx.fill()
+    },
+    [penColor],
+  )
+
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -148,17 +188,20 @@ export default function SignaturePad({
     e.preventDefault()
     canvasRef.current?.setPointerCapture(e.pointerId)
     drawing.current = true
-    current.current = [pointFrom(e, canvasRef.current!)]
+    const p = pointFrom(e, canvasRef.current!)
+    current.current = [p]
     strokes.current.push(current.current)
     if (isEmpty) setIsEmpty(false)
-    redraw()
+    drawDot(canvasRef.current, p)
   }
 
   function handleMove(e: React.PointerEvent) {
     if (!drawing.current) return
     e.preventDefault()
-    current.current.push(pointFrom(e, canvasRef.current!))
-    redraw()
+    const p = pointFrom(e, canvasRef.current!)
+    const prev = current.current[current.current.length - 1]
+    current.current.push(p)
+    drawSegment(canvasRef.current, prev, p)
   }
 
   function handleUp() {
@@ -240,17 +283,20 @@ export default function SignaturePad({
     e.preventDefault()
     expandedCanvasRef.current?.setPointerCapture(e.pointerId)
     expandedDrawing.current = true
-    expandedCurrent.current = [pointFrom(e, expandedCanvasRef.current!)]
+    const p = pointFrom(e, expandedCanvasRef.current!)
+    expandedCurrent.current = [p]
     expandedStrokes.current.push(expandedCurrent.current)
     if (expandedIsEmpty) setExpandedIsEmpty(false)
-    redrawExpanded()
+    drawDot(expandedCanvasRef.current, p)
   }
 
   function handleExpandedMove(e: React.PointerEvent) {
     if (!expandedDrawing.current) return
     e.preventDefault()
-    expandedCurrent.current.push(pointFrom(e, expandedCanvasRef.current!))
-    redrawExpanded()
+    const p = pointFrom(e, expandedCanvasRef.current!)
+    const prev = expandedCurrent.current[expandedCurrent.current.length - 1]
+    expandedCurrent.current.push(p)
+    drawSegment(expandedCanvasRef.current, prev, p)
   }
 
   function handleExpandedUp() {

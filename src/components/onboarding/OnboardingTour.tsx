@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useId } from 'react'
 import { Sparkles, ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
 
@@ -55,6 +55,10 @@ export default function OnboardingTour() {
   // 'entering' = measuring target, 'visible' = stable, 'stepping' = crossfading between steps
   const [spotPhase, setSpotPhase] = useState<'entering' | 'visible' | 'stepping'>('entering')
   const pendingStepRef = useRef<number | null>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+  const bodyId = useId()
 
   const finish = useCallback(() => {
     try {
@@ -64,6 +68,8 @@ export default function OnboardingTour() {
     }
     setPhase('idle')
     setStepIndex(0)
+    restoreFocusRef.current?.focus()
+    restoreFocusRef.current = null
   }, [])
 
   const goToStep = useCallback((next: number) => {
@@ -90,6 +96,7 @@ export default function OnboardingTour() {
       finish()
       return
     }
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setSteps(available)
     setStepIndex(0)
     setSpotPhase('entering')
@@ -164,6 +171,24 @@ export default function OnboardingTour() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, stepIndex, steps.length, finish, goToStep, spotPhase])
 
+  // Focus the tooltip when a step reveals; trap Tab within its controls.
+  useEffect(() => {
+    if (phase === 'tour' && spotPhase === 'visible') tooltipRef.current?.focus()
+  }, [phase, spotPhase, stepIndex])
+
+  const trapTab = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return
+    const focusables = tooltipRef.current?.querySelectorAll<HTMLElement>('button, [href]')
+    if (!focusables || focusables.length === 0) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus()
+    }
+  }, [])
+
   if (phase === 'idle') return null
 
   // ── Welcome splash ──────────────────────────────
@@ -233,7 +258,14 @@ export default function OnboardingTour() {
       )}
 
       <div
-        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4"
+        ref={tooltipRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        tabIndex={-1}
+        onKeyDown={trapTab}
+        className="absolute bg-mytra-card border border-mytra-border rounded-xl shadow-pop p-4 outline-none"
         style={{
           width: tooltipWidth,
           left: rect ? tooltipLeft : '50%',
@@ -247,17 +279,17 @@ export default function OnboardingTour() {
         }}
       >
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm font-semibold text-fg">{step.title}</h3>
+          <h3 id={titleId} className="text-sm font-semibold text-fg">{step.title}</h3>
           <button
             type="button"
             onClick={finish}
             aria-label="End tour"
-            className="-mt-1 -mr-1 w-8 h-8 flex items-center justify-center rounded-lg text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
+            className="-mt-2 -mr-2 w-11 h-11 flex items-center justify-center rounded-lg text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-sm text-fg-2 mt-1 leading-relaxed">{step.body}</p>
+        <p id={bodyId} className="text-sm text-fg-2 mt-1 leading-relaxed">{step.body}</p>
 
         <div className="flex items-center justify-between mt-4">
           <div className="flex gap-1.5">

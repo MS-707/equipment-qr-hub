@@ -35,7 +35,10 @@ export async function POST(req: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return Response.json({ error: 'Invalid email address' }, { status: 400 })
   }
-  if (name.length > 100 || email.length > 200 || company.length > 200 || reason.length > 1000) {
+  if (
+    name.length > 100 || email.length > 200 || company.length > 200 ||
+    role.length > 200 || crewSize.length > 200 || reason.length > 1000
+  ) {
     return Response.json({ error: 'Input too long' }, { status: 400 })
   }
 
