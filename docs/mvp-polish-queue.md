@@ -192,10 +192,11 @@ Every page shows "Checking your sign-in…" until `/api/auth/session` resolves, 
 **Accept:** module-level cache keyed on the raw localStorage string, invalidated in `writeAll` and the cross-tab `storage` listener; corruption-recovery path unchanged; existing store tests pass unmodified.
 **Outcome:** `readAll` caches the parsed+validated array keyed on the raw string; hits return a shallow copy (copy-on-read — callers push/sort results; record objects are shared but treated as immutable everywhere, mutations replace via spread). Invalidated in `writeAll`, the cross-tab `storage` listener, and `clearAllLocalData`; the corruption/backup path never caches. Quarantine semantics unchanged (a cache hit means that exact raw was already quarantine-scanned). Dashboard load now validates once instead of 5×; subsequent reads are a string compare. `_resetReadCacheForTests` hook added — module state outlives stubbed-store resets between tests. 3 new cache tests; all 78 existing store/quarantine/archiver tests pass. Gate: 686 tests, lint 0, build clean.
 
-### F3 — `/equipment/[id]` statically bundles all 8 tab panels (QR-scan landing route, 175 kB) — `TODO`
+### F3 — `/equipment/[id]` statically bundles all 8 tab panels (QR-scan landing route, 175 kB) — `DONE`
 **Profession:** Performance engineer
 **Files:** `src/components/EquipmentProfile.tsx`
 **Accept:** non-default tab panels behind `next/dynamic` (keep pre-trip static — primary field flow); route first-load drops measurably; tab switch shows skeleton not blank.
+**Outcome:** Five non-default panels (PMSchedule, PmTracker, TrainingInfo, TrainingTracker, ComplianceInfo) behind `next/dynamic` with a shared pulse `TabPanelSkeleton`; PreTripInspection stays static on the QR-scan critical path. Honest A/B on identical HEAD: route JS 10.9→8.43 kB, first-load 182→180 kB gz — real but well under the audit's 10-20 kB estimate (the panels were lighter than assumed; the dominant weight is the offline equipment-data chunk, a deliberate offline-first cost). Kept for the deferred parse/execute of five components on the slow-network landing route. Verified on a production server: all three tabs load their content, skeleton (not blank) during load, zero overflow at 390px. Gate: 686 tests, lint 0, build clean.
 
 ### F4 — SignaturePad full-canvas redraw per pointermove — `TODO`
 **Profession:** Graphics/perf engineer
