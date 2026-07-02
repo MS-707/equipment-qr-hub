@@ -152,9 +152,12 @@ export async function POST(req: Request) {
       '────────────────────',
     ].join('\n')
 
+    // Server-stamped from the authenticated session — never client input.
+    // Lets EHS distinguish the record's claimed author from who submitted it.
+    const verifiedLine = submitterEmail ? `Submitted by (verified): ${submitterEmail}\n\n` : ''
     const outcome = await sendEhsNotification({
       subject: `EHS Review Requested — ${buildRecordSubject(record)}`,
-      text: buildRecordText(record) + '\n' + actionBlock,
+      text: verifiedLine + buildRecordText(record) + '\n' + actionBlock,
     })
     emailed = outcome === 'sent'
   }

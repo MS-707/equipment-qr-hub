@@ -3,14 +3,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@/lib/api-auth', () => ({
   requireSession: vi.fn(),
 }))
+vi.mock('@/lib/rate-limit', () => ({
+  rateLimit: vi.fn(() => Promise.resolve({ ok: true, retryAfter: 0 })),
+}))
 
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 beforeEach(() => {
   vi.mocked(requireSession).mockResolvedValue({
     session: { user: { email: 'test@x.com', name: 'Test', image: null }, expires: '' },
     error: null,
   })
+  vi.mocked(rateLimit).mockResolvedValue({ ok: true, retryAfter: 0 })
   vi.stubGlobal('fetch', vi.fn())
   delete process.env.NOTION_API_KEY
   delete process.env.NOTION_PTP_DB_ID
@@ -37,6 +42,14 @@ function makeReq(body: unknown): Request {
 }
 
 describe('POST /api/safety/sync', () => {
+  it('returns 429 when rate limited', async () => {
+    vi.mocked(rateLimit).mockResolvedValue({ ok: false, retryAfter: 30 })
+    const { POST } = await import('@/app/api/safety/sync/route')
+    const res = await POST(makeReq(validPtp))
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBe('30')
+  })
+
   it('returns 401 when unauthenticated', async () => {
     vi.mocked(requireSession).mockResolvedValue({
       session: null,

@@ -8,6 +8,7 @@
 
 import type { SafetyRecord } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -27,6 +28,14 @@ function dbForType(type: string): string | undefined {
 export async function POST(req: Request) {
   const { session, error } = await requireSession()
   if (error) return error
+
+  // 30/min leaves headroom for a legitimate bulk flush after coming back
+  // online (syncAllPending is sequential) while capping Notion-quota abuse —
+  // every call costs a query plus a create/update upstream.
+  const rl = await rateLimit(`sync:${session?.user?.email || 'unknown'}`, 30, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const key = process.env.NOTION_API_KEY
 

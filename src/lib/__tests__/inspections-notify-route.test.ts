@@ -119,6 +119,20 @@ describe('POST /api/inspections/notify', () => {
     }))
   })
 
+  it('stamps the verified submitter from the session, not client input', async () => {
+    vi.mocked(isEmailConfigured).mockReturnValue(true)
+    vi.mocked(sendEhsNotification).mockResolvedValue('sent')
+    const { POST } = await import('@/app/api/inspections/notify/route')
+    const forged = {
+      ...validBody,
+      record: { ...validBody.record, inspectorName: 'Someone Else' },
+    }
+    await POST(makeReq(forged))
+    expect(sendEhsNotification).toHaveBeenCalledWith(expect.objectContaining({
+      text: expect.stringContaining('Submitted by (verified): test@x.com'),
+    }))
+  })
+
   it('email subject includes CRITICAL FAIL for critical failures', async () => {
     vi.mocked(isEmailConfigured).mockReturnValue(true)
     vi.mocked(sendEhsNotification).mockResolvedValue('sent')

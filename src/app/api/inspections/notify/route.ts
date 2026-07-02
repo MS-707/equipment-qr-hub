@@ -21,7 +21,7 @@ function fmt(iso: string): string {
   })
 }
 
-function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } {
+function buildInspectionEmail(b: NotifyBody, verifiedSubmitter: string | null): { subject: string; text: string } {
   const r = b.record
   const equip = b.equipmentName || `Equipment #${r.equipmentId}`
   const critNaCount = r.criticalNaCount ?? 0
@@ -35,6 +35,9 @@ function buildInspectionEmail(b: NotifyBody): { subject: string; text: string } 
   lines.push(`Ref: ${r.id}`)
   lines.push(`Equipment: ${equip}${b.equipmentCategory ? ` (${b.equipmentCategory})` : ''}`)
   lines.push(`Inspector: ${r.inspectorName}`)
+  // Server-stamped from the authenticated session — never client input. Lets
+  // EHS distinguish the claimed inspector name from who actually submitted.
+  if (verifiedSubmitter) lines.push(`Submitted by (verified): ${verifiedSubmitter}`)
   lines.push(`Shift: ${r.shift}`)
   if (r.hourMeterReading != null) lines.push(`Hour meter: ${r.hourMeterReading}`)
   lines.push(`Completed: ${fmt(r.createdAt)}`)
@@ -101,7 +104,7 @@ export async function POST(req: Request) {
   }
   const body = parsed.data
 
-  const { subject, text } = buildInspectionEmail(body)
+  const { subject, text } = buildInspectionEmail(body, session?.user?.email ?? null)
   const outcome = await sendEhsNotification({ subject, text })
 
   return Response.json({ emailed: outcome === 'sent', outcome })

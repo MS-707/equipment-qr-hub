@@ -1,4 +1,5 @@
 import { requireSession } from '@/lib/api-auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
@@ -20,8 +21,14 @@ export async function GET(req: Request) {
     return Response.json({ decisions: {} })
   }
 
-  const { error } = await requireSession()
+  const { session, error } = await requireSession()
   if (error) return error
+
+  // Each call fans out up to 20 Notion page fetches — cap the amplification.
+  const rl = await rateLimit(`review-status:${session?.user?.email || 'unknown'}`, 30, 60_000)
+  if (!rl.ok) {
+    return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
+  }
 
   const notionKey = process.env.NOTION_API_KEY
   if (!notionKey) {

@@ -26,6 +26,17 @@ export function isEmailConfigured(): boolean {
   return !!process.env.RESEND_API_KEY
 }
 
+/**
+ * Header-injection guard, applied at the chokepoint so every caller is
+ * covered: user-supplied text (equipment names, project names) flows into
+ * subjects, and a CR/LF there could smuggle extra headers if any downstream
+ * layer treats the subject as a raw header line. Includes Unicode line
+ * separators, which some mail stacks normalize to newlines.
+ */
+export function sanitizeSubject(subject: string): string {
+  return subject.replace(/[\r\n\u2028\u2029]+/g, ' ').trim()
+}
+
 export async function sendEhsNotification({ subject, text }: EhsEmail): Promise<EmailOutcome> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return 'not-configured'
@@ -40,7 +51,7 @@ export async function sendEhsNotification({ subject, text }: EhsEmail): Promise<
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from, to, subject, text }),
+      body: JSON.stringify({ from, to, subject: sanitizeSubject(subject), text }),
     })
     if (!res.ok) {
       console.error('[email-notify] Resend error:', await res.text())

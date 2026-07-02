@@ -81,6 +81,18 @@ describe('POST /api/beta/signup', () => {
     expect(data.error).toContain('too long')
   })
 
+  it('caps role length (flows into email/Slack/KV)', async () => {
+    const { POST } = await import('@/app/api/beta/signup/route')
+    const res = await POST(makeReq({ ...validSignup, role: 'x'.repeat(201) }))
+    expect(res.status).toBe(400)
+  })
+
+  it('caps crewSize length', async () => {
+    const { POST } = await import('@/app/api/beta/signup/route')
+    const res = await POST(makeReq({ ...validSignup, crewSize: 'x'.repeat(201) }))
+    expect(res.status).toBe(400)
+  })
+
   it('creates signup and returns ok', async () => {
     const { POST } = await import('@/app/api/beta/signup/route')
     const res = await POST(makeReq(validSignup))

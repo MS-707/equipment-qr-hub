@@ -77,15 +77,17 @@ After submit the DOM swaps with no `aria-live`, no focus move — an "Out of Ser
 
 ## Phase B — Security quick wins (~30 min bundle, do together)
 
-### B1 — Email hardening — `TODO`
+### B1 — Email hardening — `DONE`
 **Profession:** Security engineer
 **Files:** `src/lib/email-notify.ts`, `src/app/api/inspections/notify/route.ts`, `src/app/api/safety/review/submit/route.ts`, `src/app/api/beta/signup/route.ts`
 **Accept:** CRLF stripped from subjects in `sendEhsNotification` (covers all callers); `role`/`crewSize` length caps in beta signup schema; both EHS email builders append a server-stamped `Submitted by (verified): <session email>` line so forged inspector names are distinguishable.
+**Outcome:** `sanitizeSubject()` at the send chokepoint strips CR/LF/U+2028/U+2029 (covers all present and future callers); beta signup `role`/`crewSize` capped at 200 (were unbounded → email/Slack/KV); both EHS builders stamp `Submitted by (verified):` from the server session, never client input — forged inspector names are now distinguishable in the EHS inbox. 6 new tests incl. an actual header-injection payload and a forged-inspector round trip.
 
-### B2 — API surface hardening — `TODO`
+### B2 — API surface hardening — `DONE`
 **Profession:** Security engineer
 **Files:** `src/app/api/safety/sync/route.ts`, `src/app/api/safety/review/status/route.ts`, `next.config.mjs`
 **Accept:** `rateLimit()` on sync (~10/min per email) and review/status (~30/min per email); CSP gains `base-uri 'self'; form-action 'self'`; `https://*.upstash.io` removed from connect-src (KV is server-only — verify no client usage first).
+**Outcome:** Sync rate-limited at 30/min per session email (deliberately above the suggested 10 — `syncAllPending` legitimately bulk-flushes after reconnect; 30 still caps the Notion-quota amplification, and 429s land in the existing retry path) with `Retry-After`; review/status at 30/min (each call fans out ≤20 Notion fetches). CSP: `base-uri 'self'` + `form-action 'self'` added (they matter more given `unsafe-inline` scripts), upstash dropped from connect-src after grep-verifying KV is server-only. 2 new 429 route tests. Gate: 649 tests, lint 0, build clean.
 
 ---
 
