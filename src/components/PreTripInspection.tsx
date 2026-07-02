@@ -97,7 +97,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('pass')}
-          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
+          className={`flex-1 text-sm font-semibold py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'pass'
               ? 'bg-ok text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-ok/50'
@@ -108,7 +108,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('fail')}
-          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
+          className={`flex-1 text-sm font-semibold py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'fail'
               ? 'bg-danger text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-danger/50'
@@ -119,7 +119,7 @@ function ChecklistItemRow({
         <button
           type="button"
           onClick={() => onResult('na')}
-          className={`flex-1 text-xs font-medium py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
+          className={`flex-1 text-sm font-semibold py-2.5 rounded-md transition-colors duration-150 min-h-[44px] ${
             state.result === 'na'
               ? 'bg-fg-3 text-white'
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-fg-4/50'
@@ -134,7 +134,7 @@ function ChecklistItemRow({
         <div className="mt-3 space-y-2 animate-fadeIn">
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
-            <p className="text-xs text-warn/80 leading-relaxed">
+            <p className="text-sm text-warn-strong leading-relaxed">
               This is a safety-critical item. You must provide a reason for marking it N/A.
             </p>
           </div>
@@ -213,21 +213,24 @@ function ChecklistItemRow({
                 <button
                   type="button"
                   onClick={onRemovePhoto}
-                  className="absolute -top-2 -right-2 w-7 h-7 bg-danger rounded-full
-                             flex items-center justify-center hover:bg-danger/80 transition-colors"
+                  aria-label="Remove photo"
+                  className="absolute -top-3 -right-3 w-11 h-11 rounded-full
+                             flex items-center justify-center transition-colors group"
                 >
-                  <X className="w-3 h-3 text-white" />
+                  <span className="w-7 h-7 bg-danger rounded-full flex items-center justify-center group-hover:bg-danger/80 transition-colors">
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </span>
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => onCameraClick(item.id)}
-                className="inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg
-                           bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2
+                className="inline-flex items-center gap-1.5 text-sm text-fg-3 hover:text-fg
+                           bg-mytra-bg border border-mytra-border rounded-lg px-3 py-2 min-h-[44px]
                            hover:border-mytra-purple/50 transition-colors duration-150"
               >
-                <Camera className="w-3.5 h-3.5" />
+                <Camera className="w-4 h-4" />
                 Add Photo
               </button>
             )}
@@ -780,7 +783,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                     role="radio"
                     aria-checked={shift === s}
                     onClick={() => setShift(s)}
-                    className={`flex-1 text-sm font-medium py-2 rounded-lg transition-colors duration-150 ${
+                    className={`flex-1 text-sm font-medium py-2 min-h-[44px] rounded-lg transition-colors duration-150 ${
                       shift === s
                         ? 'bg-mytra-purple text-white'
                         : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50'

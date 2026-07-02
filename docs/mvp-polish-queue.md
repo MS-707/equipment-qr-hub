@@ -149,10 +149,11 @@ IndexedDB/localStorage evictable under pressure (this is the system of record); 
 
 ## Phase E — Field UX sweep
 
-### E1 — Touch-target sweep (gloved hands, daily path) — `TODO`
+### E1 — Touch-target sweep (gloved hands, daily path) — `DONE`
 **Profession:** Mobile UX engineer
 **Files:** `PreTripInspection.tsx` (Add Photo ~33px, photo-X 28px, Shift selector ~38px), `SageTriage.tsx` chips (~30px), `LastUsedChip.tsx` (~26px), `RecordView.tsx` header actions (~30px), `ModuleTourEngine.tsx`/`OnboardingTour.tsx` close (32px), `SyncQueuePanel.tsx` retry (36px), `ValidationSummary.tsx` (36px), `IncidentReportForm.tsx` photo-X + analysis dismiss
 **Accept:** every listed control ≥44pt tap area (`min-h-[44px]`/`w-11 h-11` or padded hit area), `aria-label` on all icon-only buttons touched; Pass/Fail/N/A labels bumped `text-xs → text-sm font-semibold`; check layouts don't break at 390px width.
+**Outcome:** All listed controls at ≥44pt: Add Photo `min-h-[44px]` + `text-sm`; both photo-X buttons use a `w-11 h-11` padded hit area wrapping the visible 28px dot + `aria-label="Remove photo"`; inspection Shift selector `min-h-[44px]` (now matches its PTP twin); Sage suggestion chips and LastUsedChip `text-sm min-h-[44px] py-2.5`; RecordView Retry/Share/Print `min-h-[44px] text-sm` with `gap-3`; tour close buttons `w-11 h-11`; SyncQueuePanel retry and ValidationSummary rows/dismiss 36→44px; incident analysis dismiss labeled + padded. Pass/Fail/N/A bumped to `text-sm font-semibold`. Also caught an A7 straggler (N/A justification banner still `text-xs text-warn/80` — indentation dodged the earlier replace). Playwright at 390px: Pass=44px, Add Photo=44px measured, zero horizontal overflow, screenshot checked. Gate: 683 tests, lint 0, build clean.
 
 ### E2 — Sync/status indicators are color-only 6px dots — `TODO`
 **Profession:** Accessibility specialist

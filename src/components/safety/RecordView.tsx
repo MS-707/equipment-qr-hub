@@ -232,7 +232,7 @@ export default function RecordView({ id }: { id: string }) {
         <Link href="/safety/history" aria-label="Back to safety history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
           <ArrowLeft className="w-4 h-4" /> History
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {r.syncStatus !== 'synced' && (
             <button
               type="button"
@@ -242,7 +242,7 @@ export default function RecordView({ id }: { id: string }) {
                 setSyncing(true)
                 try { await trySyncRecord(r.id) } finally { setSyncing(false) }
               }}
-              className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover disabled:opacity-50"
             >
               {syncing
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…</>
@@ -254,7 +254,7 @@ export default function RecordView({ id }: { id: string }) {
             disabled={sharing}
             aria-busy={sharing}
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover disabled:opacity-50"
           >
             {sharing
               ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sharing…</>
@@ -272,7 +272,7 @@ export default function RecordView({ id }: { id: string }) {
                 window.print()
               }
             }}
-            className="inline-flex items-center gap-1.5 text-xs text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-1.5 hover:bg-mytra-card-hover"
+            className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover"
           >
             <Printer className="w-3.5 h-3.5" /> Print
           </button>

@@ -42,7 +42,7 @@ export default function ValidationSummary({ errors, show, onDismiss }: Validatio
         <button
           type="button"
           onClick={onDismiss}
-          className="p-1.5 rounded-md text-fg-3 hover:text-fg-2 hover:bg-warn/10 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+          className="p-1.5 rounded-md text-fg-3 hover:text-fg-2 hover:bg-warn/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Dismiss"
         >
           <X className="w-4 h-4" />
@@ -54,7 +54,7 @@ export default function ValidationSummary({ errors, show, onDismiss }: Validatio
             <button
               type="button"
               onClick={() => handleTap(error.fieldId)}
-              className="w-full flex items-center gap-2.5 min-h-[36px] px-2 rounded text-sm text-fg hover:bg-warn/10 active:bg-warn/15 transition-colors text-left"
+              className="w-full flex items-center gap-2.5 min-h-[44px] px-2 rounded text-sm text-fg hover:bg-warn/10 active:bg-warn/15 transition-colors text-left"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-warn shrink-0" />
               <span>{error.label}</span>

@@ -166,7 +166,7 @@ export default function SyncQueuePanel() {
                     disabled={isSyncing || syncUnavailable}
                     onClick={() => handleRetry(r.id)}
                     className="shrink-0 text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover
-                               disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1.5 min-h-[36px] min-w-[44px]
+                               disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1.5 min-h-[44px] min-w-[44px]
                                rounded-md hover:bg-mytra-purple/10 transition-colors"
                   >
                     Retry

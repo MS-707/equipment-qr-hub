@@ -247,7 +247,7 @@ export default function ModuleTourEngine() {
             type="button"
             onClick={finish}
             aria-label="End tour"
-            className="-mt-1 -mr-1 w-8 h-8 flex items-center justify-center rounded-lg text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
+            className="-mt-2 -mr-2 w-11 h-11 flex items-center justify-center rounded-lg text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
