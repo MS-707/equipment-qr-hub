@@ -32,6 +32,7 @@ import {
   onInspectionChange,
 } from '@/lib/inspections'
 import { compressPhoto } from '@/lib/media'
+import { haptic } from '@/lib/haptic'
 import { getCurrentIdentity } from '@/lib/identity'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
@@ -356,6 +357,22 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   // Local save failure (storage quota/corruption) — the inspection was NOT
   // persisted; keep the operator on the checklist with their answers intact.
   const [saveError, setSaveError] = useState<string | null>(null)
+
+  // Announce the verdict: move focus to the result heading (screen readers
+  // hear "Out of Service" instead of silence) and give glove-friendly haptic
+  // feedback matched to severity. Mirrors the PtpDone pattern.
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    if (step !== 'result' || !submittedRecord) return
+    resultHeadingRef.current?.focus()
+    haptic(
+      submittedRecord.hasCriticalFail
+        ? 'error'
+        : submittedRecord.result === 'fail'
+          ? 'warning'
+          : 'success'
+    )
+  }, [step, submittedRecord])
 
   // Notes / N/A validation
   const [missingNotes, setMissingNotes] = useState<Set<string>>(new Set())
@@ -937,12 +954,12 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
       {/* ── RESULT STEP ────────────────────────────────────── */}
       {step === 'result' && submittedRecord && (
-        <div className="animate-fadeIn space-y-4">
+        <div role="status" className="animate-fadeIn space-y-4">
           {/* Pass */}
           {submittedRecord.result === 'pass' && (
             <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
               <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-ok mb-1">All Clear</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">All Clear</h3>
               <p className="text-sm text-ok/80">
                 You&apos;re good to go. Inspection logged.
               </p>
@@ -958,7 +975,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {submittedRecord.result === 'fail' && !submittedRecord.hasCriticalFail && (
             <div className="bg-warn/10 border border-warn/20 rounded-lg p-6 text-center">
               <Wrench className="w-12 h-12 text-warn mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-warn mb-1">Issues Noted</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-warn mb-1 outline-none">Issues Noted</h3>
               <p className="text-sm text-warn/80 mb-3">
                 Maintenance has been notified. You may operate with caution.
               </p>
@@ -979,7 +996,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {submittedRecord.result === 'fail' && submittedRecord.hasCriticalFail && (
             <div className="bg-danger/10 border border-danger/20 rounded-lg p-6 text-center">
               <Shield className="w-12 h-12 text-danger mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-danger mb-1">Out of Service</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-danger mb-1 outline-none">Out of Service</h3>
               <p className="text-sm text-danger/80 mb-3">
                 This unit has been taken out of service for maintenance. Thanks for keeping everyone safe.
               </p>

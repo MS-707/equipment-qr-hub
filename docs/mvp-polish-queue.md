@@ -59,11 +59,12 @@ Tab panel spreads `useSwipe`; pre-trip is the first tab so swipe-right calls `ro
 **Accept:** checklist area excluded from swipe (`data-no-swipe` supported by the hook) or swipe disabled while `step === 'checklist'`; `router.back()` never fires from a swipe during an active inspection; swipe thresholds tightened so diagonal scrolls don't trigger.
 **Outcome:** Three layers. (1) New `onChecklistActiveChange` prop: PreTripInspection reports `step === 'checklist'` (covers draft-restore entry, cleared on unmount); EquipmentProfile stops spreading the swipe handlers entirely while active AND guards `goNext/goPrev` — `router.back()` can no longer fire from a swipe mid-inspection. (2) `data-no-swipe` on the checklist container as a structural guard. (3) Thresholds tuned for gloves: MIN_DISTANCE 50→70px, MAX_RATIO 0.6→0.45, new 400ms max duration so slow drags never navigate; classifier extracted as pure `evaluateSwipe()`. 7 new tests (diagonal scroll, slow drag, flicks both directions). Gate: 641 tests, lint 0, build clean.
 
-### A6 — Inspection result screen is silent to screen readers, no focus, no haptic — `TODO`
+### A6 — Inspection result screen is silent to screen readers, no focus, no haptic — `DONE`
 **Profession:** Accessibility specialist
 **Files:** `src/components/PreTripInspection.tsx`
 After submit the DOM swaps with no `aria-live`, no focus move — an "Out of Service" verdict is never announced. `PtpDone` in `PreTaskPlanForm.tsx` already does this right (focus heading + haptic).
 **Accept:** result container announced (`role="status"`/focus-on-heading with `tabIndex={-1}`) and `haptic()` fired per verdict, matching the PtpDone pattern.
+**Outcome:** Result container gets `role="status"`; all three verdict headings carry `ref` + `tabIndex={-1}` + `outline-none` (only one renders); focus moves to the heading on entry and verdict-matched haptics fire — success (All Clear), warning (Issues Noted), error (Out of Service; the heavier pattern is deliberate for a stop-work order). Effect keys on `submittedRecord` so a New Inspection → resubmit re-announces. Mirrors PtpDone exactly. Gate: 641 tests, lint 0, build clean.
 
 ### A7 — Safety-critical guidance text is 12px alpha-faded (illegible in sunlight) — `TODO`
 **Profession:** Visual design / accessibility
