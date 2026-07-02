@@ -16,6 +16,12 @@ export function isSyncAvailable(): boolean {
   return Date.now() >= syncDisabledUntil
 }
 
+/** Epoch ms when sync becomes available again (0 = available now). Lets the
+ *  queue panel show "retrying in Nm" instead of vanishing during backoff. */
+export function getSyncAvailableAt(): number {
+  return syncDisabledUntil
+}
+
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
   if (!record) return 'fail'

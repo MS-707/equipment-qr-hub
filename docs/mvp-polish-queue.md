@@ -138,11 +138,12 @@ Default cache expires pages after 24h without `maxAgeFrom: 'last-used'`; no `net
 **Accept:** custom document/RSC runtime-cache entries ahead of `defaultCache` with 30-day `maxAgeFrom: 'last-used'` and `networkTimeoutSeconds: 4`; `skipWaiting: true` removed so the existing banner + `SKIP_WAITING` message flow works as designed; production build produces a working SW.
 **Outcome:** Three custom NetworkFirst entries ahead of `defaultCache` shadow the default page caches by name (`pages-rsc-prefetch`, `pages-rsc` via RSC headers; `pages` via `request.destination === 'document'` — more reliable than the default's request-Content-Type quirk), each with `maxEntries: 64`, 30-day `maxAgeFrom: 'last-used'`, and `networkTimeoutSeconds: 4` so flaky jobsite connections fall back to cache in 4s. `skipWaiting: true` removed — deploys now wait for the SwUpdateBanner tap (`SKIP_WAITING` message → controllerchange reload), whose waiting-worker detection finally has a waiting worker to detect. Compiled `public/sw.js` verified: 3× `networkTimeoutSeconds:4`, 30-day (`2592e3`) expiry present. Gate: 678 tests, lint 0, build clean.
 
-### D2 — Storage persistence + sync visibility — `TODO`
+### D2 — Storage persistence + sync visibility — `DONE`
 **Profession:** PWA engineer
-**Files:** `src/components/providers/SyncProvider.tsx`, `src/components/safety/SyncQueuePanel.tsx`
+**Files:** `src/components/providers/SyncProvider.tsx`, `src/components/safety/SyncQueuePanel.tsx`, `src/lib/persist-storage.ts` (new), `src/lib/safety-sync.ts`
 IndexedDB/localStorage evictable under pressure (this is the system of record); after one 503 the pending-sync panel disappears for 5 minutes instead of saying "sync unavailable."
 **Accept:** `navigator.storage.persist()` requested once after first record save (log grant result); SyncQueuePanel shows an explicit "sync unavailable, will retry" state during backoff instead of vanishing.
+**Outcome:** New `requestPersistentStorage()` (feature-detected, skips if already persisted, once-per-session guard, grant/denial logged, never nags) fired from SyncProvider — at load when records already exist, else on the first save via the safety-change/inspection-change events. SyncQueuePanel no longer hides during the 503 cool-off: new `getSyncAvailableAt()` export drives a CloudOff "N records pending sync — sync unavailable, retrying in N min" header (refreshed by the existing 5s tick); per-row and Sync-All retry buttons disabled during backoff but the queue stays visible. 5 new persist tests (grant/deny/already-persisted/once-only/API-absent). Gate: 683 tests, lint 0, build clean.
 
 ---
 
