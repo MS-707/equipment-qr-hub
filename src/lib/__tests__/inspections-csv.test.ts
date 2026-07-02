@@ -33,6 +33,16 @@ describe('exportInspectionsToCsv', () => {
     expect(headers).toContain('Critical_NA')
     expect(headers).toContain('Failed_Items')
     expect(headers).toContain('NA_Critical_Items')
+    expect(headers).toContain('Signed')
+  })
+
+  it('reports operator sign-on in the Signed column', () => {
+    const signed = { ...mockRecord, hasSignature: true }
+    const csv = exportInspectionsToCsv([signed])
+    const cols = csv.split('\n')[1].split(',')
+    expect(cols[3]).toBe('"YES"')
+    const unsigned = exportInspectionsToCsv([mockRecord])
+    expect(unsigned.split('\n')[1].split(',')[3]).toBe('"NO"')
   })
 
   it('includes record data in CSV row', () => {

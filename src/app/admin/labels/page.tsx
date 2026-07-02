@@ -3,17 +3,21 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { Printer, ArrowLeft, ShieldAlert } from 'lucide-react'
+import { Printer, ArrowLeft, ShieldAlert, ClipboardCheck, QrCode } from 'lucide-react'
 import { getAllEquipment, getCategories } from '@/lib/equipment'
-import { CATEGORY_COLORS, EquipmentCategory } from '@/lib/types'
+import { CATEGORY_COLORS, EquipmentCategory, requiresPreTrip } from '@/lib/types'
 import QRLabel from '@/components/QRLabel'
 
 export default function LabelsPage() {
   const { data: session } = useSession()
   const canAccess = session?.user?.isAdmin === true
   const [baseUrl, setBaseUrl] = useState('')
+  // 'equipment' = profile-link labels for every asset;
+  // 'pre-trip' = SCAN BEFORE OPERATING labels that deep-link into /inspect/[id]
+  const [labelSet, setLabelSet] = useState<'equipment' | 'pre-trip'>('equipment')
   const categories = useMemo(() => getCategories(), [])
   const allEquipment = useMemo(() => getAllEquipment(), [])
+  const preTripEquipment = useMemo(() => allEquipment.filter(requiresPreTrip), [allEquipment])
 
   useEffect(() => {
     setBaseUrl(window.location.origin)
@@ -46,12 +50,13 @@ export default function LabelsPage() {
       {/* Print-only: render all labels in a flat grid for clean printing */}
       <div className="hidden print:block">
         <div className="print-grid">
-          {allEquipment.map(item => (
+          {(labelSet === 'pre-trip' ? preTripEquipment : allEquipment).map(item => (
             <QRLabel
               key={`print-${item.itemNumber}`}
               equipment={item}
               baseUrl={baseUrl}
               printMode
+              variant={labelSet}
             />
           ))}
         </div>
@@ -96,16 +101,70 @@ export default function LabelsPage() {
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
               />
             </div>
+            <div className="shrink-0">
+              <span className="block text-sm font-medium text-fg-3 mb-1.5">Label type</span>
+              <div className="inline-flex rounded-lg border border-mytra-border overflow-hidden" role="radiogroup" aria-label="Label type">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={labelSet === 'equipment'}
+                  onClick={() => setLabelSet('equipment')}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-sm font-medium transition-colors ${
+                    labelSet === 'equipment' ? 'bg-mytra-purple text-white' : 'bg-mytra-bg text-fg-3 hover:text-fg'
+                  }`}
+                >
+                  <QrCode size={15} /> Equipment
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={labelSet === 'pre-trip'}
+                  onClick={() => setLabelSet('pre-trip')}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-sm font-medium transition-colors ${
+                    labelSet === 'pre-trip' ? 'bg-mytra-purple text-white' : 'bg-mytra-bg text-fg-3 hover:text-fg'
+                  }`}
+                >
+                  <ClipboardCheck size={15} /> Pre-Trip
+                </button>
+              </div>
+            </div>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple-hover text-white font-medium text-sm px-5 py-2 rounded-lg transition-colors shrink-0"
+              className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple-hover text-white font-medium text-sm px-5 py-2 min-h-[44px] rounded-lg transition-colors shrink-0"
             >
               <Printer size={16} />
-              Print All Labels
+              {labelSet === 'pre-trip' ? 'Print Pre-Trip Labels' : 'Print All Labels'}
             </button>
           </div>
 
+          {/* Pre-trip labels: only units that require an inspection */}
+          {labelSet === 'pre-trip' && (
+            <section>
+              <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid #EAB308' }}>
+                <h2 className="text-lg font-semibold text-fg">Pre-Trip Inspection Labels</h2>
+                <span className="text-xs text-fg-4">
+                  {preTripEquipment.length} unit{preTripEquipment.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <p className="text-sm text-fg-3 mb-4 pl-3">
+                Mount these on forklifts and lifts — scanning opens that unit&apos;s pre-trip
+                inspection directly. Completed inspections email a signed, auditable copy to EHS.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {preTripEquipment.map(item => (
+                  <QRLabel
+                    key={`pretrip-${item.itemNumber}`}
+                    equipment={item}
+                    baseUrl={baseUrl}
+                    variant="pre-trip"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Equipment list grouped by category */}
+          {labelSet === 'equipment' && (
           <div className="space-y-10">
             {categories.map(category => {
               const items = equipmentByCategory[category]
@@ -138,6 +197,7 @@ export default function LabelsPage() {
               )
             })}
           </div>
+          )}
         </div>
       </div>
     </>

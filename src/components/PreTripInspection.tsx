@@ -38,6 +38,7 @@ import {
 import { compressPhoto } from '@/lib/media'
 import { haptic } from '@/lib/haptic'
 import { getCurrentIdentity } from '@/lib/identity'
+import SignaturePad from '@/components/SignaturePad'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
 
@@ -388,6 +389,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   // failed write means the evidence is gone and the operator must know.
   const [photoSaveFailed, setPhotoSaveFailed] = useState(false)
 
+  // Operator sign-on: touch signature certifying the inspection (same pad as
+  // PTP crew sign-on). Required before submit — it's what makes the emailed
+  // copy auditable.
+  const [signature, setSignature] = useState<string | null>(null)
+
   // Announce the verdict: move focus to the result heading (screen readers
   // hear "Out of Service" instead of silence) and give glove-friendly haptic
   // feedback matched to severity. Mirrors the PtpDone pattern.
@@ -661,7 +667,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   // ── Submit ───────────────────────────────────────────────
 
   function handleSubmit() {
-    if (!allAnswered) return
+    if (!allAnswered || !signature) return
 
     // Validate notes on failed items
     const failedWithoutNotes = items
@@ -696,6 +702,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           hourMeterReading: hourMeter ? parseFloat(hourMeter) : null,
           checklistType,
           items,
+          signatureDataUrl: signature,
         },
         { onPhotoSaveError: () => setPhotoSaveFailed(true) }
       )
@@ -728,6 +735,9 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
       record: { ...record, items: record.items.map((i) => ({ ...i, photo: null })) },
       equipmentName: equipment.name,
       equipmentCategory: equipment.category,
+      // The touch signature rides along so the emailed audit copy carries
+      // proof of sign-on (attached as a PNG server-side).
+      signatureDataUrl: signature,
     }
     setNotifyStatus('pending')
     fetch('/api/inspections/notify', {
@@ -763,6 +773,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     setSubmittedRecord(null)
     setNotifyStatus('idle')
     setPhotoSaveFailed(false)
+    setSignature(null)
     setHourMeter('')
     setDraftRestored(false)
   }
@@ -989,6 +1000,19 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             </div>
           ))}
 
+          {/* Operator sign-on — appears once every item is answered */}
+          {allAnswered && (
+            <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 animate-fadeIn">
+              <h4 className="text-sm font-semibold text-fg">Operator sign-on</h4>
+              <p className="text-xs text-fg-2 leading-relaxed">
+                Sign with your finger to certify you performed this inspection. Your signature
+                is attached to the record and the EHS copy.
+              </p>
+              <SignaturePad onChange={(url) => setSignature(url)} />
+              <p className="text-xs text-fg-4">Signing as <span className="text-fg-2 font-medium">{inspectorName}</span></p>
+            </div>
+          )}
+
           {/* Sticky submit button */}
           <div data-tour-module="inspection-submit" className="sticky bottom-0 pb-4 pt-2 bg-gradient-to-t from-mytra-bg via-mytra-bg to-transparent">
             {saveError && (
@@ -1002,7 +1026,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!allAnswered}
+              disabled={!allAnswered || !signature}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
                          bg-mytra-purple text-white hover:bg-mytra-purple-hover
                          disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
@@ -1011,9 +1035,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                 ? 'Add notes to failed items'
                 : missingNaJustification.size > 0
                   ? 'Provide N/A justification for critical items'
-                  : allAnswered
-                    ? 'Submit Inspection'
-                    : `${remaining} item${remaining === 1 ? '' : 's'} remaining`}
+                  : !allAnswered
+                    ? `${remaining} item${remaining === 1 ? '' : 's'} remaining`
+                    : !signature
+                      ? 'Sign on to submit'
+                      : 'Submit Inspection'}
             </button>
           </div>
         </div>
