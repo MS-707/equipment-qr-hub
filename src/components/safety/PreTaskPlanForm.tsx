@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ClipboardList, CheckCircle2, ArrowLeft, RotateCcw, WifiOff, Send, ChevronDown, ChevronUp, Sparkles, Loader2, Copy, AlertTriangle, AlertCircle, ShieldCheck } from 'lucide-react'
 import type { Shift } from '@/lib/types'
 import type { HazardEntry, HeatIllnessPlan, PreTaskPlan } from '@/lib/safety-types'
-import { createPreTaskPlan, saveSignatures, markSubmittedForReview, getSafetyRecordById, getLatestPtp, getPtpForDate, cryptoRandomId } from '@/lib/safety-records'
+import { createPreTaskPlan, saveSignatures, getLatestPtp, getPtpForDate, cryptoRandomId } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
@@ -14,9 +14,9 @@ import HazardTable from './HazardTable'
 import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
-import { getCurrentIdentity } from '@/lib/identity'
 import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
+import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { localToday } from '@/lib/datetime'
 import ValidationSummary, { type ValidationError } from './ValidationSummary'
 
@@ -793,25 +793,21 @@ export default function PreTaskPlanForm() {
 
 function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: string; sigCount: number; wasOffline: boolean; onNew: () => void }) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const ehsEnabled = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
+  const ehsEnabled = isReviewEnabled()
+  const [reviewState, setReviewState] = useState<ReviewSubmitState | null>(null)
 
   useEffect(() => { headingRef.current?.focus(); haptic('success') }, [])
 
   useEffect(() => {
     if (!ehsEnabled) return
-    const identity = getCurrentIdentity()
-    const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
-    const rec = getSafetyRecordById(submittedId)
-    if (rec) {
-      fetch('/api/safety/review/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ record: rec, notionPageId: rec.notionPageId }),
-      })
-        .then((res) => { if (res.ok) markSubmittedForReview(submittedId, by) })
-        .catch(() => {})
-    }
+    setReviewState('pending')
+    void submitForReview(submittedId).then(setReviewState)
   }, [ehsEnabled, submittedId])
+
+  const retryReview = () => {
+    setReviewState('pending')
+    void submitForReview(submittedId).then(setReviewState)
+  }
 
   return (
     <div className="animate-fadeIn space-y-4">
@@ -829,10 +825,31 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
           <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
         </div>
       )}
-      {ehsEnabled && (
+      {reviewState === 'pending' && (
+        <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5" role="status">
+          <Loader2 className="w-4 h-4 text-mytra-purple shrink-0 animate-spin" />
+          <p className="text-xs text-mytra-purple">Submitting for EHS review…</p>
+        </div>
+      )}
+      {reviewState === 'submitted' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Automatically submitted for EHS review</p>
+          <p className="text-xs text-mytra-purple">Submitted for EHS review</p>
+        </div>
+      )}
+      {reviewState === 'failed' && (
+        <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5" role="alert">
+          <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
+          <p className="text-sm text-warn-strong flex-1">
+            Could not submit for EHS review (offline or server issue). The PTP is saved on this device.
+          </p>
+          <button
+            type="button"
+            onClick={retryReview}
+            className="shrink-0 min-h-[44px] px-3 rounded-lg text-sm font-semibold text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       )}
       <Link

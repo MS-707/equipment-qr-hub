@@ -4,12 +4,12 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { PackageOpen, RotateCcw, AlertTriangle, CheckCircle2, Info, Sparkles, ChevronDown, Loader2 } from 'lucide-react'
 import { analyzeAtmosphere, type AtmoAlert } from '@/lib/atmo-check'
 import ConfirmDialog from '@/components/ConfirmDialog'
-import { createConfinedSpacePermit, saveSignatures, markSubmittedForReview } from '@/lib/safety-records'
+import { createConfinedSpacePermit, saveSignatures } from '@/lib/safety-records'
 import { trySyncRecord } from '@/lib/safety-sync'
+import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { useFormDraft } from '@/lib/use-draft'
 import { getLastContext, saveLastContext } from '@/lib/use-last-context'
 import LastUsedChip from './LastUsedChip'
-import { getCurrentIdentity } from '@/lib/identity'
 import { buildPermitItems, CONFINED_SPACE_HAZARDS } from '@/data/safety-checklists'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { defaultValidityWindow, toIso, toLocalInput } from '@/lib/datetime'
@@ -53,6 +53,7 @@ export default function ConfinedSpaceForm() {
   const [sigData, setSigData] = useState<SignatureData>({ signatures: [], blobs: {} })
   const [supervisorId, setSupervisorId] = useState<string | null>(null)
   const [submittedId, setSubmittedId] = useState<string | null>(null)
+  const [reviewState, setReviewState] = useState<ReviewSubmitState | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastCtx] = useState(getLastContext)
@@ -264,12 +265,9 @@ export default function ConfinedSpaceForm() {
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
     saveSignatures(record.id, blobs).catch((e) => console.error('signature save failed', e))
     void trySyncRecord(record.id)
-    if (process.env.NEXT_PUBLIC_EHS_REVIEW === '1') {
-      const identity = getCurrentIdentity()
-      const by = { name: identity?.name ?? 'Unknown', email: identity?.email ?? null }
-      fetch('/api/safety/review/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record, notionPageId: record.notionPageId }) })
-        .then((res) => { if (res.ok) markSubmittedForReview(record.id, by) })
-        .catch(() => {})
+    if (isReviewEnabled()) {
+      setReviewState('pending')
+      void submitForReview(record.id).then(setReviewState)
     }
     saveLastContext({ projectName, location })
     clearDraft()
@@ -301,6 +299,7 @@ export default function ConfinedSpaceForm() {
     setSigData({ signatures: [], blobs: {} })
     setSupervisorId(null)
     setSubmittedId(null)
+    setReviewState(null)
   }
 
   if (submittedId) {
@@ -312,7 +311,11 @@ export default function ConfinedSpaceForm() {
         onNew={reset}
         newLabel="Start new permit"
         offline={wasOffline}
-        reviewAutoSubmitted={process.env.NEXT_PUBLIC_EHS_REVIEW === '1'}
+        reviewAutoSubmitted={reviewState}
+        onRetryReview={() => {
+          setReviewState('pending')
+          void submitForReview(submittedId).then(setReviewState)
+        }}
       />
     )
   }
