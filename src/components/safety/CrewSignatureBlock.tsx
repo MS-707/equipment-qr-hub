@@ -134,6 +134,7 @@ export default function CrewSignatureBlock({
             <input
               type="text"
               list="crew-roster"
+              autoComplete="off"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               autoCapitalize="words"

@@ -27,23 +27,38 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
     setIsOpen(false)
   }
 
+  // Real <button> for admins so Enter/Space work for free — a span with
+  // role="button" and no keydown handler locked keyboard users out of
+  // marking equipment Out of Service.
   return (
     <div className="relative">
-      <span
-        className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full transition-colors min-h-[44px] ${canEdit ? 'cursor-pointer' : ''}`}
-        style={{
-          backgroundColor: `${color}18`,
-          color: color,
-        }}
-        role={canEdit ? 'button' : undefined}
-        tabIndex={canEdit ? 0 : undefined}
-        onClick={canEdit ? () => setIsOpen(!isOpen) : undefined}
-        aria-haspopup={canEdit ? 'listbox' : undefined}
-        aria-expanded={canEdit ? isOpen : undefined}
-      >
-        {currentStatus}
-        {canEdit && <ChevronDown className="w-3 h-3" />}
-      </span>
+      {canEdit ? (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full transition-colors min-h-[44px]
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
+          style={{
+            backgroundColor: `${color}18`,
+            color: color,
+          }}
+          onClick={() => setIsOpen(!isOpen)}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+        >
+          {currentStatus}
+          <ChevronDown className="w-3 h-3" />
+        </button>
+      ) : (
+        <span
+          className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full min-h-[44px]"
+          style={{
+            backgroundColor: `${color}18`,
+            color: color,
+          }}
+        >
+          {currentStatus}
+        </span>
+      )}
 
       {isOpen && (
         <>

@@ -13,7 +13,36 @@ export default function UserMenu() {
   const [open, setOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const { theme, setTheme } = useTheme()
+
+  // Roving-focus keyboard navigation for the menu: ArrowUp/Down wrap,
+  // Home/End jump, Escape closes and returns focus to the trigger.
+  function onMenuKeyDown(e: React.KeyboardEvent) {
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []
+    )
+    if (items.length === 0) return
+    const idx = items.indexOf(document.activeElement as HTMLElement)
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      items[(idx + 1) % items.length]?.focus()
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      items[(idx - 1 + items.length) % items.length]?.focus()
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      items[0]?.focus()
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      items[items.length - 1]?.focus()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setOpen(false)
+      triggerRef.current?.focus()
+    }
+  }
 
   const cycleTheme = () => {
     const order: ThemePreference[] = ['dark', 'light', 'auto']
@@ -29,8 +58,15 @@ export default function UserMenu() {
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
+    function onTouch(e: TouchEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
     document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
+    document.addEventListener('touchstart', onTouch)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('touchstart', onTouch)
+    }
   }, [])
 
   if (status !== 'authenticated' || !session?.user) return null
@@ -46,6 +82,7 @@ export default function UserMenu() {
   return (
     <div ref={ref} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg transition rounded min-h-[44px]
@@ -81,7 +118,9 @@ export default function UserMenu() {
 
       {open && (
         <div
+          ref={menuRef}
           role="menu"
+          onKeyDown={onMenuKeyDown}
           className="absolute right-0 mt-2 w-56 bg-mytra-card shadow-card border border-mytra-border rounded-lg
                      shadow-pop p-2 animate-slideDown z-50"
         >

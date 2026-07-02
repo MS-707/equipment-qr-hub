@@ -102,7 +102,8 @@ export default function FormStepper({ steps, activeStepId }: FormStepperProps) {
   }, [activeStepId])
 
   const handleTap = useCallback((id: string) => {
-    document.querySelector(`[data-step="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // block:'center' so the section heading lands clear of the sticky header+stepper
+    document.querySelector(`[data-step="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [])
 
   return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useId } from 'react'
 import { haptic } from '@/lib/haptic'
 
 interface ConfirmDialogProps {
@@ -28,6 +28,8 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const [inputValue, setInputValue] = useState('')
+  const titleId = useId()
+  const messageId = useId()
 
   useEffect(() => {
     const el = ref.current
@@ -54,12 +56,14 @@ export default function ConfirmDialog({
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
       className="backdrop:bg-black/60 bg-mytra-card border border-mytra-border rounded-2xl
                  shadow-pop p-6 max-w-sm w-[calc(100%-2rem)] animate-scaleIn
                  text-fg outline-none"
     >
-      <h2 className="text-base font-semibold text-fg mb-1">{title}</h2>
-      <p className="text-sm text-fg-2 mb-4">{message}</p>
+      <h2 id={titleId} className="text-base font-semibold text-fg mb-1">{title}</h2>
+      <p id={messageId} className="text-sm text-fg-2 mb-4">{message}</p>
 
       {inputPrompt && (
         <input

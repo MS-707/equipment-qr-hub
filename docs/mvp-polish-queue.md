@@ -161,10 +161,11 @@ IndexedDB/localStorage evictable under pressure (this is the system of record); 
 **Accept:** failed-sync state uses the existing icon+text badge pattern (`SafetyRecordCard.tsx:100-107`); tab-bar pending dot gets `sr-only` text (count included); no status conveyed by color alone on any record row.
 **Outcome:** Inspection history rows replace the 6px color dot + hover-only `title` with icon+text badges: AlertCircle "Sync failed" (danger), RefreshCw "Pending" (warn), CloudOff "Offline" (neutral); the quiet synced state keeps the small dot but gains sr-only "Synced to cloud". SafetyRecordCard's synced dot likewise gets `aria-hidden` + sr-only text (its failed/pending badges were already correct). BottomTabBar's 8px danger dot gains sr-only "N records waiting to sync" with the live count. No sync state anywhere is now color-only. Gate: 683 tests, lint 0, build clean.
 
-### E3 — Interaction correctness bundle — `TODO`
+### E3 — Interaction correctness bundle — `DONE`
 **Profession:** Frontend engineer
 **Files:** `StatusToggle.tsx` (span role=button, no keyboard), `IncidentReportForm.tsx` dismiss, `FormStepper.tsx` (scroll under sticky chrome), `ConfirmDialog.tsx` (no aria-labelledby), `UserMenu.tsx` (no arrow keys), `CrewSignatureBlock.tsx` (autofill fights datalist)
 **Accept:** StatusToggle is a real `<button>`; stepper jumps land visible (`scroll-mt` on `[data-step]` or `block:'center'`); ConfirmDialog title/body wired via `aria-labelledby`/`aria-describedby`; UserMenu supports ArrowUp/Down/Escape/Home/End; crew name input gets `autoComplete="off"`.
+**Outcome:** StatusToggle split into a real `<button>` for admins (Enter/Space free, focus-visible ring) and a plain span for viewers — keyboard users can finally mark equipment Out of Service. FormStepper jumps use `block:'center'` (matches ValidationSummary; headings land clear of the ~120px sticky header+stepper). ConfirmDialog wires title/body via `useId` + `aria-labelledby`/`aria-describedby` so "Revoke Permit?" is announced on open. UserMenu gains roving-focus keyboard nav (ArrowUp/Down wrap, Home/End, Escape closes and returns focus to the trigger) and closes on `touchstart` outside, not just `mousedown`. Crew name input gets `autoComplete="off"` so the crew-roster datalist wins over iOS owner-name autofill during pass-the-device sign-on. Incident dismiss was covered in E1. Gate: 683 tests, lint 0, build clean.
 
 ### E4 — Tour overlays lack dialog semantics — `TODO`
 **Profession:** Accessibility specialist
