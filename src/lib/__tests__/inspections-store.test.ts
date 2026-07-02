@@ -221,6 +221,30 @@ describe('savePhotos transaction contract', () => {
     await expect(savePhotos('INS-2026-0001', withPhotos)).rejects.toThrow()
   })
 
+  it('persists the touch signature to IndexedDB and flags the record', async () => {
+    const { puts } = stubIndexedDB()
+    const rec = submitInspection({
+      equipmentId: 17,
+      inspectorName: 'Dana',
+      shift: 'Day',
+      hourMeterReading: 100,
+      checklistType: 'electric-forklift',
+      items: items('pass'),
+      signatureDataUrl: 'data:image/png;base64,iVBORw0KGgo=',
+    })
+    expect(rec.hasSignature).toBe(true)
+    await new Promise((r) => setTimeout(r, 20))
+    expect(puts).toContain(rec.id + ':__signature__')
+    const persisted = JSON.parse(store['eqr-inspections'])
+    expect(persisted[0].hasSignature).toBe(true)
+  })
+
+  it('records without a signature flag hasSignature false', () => {
+    stubIndexedDB()
+    const rec = submit()
+    expect(rec.hasSignature).toBe(false)
+  })
+
   it('fires onPhotoSaveError so the UI can warn the operator', async () => {
     stubIndexedDB({ fail: true })
     const onPhotoSaveError = vi.fn()

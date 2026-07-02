@@ -101,6 +101,29 @@ describe('NotifyBodySchema round-trip with real record shapes', () => {
     }
   })
 
+  it('accepts a PNG data-URL touch signature', () => {
+    const payload = { ...clientPayload(record), signatureDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==' }
+    const parsed = NotifyBodySchema.safeParse(payload)
+    expect(parsed.success).toBe(true)
+    if (parsed.success) expect(parsed.data.signatureDataUrl).toContain('data:image/png')
+  })
+
+  it('rejects non-PNG signature payloads (no SVG/script smuggling)', () => {
+    for (const bad of [
+      'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+      'data:text/html;base64,PGI+aGk8L2I+',
+      'https://evil.example/sig.png',
+    ]) {
+      const parsed = NotifyBodySchema.safeParse({ ...clientPayload(record), signatureDataUrl: bad })
+      expect(parsed.success).toBe(false)
+    }
+  })
+
+  it('accepts null signature (records predating sign-on)', () => {
+    const parsed = NotifyBodySchema.safeParse({ ...clientPayload(record), signatureDataUrl: null })
+    expect(parsed.success).toBe(true)
+  })
+
   it('preserves critical N/A fields the email builder needs', () => {
     const parsed = NotifyBodySchema.safeParse(clientPayload(record))
     expect(parsed.success).toBe(true)

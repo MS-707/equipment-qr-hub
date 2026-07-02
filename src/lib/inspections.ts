@@ -51,6 +51,28 @@ export async function savePhotos(recordId: string, items: InspectionItemResult[]
   db.close()
 }
 
+const SIGNATURE_SLOT = '__signature__'
+
+/** Persist the operator's touch signature next to the record's photos.
+ *  Awaits the transaction — the signature is the auditable proof of sign-on
+ *  and must not vanish silently. */
+export async function saveSignature(recordId: string, dataUrl: string): Promise<void> {
+  const db = await openPhotoDB()
+  const tx = db.transaction(PHOTO_STORE, 'readwrite')
+  tx.objectStore(PHOTO_STORE).put(dataUrl, `${recordId}:${SIGNATURE_SLOT}`)
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
+    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'))
+  })
+  db.close()
+}
+
+export async function getSignature(recordId: string): Promise<string | null> {
+  const result = await getPhotos(recordId, [SIGNATURE_SLOT])
+  return result[SIGNATURE_SLOT] ?? null
+}
+
 export async function getPhotos(recordId: string, itemIds: string[]): Promise<Record<string, string>> {
   const db = await openPhotoDB()
   const tx = db.transaction(PHOTO_STORE, 'readonly')
@@ -231,11 +253,14 @@ export function submitInspection(
     hourMeterReading: number | null
     checklistType: ChecklistType
     items: InspectionItemResult[]
+    /** Operator's touch signature (PNG data URL). Stored in IndexedDB like
+     *  photos; the record only carries hasSignature. */
+    signatureDataUrl?: string | null
   },
   hooks?: {
-    /** Photo persistence is async and best-effort; this fires if defect
-     *  photos could NOT be written to IndexedDB so the UI can tell the
-     *  operator their evidence didn't save. */
+    /** Photo/signature persistence is async and best-effort; this fires if
+     *  the evidence could NOT be written to IndexedDB so the UI can tell the
+     *  operator it didn't save. */
     onPhotoSaveError?: (e: unknown) => void
   }
 ): InspectionRecord {
@@ -267,6 +292,7 @@ export function submitInspection(
     createdAt: new Date().toISOString(),
     syncStatus: 'pending',
     notionPageId: null,
+    hasSignature: !!data.signatureDataUrl,
   }
 
   const all = readAll()
@@ -325,11 +351,17 @@ export function submitInspection(
 
   notify()
 
-  // Save photos to IndexedDB (async; failures surface via the hook)
+  // Save photos + signature to IndexedDB (async; failures surface via the hook)
   savePhotos(recordId, data.items).catch((e) => {
     console.error('Failed to save photos to IndexedDB:', e)
     hooks?.onPhotoSaveError?.(e)
   })
+  if (data.signatureDataUrl) {
+    saveSignature(recordId, data.signatureDataUrl).catch((e) => {
+      console.error('Failed to save signature to IndexedDB:', e)
+      hooks?.onPhotoSaveError?.(e)
+    })
+  }
 
   // Return record with original photos still in memory for result screen
   return { ...record, items: data.items }
@@ -443,7 +475,7 @@ function csvCell(v: unknown): string {
 
 export function exportInspectionsToCsv(records: InspectionRecord[]): string {
   const headers = [
-    'Inspection_ID', 'Equipment_ID', 'Inspector', 'Shift',
+    'Inspection_ID', 'Equipment_ID', 'Inspector', 'Signed', 'Shift',
     'Hour_Meter', 'Checklist_Type', 'Result', 'Critical_Fail',
     'Critical_NA', 'Failed_Items', 'NA_Critical_Items',
     'Work_Order_ID', 'Date', 'Sync_Status',
@@ -463,7 +495,8 @@ export function exportInspectionsToCsv(records: InspectionRecord[]): string {
       .join('; ')
     const critNaCount = r.criticalNaCount ?? r.items.filter((i) => i.critical && i.result === 'na').length
     return [
-      csvCell(r.id), csvCell(r.equipmentId), csvCell(r.inspectorName), csvCell(r.shift),
+      csvCell(r.id), csvCell(r.equipmentId), csvCell(r.inspectorName),
+      csvCell(r.hasSignature ? 'YES' : 'NO'), csvCell(r.shift),
       csvCell(r.hourMeterReading), csvCell(r.checklistType), csvCell(r.result),
       csvCell(r.hasCriticalFail ? 'YES' : 'NO'),
       csvCell(critNaCount > 0 ? `YES (${critNaCount})` : 'NO'),

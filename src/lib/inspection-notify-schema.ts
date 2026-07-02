@@ -35,10 +35,19 @@ export const NotifyBodySchema = z.object({
     criticalNaCount: z.number().optional(),
     // null for every passing inspection — .optional() alone rejects null
     workOrderId: z.string().max(100).nullable().optional(),
+    hasSignature: z.boolean().optional(),
     items: z.array(InspectionItemSchema).max(200),
   }),
   equipmentName: z.string().max(200).optional(),
   equipmentCategory: z.string().max(200).optional(),
+  // Operator touch signature — attached to the audit email as a PNG.
+  // ~300KB cap comfortably fits any finger signature while bounding payloads.
+  signatureDataUrl: z
+    .string()
+    .max(300_000)
+    .regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/, 'signature must be a PNG data URL')
+    .nullable()
+    .optional(),
 })
 
 export type NotifyBody = z.infer<typeof NotifyBodySchema>

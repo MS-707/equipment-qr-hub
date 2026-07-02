@@ -15,9 +15,18 @@
 const DEFAULT_RECIPIENT = 'mark.starr@mytra.ai'
 const DEFAULT_SENDER = 'Sage EHS <onboarding@resend.dev>'
 
+export interface EhsEmailAttachment {
+  filename: string
+  /** Base64 content (no data-URL prefix) */
+  content: string
+}
+
 export interface EhsEmail {
   subject: string
   text: string
+  /** Optional rich version — clients that can't render it fall back to text. */
+  html?: string
+  attachments?: EhsEmailAttachment[]
 }
 
 export type EmailOutcome = 'sent' | 'not-configured' | 'failed'
@@ -37,7 +46,7 @@ export function sanitizeSubject(subject: string): string {
   return subject.replace(/[\r\n\u2028\u2029]+/g, ' ').trim()
 }
 
-export async function sendEhsNotification({ subject, text }: EhsEmail): Promise<EmailOutcome> {
+export async function sendEhsNotification({ subject, text, html, attachments }: EhsEmail): Promise<EmailOutcome> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return 'not-configured'
 
@@ -51,7 +60,14 @@ export async function sendEhsNotification({ subject, text }: EhsEmail): Promise<
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from, to, subject: sanitizeSubject(subject), text }),
+      body: JSON.stringify({
+        from,
+        to,
+        subject: sanitizeSubject(subject),
+        text,
+        ...(html ? { html } : {}),
+        ...(attachments && attachments.length > 0 ? { attachments } : {}),
+      }),
     })
     if (!res.ok) {
       console.error('[email-notify] Resend error:', await res.text())

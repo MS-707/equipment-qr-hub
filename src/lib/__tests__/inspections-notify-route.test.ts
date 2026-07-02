@@ -119,6 +119,39 @@ describe('POST /api/inspections/notify', () => {
     }))
   })
 
+  it('attaches the touch signature and sends an HTML audit copy', async () => {
+    vi.mocked(isEmailConfigured).mockReturnValue(true)
+    vi.mocked(sendEhsNotification).mockResolvedValue('sent')
+    const { POST } = await import('@/app/api/inspections/notify/route')
+    const signed = {
+      ...validBody,
+      record: { ...validBody.record, hasSignature: true },
+      signatureDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==',
+    }
+    await POST(makeReq(signed))
+    const call = vi.mocked(sendEhsNotification).mock.lastCall![0]
+    expect(call.attachments).toEqual([
+      { filename: 'signature-INS-2026-0001.png', content: 'iVBORw0KGgoAAAANSUhEUg==' },
+    ])
+    expect(call.html).toContain('Auditable Copy')
+    expect(call.html).toContain('Operator sign-on')
+    expect(call.html).toContain('Brakes') // full item table, not just failures
+  })
+
+  it('escapes user text in the HTML audit copy', async () => {
+    vi.mocked(isEmailConfigured).mockReturnValue(true)
+    vi.mocked(sendEhsNotification).mockResolvedValue('sent')
+    const { POST } = await import('@/app/api/inspections/notify/route')
+    const hostile = {
+      ...validBody,
+      record: { ...validBody.record, inspectorName: '<img src=x onerror=alert(1)>' },
+    }
+    await POST(makeReq(hostile))
+    const call = vi.mocked(sendEhsNotification).mock.lastCall![0]
+    expect(call.html).not.toContain('<img src=x')
+    expect(call.html).toContain('&lt;img src=x')
+  })
+
   it('stamps the verified submitter from the session, not client input', async () => {
     vi.mocked(isEmailConfigured).mockReturnValue(true)
     vi.mocked(sendEhsNotification).mockResolvedValue('sent')

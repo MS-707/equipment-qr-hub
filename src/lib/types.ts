@@ -177,6 +177,10 @@ export interface InspectionRecord {
   createdAt: string
   syncStatus: InspectionSyncStatus
   notionPageId: string | null
+  /** Operator signed on with a touch signature (image lives in IndexedDB,
+   *  keyed `${id}:__signature__` — records stay lean like photos). Optional
+   *  for records created before signatures existed. */
+  hasSignature?: boolean
 }
 
 export const INSPECTION_CATEGORIES: EquipmentCategory[] = [
