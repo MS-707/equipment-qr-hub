@@ -66,13 +66,22 @@ describe('trySyncRecord', () => {
     expect(await trySyncRecord('NOPE')).toBe(false)
   })
 
-  it('skips already-synced record with notionPageId', async () => {
+  it('re-POSTs a pending record that already has a notionPageId (post-sync mutation)', async () => {
+    // A pending record WITH a pageId means it was mutated after its last sync
+    // (permit closed/revoked, review decided). It must hit the server so the
+    // existing page gets updated — the old client-side skip left the server
+    // copy stale forever.
     vi.mocked(getSafetyRecordById).mockReturnValue({ ...mockRecord, notionPageId: 'np-existing' } as never)
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, notionPageId: 'np-existing', updated: true }),
+    } as Response)
     const { trySyncRecord } = await import('../safety-sync')
     const result = await trySyncRecord('PTP-2026-0001')
     expect(result).toBe(true)
+    expect(fetch).toHaveBeenCalledOnce()
     expect(markSynced).toHaveBeenCalledWith('PTP-2026-0001', 'np-existing')
-    expect(fetch).not.toHaveBeenCalled()
   })
 
   it('disables sync for 5min on 503 (not configured)', async () => {

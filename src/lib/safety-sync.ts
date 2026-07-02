@@ -19,12 +19,10 @@ export function isSyncAvailable(): boolean {
 async function attemptSync(id: string): Promise<'ok' | 'not-configured' | 'fail'> {
   const record = getSafetyRecordById(id)
   if (!record) return 'fail'
-  // If a previous markSynced call succeeded but the storage write failed, the
-  // notionPageId acts as a tombstone — do not create a duplicate Notion page.
-  if (record.notionPageId) {
-    markSynced(id, record.notionPageId)
-    return 'ok'
-  }
+  // NOTE: a record can be pending WITH a notionPageId — that means it was
+  // mutated after its last sync (closed/revoked/review outcome). Always POST;
+  // the server dedups by ID and UPDATES the existing page instead of creating
+  // a duplicate, so this is retry-safe in both directions.
   const res = await fetch('/api/safety/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

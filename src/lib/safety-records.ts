@@ -551,6 +551,16 @@ export function createIncidentReport(input: IncidentInput): IncidentReport {
 
 // ── Permit lifecycle transitions (append-only) ───────────────
 
+/**
+ * Post-creation mutations must re-queue for sync. Without this, the server
+ * keeps only the creation-time snapshot (permit forever "active", review
+ * outcomes missing) and the retention archiver eventually deletes the local
+ * copy — the only place the mutation ever existed.
+ */
+function dirtySyncStatus(rec: SafetyRecord): SafetyRecord['syncStatus'] {
+  return rec.syncStatus === 'synced' ? 'pending' : rec.syncStatus
+}
+
 export function closePermit(id: string, by: { name: string; email: string | null }, note?: string): SafetyRecord | undefined {
   const all = readAll()
   const idx = all.findIndex((r) => r.id === id)
@@ -563,6 +573,7 @@ export function closePermit(id: string, by: { name: string; email: string | null
     status: 'closed',
     closedAt: at,
     closedBy: by.name,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'closed', by: by.name, byEmail: by.email, at, note: note || undefined }],
   }
   writeAll(all)
@@ -586,6 +597,7 @@ export function revokePermit(
     status: 'revoked',
     closedAt: at,
     closedBy: by.name,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'revoked', by: by.name, byEmail: by.email, at, note }],
   }
   writeAll(all)
@@ -676,6 +688,7 @@ export function markSubmittedForReview(
   all[idx] = {
     ...rec,
     reviewStatus: 'submitted',
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, { action: 'submitted-for-review', by: by.name, byEmail: by.email, at }],
   }
   writeAll(all)
@@ -701,6 +714,7 @@ export function markReviewApproved(
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
     reviewDecidedAt: at,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-decided',
       by: decision.reviewerName,
@@ -731,6 +745,7 @@ export function markReviewRejected(
     reviewerEmail: decision.reviewerEmail,
     reviewNote: decision.reviewNote ?? undefined,
     reviewDecidedAt: at,
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-decided',
       by: decision.reviewerName,
@@ -757,6 +772,7 @@ export function markReviewRecalled(
   all[idx] = {
     ...rec,
     reviewStatus: 'recalled',
+    syncStatus: dirtySyncStatus(rec),
     events: [...rec.events, {
       action: 'review-recalled',
       by: by.name,
@@ -827,6 +843,27 @@ export function exportSafetyToCsv(records: SafetyRecord[]): string {
 
 const RETENTION_DAYS = 90
 
+/**
+ * True when the record carries audit events newer than its last successful
+ * sync — i.e. the server copy is stale. Such records must never be archived:
+ * the local copy is the only place the mutation (closure, revocation, review
+ * outcome) exists. Guards records mutated by app versions that didn't reset
+ * syncStatus on mutation.
+ */
+export function hasUnsyncedMutations(r: SafetyRecord): boolean {
+  let lastSyncedAt = 0
+  for (const e of r.events) {
+    if (e.action === 'synced') {
+      const t = new Date(e.at).getTime()
+      if (t > lastSyncedAt) lastSyncedAt = t
+    }
+  }
+  if (lastSyncedAt === 0) return r.syncStatus !== 'synced'
+  return r.events.some(
+    (e) => e.action !== 'synced' && new Date(e.at).getTime() > lastSyncedAt
+  )
+}
+
 export function archiveOldSyncedRecords(): number {
   const all = readAll()
   const cutoff = Date.now() - RETENTION_DAYS * 86_400_000
@@ -835,7 +872,11 @@ export function archiveOldSyncedRecords(): number {
   for (const r of all) {
     const lastEvent = r.events[r.events.length - 1]
     const ts = lastEvent?.at ?? r.createdAt
-    if (r.syncStatus === 'synced' && new Date(ts).getTime() < cutoff) {
+    if (
+      r.syncStatus === 'synced' &&
+      !hasUnsyncedMutations(r) &&
+      new Date(ts).getTime() < cutoff
+    ) {
       removed++
     } else {
       toKeep.push(r)
