@@ -155,10 +155,11 @@ IndexedDB/localStorage evictable under pressure (this is the system of record); 
 **Accept:** every listed control ≥44pt tap area (`min-h-[44px]`/`w-11 h-11` or padded hit area), `aria-label` on all icon-only buttons touched; Pass/Fail/N/A labels bumped `text-xs → text-sm font-semibold`; check layouts don't break at 390px width.
 **Outcome:** All listed controls at ≥44pt: Add Photo `min-h-[44px]` + `text-sm`; both photo-X buttons use a `w-11 h-11` padded hit area wrapping the visible 28px dot + `aria-label="Remove photo"`; inspection Shift selector `min-h-[44px]` (now matches its PTP twin); Sage suggestion chips and LastUsedChip `text-sm min-h-[44px] py-2.5`; RecordView Retry/Share/Print `min-h-[44px] text-sm` with `gap-3`; tour close buttons `w-11 h-11`; SyncQueuePanel retry and ValidationSummary rows/dismiss 36→44px; incident analysis dismiss labeled + padded. Pass/Fail/N/A bumped to `text-sm font-semibold`. Also caught an A7 straggler (N/A justification banner still `text-xs text-warn/80` — indentation dodged the earlier replace). Playwright at 390px: Pass=44px, Add Photo=44px measured, zero horizontal overflow, screenshot checked. Gate: 683 tests, lint 0, build clean.
 
-### E2 — Sync/status indicators are color-only 6px dots — `TODO`
+### E2 — Sync/status indicators are color-only 6px dots — `DONE`
 **Profession:** Accessibility specialist
 **Files:** `PreTripInspection.tsx` history rows, `SafetyRecordCard.tsx`, `BottomTabBar.tsx`
 **Accept:** failed-sync state uses the existing icon+text badge pattern (`SafetyRecordCard.tsx:100-107`); tab-bar pending dot gets `sr-only` text (count included); no status conveyed by color alone on any record row.
+**Outcome:** Inspection history rows replace the 6px color dot + hover-only `title` with icon+text badges: AlertCircle "Sync failed" (danger), RefreshCw "Pending" (warn), CloudOff "Offline" (neutral); the quiet synced state keeps the small dot but gains sr-only "Synced to cloud". SafetyRecordCard's synced dot likewise gets `aria-hidden` + sr-only text (its failed/pending badges were already correct). BottomTabBar's 8px danger dot gains sr-only "N records waiting to sync" with the live count. No sync state anywhere is now color-only. Gate: 683 tests, lint 0, build clean.
 
 ### E3 — Interaction correctness bundle — `TODO`
 **Profession:** Frontend engineer

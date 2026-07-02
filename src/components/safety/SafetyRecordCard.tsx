@@ -107,10 +107,10 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
                 Pending
               </span>
             ) : record.syncStatus === 'synced' ? (
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-ok"
-                title="Synced"
-              />
+              <span className="inline-flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-ok" aria-hidden="true" title="Synced" />
+                <span className="sr-only">Synced to cloud</span>
+              </span>
             ) : null
           )}
           {validityBadge(record)}

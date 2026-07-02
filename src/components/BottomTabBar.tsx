@@ -46,7 +46,11 @@ export default function BottomTabBar() {
                   </span>
                 )}
                 {href === '/' && pendingSyncCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-danger rounded-full" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-danger rounded-full">
+                    <span className="sr-only">
+                      {pendingSyncCount} record{pendingSyncCount === 1 ? '' : 's'} waiting to sync
+                    </span>
+                  </span>
                 )}
               </span>
               <span className="text-[13px] font-medium leading-tight">{label}</span>

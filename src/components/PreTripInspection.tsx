@@ -6,7 +6,10 @@ import {
   Wrench,
   Shield,
   AlertTriangle,
+  AlertCircle,
   Camera,
+  CloudOff,
+  RefreshCw,
   X,
   ChevronDown,
   ChevronUp,
@@ -289,11 +292,29 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                    record.syncStatus === 'synced' ? 'bg-ok' :
-                    record.syncStatus === 'failed' ? 'bg-danger' :
-                    record.syncStatus === 'pending' ? 'bg-warn' : 'bg-fg-4'
-                  }`} title={`Sync: ${record.syncStatus}`} />
+                  {/* Sync state must never be color-only: icon+text for anything
+                      actionable, sr-only text for the quiet synced dot. */}
+                  {record.syncStatus === 'failed' ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger shrink-0">
+                      <AlertCircle className="w-3 h-3" />
+                      Sync failed
+                    </span>
+                  ) : record.syncStatus === 'pending' ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn shrink-0">
+                      <RefreshCw className="w-3 h-3" />
+                      Pending
+                    </span>
+                  ) : record.syncStatus === 'offline' ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-mytra-bg border border-mytra-border text-fg-3 shrink-0">
+                      <CloudOff className="w-3 h-3" />
+                      Offline
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-ok" aria-hidden="true" />
+                      <span className="sr-only">Synced to cloud</span>
+                    </span>
+                  )}
                   <span
                     className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
                       record.hasCriticalFail
