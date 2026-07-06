@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 4,
+ "iteration": 5,
  "gates": [
   {
    "id": "lint",
@@ -202,7 +202,7 @@
   "backend": {
    "key": "backend",
    "name": "Backend",
-   "score": 7,
+   "score": 8,
    "initialScore": 6,
    "verifiedScore": null,
    "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
@@ -220,9 +220,11 @@
      "id": "BE-2",
      "criterion": "Durable rate limiting: every non-admin-only route handler calls rateLimit() before external side effects, keyed by session email (or platform-set IP for unauthenticated routes), backed by KV INCR+EXPIRE when KV_REST_API_URL is set, and returns 429 with a Retry-After header.",
      "verify": "grep -rn 'rateLimit(' src/app/api \u2014 every route except auth passthrough and admin-only beta/decide + admin/health GET calls it; src/lib/rate-limit.ts uses kv.incr + kv.expire; rate-limit.test.ts passes.",
-     "met": false,
-     "evidence": "OVERTURNED by adversarial auditor: The criterion requires every rate-limited route to return 429 WITH a Retry-After header, and the evidence claims all 15 applicable routes do. False: src/app/api/beta/signup/route.ts:15 returns Response.json({error:'Too many requests'},{status:429}) with no Retry-After header. All 15 other 429 responses include it, and the KV INCR+EXPIRE backing (src/lib/rate-limit.ts:57-68) is real, but the criterion is a conjunction over every non-admin route and beta/signup fails it.",
-     "autonomyNote": "Verify KV-backed limiting with a mocked Upstash REST endpoint in vitest; production check is a documented human step."
+     "met": true,
+     "evidence": "All 16 429 responses under src/app/api carry Retry-After (beta/signup fixed at route.ts:18); 15/18 routes rate-limited with only the three by-design exceptions; KV incr+expire at rate-limit.ts:60-62; 8/8 limiter tests green.",
+     "autonomyNote": "Verify KV-backed limiting with a mocked Upstash REST endpoint in vitest; production check is a documented human step.",
+     "verifiedBy": "verify-criteria wf_aaa73c60-575 (1-vote adversarial)",
+     "verifiedAtIteration": 5
     },
     {
      "id": "BE-3",
@@ -1357,7 +1359,7 @@
    "criteria": [
     "BE-2"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "BE-M4-T1",
@@ -1367,7 +1369,7 @@
       "src/app/api/beta/signup/route.ts"
      ],
      "acceptance": "BE-2 verify passes: every 429 response across rate-limited routes carries Retry-After; route tests assert it for beta/signup and at least two others.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1874,6 +1876,21 @@
    ],
    "refuted": [],
    "notes": "6-agent fan-out migrated 13 routes to zod safeParse via 6 new schema modules; status codes/pinned strings/middleware order preserved; silent truncation -> explicit .max rejection only where unpinned. Backend 6->7."
+  },
+  {
+   "iteration": 5,
+   "date": "2026-07-06",
+   "milestone": "BE-M4",
+   "event": "iteration",
+   "tasksDone": [
+    "BE-M4-T1"
+   ],
+   "gates": "lint OK, tsc OK, 699/699 tests, build OK",
+   "verified": [
+    "BE-2"
+   ],
+   "refuted": [],
+   "notes": "Retry-After on the last bare 429 (beta signup). Backend 7->8."
   }
  ]
 }

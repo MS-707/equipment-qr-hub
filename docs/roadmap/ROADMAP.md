@@ -44,7 +44,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 5. BE-M4 — Standards-compliant 429 responses on every rate-limited route (BE-2)
 *Dimension: Backend · flips: BE-2 · why here: same route files as BE-M2's validation pass; one-line-per-route fix while the context is loaded*
 
-- [ ] **BE-M4-T1** Add a Retry-After header to every rate-limited 429 response (src/app/api/beta/signup/route.ts:15 confirmed missing; sweep all 15 rate-limited routes). Prefer a shared helper in src/lib/rate-limit.ts so future routes inherit it. Extend route tests to assert the header.
+- [x] **BE-M4-T1** Add a Retry-After header to every rate-limited 429 response (src/app/api/beta/signup/route.ts:15 confirmed missing; sweep all 15 rate-limited routes). Prefer a shared helper in src/lib/rate-limit.ts so future routes inherit it. Extend route tests to assert the header.
   - *Acceptance:* BE-2 verify passes: every 429 response across rate-limited routes carries Retry-After; route tests assert it for beta/signup and at least two others.
 
 ### 6. BE-M3 — Resilience: guard KV calls and time-bound outbound fetches
