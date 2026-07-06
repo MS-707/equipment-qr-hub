@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 9,
+ "iteration": 10,
  "gates": [
   {
    "id": "lint",
@@ -296,7 +296,7 @@
   "enterprise": {
    "key": "enterprise",
    "name": "Enterprise Readiness",
-   "score": 7,
+   "score": 9,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
@@ -342,8 +342,10 @@
      "id": "EN-6",
      "criterion": "A git-tracked retention schedule document exists (docs/DATA-RETENTION.md or a Retention section in README/privacy page) that enumerates each data store (localStorage records, IndexedDB blobs, Upstash KV keys, Notion databases, Resend/Slack payloads) with a named retention period or deletion trigger per store \u2014 no store described only as 'follows your organization's policies'.",
      "verify": "Grep the doc for each store name (localStorage, IndexedDB, KV/Redis, Notion) and confirm each row states a concrete period (e.g. '3 years', 'until user clears', '30 days') or deletion trigger.",
-     "met": false,
-     "evidence": "Missing. Only vague text exists: src/app/privacy/page.tsx:140-144 says synced records 'follow your organization's retention policies'; no docs/DATA-RETENTION.md; README.md:203-209 describes stores but no periods for KV/Notion/Resend data."
+     "met": true,
+     "evidence": "docs/DATA-RETENTION.md enumerates localStorage/IndexedDB/KV-by-prefix/Notion/email/Slack/Sentry/Vercel rows, each with a concrete period or trigger; Notion row mandates the 5-year 1904.33 horizon via COMPLIANCE-RETENTION.md.",
+     "verifiedBy": "verify-criteria wf_6dc220b1-5c1 / wf_9ce6c28e-0c1 (EN-10 confirmed after one refutation)",
+     "verifiedAtIteration": 10
     },
     {
      "id": "EN-7",
@@ -377,8 +379,10 @@
      "id": "EN-10",
      "criterion": "Enterprise operations docs exist and are git-tracked: (a) an SSO doc naming the provider seam in src/lib/auth.ts with step-by-step Okta and Microsoft Entra OIDC provider addition (exact env var names and callback URL /api/auth/callback/[provider]); (b) a runbook doc with numbered incident-response steps and KV + Notion backup/restore procedures including at least one concrete command or script path per store.",
      "verify": "Grep docs/ for 'Okta' and 'Entra' hitting an SSO doc that cites src/lib/auth.ts; grep the runbook for 'restore' sections covering both KV (Upstash) and Notion with a command or scripts/ path each.",
-     "met": false,
-     "evidence": "Missing. `grep -rni 'okta|entra|saml|oidc|runbook|restore' docs/ README.md` finds no SSO or ops runbook doc; auth.ts:4-7 mentions the swappable seam only in a code comment; scripts/ contains only demo/ and generate-splash.mjs \u2014 no backup tooling."
+     "met": true,
+     "evidence": "docs/SSO.md documents Okta + Entra ID addition at the auth.ts providers seam with callback URLs; docs/RUNBOOKS.md has numbered IR steps and restore sections citing scripts/backup-kv.mjs and scripts/backup-notion.mjs (both git-tracked).",
+     "verifiedBy": "verify-criteria wf_6dc220b1-5c1 / wf_9ce6c28e-0c1 (EN-10 confirmed after one refutation)",
+     "verifiedAtIteration": 10
     }
    ]
   },
@@ -1022,7 +1026,7 @@
     "EN-6",
     "EN-10"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "EN-M2-T1",
@@ -1032,7 +1036,7 @@
       "src/app/privacy/page.tsx"
      ],
      "acceptance": "EN-6 check passes: the doc names localStorage, IndexedDB, KV/Redis, Notion, and email/Slack payloads each with a period or trigger; privacy page no longer says only 'follow your organization's retention policies'.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M2-T2",
@@ -1042,7 +1046,7 @@
       "README.md"
      ],
      "acceptance": "grep -i 'okta' docs/SSO.md and grep -i 'entra' docs/SSO.md both hit; doc cites src/lib/auth.ts and both callback URLs; README links to it.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M2-T3",
@@ -1052,7 +1056,7 @@
       "scripts/backup-kv.mjs"
      ],
      "acceptance": "EN-10(b) check passes: runbook has restore sections for both KV (citing scripts/backup-kv.mjs, which runs with KV_REST_API_URL/TOKEN set) and Notion with a concrete command/path each; incident-response section has numbered steps.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1978,6 +1982,26 @@
    ],
    "refuted": [],
    "notes": "Three-role RBAC + in-app EHS review decisions + production impersonation block (critic gap TX1 closed). Enterprise 6->7. Owner step: populate EHS_EMAILS in Vercel when ready."
+  },
+  {
+   "iteration": 10,
+   "date": "2026-07-06",
+   "milestone": "EN-M2",
+   "event": "iteration",
+   "tasksDone": [
+    "EN-M2-T1",
+    "EN-M2-T2",
+    "EN-M2-T3"
+   ],
+   "gates": "lint OK, tsc OK, 736/736 tests, build OK",
+   "verified": [
+    "EN-6",
+    "EN-10"
+   ],
+   "refuted": [
+    "EN-10 (first attempt: Notion runbook lacked concrete commands; backup-notion.mjs added, re-confirmed)"
+   ],
+   "notes": "Enterprise doc pack: retention schedule, SSO walkthrough, runbooks + KV/Notion backup scripts. Enterprise 7->9."
   }
  ]
 }
