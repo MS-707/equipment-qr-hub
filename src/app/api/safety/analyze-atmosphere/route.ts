@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { AtmoRequestSchema } from '@/lib/analyze-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are an expert confined space atmospheric analyst for a construction safety platform called Sage EHS.
 
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
   if (hazards.length > 0) lines.push(`\nIdentified hazards: ${hazards.join(', ')}`)
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,

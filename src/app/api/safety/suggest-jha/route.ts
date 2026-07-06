@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SuggestJhaBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Job Hazard Analysis (JHA) tool used by engineers and operations teams.
 
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,

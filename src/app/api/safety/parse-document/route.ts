@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { ParseDocumentBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. A worker has uploaded a planning document (task plan, method statement, scope of work, or similar) and wants to create a Job Hazard Analysis from it.
 
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
       ]
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,

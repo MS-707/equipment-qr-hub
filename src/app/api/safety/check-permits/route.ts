@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { CheckPermitsBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an EHS safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
 
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
     .join('\n\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { AuditPtpRequestSchema } from '@/lib/analyze-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety auditor embedded in a Pre-Task Plan (PTP) tool. You review completed PTPs before submission to catch critical safety gaps.
 
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
   ].join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',

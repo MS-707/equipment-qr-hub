@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SuggestToolboxBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. Generate a concise 2-minute toolbox talk for a team based on today's job scope, hazards, and conditions. The talk should be practical, plain-language, and ready to read aloud at a team meeting. Keep talking points to 3-4 bullet points. End with one discussion question to engage the team.`
 
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',

@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SageTriageBodySchema } from '@/lib/sage-triage-schema'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const TriageSchema = z.object({
   reply: z.string(),
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
   const messages = [contextMessage, ...sanitizedHistory, { role: 'user' as const, content: message }]
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const response = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,

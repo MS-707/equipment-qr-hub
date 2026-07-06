@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { critique, hintDescriptions } from '@/lib/hazard-critic'
 import { SuggestHazardsBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Pre-Task Plan (PTP) tool used by engineers and operations teams.
 
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const startMs = Date.now()
 
     // Phase 1: generate initial suggestions
