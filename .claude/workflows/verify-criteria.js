@@ -5,8 +5,10 @@ export const meta = {
   phases: [{ title: 'Verify', detail: 'independent skeptics re-run each criterion check' }],
 }
 
-const ids = (args && args.ids) || []
-const votes = (args && args.votes) || 1
+// Tolerate args arriving as a JSON-encoded string (harness serialization quirk)
+const parsedArgs = typeof args === 'string' ? JSON.parse(args) : args
+const ids = (parsedArgs && parsedArgs.ids) || []
+const votes = (parsedArgs && parsedArgs.votes) || 1
 if (!Array.isArray(ids) || ids.length === 0) {
   throw new Error('verify-criteria requires args.ids: a non-empty array of criterion ids from goals.json')
 }

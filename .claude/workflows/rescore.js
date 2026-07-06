@@ -5,6 +5,7 @@ export const meta = {
   phases: [{ title: 'Rescore', detail: 'one skeptic per dimension re-runs all 10 criterion checks' }],
 }
 
+// args unused today; kept parse-tolerant for future filters (harness may pass a JSON string)
 const DIMS = ['ux', 'design', 'backend', 'enterprise', 'demo', 'legal', 'spanish']
 
 const DIM_RESULT = {

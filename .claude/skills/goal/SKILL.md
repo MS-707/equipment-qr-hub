@@ -84,7 +84,10 @@ from the last log entry, and total iterations run. No side effects.
    criterion's `verify` check and must return met/unmet with `path:line`
    evidence — instruct it to *refute* the claim, defaulting to unmet when
    uncertain:
-   - Preferred: `Workflow({name: "verify-criteria", args: {ids: [...], votes: 1}})`.
+   - Preferred: `Workflow({scriptPath: ".claude/workflows/verify-criteria.js", args: {ids: [...], votes: 1}})`
+     (scriptPath, not name — the named-workflow registry can serve a stale
+     cached copy; args must be a real JSON object, though the script also
+     tolerates a JSON-encoded string).
    - Fallback (no Workflow tool): one Agent-tool subagent per criterion.
    - Last resort (no subagents at all, e.g. bare CLI): verify yourself in a
      separate pass — re-run every `verify` command literally and paste the
@@ -119,8 +122,8 @@ from the last log entry, and total iterations run. No side effects.
 ## `/goal review` — Full re-score
 
 Re-score all 60 criteria against the frozen rubrics without implementing
-anything: run `Workflow({name: "rescore"})` (fallback: 6 Agent-tool subagents,
-one per dimension). Apply results in BOTH directions — regressions flip
+anything: run `Workflow({scriptPath: ".claude/workflows/rescore.js"})`
+(fallback: one Agent-tool subagent per dimension). Apply results in BOTH directions — regressions flip
 criteria back to unmet and reopen their milestones (append `log[]` entry
 `rescore`). Update scores, REVIEW doc addendum, commit, push, print scoreboard.
 Run this after big merges from main or when the user doubts the numbers.
