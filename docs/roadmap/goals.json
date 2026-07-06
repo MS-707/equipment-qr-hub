@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 2,
+ "iteration": 3,
  "gates": [
   {
    "id": "lint",
@@ -116,7 +116,7 @@
   "design": {
    "key": "design",
    "name": "Design",
-   "score": 4,
+   "score": 5,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
@@ -169,9 +169,11 @@
      "id": "DS-7",
      "criterion": "No horizontal overflow at phone widths from fixed-width elements (glows, tables, cards).",
      "verify": "No horizontal overflow at phone widths from fixed-width elements: rg -n '(^|[^a-z-])w-\\[[0-9]{3,}px\\]' src --include='*.tsx' (excluding min-w-/max-w- prefixed matches) \u2014 every hit must either (a) carry max-w-full or be sm:/md:-scoped, or (b) sit inside an ancestor with overflow-hidden/overflow-x-clip that bounds it to the viewport. Verify AuthGate and beta glows specifically.",
-     "met": false,
-     "evidence": "OVERTURNED by adversarial auditor: The stated check fails: AuthGate.tsx:143 renders a literal w-[520px] h-[520px] glow with neither max-w-full nor an sm:/md: prefix. Unlike the beta page's 880px glow (wrapped in an overflow-hidden container at beta/page.tsx:122), AuthGate's glow has no clipping ancestor \u2014 Centered (AuthGate.tsx:286) is a plain flex div, and neither globals.css nor layout.tsx applies any overflow-x clip \u2014 so at 375px phone width the absolutely-positioned, center-translated 520px element extends ~70px past the right viewport edge and creates horizontal body scroll on the sign-in screen. The reviewer's evidence cited only the SageTriage hit and ignored the other grep hits the howToVerify explicitly requires to be capped.",
-     "rewritten": true
+     "met": true,
+     "evidence": "AuthGate.tsx:143 glow clipped by Centered's relative+overflow-hidden (AuthGate.tsx:289); beta glow inside inset-0 overflow-hidden (beta/page.tsx:122); SageTriage w-[360px] sm:-scoped with w-full base. Headless 360px check: scrollWidth==innerWidth.",
+     "rewritten": true,
+     "verifiedBy": "verify-criteria wf_dc83a769-693 (1-vote adversarial)",
+     "verifiedAtIteration": 3
     },
     {
      "id": "DS-8",
@@ -1333,7 +1335,7 @@
    "criteria": [
     "DS-7"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DS-M5-T1",
@@ -1342,7 +1344,7 @@
       "src/components/AuthGate.tsx"
      ],
      "acceptance": "DS-7 verify passes: every 3-digit-px w-[] hit (excluding min-w-/max-w-) is viewport-bounded; AuthGate renders without horizontal scroll at 360px width.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1839,6 +1841,21 @@
    ],
    "refuted": [],
    "notes": "Zero-config first-run sign-in; production gate pinned by 5 new tests. Demo 7->8."
+  },
+  {
+   "iteration": 3,
+   "date": "2026-07-06",
+   "milestone": "DS-M5",
+   "event": "iteration",
+   "tasksDone": [
+    "DS-M5-T1"
+   ],
+   "gates": "lint OK, tsc OK, 699/699 tests, build OK + headless 360px scroll check",
+   "verified": [
+    "DS-7"
+   ],
+   "refuted": [],
+   "notes": "Sign-in glow contained; no horizontal scroll at phone widths. Design 4->5. Ops note: stray next-server on :3010 would not die; future browser checks must use fresh ports."
   }
  ]
 }

@@ -30,7 +30,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 3. DS-M5 — Eliminate fixed-width horizontal overflow at phone widths (DS-7)
 *Dimension: Design · flips: DS-7 · why here: phone-width overflow on the sign-in gate is demo-visible and a one-file fix; slot it with the early cheap wins*
 
-- [ ] **DS-M5-T1** Fix AuthGate.tsx:143's literal w-[520px] h-[520px] glow (and every other DS-7 grep hit) to be viewport-safe: max-w-full, sm:/md: scoping, or an overflow-hidden ancestor — matching the beta page's contained-glow pattern.
+- [x] **DS-M5-T1** Fix AuthGate.tsx:143's literal w-[520px] h-[520px] glow (and every other DS-7 grep hit) to be viewport-safe: max-w-full, sm:/md: scoping, or an overflow-hidden ancestor — matching the beta page's contained-glow pattern.
   - *Acceptance:* DS-7 verify passes: every 3-digit-px w-[] hit (excluding min-w-/max-w-) is viewport-bounded; AuthGate renders without horizontal scroll at 360px width.
 
 ### 4. BE-M2 — Zod-validate every API request body
