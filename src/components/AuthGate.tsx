@@ -282,8 +282,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
+  // relative + overflow-hidden bounds the decorative sign-in glow (a fixed
+  // 520px circle) to this section so it can never cause horizontal scroll on
+  // phones — same containment pattern as the beta page backdrop.
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+    <div className="relative w-full overflow-hidden min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
       {children}
     </div>
   )
