@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 12,
+ "iteration": 13,
  "gates": [
   {
    "id": "lint",
@@ -32,7 +32,7 @@
   "ux": {
    "key": "ux",
    "name": "UX",
-   "score": 8,
+   "score": 9,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "All ten met/unmet judgments were independently re-verified and none overturned: the seven met criteria have real code behind them (root SyncProvider installing online-event sync+notify listeners, synchronous local persistence before any fetch in all seven field forms, useFormDraft with pagehide/visibilitychange flush across six safety forms plus a mirrored pre-trip draft, inputMode/htmlFor/coarse-pointer 16px rule, error/not-found/~offline recovery pages with empty states and skeletons, offline chip + pending-sync badge + aria-live toast + cached-identity banner, and fully static /inspect/[id] pages with OOS warning and profile redirect). The three unmet criteria are genuinely unmet: no skip link exists and most routes lack a <main> landmark; identity.ts:39 caps offline identity at 72h and AuthGate hard-locks stale-offline workers out of all forms; Playwright ships in devDependencies with zero config, zero specs, and no e2e script. Biggest real gaps are the 72h offline lockout (a direct field-reliability risk for multi-day remote crews) and the complete absence of automated accessibility/offline regression coverage. One rubric defect: UX-2's \"every tappable control\" prose is broader than its grep-based check and a ~14px dismiss button slips through.",
@@ -101,9 +101,11 @@
      "id": "UX-9",
      "criterion": "Offline identity continuity: a worker who signed in once is never locked out of safety forms by time alone while offline \u2014 the cached-identity window is >=7 days (or stale identity degrades to a warning state that still allows capture), verified by identity tests.",
      "verify": "grep IDENTITY_TTL_MS src/lib/identity.ts shows a TTL >= 7 days, or AuthGate.tsx renders children (with a verify-when-online warning) when offline with a stale cached identity; src/lib/__tests__/identity.test.ts asserts the extended window.",
-     "met": false,
-     "evidence": "identity.ts:39 IDENTITY_TTL_MS = 72h; AuthGate.tsx:93 requires !isIdentityStale() to render offline, else :107-118 shows a hard 'Sign in once to work offline' lockout \u2014 a crew offline >3 days cannot open any safety form (OFI-BACKLOG item 25, still open).",
-     "autonomyNote": "Default to the degrade-to-warning branch (still allows capture, smaller security surface); note the >=7-day-TTL alternative for the owner."
+     "met": true,
+     "evidence": "identity.ts:42 IDENTITY_TTL_MS = 30 days with isIdentityAging() 72h soft state; AuthGate degrades to verify-when-online banner while allowing capture; identity tests 14/14 assert the extended window.",
+     "autonomyNote": "Default to the degrade-to-warning branch (still allows capture, smaller security surface); note the >=7-day-TTL alternative for the owner.",
+     "verifiedBy": "verify-criteria wf_f88844b6-418 (1-vote adversarial)",
+     "verifiedAtIteration": 13
     },
     {
      "id": "UX-10",
@@ -708,7 +710,7 @@
    "criteria": [
     "UX-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "UX-M2-T1",
@@ -719,7 +721,7 @@
       "src/lib/__tests__/identity.test.ts"
      ],
      "acceptance": "grep IDENTITY_TTL_MS src/lib/identity.ts shows >=7-day TTL; npx vitest run src/lib/__tests__/identity.test.ts passes with a case asserting a 5-day-old identity is usable offline; AuthGate offline branch renders children (with warning) rather than the lockout screen for aged-but-valid identity.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2045,6 +2047,21 @@
    ],
    "refuted": [],
    "notes": "Skip link + one main landmark per route (display:contents wrappers). UX 7->8."
+  },
+  {
+   "iteration": 13,
+   "date": "2026-07-06",
+   "milestone": "UX-M2",
+   "event": "iteration",
+   "tasksDone": [
+    "UX-M2-T1"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK",
+   "verified": [
+    "UX-9"
+   ],
+   "refuted": [],
+   "notes": "30-day offline identity ceiling + 72h aging nudge; field lockout eliminated. UX 8->9. Owner note: shorter ceiling is a one-liner in identity.ts."
   }
  ]
 }

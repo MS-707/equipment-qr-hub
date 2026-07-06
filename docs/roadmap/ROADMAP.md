@@ -118,7 +118,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 13. UX-M2 — Offline identity continuity beyond 72 hours
 *Dimension: UX · flips: UX-9 · why here: extend/degrade the offline identity window: one-module change that the airplane-mode spec depends on (a locked-out identity fails offline capture).*
 
-- [ ] **UX-M2-T1** Extend IDENTITY_TTL_MS in src/lib/identity.ts to 30 days and add a 'verify when online' soft-stale state (e.g. isIdentityAging() after 72h) that AuthGate renders as a warning banner while still allowing offline capture; update identity.test.ts for both windows.
+- [x] **UX-M2-T1** Extend IDENTITY_TTL_MS in src/lib/identity.ts to 30 days and add a 'verify when online' soft-stale state (e.g. isIdentityAging() after 72h) that AuthGate renders as a warning banner while still allowing offline capture; update identity.test.ts for both windows.
   - *Acceptance:* grep IDENTITY_TTL_MS src/lib/identity.ts shows >=7-day TTL; npx vitest run src/lib/__tests__/identity.test.ts passes with a case asserting a 5-day-old identity is usable offline; AuthGate offline branch renders children (with warning) rather than the lockout screen for aged-but-valid identity.
 
 ### 14. UX-M3 — Automated accessibility and airplane-mode regression suite
