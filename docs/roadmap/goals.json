@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 0,
+ "iteration": 1,
  "gates": [
   {
    "id": "lint",
@@ -453,7 +453,7 @@
   "legal": {
    "key": "legal",
    "name": "Legal",
-   "score": 2,
+   "score": 6,
    "initialScore": 2,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified against the code and every one held: 2/10 confirmed (LG-1, LG-7), no overturns. The review is accurate and its evidence line numbers check out, including the KV TTL details and the JhaForm disclaimer gap. The biggest real gap is that the privacy policy directly contradicts actual data flows: it claims signatures never leave the device while the notify route emails signature PNGs via Resend, claims no names are sent to the AI while sage-context injects worker and supervisor names into Anthropic prompts, omits Sentry and Upstash as subprocessors, and states records persist until manually cleared while a 90-day archiver and 7-day draft prune auto-delete them.",
@@ -470,31 +470,39 @@
      "id": "LG-2",
      "criterion": "The privacy policy's statement about signature handling matches the code: no sentence claims signatures stay on-device / are never shared while any code path transmits a signature image off-device.",
      "verify": "grep -n 'not\\s*shared' src/app/privacy/page.tsx and compare with src/app/api/inspections/notify/route.ts \u2014 the policy must disclose the signature PNG email attachment or the code must not send it.",
-     "met": false,
-     "evidence": "src/app/privacy/page.tsx:62-64 claims 'Signatures are not shared with any external service in the current version', but src/app/api/inspections/notify/route.ts:230-234 attaches signatureDataUrl as a PNG to the EHS email sent via Resend.",
-     "autonomyNote": "Autonomous fix = truthful policy/consent text disclosing signature PNGs leave the device via EHS email; changing the data flow itself is an owner decision."
+     "met": true,
+     "evidence": "privacy/page.tsx:62-64 discloses the signature PNG attached to the EHS email via Resend; grep 'not\\s*shared' returns nothing; remaining 'never' claims narrowly scoped to Notion sync/AI (accurate per safety-sync.ts:6).",
+     "autonomyNote": "Autonomous fix = truthful policy/consent text disclosing signature PNGs leave the device via EHS email; changing the data flow itself is an owner decision.",
+     "verifiedBy": "verify-criteria wf_9b7dc6f2-3b3 (1-vote adversarial)",
+     "verifiedAtIteration": 1
     },
     {
      "id": "LG-3",
      "criterion": "The privacy policy's claim about PII sent to the AI provider matches actual prompt payloads: either no worker/supervisor names appear in prompts built for Anthropic, or the policy discloses that names are included.",
      "verify": "grep -n 'userName\\|supervisor' src/lib/sage-context.ts \u2014 if contextToPrompt emits 'Worker: <name>' or supervisor names, the privacy AI Features section must not say names are not sent.",
-     "met": false,
-     "evidence": "src/app/privacy/page.tsx:132-134 says 'We do not intentionally send personal information like names... to the AI', but src/lib/sage-context.ts:124 emits 'Worker: ${ctx.userName}' and :65 emits supervisor name; sent to Anthropic via src/app/api/sage/triage/route.ts:137."
+     "met": true,
+     "evidence": "privacy/page.tsx:150-156 discloses worker/supervisor names in AI requests, matching sage-context.ts:124 ('Worker: ${ctx.userName}') and :65 (supervisor name); no contrary claim remains.",
+     "verifiedBy": "verify-criteria wf_9b7dc6f2-3b3 (1-vote adversarial)",
+     "verifiedAtIteration": 1
     },
     {
      "id": "LG-4",
      "criterion": "The Third-Party Services section names every external service the code transmits or persists personal data to: Anthropic, Notion, Resend, Slack (including first-sign-in name/email notifications), Google, Sentry, and Upstash Redis/Vercel KV.",
      "verify": "grep -in 'sentry\\|upstash\\|redis\\|vercel' src/app/privacy/page.tsx returns hits, and the Slack bullet covers sign-in notifications (compare src/lib/auth.ts:108).",
-     "met": false,
-     "evidence": "grep -i 'sentry|upstash|redis|vercel' on src/app/privacy/page.tsx returns nothing, yet sentry.client.config.ts:6 initializes Sentry, src/lib/kv.ts stores data in Upstash (user-tracker.ts:21, beta.ts:34, review-store.ts:46), and auth.ts:108 Slacks name+email on first sign-in."
+     "met": true,
+     "evidence": "privacy/page.tsx:113/118/124 add Sentry, Upstash Redis (Vercel KV) with TTLs, and Vercel; Slack bullet :104-106 covers first-sign-in name/email notification matching auth.ts:106-109; all seven processors named.",
+     "verifiedBy": "verify-criteria wf_9b7dc6f2-3b3 (1-vote adversarial)",
+     "verifiedAtIteration": 1
     },
     {
      "id": "LG-5",
      "criterion": "The Data Retention section states the retention periods actually implemented (90-day local archive of synced safety records, 7-day draft prune, KV TTLs: known-users 90d, beta signups 180d, review submissions 7-30d) and maps OSHA-relevant record types (incident reports 29 CFR 1904.33, forklift operator training certification 29 CFR 1910.178(l)(6), daily inspections) to retention behavior in the policy or a linked docs/ compliance file.",
      "verify": "Privacy retention section (src/app/privacy/page.tsx) lists the 90-day archiver and KV TTL periods matching safety-records.ts:868/891/916, user-tracker.ts:9, beta.ts:34, review-store.ts:46; a file matching docs/*retention*|*compliance* cites 1904.33 and 1910.178(l).",
-     "met": false,
-     "evidence": "src/app/privacy/page.tsx:141 claims records 'persist until you manually clear them', but safety-records.ts:868,891 auto-deletes synced records after 90 days (run on load, SyncProvider.tsx:11) and :916 prunes drafts after 7 days; find shows no retention/compliance doc in docs/.",
-     "autonomyNote": "Draft retention mapping with CFR citations, marked 'DRAFT \u2014 pending counsel review'; criterion passes on existence + accuracy of the draft."
+     "met": true,
+     "evidence": "privacy/page.tsx:166-190 states 90d post-sync archiver, 7d draft prune, KV TTLs 90/180/7-30d matching safety-records.ts:868/916, user-tracker.ts:9, beta.ts:34, review-store.ts:46/78; docs/COMPLIANCE-RETENTION.md cites 1904.33, 1910.178(l)(6), (q)(7), marked DRAFT pending counsel, linked from policy.",
+     "autonomyNote": "Draft retention mapping with CFR citations, marked 'DRAFT \u2014 pending counsel review'; criterion passes on existence + accuracy of the draft.",
+     "verifiedBy": "verify-criteria wf_9b7dc6f2-3b3 (1-vote adversarial)",
+     "verifiedAtIteration": 1
     },
     {
      "id": "LG-6",
@@ -1212,7 +1220,7 @@
     "LG-4",
     "LG-5"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "LG-M1-T1",
@@ -1222,7 +1230,7 @@
       "src/app/api/inspections/notify/route.ts"
      ],
      "acceptance": "grep -n 'not shared' src/app/privacy/page.tsx returns nothing about signatures; the Digital Signatures section names the EHS email attachment flow, or the notify route no longer attaches signatureDataUrl.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "LG-M1-T2",
@@ -1232,7 +1240,7 @@
       "src/app/privacy/page.tsx"
      ],
      "acceptance": "Either grep 'userName' src/lib/sage-context.ts shows it is no longer emitted into the prompt string, or the privacy AI Features section explicitly discloses names are sent; the two are consistent.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "LG-M1-T3",
@@ -1241,7 +1249,7 @@
       "src/app/privacy/page.tsx"
      ],
      "acceptance": "grep -in 'sentry' and grep -in 'upstash\\|vercel' src/app/privacy/page.tsx each return hits inside the Third-Party Services section; the Slack bullet mentions sign-in notifications.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "LG-M1-T4",
@@ -1251,7 +1259,7 @@
       "docs/COMPLIANCE-RETENTION.md"
      ],
      "acceptance": "Privacy retention section states the 90-day archive and draft prune; docs/COMPLIANCE-RETENTION.md exists citing 1904.33 and 1910.178(l) and is referenced from the policy.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1793,6 +1801,27 @@
    "date": "2026-07-06",
    "event": "spanish-dimension-added",
    "details": "Owner promoted Spanish support from backlog. 9-agent design tournament on the reverted WI-2 attempt (d20573d/91849b4/538a30e); winner revive-and-gate (2/3 judges, avg 85.7) with 10 grafts absorbed (async beta-label sign-off, per-namespace kill switch, visibilitychange flag refresh, useLayoutEffect pre-paint read, 3-round review cap + blocked-keys manifest, per-key retreat tier, surface-mined glossary, dark-invariance snapshots, strict-equality LG-6/LG-8 anchors, full-sweep-before-enable). New dimension spanish (0/10, 10 criteria ES-1..10), milestones ES-M1..M6 inserted after DM-M2. Spec: docs/i18n/DESIGN.md."
+  },
+  {
+   "iteration": 1,
+   "date": "2026-07-06",
+   "milestone": "LG-M1",
+   "event": "iteration",
+   "tasksDone": [
+    "LG-M1-T1",
+    "LG-M1-T2",
+    "LG-M1-T3",
+    "LG-M1-T4"
+   ],
+   "gates": "lint OK (1 pre-existing warning), tsc OK, 694/694 tests, build OK",
+   "verified": [
+    "LG-2",
+    "LG-3",
+    "LG-4",
+    "LG-5"
+   ],
+   "refuted": [],
+   "notes": "Privacy policy rewritten to match code; COMPLIANCE-RETENTION.md added (DRAFT pending counsel). Harness fix: verify-criteria invoked via scriptPath with string-tolerant args after named-registry staleness broke two launches. Legal 2->6."
   }
  ]
 }
