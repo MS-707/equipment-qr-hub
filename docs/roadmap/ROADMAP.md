@@ -50,9 +50,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 6. BE-M3 — Resilience: guard KV calls and time-bound outbound fetches
 *Dimension: Backend · flips: BE-9 · why here: KV guards and outbound-fetch timeouts: makes the data path resilient so subsequent e2e and demo work isn't chasing flaky 500s/hangs.*
 
-- [ ] **BE-M3-T1** Wrap the unguarded KV awaits in route handlers — addSignup (beta/signup:58), updateSignupStatus/getAllSignups (beta/decide:26,42), storeReviewSubmission (review/submit:122), getReviewSubmission/decideReview (review/decide:39,55) — so a KV throw returns a 503 JSON error (and reports via BE-M1's helper). Extend the corresponding route tests with a kv-throws case.
+- [x] **BE-M3-T1** Wrap the unguarded KV awaits in route handlers — addSignup (beta/signup:58), updateSignupStatus/getAllSignups (beta/decide:26,42), storeReviewSubmission (review/submit:122), getReviewSubmission/decideReview (review/decide:39,55) — so a KV throw returns a 503 JSON error (and reports via BE-M1's helper). Extend the corresponding route tests with a kv-throws case.
   - *Acceptance:* Route tests mocking kv.set/kv.get to throw assert a JSON 503 (not an unhandled rejection) for all four routes; vitest run passes.
-- [ ] **BE-M3-T2** Add a fetchWithTimeout helper (AbortSignal.timeout, ~10s default, existing error mapping unchanged) and use it for every server-side fetch to api.notion.com, api.resend.com, and the Slack webhook across safety/sync, review/submit, review/status, review/decide, email-notify.ts, slack-notify.ts. Timeout must surface as the existing 'failed'/502 degraded path.
+- [x] **BE-M3-T2** Add a fetchWithTimeout helper (AbortSignal.timeout, ~10s default, existing error mapping unchanged) and use it for every server-side fetch to api.notion.com, api.resend.com, and the Slack webhook across safety/sync, review/submit, review/status, review/decide, email-notify.ts, slack-notify.ts. Timeout must surface as the existing 'failed'/502 degraded path.
   - *Acceptance:* grep -rn 'AbortSignal.timeout\|fetchWithTimeout' src shows every external fetch call site covered (grep for 'fetch(' in those files finds no bare external fetch); vitest run passes.
 
 ### 7. BE-M1 — Wire server-side Sentry error capture end to end

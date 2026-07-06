@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 5,
+ "iteration": 6,
  "gates": [
   {
    "id": "lint",
@@ -202,7 +202,7 @@
   "backend": {
    "key": "backend",
    "name": "Backend",
-   "score": 8,
+   "score": 9,
    "initialScore": 6,
    "verifiedScore": null,
    "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
@@ -274,9 +274,11 @@
      "id": "BE-9",
      "criterion": "No route can crash or hang on a dependency: every KV operation awaited inside a route handler path is guarded so a KV outage returns a structured JSON error (not an unhandled 500), and every outbound fetch to Notion/Resend/Slack in server code passes AbortSignal.timeout (or equivalent) so a hung upstream cannot pin the function.",
      "verify": "grep -rn 'AbortSignal.timeout|signal:' src/app/api src/lib returns a hit for every outbound fetch to Notion/Resend/Slack/Anthropic; then statically confirm every awaited KV call reachable from a route handler (addSignup, updateSignupStatus, getAllSignups, storeReviewSubmission, getReviewSubmission, decideReview) is inside a try/catch (in the route or a wrapper) that maps a KV throw to a structured JSON error response.",
-     "met": false,
-     "evidence": "Unguarded KV awaits: addSignup (beta/signup/route.ts:58), updateSignupStatus/getAllSignups (beta/decide/route.ts:26,42), storeReviewSubmission (review/submit/route.ts:122), getReviewSubmission/decideReview (review/decide/route.ts:39,55). Zero AbortSignal in src.",
-     "rewritten": true
+     "met": true,
+     "evidence": "fetch-timeout.ts:23 AbortSignal.timeout choke point for all 15 Notion/Resend/Slack fetches; 9 Anthropic clients set timeout: ANTHROPIC_TIMEOUT_MS; all six KV awaits guarded to JSON 503 (signup:53-58, decide:28-32/48-52, submit:123-139, decide:45-49/67-71) with 6 route tests.",
+     "rewritten": true,
+     "verifiedBy": "verify-criteria wf_e324f97d-478 (1-vote adversarial, after wf_f5244b73-31a refuted first attempt)",
+     "verifiedAtIteration": 6
     },
     {
      "id": "BE-10",
@@ -944,7 +946,7 @@
    "criteria": [
     "BE-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "BE-M3-T1",
@@ -956,7 +958,7 @@
       "src/app/api/safety/review/decide/route.ts"
      ],
      "acceptance": "Route tests mocking kv.set/kv.get to throw assert a JSON 503 (not an unhandled rejection) for all four routes; vitest run passes.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "BE-M3-T2",
@@ -969,7 +971,7 @@
       "src/lib/slack-notify.ts"
      ],
      "acceptance": "grep -rn 'AbortSignal.timeout\\|fetchWithTimeout' src shows every external fetch call site covered (grep for 'fetch(' in those files finds no bare external fetch); vitest run passes.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1891,6 +1893,24 @@
    ],
    "refuted": [],
    "notes": "Retry-After on the last bare 429 (beta signup). Backend 7->8."
+  },
+  {
+   "iteration": 6,
+   "date": "2026-07-06",
+   "milestone": "BE-M3",
+   "event": "iteration",
+   "tasksDone": [
+    "BE-M3-T1",
+    "BE-M3-T2"
+   ],
+   "gates": "lint OK, tsc OK, 705/705 tests, build OK",
+   "verified": [
+    "BE-9"
+   ],
+   "refuted": [
+    "BE-9 (first attempt: mechanical pass crashed before bounding the 9 Anthropic clients; verifier caught the gap, fixed and re-confirmed)"
+   ],
+   "notes": "Fetch timeouts + KV 503 guards + 6 new tests. First BE-9 verification REFUTED a silent partial failure \u2014 the adversarial gate did its job. Backend 8->9."
   }
  ]
 }
