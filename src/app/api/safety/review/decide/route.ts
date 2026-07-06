@@ -4,6 +4,7 @@ import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
 import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -24,7 +25,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
@@ -44,7 +46,8 @@ export async function POST(req: Request) {
   let submission
   try {
     submission = await getReviewSubmission(parsed.recordId)
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
   if (!submission) {
@@ -66,7 +69,8 @@ export async function POST(req: Request) {
   let decided
   try {
     decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', note)
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
   if (!decided) {
@@ -122,7 +126,8 @@ export async function GET(req: Request) {
   let submission
   try {
     submission = await getReviewSubmission(parsed.recordId)
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
   if (!submission) {
@@ -170,6 +175,7 @@ async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmi
     })
     if (!res.ok) console.error('[review-decide] Notion PATCH error:', await res.text())
   } catch (e) {
+    reportServerError('api/safety/review/decide', e)
     console.error('[review-decide] Notion PATCH failed:', e instanceof Error ? e.message : e)
   }
 }
@@ -235,6 +241,7 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
     }
     return true
   } catch (e) {
+    reportServerError('api/safety/review/decide', e)
     console.error('[review-decide] email failed:', e instanceof Error ? e.message : e)
     return false
   }

@@ -3,6 +3,7 @@ import { sendEhsNotification } from '@/lib/email-notify'
 import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { rateLimit } from '@/lib/rate-limit'
 import { BetaSignupBodySchema } from '@/lib/beta-decide-schemas'
+import { reportServerError } from '@/lib/report-error'
 
 export async function POST(req: Request) {
   // x-real-ip is set by Vercel; the last x-forwarded-for hop is the one the
@@ -22,7 +23,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/beta/signup', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -52,7 +54,8 @@ export async function POST(req: Request) {
 
   try {
     await addSignup(signup)
-  } catch {
+  } catch (err) {
+    reportServerError('api/beta/signup', err)
     // KV outage must surface as a retryable error, not a silent drop
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }

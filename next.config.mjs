@@ -16,6 +16,9 @@ const withSerwist = withSerwistInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Required on Next 14 for src/instrumentation.ts to load the Sentry
+  // server/edge init at boot (stable in Next 15, experimental here).
+  experimental: { instrumentationHook: true },
   async headers() {
     return [
       {

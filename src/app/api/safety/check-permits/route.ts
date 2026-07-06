@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { CheckPermitsBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an EHS safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
 
@@ -45,7 +46,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/check-permits', err)
     return Response.json({ missing_permits: [], error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -85,6 +87,7 @@ export async function POST(req: Request) {
     const missing_permits = message.parsed_output?.missing_permits ?? []
     return Response.json({ missing_permits })
   } catch (err) {
+    reportServerError('api/safety/check-permits', err)
     console.error('[sage] check-permits failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { missing_permits: [], error: 'Sage is temporarily unavailable' },

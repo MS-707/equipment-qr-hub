@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { IncidentRequestSchema } from '@/lib/analyze-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced construction safety incident analyst embedded in an EHS incident reporting tool.
 
@@ -70,7 +71,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/analyze-incident', err)
     return Response.json({ rootCauses: [], correctiveActions: [], error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -116,6 +118,7 @@ export async function POST(req: Request) {
     const result = message.parsed_output ?? { rootCauses: [], correctiveActions: [] }
     return Response.json(result)
   } catch (err) {
+    reportServerError('api/safety/analyze-incident', err)
     console.error('[sage] analyze-incident failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { rootCauses: [], correctiveActions: [], error: 'Sage is temporarily unavailable' },

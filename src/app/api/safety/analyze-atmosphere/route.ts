@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { AtmoRequestSchema } from '@/lib/analyze-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are an expert confined space atmospheric analyst for a construction safety platform called Sage EHS.
 
@@ -56,7 +57,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/analyze-atmosphere', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -101,6 +103,7 @@ export async function POST(req: Request) {
 
     return Response.json({ analysis })
   } catch (err) {
+    reportServerError('api/safety/analyze-atmosphere', err)
     console.error('[sage] analyze-atmosphere failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }

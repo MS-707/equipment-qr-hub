@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SageTriageBodySchema } from '@/lib/sage-triage-schema'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const TriageSchema = z.object({
   reply: z.string(),
@@ -93,7 +94,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/sage/triage', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -144,6 +146,7 @@ export async function POST(req: Request) {
       followUps: parsed?.followUps?.slice(0, 3) ?? [],
     })
   } catch (err) {
+    reportServerError('api/sage/triage', err)
     console.error('[sage] triage failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }

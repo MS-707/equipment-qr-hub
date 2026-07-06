@@ -9,6 +9,7 @@ import { storeReviewSubmission } from '@/lib/review-store'
 import { escapeSlack } from '@/lib/slack-notify'
 import { ReviewSubmitBodySchema, firstInvalidField } from '@/lib/safety-record-schema'
 import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -59,7 +60,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/submit', err)
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
@@ -111,6 +113,7 @@ export async function POST(req: Request) {
         if (!res.ok) console.error('[review/submit] Notion PATCH error:', await res.text())
       }
     } catch (e) {
+      reportServerError('api/safety/review/submit', e)
       console.error('[review/submit] Notion error:', e instanceof Error ? e.message : e)
     }
   }
@@ -132,7 +135,8 @@ export async function POST(req: Request) {
     // poller sees the decision instead of eternal "Pending".
     notionPageId: pageId || undefined,
   })
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/review/submit', err)
     // KV outage: without a stored submission the email decide-links would
     // 404, so fail the request as retryable instead of sending dead links
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
@@ -185,7 +189,8 @@ export async function POST(req: Request) {
         }),
       })
       slackOk = slackRes.ok
-    } catch {
+    } catch (err) {
+      reportServerError('api/safety/review/submit', err)
       // Slack is best-effort
     }
   }
@@ -279,6 +284,7 @@ async function syncToNotion(
     const page = (await res.json()) as { id: string }
     return { ok: true, pageId: page.id }
   } catch (e) {
+    reportServerError('api/safety/review/submit', e)
     console.error('[review/submit] sync error:', e instanceof Error ? e.message : e)
     return { ok: false, error: 'Sync failed' }
   }

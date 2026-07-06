@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { ParseDocumentBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. A worker has uploaded a planning document (task plan, method statement, scope of work, or similar) and wants to create a Job Hazard Analysis from it.
 
@@ -72,7 +73,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/parse-document', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -126,6 +128,7 @@ export async function POST(req: Request) {
     }
     return Response.json(result)
   } catch (err) {
+    reportServerError('api/safety/parse-document', err)
     console.error('[sage] parse-document failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }

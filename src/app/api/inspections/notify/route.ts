@@ -10,6 +10,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendEhsNotification, isEmailConfigured, type EhsEmailAttachment } from '@/lib/email-notify'
 import { NotifyBodySchema, type NotifyBody } from '@/lib/inspection-notify-schema'
+import { reportServerError } from '@/lib/report-error'
 
 function esc(s: unknown): string {
   return String(s ?? '')
@@ -210,7 +211,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/inspections/notify', err)
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 

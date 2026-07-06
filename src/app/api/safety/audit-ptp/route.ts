@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { AuditPtpRequestSchema } from '@/lib/analyze-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety auditor embedded in a Pre-Task Plan (PTP) tool. You review completed PTPs before submission to catch critical safety gaps.
 
@@ -96,7 +97,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/audit-ptp', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -148,6 +150,7 @@ export async function POST(req: Request) {
 
     return Response.json(result)
   } catch (err) {
+    reportServerError('api/safety/audit-ptp', err)
     console.error('[sage] audit-ptp failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },

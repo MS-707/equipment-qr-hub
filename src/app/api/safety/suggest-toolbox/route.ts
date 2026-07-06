@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SuggestToolboxBodySchema } from '@/lib/suggest-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. Generate a concise 2-minute toolbox talk for a team based on today's job scope, hazards, and conditions. The talk should be practical, plain-language, and ready to read aloud at a team meeting. Keep talking points to 3-4 bullet points. End with one discussion question to engage the team.`
 
@@ -43,7 +44,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/suggest-toolbox', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -88,6 +90,7 @@ export async function POST(req: Request) {
       discussion_question: result.discussion_question,
     })
   } catch (err) {
+    reportServerError('api/safety/suggest-toolbox', err)
     console.error('[sage] suggest-toolbox failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },

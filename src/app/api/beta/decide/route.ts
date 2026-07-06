@@ -4,6 +4,7 @@ import { isAdmin } from '@/lib/admin'
 import { updateSignupStatus, getAllSignups } from '@/lib/beta'
 import { BetaDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { sendBetaEmail } from './email'
+import { reportServerError } from '@/lib/report-error'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
@@ -14,7 +15,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -27,7 +29,8 @@ export async function POST(req: Request) {
   let signup
   try {
     signup = await updateSignupStatus(id, status)
-  } catch {
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
   if (!signup) {
@@ -47,7 +50,8 @@ export async function GET() {
 
   try {
     return Response.json({ signups: await getAllSignups() })
-  } catch {
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
 }

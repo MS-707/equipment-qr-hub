@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SuggestJhaBodySchema } from '@/lib/suggest-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Job Hazard Analysis (JHA) tool used by engineers and operations teams.
 
@@ -58,7 +59,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/suggest-jha', err)
     return Response.json({ steps: [], error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -97,6 +99,7 @@ export async function POST(req: Request) {
     // Align to the number of steps we sent, so the client can map by index.
     return Response.json({ steps: analysed.slice(0, boundedSteps.length) })
   } catch (err) {
+    reportServerError('api/safety/suggest-jha', err)
     console.error('[sage] suggest-jha failed:', err instanceof Error ? err.message : err)
     return Response.json({ steps: [], error: 'Sage is temporarily unavailable' }, { status: 502 })
   }

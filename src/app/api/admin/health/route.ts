@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { isAdmin } from '@/lib/admin'
 import { kv } from '@/lib/kv'
+import { reportServerError } from '@/lib/report-error'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,8 @@ export async function GET() {
     try {
       await kv.incr('health:probe')
       kvStatus = 'connected'
-    } catch {
+    } catch (err) {
+      reportServerError('api/admin/health', err)
       kvStatus = 'error'
     }
   }

@@ -11,6 +11,7 @@ import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SafetyRecordSchema, firstInvalidField } from '@/lib/safety-record-schema'
 import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -49,7 +50,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/sync', err)
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
@@ -218,6 +220,7 @@ export async function POST(req: Request) {
     const pageId = typeof page?.id === 'string' ? page.id : null
     return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
+    reportServerError('api/safety/sync', e)
     console.error('[sync] unexpected error:', e instanceof Error ? e.message : e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })
   }

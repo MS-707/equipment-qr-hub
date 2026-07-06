@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { critique, hintDescriptions } from '@/lib/hazard-critic'
 import { SuggestHazardsBodySchema } from '@/lib/suggest-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Pre-Task Plan (PTP) tool used by engineers and operations teams.
 
@@ -79,7 +80,8 @@ export async function POST(req: Request) {
   let raw: unknown
   try {
     raw = await req.json()
-  } catch {
+  } catch (err) {
+    reportServerError('api/safety/suggest-hazards', err)
     return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
   }
 
@@ -124,6 +126,7 @@ export async function POST(req: Request) {
 
     return Response.json({ hazards: hazards.slice(0, 8) })
   } catch (err) {
+    reportServerError('api/safety/suggest-hazards', err)
     console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { hazards: [], error: 'Sage is temporarily unavailable' },
