@@ -6,6 +6,9 @@ import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { fetchWithTimeout } from '@/lib/fetch-timeout'
 import { reportServerError } from '@/lib/report-error'
 import { appendAudit } from '@/lib/audit-log'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
+import { isEhsOrAdmin } from '@/lib/roles'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -37,16 +40,37 @@ export async function POST(req: Request) {
     // so the pre-schema error message still fits.
     return Response.json({ error: 'Missing token' }, { status: 400 })
   }
-  const { token, note } = parsedBody.data
+  const { token, note, recordId: bodyRecordId, action: bodyAction } = parsedBody.data
 
-  const parsed = verifyReviewToken(token)
-  if (!parsed) {
-    return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
+  // Two authorization paths: the HMAC email-link token (EHS decides from
+  // their inbox, no session), or a signed-in session with the ehs/admin
+  // role deciding in-app (EN-9). Workers get 403 on the session path.
+  let target: { recordId: string; action: 'approve' | 'reject' }
+  let actor = 'EHS reviewer (via email link)'
+  if (token) {
+    const parsed = verifyReviewToken(token)
+    if (!parsed) {
+      return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
+    }
+    target = { recordId: parsed.recordId, action: parsed.action }
+  } else if (bodyRecordId && bodyAction) {
+    const session = await getServerSession(authOptions)
+    const email = session?.user?.email
+    if (!email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!isEhsOrAdmin(email)) {
+      return Response.json({ error: 'EHS or admin role required' }, { status: 403 })
+    }
+    target = { recordId: bodyRecordId, action: bodyAction }
+    actor = email
+  } else {
+    return Response.json({ error: 'Missing token' }, { status: 400 })
   }
 
   let submission
   try {
-    submission = await getReviewSubmission(parsed.recordId)
+    submission = await getReviewSubmission(target.recordId)
   } catch (err) {
     reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
@@ -65,11 +89,11 @@ export async function POST(req: Request) {
     })
   }
 
-  const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
+  const status = target.action === 'approve' ? 'approved' as const : 'rejected' as const
   // note is already truncated to 500 chars by ReviewDecideBodySchema
   let decided
   try {
-    decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', note)
+    decided = await decideReview(target.recordId, status, actor, note)
   } catch (err) {
     reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
@@ -78,7 +102,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
 
-  await appendAudit({ actor: 'EHS reviewer (via email link)', action: `review-${status}`, target: parsed.recordId })
+  await appendAudit({ actor, action: `review-${status}`, target: target.recordId })
 
   // Propagate the decision to the record's Notion page (best-effort): the
   // device poller reads the 'EHS Review' property, so without this PATCH an

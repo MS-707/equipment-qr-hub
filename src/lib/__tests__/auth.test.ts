@@ -11,6 +11,8 @@ vi.mock('@/lib/admin', () => ({
   isAdmin: vi.fn(() => false),
 }))
 
+import { isAdmin } from '@/lib/admin'
+
 beforeEach(() => {
   vi.resetModules()
   vi.unstubAllEnvs()
@@ -141,5 +143,55 @@ describe('dev provider registration (DM-6: first-run sign-in out of the box)', (
     vi.stubEnv('ALLOW_DEV_LOGIN', '1')
     const { authOptions } = await import('../auth')
     expect(providerIds(authOptions.providers)).not.toContain('dev')
+  })
+})
+
+describe('shared-code login cannot mint elevated sessions in production (EN-M4-TX1)', () => {
+  type P = { options?: { id?: string; authorize?: (c: Record<string, string>) => Promise<unknown> } }
+  const getAuthorize = async () => {
+    const { authOptions } = await import('../auth')
+    const dev = (authOptions.providers as P[]).find((p) => p.options?.id === 'dev')
+    return dev!.options!.authorize!
+  }
+
+  it('rejects an ADMIN_EMAILS address with the correct shared code', async () => {
+    // this file mocks @/lib/admin — make the mock recognize the admin
+    vi.mocked(isAdmin).mockReturnValue(true)
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('ALLOW_EMAIL_LOGIN', '1')
+    vi.stubEnv('EMAIL_LOGIN_CODE', 'sitecode')
+    const authorize = await getAuthorize()
+    const user = await authorize({ name: 'Impostor', email: 'mark.starr@mytra.ai', code: 'sitecode' })
+    expect(user).toBeNull()
+  })
+
+  it('rejects an EHS_EMAILS address with the correct shared code', async () => {
+    vi.mocked(isAdmin).mockReturnValue(false)
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('ALLOW_EMAIL_LOGIN', '1')
+    vi.stubEnv('EMAIL_LOGIN_CODE', 'sitecode')
+    vi.stubEnv('EHS_EMAILS', 'safety@mytra.ai')
+    const authorize = await getAuthorize()
+    const user = await authorize({ name: 'Impostor', email: 'safety@mytra.ai', code: 'sitecode' })
+    expect(user).toBeNull()
+  })
+
+  it('still authenticates a worker address with the correct shared code', async () => {
+    vi.mocked(isAdmin).mockReturnValue(false)
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('ALLOW_EMAIL_LOGIN', '1')
+    vi.stubEnv('EMAIL_LOGIN_CODE', 'sitecode')
+    const authorize = await getAuthorize()
+    const user = await authorize({ name: 'Dana', email: 'dana@mytra.ai', code: 'sitecode' })
+    expect(user).toMatchObject({ email: 'dana@mytra.ai' })
+  })
+
+  it('elevated addresses may still use dev login in development', async () => {
+    vi.mocked(isAdmin).mockReturnValue(false)
+    vi.stubEnv('GOOGLE_CLIENT_ID', '')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '')
+    const authorize = await getAuthorize()
+    const user = await authorize({ name: 'Mark', email: 'mark.starr@mytra.ai', code: '' })
+    expect(user).toMatchObject({ email: 'mark.starr@mytra.ai' })
   })
 })

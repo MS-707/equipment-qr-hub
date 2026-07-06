@@ -22,6 +22,7 @@ import { isFirstLogin } from '@/lib/user-tracker'
 import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { isAdmin } from '@/lib/admin'
 import { log } from '@/lib/log'
+import { resolveRole } from '@/lib/roles'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
   .split(',')
@@ -85,6 +86,15 @@ if (allowDevLogin || allowEmailLogin) {
         const email = (creds?.email ?? '').toString().trim().toLowerCase()
         const name = (creds?.name ?? '').toString().trim()
         if (!emailAllowed(email)) return null
+        // Identity assurance: the shared EMAIL_LOGIN_CODE must never mint an
+        // elevated session in production — anyone holding the code could
+        // otherwise sign in AS an admin/ehs address with a freeform name.
+        // Elevated roles use OAuth (Google) in production. Dev stays open
+        // (NODE_ENV-gated, never reachable in production builds).
+        if (isProduction && resolveRole(email) !== 'worker') {
+          log('warn', 'code-login-blocked-elevated', { email })
+          return null
+        }
         const code = (creds?.code ?? '').toString()
         if (isProduction && (!emailLoginCode || !safeCodeCompare(code, emailLoginCode))) {
           log('warn', 'code-login-failed', { email })
@@ -135,6 +145,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name ?? session.user.name
         session.user.image = (token.picture as string | undefined) ?? session.user.image
         session.user.isAdmin = isAdmin(session.user.email)
+        session.user.role = resolveRole(session.user.email)
       }
       return session
     },

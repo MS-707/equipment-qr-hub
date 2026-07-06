@@ -68,7 +68,12 @@ export type BetaDecideBody = z.infer<typeof BetaDecideBodySchema>
 export const ReviewDecideBodySchema = z.object({
   // base64url(recordId:action:ts:hex-hmac) is ~150 chars for real tokens;
   // anything longer can never verify, so 2000 bounds hostile payloads.
-  token: z.string().min(1).max(2000),
+  // Optional since EN-9: a signed-in ehs/admin session may decide with
+  // recordId+action instead of an email-link token (route enforces that
+  // exactly one of the two shapes is present).
+  token: z.string().min(1).max(2000).optional(),
+  recordId: z.string().min(1).max(100).optional(),
+  action: z.enum(['approve', 'reject']).optional(),
   // The route always truncated (never rejected) long notes — a test pins that
   // a 600-char note is accepted and sliced to 500, so transform, not .max().
   // Non-string notes were silently ignored before; .catch(undefined) keeps that.

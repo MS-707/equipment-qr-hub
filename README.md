@@ -241,7 +241,15 @@ Google OAuth sign-ins are checked server-side against `ALLOWED_EMAIL_DOMAINS` (d
 
 ### Authorization Scope
 
-The application does not implement role-based access control (RBAC) at this stage. All authenticated users have equal access to all features. EHS review workflows provide process-level separation (submitter vs. reviewer) but not system-level enforcement.
+Three roles, resolved server-side from env allowlists (`src/lib/roles.ts`, precedence admin > ehs > worker) and exposed to the client as `session.user.role`:
+
+| Role | Who | Capabilities |
+|------|-----|--------------|
+| `admin` | `ADMIN_EMAILS` allowlist | Everything below, plus equipment status, authorized users, work-order deletion, PM completions, beta decisions (`/api/beta/decide`), `/admin` routes, health + audit endpoints (`/api/admin/health`, `/api/admin/audit`) |
+| `ehs` | `EHS_EMAILS` allowlist | Everything workers can, plus deciding EHS reviews in-app (`POST /api/safety/review/decide` with `recordId`+`action` — no email link needed) |
+| `worker` | Any allowed-domain login | View everything, submit inspections, create safety records, submit for EHS review |
+
+Server-side enforcement points: `isAdmin()` gates the admin routes and beta decisions; `isEhsOrAdmin()` gates the in-app review-decision path (workers receive 403); the HMAC email-link path authorizes via signed token instead of session. In production, the shared email login code can only mint `worker` sessions — elevated roles must sign in with OAuth (`src/lib/auth.ts`).
 
 ---
 
