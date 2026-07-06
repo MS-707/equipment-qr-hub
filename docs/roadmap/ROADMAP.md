@@ -66,13 +66,13 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 8. EN-M3 — Observability and audit trail: structured logs + privileged-action log
 *Dimension: Enterprise Readiness · flips: EN-7, EN-8 · why here: structured logger + privileged-action audit log in the same route-file pass as BE-M1; one shared helper satisfies BE-10, EN-7, EN-8 together.*
 
-- [ ] **EN-M3-T1** Add src/lib/log.ts exporting log(level, event, fields) that JSON.stringify's one line {ts, level, event, route?, actor?, outcome?, ...fields} to console; unit-test it (valid JSON, no secret fields).
+- [x] **EN-M3-T1** Add src/lib/log.ts exporting log(level, event, fields) that JSON.stringify's one line {ts, level, event, route?, actor?, outcome?, ...fields} to console; unit-test it (valid JSON, no secret fields).
   - *Acceptance:* vitest passes a new log.test.ts asserting JSON.parse-able single-line output containing event and level keys.
-- [ ] **EN-M3-T2** Migrate every console.* call in src/app/api/**/route.ts (10 files, incl. safety/sync, review/submit, review/decide, sage/triage, all AI suggest routes) and src/lib server modules used by routes (rate-limit.ts, slack-notify.ts, auth.ts) to the shared logger with event + route fields.
+- [x] **EN-M3-T2** Migrate every console.* call in src/app/api/**/route.ts (10 files, incl. safety/sync, review/submit, review/decide, sage/triage, all AI suggest routes) and src/lib server modules used by routes (rate-limit.ts, slack-notify.ts, auth.ts) to the shared logger with event + route fields.
   - *Acceptance:* `grep -rn 'console\.' src/app/api --include=route.ts` returns zero matches; test suite and build pass.
-- [ ] **EN-M3-T3** Add src/lib/audit-log.ts (appendAudit({actor, action, target}) → LPUSH to KV key 'audit:log' with LTRIM cap ~1000, fail-open); call it from api/beta/decide POST (actor = session email, action = beta-approved/rejected, target = signup id) and api/safety/review/decide (actor = reviewer identity from token, action = review-approved/rejected, target = recordId).
+- [x] **EN-M3-T3** Add src/lib/audit-log.ts (appendAudit({actor, action, target}) → LPUSH to KV key 'audit:log' with LTRIM cap ~1000, fail-open); call it from api/beta/decide POST (actor = session email, action = beta-approved/rejected, target = signup id) and api/safety/review/decide (actor = reviewer identity from token, action = review-approved/rejected, target = recordId).
   - *Acceptance:* Grep confirms appendAudit called in both routes; new vitest file covers append shape and fail-open on KV error.
-- [ ] **EN-M3-T4** Add GET /api/admin/audit returning the newest N audit entries, gated exactly like /api/admin/health (session + isAdmin, 401 otherwise); route test for the 401 path and the happy path with mocked KV.
+- [x] **EN-M3-T4** Add GET /api/admin/audit returning the newest N audit entries, gated exactly like /api/admin/health (session + isAdmin, 401 otherwise); route test for the 401 path and the happy path with mocked KV.
   - *Acceptance:* EN-8 check passes: non-admin GET returns 401, admin GET returns JSON array of {actor, action, target, at}; tests green.
 
 ### 9. EN-M4 — RBAC: three-role model, server-enforced and documented

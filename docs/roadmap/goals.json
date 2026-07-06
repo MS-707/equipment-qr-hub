@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 7,
+ "iteration": 8,
  "gates": [
   {
    "id": "lint",
@@ -296,7 +296,7 @@
   "enterprise": {
    "key": "enterprise",
    "name": "Enterprise Readiness",
-   "score": 4,
+   "score": 6,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
@@ -349,15 +349,19 @@
      "id": "EN-7",
      "criterion": "Structured server logging: a shared logger module in src/lib emits single-line JSON with at least event, route, and outcome fields, and every file matching src/app/api/**/route.ts uses it \u2014 grep finds zero raw `console.` calls in src/app/api.",
      "verify": "Run `grep -rn 'console\\.' src/app/api --include=route.ts` (expect zero matches) and confirm src/lib/log*.ts JSON.stringify's a fields object including event and route.",
-     "met": false,
-     "evidence": "Missing. No logger module exists in src/lib (grep 'logger' finds nothing); raw console.* calls remain in 10 API route files, e.g. src/app/api/safety/sync/route.ts (4 calls) and review/submit/route.ts (4 calls); lib code logs interpolated strings (rate-limit.ts:70)."
+     "met": true,
+     "evidence": "log.ts:16-22 emits single-line JSON with first-class event/route/outcome keys; zero console.* across all 19 route.ts files (grep exit 1); reportServerError maps scope->route with outcome:'error'.",
+     "verifiedBy": "verify-criteria wf_5b475347-972 / wf_c8a51c55-15c (1-vote adversarial; EN-7 confirmed after one refutation)",
+     "verifiedAtIteration": 8
     },
     {
      "id": "EN-8",
      "criterion": "Server-side audit log of privileged actions: beta approve/reject (api/beta/decide) and EHS review decisions (api/safety/review/decide) each append an entry {actor, action, target, at} to a persistent KV list/stream, and an admin-only GET endpoint (e.g. /api/admin/audit) returns recent entries; both writes covered by a test in src/lib/__tests__.",
      "verify": "Grep beta/decide and review/decide routes for the audit append call; GET /api/admin/audit as non-admin returns 401, as admin returns JSON entries; `vitest run` includes an audit-log test file that passes.",
-     "met": false,
-     "evidence": "Missing. api/beta/decide/route.ts approves/rejects with no persistent trace beyond the signup row; review/decide writes no actor log. AuditEvent (safety-types.ts:44-53) is client-side localStorage per record \u2014 no server-side, admin-queryable log of privileged actions exists."
+     "met": true,
+     "evidence": "appendAudit at beta/decide:41 (actor=session email) and review/decide:81 (actor=EHS reviewer); audit-log.ts fail-open capped KV list; admin-only GET /api/admin/audit (401 gated); 41 tests across 4 files green.",
+     "verifiedBy": "verify-criteria wf_5b475347-972 / wf_c8a51c55-15c (1-vote adversarial; EN-7 confirmed after one refutation)",
+     "verifiedAtIteration": 8
     },
     {
      "id": "EN-9",
@@ -1058,7 +1062,7 @@
     "EN-7",
     "EN-8"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "EN-M3-T1",
@@ -1068,7 +1072,7 @@
       "src/lib/__tests__/log.test.ts"
      ],
      "acceptance": "vitest passes a new log.test.ts asserting JSON.parse-able single-line output containing event and level keys.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M3-T2",
@@ -1082,7 +1086,7 @@
       "src/lib/auth.ts"
      ],
      "acceptance": "`grep -rn 'console\\.' src/app/api --include=route.ts` returns zero matches; test suite and build pass.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M3-T3",
@@ -1094,7 +1098,7 @@
       "src/lib/__tests__/audit-log.test.ts"
      ],
      "acceptance": "Grep confirms appendAudit called in both routes; new vitest file covers append shape and fail-open on KV error.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M3-T4",
@@ -1104,7 +1108,7 @@
       "src/lib/__tests__/admin-audit-route.test.ts"
      ],
      "acceptance": "EN-8 check passes: non-admin GET returns 401, admin GET returns JSON array of {actor, action, target, at}; tests green.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1933,6 +1937,27 @@
    ],
    "panel": "Dimension completion panel: BE-2/BE-8/BE-9/BE-10 x 3 lenses = 12/12 votes MET. backend verifiedScore=10, dimension done.",
    "notes": "Sentry server capture live via instrumentation.ts; 43/43 catch blocks report. BACKEND is the first dimension at a verified 10/10."
+  },
+  {
+   "iteration": 8,
+   "date": "2026-07-06",
+   "milestone": "EN-M3",
+   "event": "iteration",
+   "tasksDone": [
+    "EN-M3-T1",
+    "EN-M3-T2",
+    "EN-M3-T3",
+    "EN-M3-T4"
+   ],
+   "gates": "lint OK, tsc OK, 722/722 tests, build OK",
+   "verified": [
+    "EN-7",
+    "EN-8"
+   ],
+   "refuted": [
+    "EN-7 (first attempt: log lines lacked route/outcome fields; fixed and re-confirmed)"
+   ],
+   "notes": "Structured JSON logging + fail-open audit trail + admin audit endpoint; 17 new tests. Enterprise 4->6."
   }
  ]
 }
