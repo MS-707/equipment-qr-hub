@@ -11,7 +11,16 @@
 type Level = 'info' | 'warn' | 'error'
 
 export function log(level: Level, event: string, fields: Record<string, unknown> = {}): void {
-  const line = JSON.stringify({ ts: new Date().toISOString(), level, event, ...fields })
+  // route and outcome are first-class keys on every line (EN-7) so log
+  // queries can always filter on them, even when a caller omits them.
+  const line = JSON.stringify({
+    ts: new Date().toISOString(),
+    level,
+    event,
+    route: fields.route ?? null,
+    outcome: fields.outcome ?? null,
+    ...fields,
+  })
   if (level === 'error') console.error(line)
   else if (level === 'warn') console.warn(line)
   else console.log(line)

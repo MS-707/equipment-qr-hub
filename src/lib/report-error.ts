@@ -9,7 +9,7 @@ import * as Sentry from '@sentry/nextjs'
 import { log } from '@/lib/log'
 
 export function reportServerError(scope: string, err: unknown): void {
-  log('error', 'server-error', { scope, message: err instanceof Error ? err.message : String(err) })
+  log('error', 'server-error', { route: scope, outcome: 'error', message: err instanceof Error ? err.message : String(err) })
   try {
     Sentry.captureException(err, { tags: { scope } })
   } catch {
