@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 8,
+ "iteration": 9,
  "gates": [
   {
    "id": "lint",
@@ -296,7 +296,7 @@
   "enterprise": {
    "key": "enterprise",
    "name": "Enterprise Readiness",
-   "score": 6,
+   "score": 7,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
@@ -367,9 +367,11 @@
      "id": "EN-9",
      "criterion": "RBAC beyond binary admin: a server-only module (src/lib/roles.ts or extended admin.ts) defines at least three roles (admin, ehs, worker) resolved from env allowlists, the NextAuth session callback exposes the role, at least one API route enforces the ehs (non-admin) role server-side, and README's Authorization section documents the role table (replacing the 'does not implement RBAC' statement).",
      "verify": "Confirm the roles module exports a role-resolver used in lib/auth.ts session callback; grep an API route for the ehs-role check; README Authorization section lists all three roles and no longer contains 'does not implement role-based access control'.",
-     "met": false,
-     "evidence": "Missing. src/lib/admin.ts:13-23 is a binary ADMIN_EMAILS set only; README.md:244 states 'The application does not implement role-based access control... All authenticated users have equal access'; no route enforces an intermediate EHS/reviewer role.",
-     "autonomyNote": "Ship the RBAC mechanism with .env.example placeholders; populating real role allowlists is an owner (mark.starr) step \u2014 criterion verifiable with test fixtures."
+     "met": true,
+     "evidence": "roles.ts resolves admin>ehs>worker from env allowlists; auth.ts:148 exposes session.user.role; review/decide:62-64 enforces 403 for workers on the in-app path; README role table complete, old 'no RBAC' sentence gone.",
+     "autonomyNote": "Ship the RBAC mechanism with .env.example placeholders; populating real role allowlists is an owner (mark.starr) step \u2014 criterion verifiable with test fixtures.",
+     "verifiedBy": "verify-criteria wf_feaab542-5f9 (1-vote adversarial)",
+     "verifiedAtIteration": 9
     },
     {
      "id": "EN-10",
@@ -1119,7 +1121,7 @@
    "criteria": [
     "EN-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "EN-M4-T1",
@@ -1131,7 +1133,7 @@
       "src/lib/__tests__/roles.test.ts"
      ],
      "acceptance": "vitest passes roles tests; session callback in src/lib/auth.ts sets session.user.role; .env.example documents EHS_EMAILS.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M4-T2",
@@ -1141,7 +1143,7 @@
       "src/lib/__tests__/review-decide-rbac.test.ts"
      ],
      "acceptance": "A worker-role session hitting the guarded route gets 403 in the new test; admin/ehs sessions succeed; existing review tests still pass.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M4-T3",
@@ -1150,7 +1152,7 @@
       "README.md"
      ],
      "acceptance": "grep 'does not implement role-based access control' README.md returns nothing; README lists all three roles.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M4-TX1",
@@ -1160,7 +1162,7 @@
       "src/lib/__tests__/auth.test.ts"
      ],
      "acceptance": "A test proves an ADMIN_EMAILS address cannot authenticate via the shared email code; non-admin domain logins still work. This also protects LG-7's server-verified-identity claim.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1958,6 +1960,24 @@
     "EN-7 (first attempt: log lines lacked route/outcome fields; fixed and re-confirmed)"
    ],
    "notes": "Structured JSON logging + fail-open audit trail + admin audit endpoint; 17 new tests. Enterprise 4->6."
+  },
+  {
+   "iteration": 9,
+   "date": "2026-07-06",
+   "milestone": "EN-M4",
+   "event": "iteration",
+   "tasksDone": [
+    "EN-M4-T1",
+    "EN-M4-T2",
+    "EN-M4-T3",
+    "EN-M4-TX1"
+   ],
+   "gates": "lint OK, tsc OK, 736/736 tests, build OK",
+   "verified": [
+    "EN-9"
+   ],
+   "refuted": [],
+   "notes": "Three-role RBAC + in-app EHS review decisions + production impersonation block (critic gap TX1 closed). Enterprise 6->7. Owner step: populate EHS_EMAILS in Vercel when ready."
   }
  ]
 }
