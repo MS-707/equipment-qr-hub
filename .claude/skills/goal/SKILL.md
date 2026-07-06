@@ -55,7 +55,8 @@ from the last log entry, and total iterations run. No side effects.
 
 1. **Preflight.** `git status` must be clean (stash-and-warn if not); confirm
    branch per rail 5; `git pull origin <branch>` (tolerate no-upstream on first
-   run). Read goals.json.
+   run). If `node_modules` is missing (fresh container/clone), run
+   `npm ci --no-audit --no-fund` before anything else. Read goals.json.
 2. **Terminal check.** If every dimension has `verifiedScore: 10` → run the
    *Completion protocol* below and END (under /loop: do not schedule another
    wakeup; state plainly that the loop is complete).
