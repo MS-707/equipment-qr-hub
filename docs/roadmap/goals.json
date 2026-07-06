@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 11,
+ "iteration": 12,
  "gates": [
   {
    "id": "lint",
@@ -32,7 +32,7 @@
   "ux": {
    "key": "ux",
    "name": "UX",
-   "score": 7,
+   "score": 8,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "All ten met/unmet judgments were independently re-verified and none overturned: the seven met criteria have real code behind them (root SyncProvider installing online-event sync+notify listeners, synchronous local persistence before any fetch in all seven field forms, useFormDraft with pagehide/visibilitychange flush across six safety forms plus a mirrored pre-trip draft, inputMode/htmlFor/coarse-pointer 16px rule, error/not-found/~offline recovery pages with empty states and skeletons, offline chip + pending-sync badge + aria-live toast + cached-identity banner, and fully static /inspect/[id] pages with OOS warning and profile redirect). The three unmet criteria are genuinely unmet: no skip link exists and most routes lack a <main> landmark; identity.ts:39 caps offline identity at 72h and AuthGate hard-locks stale-offline workers out of all forms; Playwright ships in devDependencies with zero config, zero specs, and no e2e script. Biggest real gaps are the 72h offline lockout (a direct field-reliability risk for multi-day remote crews) and the complete absence of automated accessibility/offline regression coverage. One rubric defect: UX-2's \"every tappable control\" prose is broader than its grep-based check and a ~14px dismiss button slips through.",
@@ -92,8 +92,10 @@
      "id": "UX-8",
      "criterion": "Bypass blocks and landmarks (WCAG 2.4.1/1.3.1): the root layout renders a skip-to-content link as the first focusable element targeting the page's main landmark, and every page route exposes exactly one <main> landmark (directly or via its top-level component).",
      "verify": "grep -riE 'skip.?(to|link|content)' src returns a skip link in layout.tsx; for each src/app/**/page.tsx (excluding api), grep '<main' in the page or its top-level rendered component returns exactly one match.",
-     "met": false,
-     "evidence": "No skip link anywhere (grep -riE 'skip.?(to|link|content)' src returns nothing); only 7 of ~22 routes render <main> \u2014 home (SafetyDashboard), all /safety/* pages (e.g. safety/ptp/page.tsx uses a bare div), /inspections, /beta, /admin/beta lack a main landmark."
+     "met": true,
+     "evidence": "layout.tsx:70-78 skip link is first element in body; all 22 page routes expose exactly one <main id='main'> (20 direct, 2 via EquipmentProfile/InspectLanding); adversarial double-landmark check clean. Live check: first Tab focuses the link on every route.",
+     "verifiedBy": "verify-criteria wf_8167751f-62f (1-vote adversarial)",
+     "verifiedAtIteration": 12
     },
     {
      "id": "UX-9",
@@ -664,7 +666,7 @@
    "criteria": [
     "UX-8"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "UX-M1-T1",
@@ -674,7 +676,7 @@
       "src/app/globals.css"
      ],
      "acceptance": "grep -riE 'skip.?(to|content)' src/app/layout.tsx returns the link; tabbing once on any route focuses it and activating it moves focus to the main landmark.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "UX-M1-T2",
@@ -695,7 +697,7 @@
       "src/components/safety/SafetyDashboard.tsx"
      ],
      "acceptance": "For each src/app/**/page.tsx (excluding api), grep '<main' in the page or its top-level rendered component returns exactly one match; no route renders two mains (check EquipmentProfile/InspectLanding are not double-wrapped).",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2027,6 +2029,22 @@
    ],
    "refuted": [],
    "notes": "Consent + disclaimers + beta privacy link, all confirmed first-pass. Legal 6->9."
+  },
+  {
+   "iteration": 12,
+   "date": "2026-07-06",
+   "milestone": "UX-M1",
+   "event": "iteration",
+   "tasksDone": [
+    "UX-M1-T1",
+    "UX-M1-T2"
+   ],
+   "gates": "lint OK, tsc OK, 736/736 tests, build OK + live Playwright landmark/skip-link check",
+   "verified": [
+    "UX-8"
+   ],
+   "refuted": [],
+   "notes": "Skip link + one main landmark per route (display:contents wrappers). UX 7->8."
   }
  ]
 }

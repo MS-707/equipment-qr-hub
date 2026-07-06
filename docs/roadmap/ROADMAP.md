@@ -110,9 +110,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 12. UX-M1 — Landmark structure and skip navigation
 *Dimension: UX · flips: UX-8 · why here: skip link + landmark structure: cheap, and must land before the axe suite so UX-M3's scans pass first try.*
 
-- [ ] **UX-M1-T1** Add a visually-hidden-until-focused skip link as the first element inside <body> in src/app/layout.tsx (e.g. 'Skip to content' targeting #main), styled with the existing focus-visible ring tokens.
+- [x] **UX-M1-T1** Add a visually-hidden-until-focused skip link as the first element inside <body> in src/app/layout.tsx (e.g. 'Skip to content' targeting #main), styled with the existing focus-visible ring tokens.
   - *Acceptance:* grep -riE 'skip.?(to|content)' src/app/layout.tsx returns the link; tabbing once on any route focuses it and activating it moves focus to the main landmark.
-- [ ] **UX-M1-T2** Give every page route exactly one <main id="main"> landmark: wrap SafetyDashboard, all /safety/* pages (ptp, jha, incident, permits/*, history, record/[id], review/action), /inspections, /beta, /admin/beta content in <main>, and add id="main" to the existing mains (equipment, work-orders, inspect, terms, privacy, labels, ~offline, not-found, error).
+- [x] **UX-M1-T2** Give every page route exactly one <main id="main"> landmark: wrap SafetyDashboard, all /safety/* pages (ptp, jha, incident, permits/*, history, record/[id], review/action), /inspections, /beta, /admin/beta content in <main>, and add id="main" to the existing mains (equipment, work-orders, inspect, terms, privacy, labels, ~offline, not-found, error).
   - *Acceptance:* For each src/app/**/page.tsx (excluding api), grep '<main' in the page or its top-level rendered component returns exactly one match; no route renders two mains (check EquipmentProfile/InspectLanding are not double-wrapped).
 
 ### 13. UX-M2 — Offline identity continuity beyond 72 hours
