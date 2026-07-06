@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
 
       <div>
         <h1 className="text-2xl font-bold text-fg">Privacy Policy</h1>
-        <p className="text-xs text-fg-3 mt-1">Last updated: June 2026</p>
+        <p className="text-xs text-fg-3 mt-1">Last updated: July 2026</p>
       </div>
 
       <p className="text-sm text-fg-2">
@@ -59,9 +59,12 @@ export default function PrivacyPolicy() {
         <h2 className="text-lg font-semibold text-fg">Digital Signatures</h2>
         <p className="text-sm text-fg-2">
           When crew members sign a pre-task plan or other safety document, the signature
-          is captured as an image and stored locally on the device. Signatures are not
-          shared with any external service in the current version. They are used solely
-          to document that a worker reviewed and acknowledged a safety plan.
+          is captured as an image and stored locally on the device. When you sign a
+          pre-trip equipment inspection, the signature image is also attached as a PNG
+          to the inspection notification email sent to your EHS team through Resend.
+          Signature images are not uploaded by Notion sync and are never sent to AI
+          features. They are used solely to document that a worker reviewed and
+          acknowledged the record.
         </p>
       </section>
 
@@ -75,9 +78,10 @@ export default function PrivacyPolicy() {
         <ul className="list-disc list-inside text-sm text-fg-2 space-y-2 pl-1">
           <li>
             <strong>Anthropic Claude API</strong> -- Work descriptions, hazard information,
-            and incident descriptions may be sent to Anthropic&apos;s Claude AI for analysis
-            and suggestions. We do not intentionally include personally identifiable
-            information (PII) in these requests. Data sent to Claude is subject to{' '}
+            incident descriptions, and safety-record context may be sent to
+            Anthropic&apos;s Claude AI for analysis and suggestions. That context can
+            include worker and supervisor names exactly as they appear on the record
+            being analyzed. Data sent to Claude is subject to{' '}
             <a
               href="https://www.anthropic.com/policies"
               target="_blank"
@@ -98,11 +102,28 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <strong>Slack</strong> -- Optional notifications can be sent to a Slack
-            channel when new safety records are submitted.
+            channel when new safety records are submitted. A one-time notification
+            containing your name and email is also sent the first time you sign in.
           </li>
           <li>
             <strong>Google</strong> -- Used for OAuth authentication so you can sign in
             with your Google account.
+          </li>
+          <li>
+            <strong>Sentry</strong> -- Error monitoring. When something breaks,
+            technical details of the error (stack trace, device and browser
+            information) are sent to Sentry so we can diagnose and fix it.
+          </li>
+          <li>
+            <strong>Upstash Redis (Vercel KV)</strong> -- Server-side storage for
+            sign-in tracking (name and email, kept 90 days), beta program signups
+            (180 days), EHS review submissions (7&ndash;30 days), and rate-limit
+            counters.
+          </li>
+          <li>
+            <strong>Vercel</strong> -- Hosts the application. Like any hosting
+            provider, it processes requests to serve the app and keeps standard
+            server logs.
           </li>
         </ul>
       </section>
@@ -127,10 +148,12 @@ export default function PrivacyPolicy() {
           personnel.
         </p>
         <p className="text-sm text-fg-2">
-          When AI features are used, only work-related context is sent to the AI
-          provider -- such as job descriptions, hazard lists, and atmospheric readings.
-          We do not intentionally send personal information like names, emails, or
-          signatures to the AI.
+          When AI features are used, the request contains work-related context --
+          job descriptions, hazard lists, and atmospheric readings -- and can include
+          worker and supervisor names as they appear on the safety record being
+          analyzed (for example, a pre-task plan review includes the worker&apos;s name
+          and which crew members have signed). Signature images and photos are never
+          sent to the AI provider.
         </p>
       </section>
 
@@ -138,9 +161,40 @@ export default function PrivacyPolicy() {
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-fg">Data Retention</h2>
         <p className="text-sm text-fg-2">
-          Records stored on your device persist until you manually clear them. If your
-          organization uses server sync, synced records follow your organization&apos;s
-          retention policies.
+          These are the retention periods the app actually implements:
+        </p>
+        <ul className="list-disc list-inside text-sm text-fg-2 space-y-1 pl-1">
+          <li>
+            Safety records on your device that have synced to Notion are automatically
+            removed from the device 90 days after creation (the archiver runs when the
+            app loads). Records that have never synced stay on your device until you
+            clear them.
+          </li>
+          <li>Unsubmitted form drafts are deleted after 7 days.</li>
+          <li>
+            Server-side records expire automatically: sign-in tracking after 90 days,
+            beta signups after 180 days, EHS review submissions after 7 days (30 days
+            once a decision is recorded).
+          </li>
+          <li>
+            Records synced to Notion follow your organization&apos;s Notion workspace
+            retention.
+          </li>
+        </ul>
+        <p className="text-sm text-fg-2">
+          The app is not your organization&apos;s system of record: OSHA requires longer
+          retention for some records (for example, incident reports must be kept five
+          years) than a device keeps locally. Use Notion sync and CSV export to
+          preserve durable copies. See the{' '}
+          <a
+            href="https://github.com/MS-707/equipment-qr-hub/blob/main/docs/COMPLIANCE-RETENTION.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-mytra-purple hover:underline"
+          >
+            compliance &amp; retention mapping
+          </a>{' '}
+          for how app behavior relates to OSHA record-keeping requirements.
         </p>
       </section>
 
