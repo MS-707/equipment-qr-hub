@@ -13,7 +13,10 @@ export async function POST(req: Request) {
     'unknown'
   const rl = await rateLimit(`beta-signup:${ip}`, 5, 60_000)
   if (!rl.ok) {
-    return Response.json({ error: 'Too many requests' }, { status: 429 })
+    return Response.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    )
   }
 
   let raw: unknown
