@@ -100,11 +100,11 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 11. LG-M2 — Close consent and AI-disclaimer gaps on capture surfaces
 *Dimension: Legal · flips: LG-6, LG-8, LG-9 · why here: consent text at signature pads, AI disclaimers, beta-form privacy link: small UI strings closing real legal exposure on capture surfaces.*
 
-- [ ] **LG-M2-T1** Add an intent/consent sentence above the reporter SignaturePad in IncidentReportForm.tsx (e.g. 'By signing you certify this report is accurate; your signature is stored on this device for recordkeeping').
+- [x] **LG-M2-T1** Add an intent/consent sentence above the reporter SignaturePad in IncidentReportForm.tsx (e.g. 'By signing you certify this report is accurate; your signature is stored on this device for recordkeeping').
   - *Acceptance:* grep -in 'By signing\|certify' src/components/safety/IncidentReportForm.tsx returns a line adjacent to the SignaturePad render (~line 668).
-- [ ] **LG-M2-T2** Add the standard advisory disclaimer ('AI suggestions are not a substitute for a competent safety assessment') to JhaForm.tsx near the Sage document-parse and suggest-jha result UI.
+- [x] **LG-M2-T2** Add the standard advisory disclaimer ('AI suggestions are not a substitute for a competent safety assessment') to JhaForm.tsx near the Sage document-parse and suggest-jha result UI.
   - *Acceptance:* grep -in 'not a substitute\|advisory' src/components/safety/JhaForm.tsx returns at least one hit in the Sage sections.
-- [ ] **LG-M2-T3** Add a privacy-policy link/notice to the public beta signup form near the submit button in src/app/beta/page.tsx.
+- [x] **LG-M2-T3** Add a privacy-policy link/notice to the public beta signup form near the submit button in src/app/beta/page.tsx.
   - *Acceptance:* grep -n '/privacy' src/app/beta/page.tsx returns a link rendered within the signup form.
 
 ### 12. UX-M1 — Landmark structure and skip navigation

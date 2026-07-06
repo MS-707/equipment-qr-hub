@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 10,
+ "iteration": 11,
  "gates": [
   {
    "id": "lint",
@@ -476,7 +476,7 @@
   "legal": {
    "key": "legal",
    "name": "Legal",
-   "score": 6,
+   "score": 9,
    "initialScore": 2,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified against the code and every one held: 2/10 confirmed (LG-1, LG-7), no overturns. The review is accurate and its evidence line numbers check out, including the KV TTL details and the JhaForm disclaimer gap. The biggest real gap is that the privacy policy directly contradicts actual data flows: it claims signatures never leave the device while the notify route emails signature PNGs via Resend, claims no names are sent to the AI while sage-context injects worker and supervisor names into Anthropic prompts, omits Sentry and Upstash as subprocessors, and states records persist until manually cleared while a 90-day archiver and 7-day draft prune auto-delete them.",
@@ -531,9 +531,11 @@
      "id": "LG-6",
      "criterion": "Every SignaturePad capture surface displays adjacent text stating signing intent and where the signature is stored or transmitted (inspection sign-on, crew signature block, and incident reporter signature).",
      "verify": "For each file importing SignaturePad that renders it (PreTripInspection.tsx, CrewSignatureBlock.tsx, IncidentReportForm.tsx), grep for an intent/consent sentence ('certify', 'By signing', 'consent') within the same JSX section as the pad.",
-     "met": false,
-     "evidence": "PreTripInspection.tsx:1008 and CrewSignatureBlock.tsx:130 have intent/consent text, but IncidentReportForm.tsx:668-669 renders SignaturePad with only the label 'Signature (optional)' and no intent or storage statement.",
-     "autonomyNote": "Same as LG-2: disclose honestly in consent text; data-flow redesign is an owner decision."
+     "met": true,
+     "evidence": "All three SignaturePad surfaces carry intent+storage text in the same JSX section: IncidentReportForm:670-671, CrewSignatureBlock:130, PreTripInspection:1008-1009 (discloses the EHS email copy).",
+     "autonomyNote": "Same as LG-2: disclose honestly in consent text; data-flow redesign is an owner decision.",
+     "verifiedBy": "verify-criteria wf_a6cb138a-d79 (1-vote adversarial)",
+     "verifiedAtIteration": 11
     },
     {
      "id": "LG-7",
@@ -546,15 +548,19 @@
      "id": "LG-8",
      "criterion": "Every UI surface that renders AI-generated safety suggestions displays an advisory disclaimer (not-a-substitute language): SageAssist, SageTriage, ConfinedSpaceForm atmospheric analysis, IncidentReportForm analysis, and JhaForm's parse-document/suggest-jha outputs.",
      "verify": "grep -in 'advisory\\|not a substitute' in each component that fetches /api/safety/suggest-*|analyze-*|parse-document or /api/sage/triage \u2014 every such component must contain a disclaimer string.",
-     "met": false,
-     "evidence": "SageAssist.tsx:387, SageTriage.tsx:474, ConfinedSpaceForm.tsx:468, IncidentReportForm.tsx:560 have disclaimers, but JhaForm.tsx calls /api/safety/parse-document (:159) and /api/safety/suggest-jha (:219) with zero advisory/not-a-substitute text anywhere in the file."
+     "met": true,
+     "evidence": "All six AI-fetching components contain the advisory string: SageTriage:474, SageAssist:387, ConfinedSpaceForm:468, IncidentReportForm:560, JhaForm:576+342, PreTaskPlanForm:467.",
+     "verifiedBy": "verify-criteria wf_a6cb138a-d79 (1-vote adversarial)",
+     "verifiedAtIteration": 11
     },
     {
      "id": "LG-9",
      "criterion": "The public beta signup form, which collects name/email/company and stores them in Upstash KV and posts them to Slack, displays a link to the privacy policy on the form.",
      "verify": "grep -n '/privacy' src/app/beta/page.tsx returns a link rendered in the signup form section.",
-     "met": false,
-     "evidence": "grep -i 'privacy|consent|agree' over src/app/beta returns nothing; the form collects name/email/company/role (page.tsx:58-69) and posts to /api/beta/signup which stores to KV (beta.ts:34, 180d TTL) and Slacks the details (signup/route.ts:80)."
+     "met": true,
+     "evidence": "beta/page.tsx:940 renders the /privacy link with a storage disclosure inside the signup form.",
+     "verifiedBy": "verify-criteria wf_a6cb138a-d79 (1-vote adversarial)",
+     "verifiedAtIteration": 11
     },
     {
      "id": "LG-10",
@@ -1295,7 +1301,7 @@
     "LG-8",
     "LG-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "LG-M2-T1",
@@ -1304,7 +1310,7 @@
       "src/components/safety/IncidentReportForm.tsx"
      ],
      "acceptance": "grep -in 'By signing\\|certify' src/components/safety/IncidentReportForm.tsx returns a line adjacent to the SignaturePad render (~line 668).",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "LG-M2-T2",
@@ -1313,7 +1319,7 @@
       "src/components/safety/JhaForm.tsx"
      ],
      "acceptance": "grep -in 'not a substitute\\|advisory' src/components/safety/JhaForm.tsx returns at least one hit in the Sage sections.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "LG-M2-T3",
@@ -1322,7 +1328,7 @@
       "src/app/beta/page.tsx"
      ],
      "acceptance": "grep -n '/privacy' src/app/beta/page.tsx returns a link rendered within the signup form.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2002,6 +2008,25 @@
     "EN-10 (first attempt: Notion runbook lacked concrete commands; backup-notion.mjs added, re-confirmed)"
    ],
    "notes": "Enterprise doc pack: retention schedule, SSO walkthrough, runbooks + KV/Notion backup scripts. Enterprise 7->9."
+  },
+  {
+   "iteration": 11,
+   "date": "2026-07-06",
+   "milestone": "LG-M2",
+   "event": "iteration",
+   "tasksDone": [
+    "LG-M2-T1",
+    "LG-M2-T2",
+    "LG-M2-T3"
+   ],
+   "gates": "lint OK, tsc OK, 736/736 tests, build OK",
+   "verified": [
+    "LG-6",
+    "LG-8",
+    "LG-9"
+   ],
+   "refuted": [],
+   "notes": "Consent + disclaimers + beta privacy link, all confirmed first-pass. Legal 6->9."
   }
  ]
 }
