@@ -1,6 +1,6 @@
 export const meta = {
   name: 'rescore',
-  description: 'Re-score all six roadmap dimensions against the frozen rubrics in docs/roadmap/goals.json',
+  description: 'Re-score all roadmap dimensions against the frozen rubrics in docs/roadmap/goals.json',
   whenToUse: 'Called by /goal review after big merges or on demand; returns per-dimension per-criterion verdicts for the caller to apply to goals.json',
   phases: [{ title: 'Rescore', detail: 'one skeptic per dimension re-runs all 10 criterion checks' }],
 }

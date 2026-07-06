@@ -1,6 +1,6 @@
 ---
 name: goal
-description: Autonomous roadmap runner for Equipment QR Hub. Reads docs/roadmap/goals.json, executes the next milestone with quality gates and adversarial verification, updates state, commits and pushes. Usage — "/goal" status scoreboard; "/goal next" run one iteration (the /loop workhorse); "/goal review" full six-dimension re-score against the frozen rubrics; "/goal verify <DIM|criterion-id>" verification panel only. Designed to be driven continuously by "/loop /goal next" until all six dimensions verify 10/10.
+description: Autonomous roadmap runner for Equipment QR Hub. Reads docs/roadmap/goals.json, executes the next milestone with quality gates and adversarial verification, updates state, commits and pushes. Usage — "/goal" status scoreboard; "/goal next" run one iteration (the /loop workhorse); "/goal review" full re-score of every dimension against the frozen rubrics; "/goal verify <DIM|criterion-id>" verification panel only. Designed to be driven continuously by "/loop /goal next" until every dimension in goals.json verifies 10/10.
 ---
 
 # /goal — Roadmap Runner
