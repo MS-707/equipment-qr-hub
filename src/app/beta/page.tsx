@@ -935,6 +935,12 @@ export default function BetaPage() {
                 Fill in all required fields to continue.
               </p>
             )}
+            <p className="text-xs text-[#9A9A9A] text-center">
+              We store your name, email, and company to run the beta program.{' '}
+              <a href="/privacy" className="underline hover:text-white transition-colors">
+                Privacy policy
+              </a>
+            </p>
 
             <p className="text-xs text-[#9A9A9A] text-center">
               We only use your info to process this request and send beta access instructions.

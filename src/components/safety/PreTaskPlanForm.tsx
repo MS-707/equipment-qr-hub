@@ -463,6 +463,9 @@ export default function PreTaskPlanForm() {
                         </div>
                       ))}
                     </div>
+                    <p className="text-xs text-fg-4 mt-2">
+                      AI findings are advisory and not a substitute for a competent safety assessment.
+                    </p>
                     {hasBlockers && (
                       <div className="px-4 pb-3">
                         <p className="text-xs text-danger">Resolve blockers before submitting.</p>

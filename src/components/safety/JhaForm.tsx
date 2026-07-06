@@ -338,7 +338,8 @@ export default function JhaForm() {
             <span className="text-xs bg-mytra-purple/15 text-mytra-purple px-1.5 py-0.5 rounded font-medium">Optional</span>
           </div>
           <p className="text-xs text-fg-3">
-            Upload a task plan, method statement, or scope of work and Sage will extract the steps,
+            Upload a task plan, method statement, or scope of work and Sage will extract the steps
+            (advisory only — not a substitute for a competent safety assessment),
             hazards, and controls to pre-fill your JHA.
           </p>
           <input
@@ -572,6 +573,7 @@ export default function JhaForm() {
             {filledSteps.some((s) => s.source === 'sage') && (
               <p className="text-xs text-fg-4 mt-2 text-center">
                 AI analysis is a starting point — review and edit before submitting for EHS review.
+                AI suggestions are advisory and not a substitute for a competent safety assessment.
               </p>
             )}
           </div>

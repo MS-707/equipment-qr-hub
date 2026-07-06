@@ -666,6 +666,10 @@ export default function IncidentReportForm() {
         </div>
         <div>
           <label className={labelCls}>Signature (optional)</label>
+          <p className="text-xs text-fg-3 mb-2">
+            By signing you certify this report is accurate to the best of your knowledge.
+            Your signature is stored on this device with the report for recordkeeping.
+          </p>
           <SignaturePad onChange={(url) => setReporterSig(url)} />
         </div>
       </section>
