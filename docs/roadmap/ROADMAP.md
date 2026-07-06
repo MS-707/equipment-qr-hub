@@ -58,9 +58,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 7. BE-M1 — Wire server-side Sentry error capture end to end
 *Dimension: Backend · flips: BE-10 · why here: wire server Sentry (instrumentation.ts + captureException); do immediately before EN-M3 since they edit the same catch blocks.*
 
-- [ ] **BE-M1-T1** Add src/instrumentation.ts with register() importing sentry.server.config.ts (and sentry.edge.config.ts for the edge runtime) and export onRequestError = Sentry.captureRequestError, per @sentry/nextjs v10 + Next 14 requirements. Keep it a no-op when NEXT_PUBLIC_SENTRY_DSN is unset.
+- [x] **BE-M1-T1** Add src/instrumentation.ts with register() importing sentry.server.config.ts (and sentry.edge.config.ts for the edge runtime) and export onRequestError = Sentry.captureRequestError, per @sentry/nextjs v10 + Next 14 requirements. Keep it a no-op when NEXT_PUBLIC_SENTRY_DSN is unset.
   - *Acceptance:* find src -name 'instrumentation.ts' returns the file; it contains register() loading the server config and an onRequestError export; npx tsc --noEmit and npm run build succeed.
-- [ ] **BE-M1-T2** Add a shared reportServerError(scope, err) helper in src/lib (console.error + Sentry.captureException, safe when DSN unset) and call it from every catch block in src/app/api/**/route.ts and in email-notify.ts / slack-notify.ts failure paths. Add a unit test asserting the helper calls captureException when DSN is set.
+- [x] **BE-M1-T2** Add a shared reportServerError(scope, err) helper in src/lib (console.error + Sentry.captureException, safe when DSN unset) and call it from every catch block in src/app/api/**/route.ts and in email-notify.ts / slack-notify.ts failure paths. Add a unit test asserting the helper calls captureException when DSN is set.
   - *Acceptance:* grep -rn 'captureException\|reportServerError' src/app/api src/lib shows every route catch block covered; vitest run passes including the new helper test.
 
 ### 8. EN-M3 — Observability and audit trail: structured logs + privileged-action log

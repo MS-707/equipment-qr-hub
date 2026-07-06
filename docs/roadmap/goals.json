@@ -202,7 +202,7 @@
   "backend": {
    "key": "backend",
    "name": "Backend",
-   "score": 9,
+   "score": 10,
    "initialScore": 6,
    "verifiedScore": null,
    "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
@@ -284,9 +284,11 @@
      "id": "BE-10",
      "criterion": "Server errors reach Sentry: an instrumentation.ts exists with register() loading sentry.server.config (required for @sentry/nextjs v10 on Next 14) plus an onRequestError export using captureRequestError, and every route-handler catch block reports the error via Sentry.captureException (directly or through a shared helper) in addition to console.error.",
      "verify": "find src -name 'instrumentation.ts' returns the file with register() and onRequestError; grep -rn 'captureException\\|captureRequestError' src returns hits covering every catch block in src/app/api/**/route.ts.",
-     "met": false,
-     "evidence": "sentry.server.config.ts exists at repo root but no instrumentation.ts anywhere (find returns nothing), so server-side Sentry never initializes on Next 14 with @sentry/nextjs ^10.58.0; grep for captureException/captureRequestError across src returns zero hits.",
-     "autonomyNote": "No SENTRY_DSN in loop env: assert via mocked @sentry/nextjs in unit tests + instrumentation.ts file-shape check."
+     "met": true,
+     "evidence": "instrumentation.ts:9-18 loads server/edge Sentry configs + onRequestError=captureRequestError; report-error.ts:13 shared helper; all 43 catch blocks in 17 route files call reportServerError (auth passthrough has zero catches).",
+     "autonomyNote": "No SENTRY_DSN in loop env: assert via mocked @sentry/nextjs in unit tests + instrumentation.ts file-shape check.",
+     "verifiedBy": "verify-criteria wf_4fc064f7-fbb (1-vote adversarial, after wf_aea1a38f-6aa refuted two silent catches)",
+     "verifiedAtIteration": 7
     }
    ]
   },
@@ -879,7 +881,7 @@
    "criteria": [
     "BE-10"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "BE-M1-T1",
@@ -889,7 +891,7 @@
       "sentry.server.config.ts"
      ],
      "acceptance": "find src -name 'instrumentation.ts' returns the file; it contains register() loading the server config and an onRequestError export; npx tsc --noEmit and npm run build succeed.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "BE-M1-T2",
@@ -901,7 +903,7 @@
       "src/lib/slack-notify.ts"
      ],
      "acceptance": "grep -rn 'captureException\\|reportServerError' src/app/api src/lib shows every route catch block covered; vitest run passes including the new helper test.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
