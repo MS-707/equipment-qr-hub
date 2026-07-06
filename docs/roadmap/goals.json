@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 6,
+ "iteration": 7,
  "gates": [
   {
    "id": "lint",
@@ -204,7 +204,7 @@
    "name": "Backend",
    "score": 10,
    "initialScore": 6,
-   "verifiedScore": null,
+   "verifiedScore": 10,
    "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
    "reviewNotes": "Verification basis: read all 17 non-NextAuth route.ts files plus api-auth, rate-limit, kv, beta, review-store/-token, safety-sync, inspections queue, email/slack helpers, auth, admin; ran full vitest (69 files / 694 tests, all pass, 7.5s). docs/roadmap/goals.json does not exist yet \u2014 this is the initial rubric. Out-of-lane findings: (1) enterprise/security \u2014 GET /api/safety/review/status lets ANY authenticated user read review status/notes for arbitrary Notion page IDs and record IDs (no ownership check); acceptable for a small internal tool but an IT buyer may flag it. (2) legal/enterprise \u2014 EHS_NOTIFY_EMAIL and review-decide default a personal address (mark.starr@mytra.ai) hardcoded in src/lib/email-notify.ts:15 and review/decide/route.ts:162. (3) beta.ts updateSignupStatus is read-modify-write without a lock \u2014 two admins deciding the same signup concurrently is last-write-wins; low materiality, not counted. (4) rate limiter deliberately fails OPEN on KV errors (documented at rate-limit.ts:7-8) \u2014 I treated this as an accepted design choice for safety tooling, not a defect; if a future security reviewer wants fail-closed on auth-sensitive endpoints, that belongs to their lane. (5) Sync queues are client-local (localStorage) by design; there is no server-side queue to poison \u2014 BE-6 judged against the documented client-queue architecture (docs/sync-architecture.svg, spec \u00a712 image-blob limitation). Executor warning: when adding zod safeParse (BE-M2), several route tests assert exact error strings/status codes \u2014 update tests in the same commit; and instrumentation.ts (BE-M1-T1) must guard against missing DSN or local dev builds will fail Sentry init.\"",
    "criteria": [
@@ -290,7 +290,8 @@
      "verifiedBy": "verify-criteria wf_4fc064f7-fbb (1-vote adversarial, after wf_aea1a38f-6aa refuted two silent catches)",
      "verifiedAtIteration": 7
     }
-   ]
+   ],
+   "status": "done"
   },
   "enterprise": {
    "key": "enterprise",
@@ -1913,6 +1914,25 @@
     "BE-9 (first attempt: mechanical pass crashed before bounding the 9 Anthropic clients; verifier caught the gap, fixed and re-confirmed)"
    ],
    "notes": "Fetch timeouts + KV 503 guards + 6 new tests. First BE-9 verification REFUTED a silent partial failure \u2014 the adversarial gate did its job. Backend 8->9."
+  },
+  {
+   "iteration": 7,
+   "date": "2026-07-06",
+   "milestone": "BE-M1",
+   "event": "iteration+dimension-complete",
+   "tasksDone": [
+    "BE-M1-T1",
+    "BE-M1-T2"
+   ],
+   "gates": "lint OK, tsc OK, 708/708 tests, build OK",
+   "verified": [
+    "BE-10"
+   ],
+   "refuted": [
+    "BE-10 (first attempt: two silent single-line catches; fixed and re-confirmed)"
+   ],
+   "panel": "Dimension completion panel: BE-2/BE-8/BE-9/BE-10 x 3 lenses = 12/12 votes MET. backend verifiedScore=10, dimension done.",
+   "notes": "Sentry server capture live via instrumentation.ts; 43/43 catch blocks report. BACKEND is the first dimension at a verified 10/10."
   }
  ]
 }
