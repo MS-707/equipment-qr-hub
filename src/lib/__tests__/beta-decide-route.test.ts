@@ -9,6 +9,9 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/admin', () => ({
   isAdmin: vi.fn(() => true),
 }))
+vi.mock('@/lib/audit-log', () => ({
+  appendAudit: vi.fn(() => Promise.resolve()),
+}))
 vi.mock('@/lib/beta', () => ({
   updateSignupStatus: vi.fn(),
   getAllSignups: vi.fn(() => []),
@@ -20,6 +23,7 @@ vi.mock('@/app/api/beta/decide/email', () => ({
 import { getServerSession } from 'next-auth/next'
 import { isAdmin } from '@/lib/admin'
 import { updateSignupStatus, getAllSignups } from '@/lib/beta'
+import { appendAudit } from '@/lib/audit-log'
 
 beforeEach(() => {
   vi.mocked(getServerSession).mockResolvedValue({
@@ -131,5 +135,17 @@ describe('KV outage (BE-9)', () => {
     const { GET } = await import('@/app/api/beta/decide/route')
     const res = await GET()
     expect(res.status).toBe(503)
+  })
+})
+
+describe('audit trail (EN-8)', () => {
+  it('appends an audit entry when a signup is decided', async () => {
+    vi.mocked(updateSignupStatus).mockResolvedValue({ id: 'beta-1', status: 'approved' } as never)
+    const { POST } = await import('@/app/api/beta/decide/route')
+    const res = await POST(makeReq({ id: 'beta-1', status: 'approved' }))
+    expect(res.status).toBe(200)
+    expect(appendAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'beta-approved', target: 'beta-1' })
+    )
   })
 })

@@ -147,7 +147,6 @@ export async function POST(req: Request) {
     })
   } catch (err) {
     reportServerError('api/sage/triage', err)
-    console.error('[sage] triage failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

@@ -100,7 +100,6 @@ export async function POST(req: Request) {
     return Response.json({ steps: analysed.slice(0, boundedSteps.length) })
   } catch (err) {
     reportServerError('api/safety/suggest-jha', err)
-    console.error('[sage] suggest-jha failed:', err instanceof Error ? err.message : err)
     return Response.json({ steps: [], error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

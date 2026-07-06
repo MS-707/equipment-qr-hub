@@ -129,7 +129,6 @@ export async function POST(req: Request) {
     return Response.json(result)
   } catch (err) {
     reportServerError('api/safety/parse-document', err)
-    console.error('[sage] parse-document failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

@@ -104,7 +104,6 @@ export async function POST(req: Request) {
     return Response.json({ analysis })
   } catch (err) {
     reportServerError('api/safety/analyze-atmosphere', err)
-    console.error('[sage] analyze-atmosphere failed:', err instanceof Error ? err.message : err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

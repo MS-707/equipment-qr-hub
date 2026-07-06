@@ -110,11 +110,10 @@ export async function POST(req: Request) {
           body: JSON.stringify({ properties: { 'EHS Review': { select: { name: 'Pending' } } } }),
         })
         notionOk = res.ok
-        if (!res.ok) console.error('[review/submit] Notion PATCH error:', await res.text())
+        if (!res.ok) reportServerError('api/safety/review/submit', new Error(`Notion PATCH error: ${await res.text()}`))
       }
     } catch (e) {
       reportServerError('api/safety/review/submit', e)
-      console.error('[review/submit] Notion error:', e instanceof Error ? e.message : e)
     }
   }
 
@@ -280,7 +279,7 @@ async function syncToNotion(
     })
 
     if (!res.ok) {
-      console.error('[review/submit] Notion create error:', await res.text())
+      reportServerError('api/safety/review/submit', new Error(`Notion create error: ${await res.text()}`))
       return { ok: false, error: 'Notion API error' }
     }
 
@@ -288,7 +287,6 @@ async function syncToNotion(
     return { ok: true, pageId: page.id }
   } catch (e) {
     reportServerError('api/safety/review/submit', e)
-    console.error('[review/submit] sync error:', e instanceof Error ? e.message : e)
     return { ok: false, error: 'Sync failed' }
   }
 }

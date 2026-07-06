@@ -5,6 +5,7 @@ import { updateSignupStatus, getAllSignups } from '@/lib/beta'
 import { BetaDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { sendBetaEmail } from './email'
 import { reportServerError } from '@/lib/report-error'
+import { appendAudit } from '@/lib/audit-log'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
@@ -36,6 +37,8 @@ export async function POST(req: Request) {
   if (!signup) {
     return Response.json({ error: 'Signup not found' }, { status: 404 })
   }
+
+  await appendAudit({ actor: session.user.email, action: `beta-${status}`, target: id })
 
   await sendBetaEmail(signup, status)
 

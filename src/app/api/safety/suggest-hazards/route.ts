@@ -127,7 +127,6 @@ export async function POST(req: Request) {
     return Response.json({ hazards: hazards.slice(0, 8) })
   } catch (err) {
     reportServerError('api/safety/suggest-hazards', err)
-    console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { hazards: [], error: 'Sage is temporarily unavailable' },
       { status: 502 }

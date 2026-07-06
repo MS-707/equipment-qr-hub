@@ -91,7 +91,6 @@ export async function POST(req: Request) {
     })
   } catch (err) {
     reportServerError('api/safety/suggest-toolbox', err)
-    console.error('[sage] suggest-toolbox failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },
       { status: 502 }

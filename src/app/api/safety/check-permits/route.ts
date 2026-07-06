@@ -88,7 +88,6 @@ export async function POST(req: Request) {
     return Response.json({ missing_permits })
   } catch (err) {
     reportServerError('api/safety/check-permits', err)
-    console.error('[sage] check-permits failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { missing_permits: [], error: 'Sage is temporarily unavailable' },
       { status: 502 }

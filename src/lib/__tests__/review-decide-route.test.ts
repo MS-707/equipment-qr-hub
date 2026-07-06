@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+vi.mock('@/lib/audit-log', () => ({
+  appendAudit: vi.fn(() => Promise.resolve()),
+}))
 vi.mock('@/lib/review-token', () => ({
   verifyReviewToken: vi.fn(),
 }))
@@ -15,6 +18,7 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 
 import { verifyReviewToken } from '@/lib/review-token'
+import { appendAudit } from '@/lib/audit-log'
 import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
@@ -310,5 +314,20 @@ describe('KV outage (BE-9)', () => {
     const { POST } = await import('@/app/api/safety/review/decide/route')
     const res = await POST(makePostReq({ token: 'valid-token' }))
     expect(res.status).toBe(503)
+  })
+})
+
+describe('audit trail (EN-8)', () => {
+  it('appends an audit entry when a review is decided', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockResolvedValue({ ...pendingSubmission, status: 'approved', decidedBy: 'x', decidedAt: 'y' })
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(200)
+    expect(appendAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'review-approved', target: 'PTP-2026-0001' })
+    )
   })
 })

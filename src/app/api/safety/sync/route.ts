@@ -185,7 +185,7 @@ export async function POST(req: Request) {
         // A stale/foreign client pageId 404s here — fall through to create
         // only when the page truly doesn't exist; other errors are sync fails.
         if (propRes.status !== 404) {
-          console.error('[sync] Notion property update error:', await propRes.text())
+          reportServerError('api/safety/sync', new Error(`Notion property update error: ${await propRes.text()}`))
           return Response.json({ error: 'Notion sync failed' }, { status: 502 })
         }
         existingPageId = null
@@ -198,7 +198,7 @@ export async function POST(req: Request) {
           }),
         })
         if (!appendRes.ok) {
-          console.error('[sync] Notion snapshot append error:', await appendRes.text())
+          reportServerError('api/safety/sync', new Error(`Notion snapshot append error: ${await appendRes.text()}`))
           return Response.json({ error: 'Notion sync failed' }, { status: 502 })
         }
         return Response.json({ ok: true, notionPageId: existingPageId, updated: true })
@@ -212,7 +212,7 @@ export async function POST(req: Request) {
     })
 
     if (!res.ok) {
-      console.error('[sync] Notion API error:', await res.text())
+      reportServerError('api/safety/sync', new Error(`Notion API error: ${await res.text()}`))
       return Response.json({ error: 'Notion sync failed' }, { status: 502 })
     }
 
@@ -221,7 +221,6 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
     reportServerError('api/safety/sync', e)
-    console.error('[sync] unexpected error:', e instanceof Error ? e.message : e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })
   }
 }

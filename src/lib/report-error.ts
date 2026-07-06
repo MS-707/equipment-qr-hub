@@ -6,9 +6,10 @@
  * degraded response into a crashed handler.
  */
 import * as Sentry from '@sentry/nextjs'
+import { log } from '@/lib/log'
 
 export function reportServerError(scope: string, err: unknown): void {
-  console.error(`[${scope}]`, err instanceof Error ? err.message : err)
+  log('error', 'server-error', { scope, message: err instanceof Error ? err.message : String(err) })
   try {
     Sentry.captureException(err, { tags: { scope } })
   } catch {

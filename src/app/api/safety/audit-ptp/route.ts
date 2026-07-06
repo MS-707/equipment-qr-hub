@@ -151,7 +151,6 @@ export async function POST(req: Request) {
     return Response.json(result)
   } catch (err) {
     reportServerError('api/safety/audit-ptp', err)
-    console.error('[sage] audit-ptp failed:', err instanceof Error ? err.message : err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },
       { status: 502 }

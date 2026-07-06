@@ -9,6 +9,7 @@
  */
 
 import { kv } from '@/lib/kv'
+import { log } from '@/lib/log'
 
 const windows = new Map<string, { count: number; resetAt: number }>()
 let lastCleanup = Date.now()
@@ -67,7 +68,7 @@ export async function rateLimit(
     }
     return { ok: true, retryAfter: 0 }
   } catch (e) {
-    console.error(`[rate-limit] KV error for key=${key}, using in-memory fallback:`, e instanceof Error ? e.message : e)
+    log('warn', 'rate-limit-kv-fallback', { key, message: e instanceof Error ? e.message : String(e) })
     return memoryLimit(key, maxRequests, windowMs)
   }
 }

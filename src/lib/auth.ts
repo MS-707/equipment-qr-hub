@@ -21,6 +21,7 @@ import { timingSafeEqual } from 'crypto'
 import { isFirstLogin } from '@/lib/user-tracker'
 import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { isAdmin } from '@/lib/admin'
+import { log } from '@/lib/log'
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS ?? 'mytra.ai')
   .split(',')
@@ -86,10 +87,10 @@ if (allowDevLogin || allowEmailLogin) {
         if (!emailAllowed(email)) return null
         const code = (creds?.code ?? '').toString()
         if (isProduction && (!emailLoginCode || !safeCodeCompare(code, emailLoginCode))) {
-          console.warn(`[auth] code-login failed for ${email}`)
+          log('warn', 'code-login-failed', { email })
           return null
         }
-        console.info(`[auth] code-login: ${email} (${isProduction ? 'production' : 'dev'})`)
+        log('info', 'code-login', { email, mode: isProduction ? 'production' : 'dev' })
         return { id: email, name: name || email.split('@')[0], email }
       },
     })

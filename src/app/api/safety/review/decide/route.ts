@@ -5,6 +5,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { fetchWithTimeout } from '@/lib/fetch-timeout'
 import { reportServerError } from '@/lib/report-error'
+import { appendAudit } from '@/lib/audit-log'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -76,6 +77,8 @@ export async function POST(req: Request) {
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
+
+  await appendAudit({ actor: 'EHS reviewer (via email link)', action: `review-${status}`, target: parsed.recordId })
 
   // Propagate the decision to the record's Notion page (best-effort): the
   // device poller reads the 'EHS Review' property, so without this PATCH an
@@ -173,10 +176,9 @@ async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmi
       },
       body: JSON.stringify({ properties }),
     })
-    if (!res.ok) console.error('[review-decide] Notion PATCH error:', await res.text())
+    if (!res.ok) reportServerError('api/safety/review/decide', new Error(`Notion PATCH error: ${await res.text()}`))
   } catch (e) {
     reportServerError('api/safety/review/decide', e)
-    console.error('[review-decide] Notion PATCH failed:', e instanceof Error ? e.message : e)
   }
 }
 
@@ -236,13 +238,12 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
       }),
     })
     if (!res.ok) {
-      console.error('[review-decide] email error:', await res.text())
+      reportServerError('api/safety/review/decide', new Error(`email error: ${await res.text()}`))
       return false
     }
     return true
   } catch (e) {
     reportServerError('api/safety/review/decide', e)
-    console.error('[review-decide] email failed:', e instanceof Error ? e.message : e)
     return false
   }
 }
