@@ -194,7 +194,16 @@ export default function PrivacyPolicy() {
           >
             compliance &amp; retention mapping
           </a>{' '}
-          for how app behavior relates to OSHA record-keeping requirements.
+          for how app behavior relates to OSHA record-keeping requirements, and the{' '}
+          <a
+            href="https://github.com/MS-707/equipment-qr-hub/blob/main/docs/DATA-RETENTION.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-mytra-purple hover:underline"
+          >
+            store-by-store retention schedule
+          </a>{' '}
+          for every place data lives.
         </p>
       </section>
 

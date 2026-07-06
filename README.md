@@ -220,6 +220,8 @@ When AI features are enabled and a user triggers a suggestion:
 
 ## Authentication & Authorization
 
+Enterprise IdP integration (Okta / Microsoft Entra ID) is documented step-by-step in [docs/SSO.md](docs/SSO.md).
+
 ### Auth Modes
 
 | Mode | Trigger | Use Case |
