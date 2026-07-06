@@ -56,7 +56,10 @@ export async function GET(req: Request) {
               reviewNote: sub.note,
             }
           }
-        } catch { /* skip — retried next poll */ }
+        } catch (err) {
+          // skip — retried next poll; still report so a wedged Notion shows up
+          reportServerError('api/safety/review/status', err)
+        }
       })
     )
   }

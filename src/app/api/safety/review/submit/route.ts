@@ -234,7 +234,10 @@ async function syncToNotion(
         return { ok: true, pageId: results[0].id }
       }
     }
-  } catch { /* fall through to create */ }
+  } catch (err) {
+    // fall through to create — but a failing existence check is still worth seeing
+    reportServerError('api/safety/review/submit', err)
+  }
 
   const safeStr = (v: unknown, max = 200) =>
     typeof v === 'string' ? v.slice(0, max) : ''
