@@ -44,10 +44,17 @@ skipped. Run before risky migrations and on a weekly cron if beta signups matter
 
 ### Notion (system of record for synced safety records)
 
-1. Notion → Settings & members → Settings → **Export all workspace content**
-   (Markdown & CSV) — or per-database: ⋯ menu → Export.
-2. Store the export alongside `kv-backup.json`; Notion also keeps page-level
-   history (30 days on Free/Plus, 90+ on Business) for point-in-time recovery.
+`scripts/backup-notion.mjs` dumps every configured safety database (full page
+properties, paginated) to JSON:
+
+```bash
+NOTION_API_KEY=... NOTION_PTP_DB_ID=... NOTION_INCIDENTS_DB_ID=... \
+NOTION_PERMITS_DB_ID=... node scripts/backup-notion.mjs > notion-backup.json
+```
+
+The workspace-level export (Notion → Settings → **Export all workspace
+content**) and page history (30 days Free/Plus, 90+ Business) remain the
+belt-and-suspenders layers on top.
 
 ### Devices
 
@@ -72,8 +79,14 @@ TTLs are re-applied per key family (`beta:` 180d, `review:` 30d,
 
 ### Notion
 
-Re-import the exported CSV into a database with the same properties, or restore
-individual pages from Notion page history (⋯ → Page history). After a Notion
-restore, device pollers resume matching on `notionPageId`; records whose pages
-changed IDs will re-create pages on next sync (duplicates are the failure mode
-to check for).
+Re-create pages from the JSON dump into their original databases:
+
+```bash
+NOTION_API_KEY=... node scripts/backup-notion.mjs --restore notion-backup.json
+```
+
+(Read-only property types are stripped automatically; restored pages get NEW
+page ids.) Alternatively restore individual pages from Notion page history
+(⋯ → Page history). After a Notion restore, device pollers resume matching on
+`notionPageId`; records whose pages changed IDs will re-create pages on next
+sync — duplicates are the failure mode to check for.
