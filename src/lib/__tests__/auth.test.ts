@@ -92,3 +92,54 @@ describe('authOptions', () => {
     expect(authOptions.callbacks?.session).toBeDefined()
   })
 })
+
+describe('dev provider registration (DM-6: first-run sign-in out of the box)', () => {
+  // next-auth v4 keeps user overrides in provider.options until runtime merge
+  type P = { id: string; options?: { id?: string } }
+  const providerIds = (providers: unknown[]) =>
+    (providers as P[]).map((p) => p.options?.id ?? p.id)
+  it('registers the dev provider with NO Google config and NO ALLOW_DEV_LOGIN (zero-config first run)', async () => {
+    vi.stubEnv('GOOGLE_CLIENT_ID', '')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '')
+    const { authOptions } = await import('../auth')
+    expect(authOptions.providers.length).toBeGreaterThan(0)
+    expect(providerIds(authOptions.providers)).toContain('dev')
+  })
+
+  it('respects the ALLOW_DEV_LOGIN=0 opt-out even without Google config', async () => {
+    vi.stubEnv('GOOGLE_CLIENT_ID', '')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '0')
+    const { authOptions } = await import('../auth')
+    expect(providerIds(authOptions.providers)).not.toContain('dev')
+  })
+
+  it('still registers the dev provider when explicitly enabled alongside Google', async () => {
+    vi.stubEnv('GOOGLE_CLIENT_ID', 'x')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'y')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '1')
+    const { authOptions } = await import('../auth')
+    expect(providerIds(authOptions.providers)).toContain('google')
+    expect(providerIds(authOptions.providers)).toContain('dev')
+  })
+
+  it('NEVER registers credentials providers in production without flags (hard gate preserved)', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('GOOGLE_CLIENT_ID', '')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '')
+    vi.stubEnv('ALLOW_EMAIL_LOGIN', '')
+    const { authOptions } = await import('../auth')
+    expect(authOptions.providers.length).toBe(0)
+  })
+
+  it('production ignores even an explicit ALLOW_DEV_LOGIN=1', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('GOOGLE_CLIENT_ID', '')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '')
+    vi.stubEnv('ALLOW_DEV_LOGIN', '1')
+    const { authOptions } = await import('../auth')
+    expect(providerIds(authOptions.providers)).not.toContain('dev')
+  })
+})

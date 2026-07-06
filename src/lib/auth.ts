@@ -8,8 +8,10 @@
  *
  * Domain restriction is enforced SERVER-SIDE (Google `hd` is only a UI hint).
  *
- * Dev/demo sign-in: enabled ONLY when ALLOW_DEV_LOGIN=1 AND NODE_ENV !== production.
- * Never available in production builds regardless of env vars.
+ * Dev/demo sign-in: enabled when NODE_ENV !== production AND either
+ * ALLOW_DEV_LOGIN=1 is set explicitly, or Google OAuth is not configured at all
+ * (zero-config first run; opt out with ALLOW_DEV_LOGIN=0). Never available in
+ * production builds regardless of env vars.
  */
 
 import type { NextAuthOptions } from 'next-auth'
@@ -33,7 +35,14 @@ export function emailAllowed(email?: string | null): boolean {
 
 const hasGoogle = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 const isProduction = process.env.NODE_ENV === 'production'
-const allowDevLogin = process.env.ALLOW_DEV_LOGIN === '1' && !isProduction
+// Zero-config first run: with no Google OAuth configured in non-production,
+// register the dev provider unless explicitly opted out (ALLOW_DEV_LOGIN=0),
+// so a fresh clone can sign in without any .env.local. The production gate
+// is unconditional.
+const allowDevLogin =
+  (process.env.ALLOW_DEV_LOGIN === '1' ||
+    (!hasGoogle && process.env.ALLOW_DEV_LOGIN !== '0')) &&
+  !isProduction
 
 // Email login has no password, so in production it is only available when an
 // EMAIL_LOGIN_CODE is configured and presented at sign-in. Without this gate,
