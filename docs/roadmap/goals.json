@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 1,
+ "iteration": 2,
  "gates": [
   {
    "id": "lint",
@@ -368,7 +368,7 @@
   "demo": {
    "key": "demo",
    "name": "MVP Demo Readiness",
-   "score": 7,
+   "score": 8,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "The review is accurate: all 10 met/unmet claims were independently confirmed (gates pass \u2014 694/694 tests, tsc clean, build exit 0; nav, notify pipeline, env-var degradation, PWA manifest, and draft-recovery evidence all check out at the cited lines), so the score of 7/10 stands with zero overturns. The three unmet findings are real: src/lib/auth.ts:36 requires ALLOW_DEV_LOGIN==='1' while .env.example:9 and README.md:285 promise unset=auto, so the documented quickstart lands on 'Sign-in is not configured yet' \u2014 a demo-killing first-run bug. There is also no presenter runbook in docs/ and scripts/demo/record-demo.mjs never touches /inspect, interacts with the signature canvas, or fails on error (its safe() wrapper swallows all exceptions), so the headline QR->inspection->signature->EHS path is neither scripted for humans nor rehearsable by machine.",
@@ -415,8 +415,10 @@
      "id": "DM-6",
      "criterion": "First-run sign-in works exactly as the quickstart documents: after `cp .env.example .env.local && npm run dev` with Google OAuth unset and ALLOW_DEV_LOGIN unset, the dev Credentials provider is registered in non-production, so the sign-in screen shows the name+email form instead of 'Sign-in is not configured yet'.",
      "verify": "In src/lib/auth.ts, the dev Credentials provider must be registered when `!hasGoogle && !isProduction` even if ALLOW_DEV_LOGIN is unset (and a unit test in src/lib/__tests__/auth.test.ts asserts it); or run `npm run dev` with an empty .env.local and confirm GET /api/auth/providers includes a 'dev' provider.",
-     "met": false,
-     "evidence": "src/lib/auth.ts:36 \u2014 allowDevLogin requires ALLOW_DEV_LOGIN==='1'; with .env.example defaults (var empty) and no Google, providers=[] so AuthGate.tsx:257 renders 'Sign-in is not configured yet' \u2014 contradicting README.md:104/229 and .env.example:9 ('unset = on when Google not configured')."
+     "met": true,
+     "evidence": "auth.ts:42-45 zero-config dev provider in non-production (opt-out ALLOW_DEV_LOGIN=0); auth.test.ts:101-144 pins first-run registration AND the production hard gate (18/18); .env.example quickstart path also works.",
+     "verifiedBy": "verify-criteria wf_31109d02-f83 (1-vote adversarial)",
+     "verifiedAtIteration": 2
     },
     {
      "id": "DM-7",
@@ -1154,7 +1156,7 @@
    "criteria": [
     "DM-6"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DM-M1-T1",
@@ -1164,7 +1166,7 @@
       "src/lib/__tests__/auth.test.ts"
      ],
      "acceptance": "With an empty .env.local and NODE_ENV=development, GET /api/auth/providers returns a 'dev' provider (or the new unit test proves providers includes id 'dev'); npm test exits 0; production behavior (NODE_ENV=production, no flags) still yields zero credentials providers.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1822,6 +1824,21 @@
    ],
    "refuted": [],
    "notes": "Privacy policy rewritten to match code; COMPLIANCE-RETENTION.md added (DRAFT pending counsel). Harness fix: verify-criteria invoked via scriptPath with string-tolerant args after named-registry staleness broke two launches. Legal 2->6."
+  },
+  {
+   "iteration": 2,
+   "date": "2026-07-06",
+   "milestone": "DM-M1",
+   "event": "iteration",
+   "tasksDone": [
+    "DM-M1-T1"
+   ],
+   "gates": "lint OK, tsc OK, 699/699 tests, build OK",
+   "verified": [
+    "DM-6"
+   ],
+   "refuted": [],
+   "notes": "Zero-config first-run sign-in; production gate pinned by 5 new tests. Demo 7->8."
   }
  ]
 }

@@ -24,7 +24,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 2. DM-M1 — First-run sign-in works out of the box
 *Dimension: MVP Demo Readiness · flips: DM-6 · why here: a small auth-config change in src/lib/auth.ts that unblocks first-run sign-in for every subsequent local run, e2e spec, and demo rehearsal; verify jointly with BE-3.*
 
-- [ ] **DM-M1-T1** In src/lib/auth.ts, register the dev Credentials provider when Google OAuth is not configured in non-production (allowDevLogin = (ALLOW_DEV_LOGIN==='1' || (!hasGoogle && ALLOW_DEV_LOGIN !== '0')) && !isProduction), preserving the existing hard production gate, and add a unit test in src/lib/__tests__/auth.test.ts asserting the provider list is non-empty with GOOGLE_CLIENT_ID and ALLOW_DEV_LOGIN both unset in development.
+- [x] **DM-M1-T1** In src/lib/auth.ts, register the dev Credentials provider when Google OAuth is not configured in non-production (allowDevLogin = (ALLOW_DEV_LOGIN==='1' || (!hasGoogle && ALLOW_DEV_LOGIN !== '0')) && !isProduction), preserving the existing hard production gate, and add a unit test in src/lib/__tests__/auth.test.ts asserting the provider list is non-empty with GOOGLE_CLIENT_ID and ALLOW_DEV_LOGIN both unset in development.
   - *Acceptance:* With an empty .env.local and NODE_ENV=development, GET /api/auth/providers returns a 'dev' provider (or the new unit test proves providers includes id 'dev'); npm test exits 0; production behavior (NODE_ENV=production, no flags) still yields zero credentials providers.
 
 ### 3. DS-M5 — Eliminate fixed-width horizontal overflow at phone widths (DS-7)
