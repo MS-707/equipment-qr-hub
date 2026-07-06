@@ -24,7 +24,12 @@ export async function POST(req: Request) {
   }
   const { id, status } = parsed.data
 
-  const signup = await updateSignupStatus(id, status)
+  let signup
+  try {
+    signup = await updateSignupStatus(id, status)
+  } catch {
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!signup) {
     return Response.json({ error: 'Signup not found' }, { status: 404 })
   }
@@ -40,5 +45,9 @@ export async function GET() {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  return Response.json({ signups: await getAllSignups() })
+  try {
+    return Response.json({ signups: await getAllSignups() })
+  } catch {
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 }

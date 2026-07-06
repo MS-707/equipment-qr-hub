@@ -8,6 +8,8 @@
  *                       (Settings → Apps → Incoming Webhooks → Add New)
  */
 
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+
 export type SlackOutcome = 'sent' | 'not-configured' | 'failed'
 
 export function escapeSlack(s: string): string {
@@ -23,7 +25,7 @@ export async function sendSlackMessage(text: string): Promise<SlackOutcome> {
   if (!url) return 'not-configured'
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),

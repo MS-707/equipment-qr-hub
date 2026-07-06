@@ -8,6 +8,7 @@ import { createReviewToken } from '@/lib/review-token'
 import { storeReviewSubmission } from '@/lib/review-store'
 import { escapeSlack } from '@/lib/slack-notify'
 import { ReviewSubmitBodySchema, firstInvalidField } from '@/lib/safety-record-schema'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -97,7 +98,7 @@ export async function POST(req: Request) {
         if (syncResult.ok) pageId = syncResult.pageId
       }
       if (pageId) {
-        const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        const res = await fetchWithTimeout(`https://api.notion.com/v1/pages/${pageId}`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${notionKey}`,
@@ -119,6 +120,7 @@ export async function POST(req: Request) {
     (typeof s === 'string' ? s : '').replace(/[\r\n]/g, ' ').slice(0, max)
 
   const submitterEmail = sanitize(session?.user?.email || record.createdByEmail || '', 200)
+  try {
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
@@ -130,6 +132,11 @@ export async function POST(req: Request) {
     // poller sees the decision instead of eternal "Pending".
     notionPageId: pageId || undefined,
   })
+  } catch {
+    // KV outage: without a stored submission the email decide-links would
+    // 404, so fail the request as retryable instead of sending dead links
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 
   // ── Email notification (primary EHS channel) ─────────────────
   let emailed = false
@@ -170,7 +177,7 @@ export async function POST(req: Request) {
   if (slackUrl) {
     const label = SAFETY_TYPE_LABELS[record.type] ?? record.type
     try {
-      const slackRes = await fetch(slackUrl, {
+      const slackRes = await fetchWithTimeout(slackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -203,7 +210,7 @@ async function syncToNotion(
   // POST and this review submit concurrently — without this query, whichever
   // lost the race created a second page for the same record.
   try {
-    const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+    const existingCheck = await fetchWithTimeout(`https://api.notion.com/v1/databases/${dbId}/query`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -254,7 +261,7 @@ async function syncToNotion(
   }
 
   try {
-    const res = await fetch('https://api.notion.com/v1/pages', {
+    const res = await fetchWithTimeout('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,

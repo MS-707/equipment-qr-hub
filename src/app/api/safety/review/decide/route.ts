@@ -3,6 +3,7 @@ import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
 import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -40,7 +41,12 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
   }
 
-  const submission = await getReviewSubmission(parsed.recordId)
+  let submission
+  try {
+    submission = await getReviewSubmission(parsed.recordId)
+  } catch {
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!submission) {
     return Response.json({ error: 'Review submission not found. It may have expired.' }, { status: 404 })
   }
@@ -57,7 +63,12 @@ export async function POST(req: Request) {
 
   const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
   // note is already truncated to 500 chars by ReviewDecideBodySchema
-  const decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', note)
+  let decided
+  try {
+    decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', note)
+  } catch {
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
@@ -108,7 +119,12 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Invalid or expired link' }, { status: 403 })
   }
 
-  const submission = await getReviewSubmission(parsed.recordId)
+  let submission
+  try {
+    submission = await getReviewSubmission(parsed.recordId)
+  } catch {
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!submission) {
     return Response.json({ error: 'Submission not found' }, { status: 404 })
   }
@@ -143,7 +159,7 @@ async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmi
     if (sub.note) {
       properties['EHS Review Note'] = { rich_text: [{ text: { content: sub.note.slice(0, 500) } }] }
     }
-    const res = await fetch(`https://api.notion.com/v1/pages/${sub.notionPageId}`, {
+    const res = await fetchWithTimeout(`https://api.notion.com/v1/pages/${sub.notionPageId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -203,7 +219,7 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
       ]
 
   try {
-    const res = await fetch(RESEND_URL, {
+    const res = await fetchWithTimeout(RESEND_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({

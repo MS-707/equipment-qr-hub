@@ -10,6 +10,7 @@ import type { SafetyRecord } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { SafetyRecordSchema, firstInvalidField } from '@/lib/safety-record-schema'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -151,7 +152,7 @@ export async function POST(req: Request) {
     if (typeof claimed === 'string' && /^[0-9a-f]{8}-?[0-9a-f-]{4,28}$/i.test(claimed)) {
       existingPageId = claimed
     } else {
-      const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+      const existingCheck = await fetchWithTimeout(`https://api.notion.com/v1/databases/${dbId}/query`, {
         method: 'POST',
         headers: notionHeaders,
         body: JSON.stringify({
@@ -173,7 +174,7 @@ export async function POST(req: Request) {
       // closed/revoked, review decided). Refresh the queryable properties and
       // append the new snapshot — appending preserves the prior snapshots as
       // an audit trail instead of destroying them.
-      const propRes = await fetch(`https://api.notion.com/v1/pages/${existingPageId}`, {
+      const propRes = await fetchWithTimeout(`https://api.notion.com/v1/pages/${existingPageId}`, {
         method: 'PATCH',
         headers: notionHeaders,
         body: JSON.stringify({ properties }),
@@ -187,7 +188,7 @@ export async function POST(req: Request) {
         }
         existingPageId = null
       } else {
-        const appendRes = await fetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, {
+        const appendRes = await fetchWithTimeout(`https://api.notion.com/v1/blocks/${existingPageId}/children`, {
           method: 'PATCH',
           headers: notionHeaders,
           body: JSON.stringify({
@@ -202,7 +203,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const res = await fetch('https://api.notion.com/v1/pages', {
+    const res = await fetchWithTimeout('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: notionHeaders,
       body: JSON.stringify({ parent: { database_id: dbId }, properties, children: jsonBlocks() }),

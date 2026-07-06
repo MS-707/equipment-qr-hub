@@ -117,3 +117,19 @@ describe('GET /api/beta/decide', () => {
     expect(data.signups).toHaveLength(1)
   })
 })
+
+describe('KV outage (BE-9)', () => {
+  it('POST returns 503 when updateSignupStatus throws (KV down)', async () => {
+    vi.mocked(updateSignupStatus).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/beta/decide/route')
+    const res = await POST(makeReq({ id: 'beta-1', status: 'approved' }))
+    expect(res.status).toBe(503)
+  })
+
+  it('GET returns 503 when getAllSignups throws (KV down)', async () => {
+    vi.mocked(getAllSignups).mockRejectedValue(new Error('kv down'))
+    const { GET } = await import('@/app/api/beta/decide/route')
+    const res = await GET()
+    expect(res.status).toBe(503)
+  })
+})

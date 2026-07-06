@@ -50,7 +50,12 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   }
 
-  await addSignup(signup)
+  try {
+    await addSignup(signup)
+  } catch {
+    // KV outage must surface as a retryable error, not a silent drop
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 
   const appUrl = process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'
 

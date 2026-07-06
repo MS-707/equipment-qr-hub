@@ -232,3 +232,18 @@ describe('POST /api/safety/review/submit', () => {
     }))
   })
 })
+
+describe('KV outage (BE-9)', () => {
+  it('returns 503 when storeReviewSubmission throws (KV down)', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    // A notification channel must be configured so the route proceeds past
+    // the channel check and actually reaches the KV write
+    vi.mocked(isEmailConfigured).mockReturnValue(true)
+    vi.mocked(storeReviewSubmission).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/safety/review/submit/route')
+    const res = await POST(makeReq({ record: minRecord }))
+    expect(res.status).toBe(503)
+    const data = await res.json()
+    expect(data.error).toContain('temporarily unavailable')
+  })
+})

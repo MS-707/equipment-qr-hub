@@ -109,3 +109,14 @@ describe('POST /api/beta/signup', () => {
     }))
   })
 })
+
+describe('KV outage (BE-9)', () => {
+  it('returns 503 when addSignup throws (KV down)', async () => {
+    vi.mocked(addSignup).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/beta/signup/route')
+    const res = await POST(makeReq(validSignup))
+    expect(res.status).toBe(503)
+    const data = await res.json()
+    expect(data.error).toContain('temporarily unavailable')
+  })
+})

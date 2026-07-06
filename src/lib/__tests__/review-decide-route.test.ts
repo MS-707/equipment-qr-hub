@@ -291,3 +291,24 @@ describe('GET /api/safety/review/decide', () => {
     expect(data.status).toBe('pending')
   })
 })
+
+describe('KV outage (BE-9)', () => {
+  it('returns 503 when getReviewSubmission throws (KV down)', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(503)
+  })
+
+  it('returns 503 when decideReview throws (KV down)', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(503)
+  })
+})

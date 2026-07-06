@@ -1,4 +1,5 @@
 import type { BetaSignup, BetaStatus } from '@/lib/beta'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -10,7 +11,7 @@ export async function sendBetaEmail(signup: BetaSignup, status: BetaStatus): Pro
   const appUrl = process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'
 
   if (status === 'approved') {
-    await fetch(RESEND_URL, {
+    await fetchWithTimeout(RESEND_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -56,7 +57,7 @@ export async function sendBetaEmail(signup: BetaSignup, status: BetaStatus): Pro
       }),
     }).catch((e) => console.error('[beta-email] send failed:', e))
   } else {
-    await fetch(RESEND_URL, {
+    await fetchWithTimeout(RESEND_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
