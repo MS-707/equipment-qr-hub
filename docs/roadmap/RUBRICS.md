@@ -343,3 +343,64 @@ A third-party license notices artifact exists in the repo (e.g. THIRD_PARTY_NOTI
 
 **Autonomy note:** License inventory automatable; if a copyleft production dep is found, discovery+documentation = pass, replacement is an owner decision.
 
+
+## Spanish Language Support (`spanish`) — 0/10 at freeze *(added 2026-07-06 by owner request)*
+
+Rubric authored via a 9-agent design tournament over the reverted June i18n attempt; architecture and
+pipeline spec in `docs/i18n/DESIGN.md`. Owner sign-off of translation packets is asynchronous and gates
+only the removal of the '(beta)' label — never a criterion.
+
+### ES-1 ❌
+Hardened i18n provider: all-occurrence split/join interpolation, Intl.PluralRules .one/.other variant selection, generated typed keys enforced by tsc, locale→en→key fallback with dev-only warnings — unit tested.
+
+**Verify:** Read src/lib/i18n.tsx: interpolation uses split/join (not first-match replace); plural selection via Intl.PluralRules; t() key param typed from generated src/lib/i18n-keys.d.ts; vitest covers resolve/interpolate/plural/fallback; npx tsc --noEmit green.
+
+### ES-2 ❌
+Storage migration and pre-paint language: locale persisted under 'sage-locale-v2'; the layout.tsx purge of the old 'sage-locale' key is deleted; document.documentElement.lang stamped pre-paint from storage; hydration-safe (suppressHydrationWarning on <html>, useLayoutEffect storage read).
+
+**Verify:** grep "removeItem('sage-locale')" src/app/layout.tsx returns nothing; grep 'sage-locale-v2' src/app/layout.tsx hits the pre-paint lang stamp; sw-i18n-invariants vitest green (also pins: no skipWaiting:true, sage-theme stamping unchanged).
+
+### ES-3 ❌
+Catalog CI gates live in npm test: en/es key parity, zero placeholders, interpolation-var parity, plural-variant parity, and generated-key-types freshness all fail the build when violated.
+
+**Verify:** src/lib/__tests__/i18n-catalog.test.ts exists and npm test is green; spot-check: temporarily removing an es key or inserting "[TODO" locally makes the suite fail (restore after).
+
+### ES-4 ❌
+Runtime kill switch: /api/i18n/status serves {esEnabled, suppressedNamespaces[]} from Upstash KV; sw.ts has a NetworkOnly matcher for it; the provider fetches on mount AND visibilitychange with a last-known-good localStorage fallback.
+
+**Verify:** Read src/app/api/i18n/status/route.ts (KV-backed, no console.*), the sw.ts NetworkOnly entry, and the provider's mount+visibilitychange fetch; a route test covers KV-absent defaults (esEnabled true, empty suppression).
+
+### ES-5 ❌
+Translation pipeline + cluster 1 dark: surface-mined glossary (owner packet pending or signed) with 5-lens adversarial review evidence committed; 3-round cap + blocked-keys manifest enforced; shell/nav/auth/offline/errors/dashboard converted and translated with the toggle still absent.
+
+**Verify:** docs/i18n/glossary.json + review/*.json exist with zero FAIL entries covering every cluster-1 key; blocked-keys.json within size cap; es-leakage.spec green on cluster-1 routes; grep setLocale src/components/UserMenu.tsx returns nothing (no toggle).
+
+**Autonomy note:** Glossary/namespace sign-off is asynchronous (mark.starr counter-signs packets); it gates only the (beta) label, never this criterion.
+
+### ES-6 ❌
+Safety forms fully converted dark: six forms + validation + atmo messages through t(); checklist/permit/hazard data translated via id-keyed lookasides and insertion-time mapEs() (no schema change); record.locale stamped at signing; LG-6/LG-8 English literals preserved via defaultEn overload + strict-equality vitest anchor.
+
+**Verify:** grep -n 'By signing' src/components/safety/CrewSignatureBlock.tsx still matches; lookaside orphan-id vitest green; a record saved with locale:'es' renders es labels and an en record renders English (vitest); es-leakage.spec green on all /safety form routes.
+
+### ES-7 ❌
+Inspection/equipment/records/history UI converted dark with locale-aware dates: zero hardcoded en-US toLocale* call sites (Intl.DateTimeFormat helper), non-hook getT(locale) for lib code, records render in their stored record.locale, QR labels print static bilingual EN/ES with URLs unchanged.
+
+**Verify:** grep -rn "'en-US'" src returns zero user-facing call sites; QRLabel snapshot contains both languages and unchanged /inspect URLs; /inspect/[id] still uses generateStaticParams with zero client fetch; es-leakage.spec green on inspection/equipment/record routes.
+
+### ES-8 ❌
+Sage AI + canned content Spanish: triage system prompt instructs answering in the app locale; suggest-* routes accept locale; sage-faq 12 answers + keyword patterns and incident-patterns keywords/display strings have es variants; equipment prose lookaside complete (46 items, whole-item fallback); bundle delta recorded <60KB gzip.
+
+**Verify:** grep -n 'locale' src/app/api/sage/triage/route.ts hits the prompt line; vitest asserts non-empty es keyword sets for every FAQ/incident pattern; equipment lookaside orphan-id test green; bundle delta noted in docs/i18n/review evidence.
+
+### ES-9 ❌
+Full-fleet regression net + operations: es-leakage.spec covers every worker-facing route (size-capped documented sentinel allowlist) and en-pin.spec protects English assertions; docs/i18n/OPERATIONS.md documents the four rollback tiers (KV kill switch, namespace suppression, per-key retreat, fix-forward) and storage-key versioning.
+
+**Verify:** Run both Playwright suites — green; read OPERATIONS.md: all four tiers with concrete commands; allowlist file within its size cap and each entry justified.
+
+### ES-10 ❌
+Exposure shipped: 'Español (beta)' toggle in UserMenu rendered only when the runtime flag allows, one-time '¿Prefiere español?' prompt for es* devices, locale persists via sage-locale-v2 with pre-paint html[lang]; beta-guard vitest proves the '(beta)' suffix is only removable when signoff.json fully covers the safety-critical manifest.
+
+**Verify:** grep -n 'Español (beta)' src/components/UserMenu.tsx matches; Playwright: toggle→es persists across reload, html[lang='es'] pre-paint, KV esEnabled=false hides the toggle and forces English on next foreground; beta-guard vitest green.
+
+**Autonomy note:** After mark.starr counter-signs all packets in docs/i18n/signoff.json, a follow-up commit removes '(beta)'. That step is the owner's; it does not block this criterion.
+

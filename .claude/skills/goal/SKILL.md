@@ -10,11 +10,18 @@ this repository. The single source of truth is **`docs/roadmap/goals.json`**.
 The frozen scoring rubrics live in **`docs/roadmap/RUBRICS.md`** (mirrored in
 goals.json); the human-readable plan is **`docs/roadmap/ROADMAP.md`**.
 
-Six dimensions are scored 0–10, where the score is the **count of met criteria**
-out of 10 objective, binary, in-repo-verifiable criteria per dimension:
-`ux`, `design`, `backend`, `enterprise` (Enterprise Readiness), `demo`
-(MVP Demo Readiness), `legal`. **The terminal goal: every dimension reaches a
-verified 10/10.**
+Dimensions are scored 0–10, where the score is the **count of met criteria**
+out of 10 objective, binary, in-repo-verifiable criteria per dimension. The
+dimension list lives in goals.json (currently: `ux`, `design`, `backend`,
+`enterprise`, `demo`, `legal`, `spanish`) — always enumerate from the file,
+never from memory. **The terminal goal: every dimension in goals.json reaches
+a verified 10/10.**
+
+For the `spanish` dimension, `docs/i18n/DESIGN.md` is the binding
+implementation spec (architecture, translation pipeline, rollback tiers).
+Owner sign-off of translation packets is ASYNCHRONOUS: pending entries in
+`docs/i18n/signoff.json` never block a task, milestone, or criterion — the
+counter-signature gates only removing the "(beta)" label from the toggle.
 
 ## Non-negotiable rails
 

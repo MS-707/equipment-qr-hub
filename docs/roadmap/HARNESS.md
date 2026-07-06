@@ -1,7 +1,7 @@
 # Roadmap Harness — How the Autonomous Improvement Loop Works
 
 One prompt drives this repository from its current state to a verified 10/10
-across six dimensions. This document explains the machinery; the state lives in
+across seven dimensions. This document explains the machinery; the state lives in
 `goals.json`, the frozen scoring rubrics in `RUBRICS.md`, the plan in
 `ROADMAP.md`, and the operating procedure in `.claude/skills/goal/SKILL.md`.
 
@@ -18,7 +18,7 @@ something external, and **ends the loop by itself** when every dimension
 verifies 10/10 or when all remaining work is blocked on a human. Prefer a fixed
 cadence instead? `/loop 15m /goal next`.
 
-## The six dimensions
+## The seven dimensions
 
 | Key | Dimension | 10/10 means |
 |-----|-----------|-------------|
@@ -28,12 +28,15 @@ cadence instead? `/loop 15m /goal next`.
 | `enterprise` | Enterprise Readiness | All 10 IT-buyer criteria verified |
 | `demo` | MVP Demo Readiness | All 10 live-demo criteria verified |
 | `legal` | Legal | All 10 in-repo legal-artifact criteria verified |
+| `spanish` | Spanish Language Support | All 10 i18n criteria verified (spec: `docs/i18n/DESIGN.md`) |
 
 Scores are **counts, not vibes**: each dimension has exactly 10 binary
 criteria, each with a written `verify` check (a command to run or a file fact
-to confirm). Score = number of criteria met. The rubrics were authored by six
-independent reviewer agents, then adversarially audited by six verifier agents
-and a cross-dimension critic before being frozen.
+to confirm). Score = number of criteria met. The original six rubrics were
+authored by six independent reviewer agents, then adversarially audited by six
+verifier agents and a cross-dimension critic before being frozen. The `spanish`
+rubric was added 2026-07-06 via a 9-agent design tournament over the reverted
+June i18n attempt — implementation spec in `docs/i18n/DESIGN.md`.
 
 ## The loop, one iteration
 

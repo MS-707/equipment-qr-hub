@@ -1,7 +1,7 @@
 {
  "version": 1,
  "project": "equipment-qr-hub",
- "goal": "All six dimensions verified 10/10 against the frozen rubrics below",
+ "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
  "iteration": 0,
@@ -532,6 +532,89 @@
      "met": false,
      "evidence": "No notices file exists (ls root shows only proprietary LICENSE; find for *licen*/*notice* returns nothing). Dep licenses verified permissive (all 11 prod deps MIT/ISC via node_modules package.json scan), so only the notices artifact is missing.",
      "autonomyNote": "License inventory automatable; if a copyleft production dep is found, discovery+documentation = pass, replacement is an owner decision."
+    }
+   ]
+  },
+  "spanish": {
+   "key": "spanish",
+   "name": "Spanish Language Support",
+   "score": 0,
+   "initialScore": 0,
+   "verifiedScore": null,
+   "auditSummary": "Added 2026-07-06 by owner request. Architecture chosen by a 9-agent design tournament (3 forensics readers on the reverted WI-2 attempt, 3 designers, 3 judges): revive-and-gate won 2/3 lenses (avg 85.7 vs 80.7 content-first, 68.3 library-grade) with grafts absorbed from both losers. Full spec: docs/i18n/DESIGN.md.",
+   "reviewNotes": "Failure modes of the June attempt this design structurally prevents: placeholder text in production, mixed-language surfaces, hydration mismatch, first-match-only interpolation, '(s)' plural hacks, silent key misses, SW-cache rollback failure, storage-key residue.",
+   "criteria": [
+    {
+     "id": "ES-1",
+     "criterion": "Hardened i18n provider: all-occurrence split/join interpolation, Intl.PluralRules .one/.other variant selection, generated typed keys enforced by tsc, locale\u2192en\u2192key fallback with dev-only warnings \u2014 unit tested.",
+     "verify": "Read src/lib/i18n.tsx: interpolation uses split/join (not first-match replace); plural selection via Intl.PluralRules; t() key param typed from generated src/lib/i18n-keys.d.ts; vitest covers resolve/interpolate/plural/fallback; npx tsc --noEmit green.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-2",
+     "criterion": "Storage migration and pre-paint language: locale persisted under 'sage-locale-v2'; the layout.tsx purge of the old 'sage-locale' key is deleted; document.documentElement.lang stamped pre-paint from storage; hydration-safe (suppressHydrationWarning on <html>, useLayoutEffect storage read).",
+     "verify": "grep \"removeItem('sage-locale')\" src/app/layout.tsx returns nothing; grep 'sage-locale-v2' src/app/layout.tsx hits the pre-paint lang stamp; sw-i18n-invariants vitest green (also pins: no skipWaiting:true, sage-theme stamping unchanged).",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-3",
+     "criterion": "Catalog CI gates live in npm test: en/es key parity, zero placeholders, interpolation-var parity, plural-variant parity, and generated-key-types freshness all fail the build when violated.",
+     "verify": "src/lib/__tests__/i18n-catalog.test.ts exists and npm test is green; spot-check: temporarily removing an es key or inserting \"[TODO\" locally makes the suite fail (restore after).",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-4",
+     "criterion": "Runtime kill switch: /api/i18n/status serves {esEnabled, suppressedNamespaces[]} from Upstash KV; sw.ts has a NetworkOnly matcher for it; the provider fetches on mount AND visibilitychange with a last-known-good localStorage fallback.",
+     "verify": "Read src/app/api/i18n/status/route.ts (KV-backed, no console.*), the sw.ts NetworkOnly entry, and the provider's mount+visibilitychange fetch; a route test covers KV-absent defaults (esEnabled true, empty suppression).",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-5",
+     "criterion": "Translation pipeline + cluster 1 dark: surface-mined glossary (owner packet pending or signed) with 5-lens adversarial review evidence committed; 3-round cap + blocked-keys manifest enforced; shell/nav/auth/offline/errors/dashboard converted and translated with the toggle still absent.",
+     "verify": "docs/i18n/glossary.json + review/*.json exist with zero FAIL entries covering every cluster-1 key; blocked-keys.json within size cap; es-leakage.spec green on cluster-1 routes; grep setLocale src/components/UserMenu.tsx returns nothing (no toggle).",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md",
+     "autonomyNote": "Glossary/namespace sign-off is asynchronous (mark.starr counter-signs packets); it gates only the (beta) label, never this criterion."
+    },
+    {
+     "id": "ES-6",
+     "criterion": "Safety forms fully converted dark: six forms + validation + atmo messages through t(); checklist/permit/hazard data translated via id-keyed lookasides and insertion-time mapEs() (no schema change); record.locale stamped at signing; LG-6/LG-8 English literals preserved via defaultEn overload + strict-equality vitest anchor.",
+     "verify": "grep -n 'By signing' src/components/safety/CrewSignatureBlock.tsx still matches; lookaside orphan-id vitest green; a record saved with locale:'es' renders es labels and an en record renders English (vitest); es-leakage.spec green on all /safety form routes.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-7",
+     "criterion": "Inspection/equipment/records/history UI converted dark with locale-aware dates: zero hardcoded en-US toLocale* call sites (Intl.DateTimeFormat helper), non-hook getT(locale) for lib code, records render in their stored record.locale, QR labels print static bilingual EN/ES with URLs unchanged.",
+     "verify": "grep -rn \"'en-US'\" src returns zero user-facing call sites; QRLabel snapshot contains both languages and unchanged /inspect URLs; /inspect/[id] still uses generateStaticParams with zero client fetch; es-leakage.spec green on inspection/equipment/record routes.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-8",
+     "criterion": "Sage AI + canned content Spanish: triage system prompt instructs answering in the app locale; suggest-* routes accept locale; sage-faq 12 answers + keyword patterns and incident-patterns keywords/display strings have es variants; equipment prose lookaside complete (46 items, whole-item fallback); bundle delta recorded <60KB gzip.",
+     "verify": "grep -n 'locale' src/app/api/sage/triage/route.ts hits the prompt line; vitest asserts non-empty es keyword sets for every FAQ/incident pattern; equipment lookaside orphan-id test green; bundle delta noted in docs/i18n/review evidence.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-9",
+     "criterion": "Full-fleet regression net + operations: es-leakage.spec covers every worker-facing route (size-capped documented sentinel allowlist) and en-pin.spec protects English assertions; docs/i18n/OPERATIONS.md documents the four rollback tiers (KV kill switch, namespace suppression, per-key retreat, fix-forward) and storage-key versioning.",
+     "verify": "Run both Playwright suites \u2014 green; read OPERATIONS.md: all four tiers with concrete commands; allowlist file within its size cap and each entry justified.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md"
+    },
+    {
+     "id": "ES-10",
+     "criterion": "Exposure shipped: 'Espa\u00f1ol (beta)' toggle in UserMenu rendered only when the runtime flag allows, one-time '\u00bfPrefiere espa\u00f1ol?' prompt for es* devices, locale persists via sage-locale-v2 with pre-paint html[lang]; beta-guard vitest proves the '(beta)' suffix is only removable when signoff.json fully covers the safety-critical manifest.",
+     "verify": "grep -n 'Espa\u00f1ol (beta)' src/components/UserMenu.tsx matches; Playwright: toggle\u2192es persists across reload, html[lang='es'] pre-paint, KV esEnabled=false hides the toggle and forces English on next foreground; beta-guard vitest green.",
+     "met": false,
+     "evidence": "Not started \u2014 implementation spec in docs/i18n/DESIGN.md",
+     "autonomyNote": "After mark.starr counter-signs all packets in docs/i18n/signoff.json, a follow-up commit removes '(beta)'. That step is the owner's; it does not block this criterion."
     }
    ]
   }
@@ -1273,6 +1356,334 @@
      "status": "pending"
     }
    ]
+  },
+  {
+   "id": "ES-M1",
+   "dimension": "spanish",
+   "title": "Dark infra: hardened provider, storage migration, gates, kill switch",
+   "criteria": [
+    "ES-1",
+    "ES-2",
+    "ES-3",
+    "ES-4"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M1-T1",
+     "description": "Restore src/lib/i18n.tsx from d20573d with fixes: split/join interpolation (all occurrences), Intl.PluralRules .one/.other variant selection, dev-only missing-key/unreplaced-var console.warn, t(key, vars, defaultEn?) overload, STORAGE_KEY='sage-locale-v2', useState('en') + useLayoutEffect storage read (synchronous pre-paint re-render \u2014 no initializer localStorage read, no one-frame English flash; fall back to useEffect only if jank is measured on low-end devices).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T2",
+     "description": "Edit src/app/layout.tsx inline head script: delete removeItem('sage-locale') and add pre-paint document.documentElement.lang stamping from sage-locale-v2; add suppressHydrationWarning to <html>; keep sage-theme logic behaviorally identical (DS-2).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T3",
+     "description": "Add scripts/gen-i18n-keys.mjs generating src/lib/i18n-keys.d.ts union type from en.json; wire t()'s key param to it.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T4",
+     "description": "Create src/messages/en.json re-extracted from HEAD for cluster-1 keys only (seed key names from d20573d map; verify strings against current components \u2014 'returned by EHS', 'SDS Library'); es.json with identical key set, values pending ES-M2 (gate allows empty catalogs only via an explicit 'pending-translation' manifest that must be empty by ES-M2).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T5",
+     "description": "Add /api/i18n/status route returning {esEnabled, suppressedNamespaces[]} from Upstash KV (keys i18n:es-enabled default true, i18n:suppressed-namespaces default [], no console.*) + NetworkOnly matcher entry in sw.ts + provider fetch on mount AND on visibilitychange/foreground (field PWAs stay open whole shifts) with localStorage last-known-good 'sage-i18n-flag-v1'.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T6",
+     "description": "Add src/lib/__tests__/i18n-catalog.test.ts (parity, zero-placeholder, var-parity, plural-parity, keygen freshness) and sw-i18n-invariants.test.ts (no skipWaiting:true; no removeItem('sage-locale-v2'); theme stamping present; LG-6/LG-8 literal greps; no locale prefix in NAV_ITEMS hrefs).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T7",
+     "description": "Add .eslintrc.json overrides scaffold with no-restricted-syntax JSXText rule and an empty files glob (ratchet starts closed).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M1-T8",
+     "description": "Wire I18nProvider into layout.tsx providers with NO toggle anywhere; add unit tests for resolve/interpolate/plural fallback chains.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw.ts returns nothing; grep -rn 'Espa\u00f1ol\\|setLocale' src/components/UserMenu.tsx returns nothing (toggle absent); Playwright smoke: rendered pages byte-identical English, html[lang='en']."
+  },
+  {
+   "id": "ES-M2",
+   "dimension": "spanish",
+   "title": "Glossary + pipeline + cluster 1 (shell/nav/auth/offline/errors/dashboard) translated dark",
+   "criteria": [
+    "ES-5"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M2-T1",
+     "description": "Author docs/i18n/glossary.json (~100 term pairs MINED FROM THE ACTUAL APP SURFACE \u2014 src/data/*, safety components: fire watch, tie-off, guardrail, lockout/tagout etc. \u2014 mapped to mandated neutral-LatAm Spanish; register rules: usted, imperative, <=6th-grade reading; forbidden regionalisms/Iberian forms; do-not-translate list: regRefs, OSHA/Cal-OSHA, brand, model numbers) via generation agent + 5-lens adversarial review; write docs/i18n/review/glossary.json evidence; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json \u2014 owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T2",
+     "description": "Extract cluster-1 strings from HEAD (nav.ts, BottomTabBar, NavHeader, TabNav, UserMenu, AuthGate, SwUpdateBanner, SyncToast, StorageAlert, PullToRefresh, ConfirmDialog, error.tsx, not-found.tsx, ~offline/page.tsx, SafetyDashboard) into en.json; convert components to t()/labelKey (text nodes only \u2014 no className/htmlFor/min-h churn per UX-2/UX-4/DS-4).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T3",
+     "description": "Translate cluster-1 es.json per pipeline; commit docs/i18n/review/{common,nav,user,dashboard,sync,update,confirm}.json with zero FAILs; empty the pending-translation manifest.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T4",
+     "description": "Encode the pipeline termination rule in docs/i18n/PIPELINE.md and tests: max 3 regenerate/re-review rounds per key; after 3 failures the key stays as exact English fallback and is logged in docs/i18n/blocked-keys.json (size-capped, adversarially audited) \u2014 a blocked key either blocks its namespace's exposure or lives in the documented leakage-spec allowlist, never both silently.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T5",
+     "description": "Widen eslint override glob to the converted files; add playwright/es-leakage.spec.ts (addInitScript sage-locale-v2='es') covering /, /safety, error and offline pages + en-pin.spec.ts protecting DM-10's English assertions.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T6",
+     "description": "Route SwUpdateBanner/SyncToast/StorageAlert strings through t() while keeping the 'offline as {name}' interpolation var intact (UX-6).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M2-T7",
+     "description": "Add dark-invariance snapshot tests: converted components render byte-identical English before/after t() wiring while the toggle is absent (turns 'dark means invisible' from a claim into an asserted invariant).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or signed \u2014 sign-off never blocks); playwright es-leakage.spec passes on cluster-1 routes (html[lang='es'], zero English sentinels) AND en-pin.spec passes; production UI still shows no toggle (grep UserMenu for setLocale returns nothing)."
+  },
+  {
+   "id": "ES-M3",
+   "dimension": "spanish",
+   "title": "Safety forms + checklist data lookasides + record locale stamping (dark)",
+   "criteria": [
+    "ES-6"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M3-T1",
+     "description": "Convert PreTaskPlanForm, JhaForm, FormStepper, FormSuccess, HazardTable, ChipMultiSelect, PPESelector, CrewSignatureBlock, SignaturePad, ValidationSummary, LastUsedChip, IncidentReportForm + the three permit forms + PermitChecklist/PermitTimer/PermitStatusBadge to t(), keeping LG-6 signature-consent English literals inline via the defaultEn overload.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M3-T2",
+     "description": "Create src/messages/data/{inspections,permits,ppe,hazards}.es.json id-keyed lookasides; render checklist/permit labels by id at render time; add mapEs() insertion-time translation for PTP_HAZARD_LIBRARY and HEIGHT_ACCESS_METHODS/HOT_WORK_TYPES/CONFINED_SPACE_HAZARDS (no schema change).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M3-T3",
+     "description": "Translate all client validation messages and atmo-check.ts gas-reading messages.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M3-T4",
+     "description": "Stamp record.locale at signing in inspections.ts and the safety form submit paths; extend the orphan-id vitest to the new lookasides.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M3-T5",
+     "description": "Run pipeline + commit review evidence for ptp/jha/permits/incident/hazard/validation namespaces; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json \u2014 owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance. Add the strict-equality vitest anchor: en catalog values for signature-consent and AI-disclaimer keys must === the exported English constants remaining in CrewSignatureBlock/Sage source (stronger LG-6/LG-8 guard than grep).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M3-T6",
+     "description": "Widen eslint glob; extend es-leakage.spec to /safety/ptp, /safety/jha, /safety/permits/*, /safety/incident.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components/safety/CrewSignatureBlock.tsx still matches (LG-6 preserved); es-leakage.spec green on all safety form routes; UX-2/UX-4 verifies unaffected (grep min-h-\\[44px\\] and htmlFor counts unchanged vs pre-milestone snapshot recorded in the review evidence)."
+  },
+  {
+   "id": "ES-M4",
+   "dimension": "spanish",
+   "title": "Inspections, equipment/work-orders/training UI, records/history/share, dates, bilingual QR labels (dark)",
+   "criteria": [
+    "ES-7"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M4-T1",
+     "description": "Convert PreTripInspection, InspectLanding, inspections/inspect pages; render checklist item labels by id in the viewer's locale for live flow and in record.locale for saved records.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M4-T2",
+     "description": "Convert RecordView, SafetyHistory, SafetyRecordCard, ReviewStatusSection/Badge, SyncQueuePanel + history/record/review pages; RecordView renders in record.locale; localize record-share.ts text and replace its hardcoded en-US dates.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M4-T3",
+     "description": "Replace the 16 hardcoded en-US toLocale* call sites with a locale-aware src/lib/datetime helper (Intl.DateTimeFormat(locale)); add a non-hook getT(locale) for lib code (ptpDayLabel, record-share).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M4-T4",
+     "description": "Convert EquipmentProfile, EquipmentCard, PMSchedule, PmTracker, WorkOrderBoard/Card, TrainingTracker/Info, ComplianceInfo, StatusToggle + pages; make QRLabel print static bilingual EN/ES text ('SCAN BEFORE OPERATING / ESCANEE ANTES DE OPERAR') with URLs unchanged.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M4-T5",
+     "description": "Pipeline + review evidence + pending sign-off packets for inspect/record/history/review/types namespaces; widen eslint glob; extend both Playwright specs to /inspect/[id], /equipment/[id], /work-orders, /safety/history.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest asserts a record saved with locale:'es' renders its checklist labels from the es lookaside while an en record renders English; QRLabel snapshot test contains both languages."
+  },
+  {
+   "id": "ES-M5",
+   "dimension": "spanish",
+   "title": "Sage locale, FAQ/pattern Spanish matching, equipment.ts prose batch (dark)",
+   "criteria": [
+    "ES-8"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M5-T1",
+     "description": "Add locale to the Sage triage request and one SYSTEM_PROMPT line (src/app/api/sage/triage/route.ts:13: respond in the user's app language); pass locale to suggest-hazards/suggest-jha/audit-ptp so inserted form text matches form locale; document that AI-inserted Spanish falls under the review pipeline via a runtime 'AI-generated' provenance already implied by LG-8 disclaimers.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M5-T2",
+     "description": "Translate sage-faq.ts 12 canned answers + add Spanish keyword pattern arrays; add incident-patterns.ts Spanish keyword arrays + translated root-cause/why-chain/corrective-action display strings via lookaside; vitest asserts every en pattern has a non-empty es keyword set.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M5-T3",
+     "description": "Translate src/messages/data/equipment.es.json \u2014 46 items x ~9 PM/Cal-OSHA fields keyed by itemNumber+field, batched \u226450 strings through the full 5-lens pipeline; whole-card English fallback when an item id is missing (never per-field mixing: fallback granularity is the full item).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M5-T4",
+     "description": "Convert onboarding tour engine strings (ModuleTourEngine, OnboardingTour, HelpButton) or explicitly defer with an eslint-glob exclusion note in docs/i18n/coverage.md.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M5-T5",
+     "description": "Pending sign-off packets for sage/equipment-prose namespaces (async, non-blocking); record bundle-size delta (next build output) in the review evidence.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "vitest green: es keyword sets non-empty for all sage-faq/incident patterns; equipment lookaside orphan-id test green with zero placeholders; grep -n 'locale' src/app/api/sage/triage/route.ts matches the prompt line; EN-7 guard green (no console.* in src/app/api); gzipped main-bundle delta recorded and < 60KB vs ES-M1 baseline."
+  },
+  {
+   "id": "ES-M6",
+   "dimension": "spanish",
+   "title": "Exposure: full leakage sweep, complete sign-off, ship the toggle",
+   "criteria": [
+    "ES-9",
+    "ES-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "ES-M6-T1",
+     "description": "Extend es-leakage.spec to EVERY route in src/app (worker-facing) with the sentinel allowlist (regRefs, brand, legal pages excluded as documented English-canonical); run full suite.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M6-T2",
+     "description": "Verify review-packet coverage is complete for all safety-critical namespaces (the packet-coverage vitest enumerates them); generate the final consolidated bilingual audit packet docs/i18n/review/final-audit.md for the owner's asynchronous counter-signature.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M6-T3",
+     "description": "Add the locale toggle to UserMenu ('English' / 'Espa\u00f1ol (beta)' \u2014 native-language labels, aria-labels translated), rendered only when the runtime flag is enabled; add a one-time non-blocking '\u00bfPrefiere espa\u00f1ol?' prompt for navigator.language es* users; add the beta-guard vitest: the '(beta)' suffix may only be removed when docs/i18n/signoff.json fully covers the safety-critical namespace manifest (owner sign-off gates the label, not the loop).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M6-T4",
+     "description": "Write docs/i18n/OPERATIONS.md with the FOUR-tier rollback runbook: (1) global KV kill switch i18n:es-enabled=false (minutes, no deploy); (2) per-namespace suppression via i18n:suppressed-namespaces (one bad permit string drops only that surface to English); (3) per-key retreat (delete the es key \u2014 exact tested en fallback, no component changes); (4) fix-forward regenerate\u21925-lens re-review\u2192re-packet. Plus storage-key versioning policy (v3 ignores v2; never another purge-on-every-load).",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src",
+     "status": "pending"
+    },
+    {
+     "id": "ES-M6-T5",
+     "description": "Final /goal review sweep: confirm DM-10/UX-10 en-pin specs, DS-2, UX-2/UX-4, LG-1/LG-6/LG-8, UX-7 verifies all still pass.",
+     "files": [],
+     "acceptance": "Contributes to milestone acceptance: playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src",
+     "status": "pending"
+    }
+   ],
+   "milestoneAcceptance": "playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Espa\u00f1ol (beta)' src/components/UserMenu.tsx matches; Playwright: toggle to es persists across reload via sage-locale-v2, html[lang='es'] pre-paint, KV flag=false hides toggle and forces English on next foreground."
   }
  ],
  "order": [
@@ -1292,6 +1703,12 @@
   "UX-M3",
   "DM-M3",
   "DM-M2",
+  "ES-M1",
+  "ES-M2",
+  "ES-M3",
+  "ES-M4",
+  "ES-M5",
+  "ES-M6",
   "EN-M1",
   "LG-M3",
   "DS-M1",
@@ -1321,7 +1738,13 @@
   "DS-M3": "printable signed pre-trip record; benefits from DS-M2's primitives and pairs with the (recommended) server-side inspection persistence gap work.",
   "DS-M4": "OG/Twitter branded previews: pure external polish with zero dependencies, safe to do last.",
   "DS-M5": "phone-width overflow on the sign-in gate is demo-visible and a one-file fix; slot it with the early cheap wins",
-  "BE-M4": "same route files as BE-M2's validation pass; one-line-per-route fix while the context is loaded"
+  "BE-M4": "same route files as BE-M2's validation pass; one-line-per-route fix while the context is loaded",
+  "ES-M1": "dark i18n infra lands after the Playwright harness exists (UX-M3) so leakage specs can follow immediately; zero user-visible change",
+  "ES-M2": "glossary + pipeline + first cluster dark; proves the translation machinery before safety-critical content",
+  "ES-M3": "safety forms are the highest-value Spanish surface; still dark, sign-off packets flow asynchronously",
+  "ES-M4": "inspection flow + records + dates + bilingual QR labels complete the worker-facing surface dark",
+  "ES-M5": "Sage AI + canned content + equipment prose; the long-tail translation batch",
+  "ES-M6": "exposure only after the full-fleet leakage sweep is green; toggle ships as Espa\u00f1ol (beta) pending owner counter-signature"
  },
  "coordination": [
   "UX-10 and DM-10 both require standing up the same Playwright infrastructure (config, npm script, auth bootstrap, browser install) plus specs \u2014 build the harness once in UX-M3 and have DM-M3 add only its spec; also decide once whether these run in CI (see gaps).",
@@ -1342,7 +1765,7 @@
   "PII hygiene in telemetry and Slack: no criterion verifies that worker names, emails, or signature data are excluded/scrubbed from Sentry events (client and server), Slack notifications, and the structured logs EN-7 will introduce \u2014 EN-7 as written could even increase PII in logs. Absorb into ENTERPRISE (EN-7 should specify PII-safe field allowlist) with LEGAL cross-reference in LG-4.",
   "Data-subject deletion / worker offboarding: the app stores worker PII in KV (known-users), Notion pages, Resend/Slack archives, and devices, but no criterion requires an actual deletion procedure or endpoint when an employee leaves or requests erasure \u2014 the privacy policy rewrite (LG-M1) will otherwise promise rights with no implementation. Absorb into LEGAL (policy truthfulness) + ENTERPRISE runbook (EN-10 could add a deletion procedure).",
   "CI as an enforced gate: .github/workflows/ci.yml exists and runs tsc/lint/test/build, but no criterion pins it \u2014 nothing requires the new Playwright suites (UX-10, DM-10) to run in CI, or branch protection so the autonomous loop can't merge a red build. Absorb into DEMO (extend DM-1) so the loop's own changes stay verified.",
-  "Spanish-language support: US construction crews are heavily Spanish-speaking and OSHA expects training/safety communication in a language workers understand; the app is English-only with no i18n criterion anywhere. Absorb into UX as an explicitly-scoped post-pilot criterion (or a documented exclusion) so the roadmap makes a conscious decision rather than an omission."
+  "Spanish-language support: US construction crews are heavily Spanish-speaking and OSHA expects training/safety communication in a language workers understand; the app is English-only with no i18n criterion anywhere. Absorb into UX as an explicitly-scoped post-pilot criterion (or a documented exclusion) so the roadmap makes a conscious decision rather than an omission.  [PROMOTED 2026-07-06 \u2192 dimension `spanish`, milestones ES-M1..M6]"
  ],
  "autonomyRisks": [
   "EN-3 (EN-M1): `npm audit` needs live registry access through the sandbox proxy, and high/critical advisories may be transitively unfixable on Next 14 \u2014 unblock via the criterion's own escape hatch (dated GHSA risk-acceptance entries in docs/DEPENDENCY-AUDIT.md). Also note EN-3 is time-flaky: a new advisory published mid-loop flips it back to unmet through no code change; the loop should treat it as re-triageable, not a regression.",
@@ -1364,6 +1787,12 @@
    "date": "2026-07-06",
    "event": "initial-review",
    "details": "13-agent workflow (6 reviewers, 6 adversarial verifiers, 1 completeness critic; ~885k tokens, 427 tool calls). Overturns applied: DS-7 met->false, BE-2 met->false. Rubric refinements adopted for BE-1, BE-9, DM-1, DM-2, DS-4, DS-7, UX-2 (see verifier rubricFixes). EN-9 de-duplicated from EN-M2. Critic gaps folded: impersonation->EN-M4-TX1, CI enforcement->UX-M3-TX1; the rest in backlog[]. Baseline gates all green at commit 95f92ef."
+  },
+  {
+   "iteration": 0,
+   "date": "2026-07-06",
+   "event": "spanish-dimension-added",
+   "details": "Owner promoted Spanish support from backlog. 9-agent design tournament on the reverted WI-2 attempt (d20573d/91849b4/538a30e); winner revive-and-gate (2/3 judges, avg 85.7) with 10 grafts absorbed (async beta-label sign-off, per-namespace kill switch, visibilitychange flag refresh, useLayoutEffect pre-paint read, 3-round review cap + blocked-keys manifest, per-key retreat tier, surface-mined glossary, dark-invariance snapshots, strict-equality LG-6/LG-8 anchors, full-sweep-before-enable). New dimension spanish (0/10, 10 criteria ES-1..10), milestones ES-M1..M6 inserted after DM-M2. Spec: docs/i18n/DESIGN.md."
   }
  ]
 }

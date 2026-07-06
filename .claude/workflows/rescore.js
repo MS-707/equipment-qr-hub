@@ -5,7 +5,7 @@ export const meta = {
   phases: [{ title: 'Rescore', detail: 'one skeptic per dimension re-runs all 10 criterion checks' }],
 }
 
-const DIMS = ['ux', 'design', 'backend', 'enterprise', 'demo', 'legal']
+const DIMS = ['ux', 'design', 'backend', 'enterprise', 'demo', 'legal', 'spanish']
 
 const DIM_RESULT = {
   type: 'object',
