@@ -35,14 +35,14 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
               Pre-Trip Inspection
             </span>
             <span
-              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
-              style={{ backgroundColor: `${categoryColor}18`, color: categoryColor }}
+              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full text-fg-2"
+              style={{ backgroundColor: `${categoryColor}18` }}
             >
               {equipment.category}
             </span>
             <span
-              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
-              style={{ backgroundColor: `${statusColor}18`, color: statusColor }}
+              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full text-fg-2"
+              style={{ backgroundColor: `${statusColor}18` }}
             >
               {status}
             </span>

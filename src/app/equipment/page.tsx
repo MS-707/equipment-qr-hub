@@ -125,7 +125,7 @@ export default function EquipmentDirectory() {
             }`}
         >
           All
-          <span className="ml-1.5 text-xs opacity-60">{allEquipment.length}</span>
+          <span className="ml-1.5 text-xs">{allEquipment.length}</span>
         </button>
 
         {categories.map((cat) => {
@@ -154,7 +154,7 @@ export default function EquipmentDirectory() {
               }
             >
               {cat}
-              <span className="ml-1.5 text-xs opacity-50">{count}</span>
+              <span className="ml-1.5 text-xs">{count}</span>
             </button>
           )
         })}
@@ -219,11 +219,8 @@ export default function EquipmentDirectory() {
                     {category}
                   </h2>
                   <span
-                    className="text-xs font-medium px-1.5 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${color}15`,
-                      color: color,
-                    }}
+                    className="text-xs font-medium px-1.5 py-0.5 rounded text-fg-2"
+                    style={{ backgroundColor: `${color}15` }}
                   >
                     {items!.length}
                   </span>
