@@ -32,7 +32,7 @@
   "ux": {
    "key": "ux",
    "name": "UX",
-   "score": 9,
+   "score": 10,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "All ten met/unmet judgments were independently re-verified and none overturned: the seven met criteria have real code behind them (root SyncProvider installing online-event sync+notify listeners, synchronous local persistence before any fetch in all seven field forms, useFormDraft with pagehide/visibilitychange flush across six safety forms plus a mirrored pre-trip draft, inputMode/htmlFor/coarse-pointer 16px rule, error/not-found/~offline recovery pages with empty states and skeletons, offline chip + pending-sync badge + aria-live toast + cached-identity banner, and fully static /inspect/[id] pages with OOS warning and profile redirect). The three unmet criteria are genuinely unmet: no skip link exists and most routes lack a <main> landmark; identity.ts:39 caps offline identity at 72h and AuthGate hard-locks stale-offline workers out of all forms; Playwright ships in devDependencies with zero config, zero specs, and no e2e script. Biggest real gaps are the 72h offline lockout (a direct field-reliability risk for multi-day remote crews) and the complete absence of automated accessibility/offline regression coverage. One rubric defect: UX-2's \"every tappable control\" prose is broader than its grep-based check and a ~14px dismiss button slips through.",
@@ -111,9 +111,11 @@
      "id": "UX-10",
      "criterion": "Automated UX regression guard: a Playwright config plus specs exist and run via an npm script \u2014 (a) an axe-core scan of at least /, /equipment, /safety/ptp and one /inspect/[id] page asserting zero serious/critical violations, and (b) an airplane-mode spec that submits a form with the browser context offline and asserts the record persists locally and queues for sync.",
      "verify": "ls playwright.config.* at repo root succeeds; grep AxeBuilder and setOffline(true) in e2e specs; package.json contains a test:e2e script that runs them.",
-     "met": false,
-     "evidence": "No playwright.config.* exists (find returned nothing); zero *.spec.ts e2e files; package.json scripts are only dev/build/start/lint/test \u2014 Playwright 1.61 sits unused in devDependencies; all ~70 vitest files are unit tests in src/lib/__tests__.",
-     "autonomyNote": "Playwright: browsers preinstalled in remote env (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \u2014 do NOT run playwright install); e2e sign-in via ALLOW_DEV_LOGIN=1 + dummy NEXTAUTH_SECRET in a committed .env.test."
+     "met": true,
+     "evidence": "playwright.config.ts + e2e/ suite: AxeBuilder scans of /, /equipment, /safety/ptp, /inspect/24 (zero serious/critical after fixing 7 real contrast violations); offline.spec completes a signed pre-trip in airplane mode and asserts pending persistence; test:e2e script; CI e2e job; stable 15/15 x3.",
+     "autonomyNote": "Playwright: browsers preinstalled in remote env (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \u2014 do NOT run playwright install); e2e sign-in via ALLOW_DEV_LOGIN=1 + dummy NEXTAUTH_SECRET in a committed .env.test.",
+     "verifiedBy": "verify-criteria wf_8464d860-e11 (1-vote adversarial)",
+     "verifiedAtIteration": 14
     }
    ]
   },
@@ -732,7 +734,7 @@
    "criteria": [
     "UX-10"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "UX-M3-T1",
@@ -742,7 +744,7 @@
       "package.json"
      ],
      "acceptance": "npx playwright test --list succeeds and package.json contains a test:e2e script.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "UX-M3-T2",
@@ -751,7 +753,7 @@
       "e2e/a11y.spec.ts"
      ],
      "acceptance": "npm run test:e2e passes; grep AxeBuilder e2e/a11y.spec.ts hits all four routes and the assertion filters impact serious|critical.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "UX-M3-T3",
@@ -760,7 +762,7 @@
       "e2e/offline.spec.ts"
      ],
      "acceptance": "npm run test:e2e passes; the spec contains setOffline(true), a form submit, and a localStorage assertion on the persisted record's pending state.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "UX-M3-TX1",
@@ -769,7 +771,7 @@
       ".github/workflows/ci.yml"
      ],
      "acceptance": "ci.yml contains a job running the Playwright specs; the workflow file parses (yaml) and references the same npm script the criteria use.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },

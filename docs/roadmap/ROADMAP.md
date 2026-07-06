@@ -124,13 +124,13 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 14. UX-M3 — Automated accessibility and airplane-mode regression suite
 *Dimension: UX · flips: UX-10 · why here: build the Playwright harness (axe scans + airplane-mode spec); this is the shared e2e foundation for the demo spec.*
 
-- [ ] **UX-M3-T1** Add playwright.config.ts (webServer: next build+start or dev, mobile viewport project e.g. Pixel 7) and an e2e/ directory; add @axe-core/playwright devDependency and a package.json script test:e2e.
+- [x] **UX-M3-T1** Add playwright.config.ts (webServer: next build+start or dev, mobile viewport project e.g. Pixel 7) and an e2e/ directory; add @axe-core/playwright devDependency and a package.json script test:e2e.
   - *Acceptance:* npx playwright test --list succeeds and package.json contains a test:e2e script.
-- [ ] **UX-M3-T2** Write e2e/a11y.spec.ts running AxeBuilder against /, /equipment, /safety/ptp, and one /inspect/[id] page (using dev sign-in or the unauthenticated equipment routes) asserting zero serious/critical violations.
+- [x] **UX-M3-T2** Write e2e/a11y.spec.ts running AxeBuilder against /, /equipment, /safety/ptp, and one /inspect/[id] page (using dev sign-in or the unauthenticated equipment routes) asserting zero serious/critical violations.
   - *Acceptance:* npm run test:e2e passes; grep AxeBuilder e2e/a11y.spec.ts hits all four routes and the assertion filters impact serious|critical.
-- [ ] **UX-M3-T3** Write e2e/offline.spec.ts: load a form page, call context.setOffline(true), fill and submit a pre-trip inspection or PTP, and assert the record exists in localStorage with pending sync status and the pending-sync badge appears in the tab bar.
+- [x] **UX-M3-T3** Write e2e/offline.spec.ts: load a form page, call context.setOffline(true), fill and submit a pre-trip inspection or PTP, and assert the record exists in localStorage with pending sync status and the pending-sync badge appears in the tab bar.
   - *Acceptance:* npm run test:e2e passes; the spec contains setOffline(true), a form submit, and a localStorage assertion on the persisted record's pending state.
-- [ ] **UX-M3-TX1** Wire the new Playwright suites (axe scans, airplane-mode spec, and later DM-M3's demo spec) into .github/workflows/ci.yml so they gate merges alongside tsc/lint/test/build.
+- [x] **UX-M3-TX1** Wire the new Playwright suites (axe scans, airplane-mode spec, and later DM-M3's demo spec) into .github/workflows/ci.yml so they gate merges alongside tsc/lint/test/build.
   - *Acceptance:* ci.yml contains a job running the Playwright specs; the workflow file parses (yaml) and references the same npm script the criteria use.
 
 ### 15. DM-M3 — Machine-rehearsable inspection happy path
