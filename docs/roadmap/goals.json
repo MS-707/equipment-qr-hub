@@ -1,0 +1,1369 @@
+{
+ "version": 1,
+ "project": "equipment-qr-hub",
+ "goal": "All six dimensions verified 10/10 against the frozen rubrics below",
+ "createdAt": "2026-07-06",
+ "branch": "claude/construction-safety-audits-HC6MA",
+ "iteration": 0,
+ "gates": [
+  {
+   "id": "lint",
+   "cmd": "npm run lint",
+   "required": true
+  },
+  {
+   "id": "types",
+   "cmd": "npx tsc --noEmit",
+   "required": true
+  },
+  {
+   "id": "tests",
+   "cmd": "npm test",
+   "required": true
+  },
+  {
+   "id": "build",
+   "cmd": "npm run build",
+   "required": true
+  }
+ ],
+ "verificationRule": "A criterion flips to met:true only when a fresh adversarial verifier confirms its verify check with path:line evidence (workflow 'verify-criteria'). Dimension completion additionally requires a 3-vote panel per criterion (majority rules). Grep-defined criteria (DS-3, DS-4, DS-6, BE-8, EN-7) must pair the grep with one rendered-output or behavioral spot-check to prevent superficial compliance.",
+ "dimensions": {
+  "ux": {
+   "key": "ux",
+   "name": "UX",
+   "score": 7,
+   "initialScore": 7,
+   "verifiedScore": null,
+   "auditSummary": "All ten met/unmet judgments were independently re-verified and none overturned: the seven met criteria have real code behind them (root SyncProvider installing online-event sync+notify listeners, synchronous local persistence before any fetch in all seven field forms, useFormDraft with pagehide/visibilitychange flush across six safety forms plus a mirrored pre-trip draft, inputMode/htmlFor/coarse-pointer 16px rule, error/not-found/~offline recovery pages with empty states and skeletons, offline chip + pending-sync badge + aria-live toast + cached-identity banner, and fully static /inspect/[id] pages with OOS warning and profile redirect). The three unmet criteria are genuinely unmet: no skip link exists and most routes lack a <main> landmark; identity.ts:39 caps offline identity at 72h and AuthGate hard-locks stale-offline workers out of all forms; Playwright ships in devDependencies with zero config, zero specs, and no e2e script. Biggest real gaps are the 72h offline lockout (a direct field-reliability risk for multi-day remote crews) and the complete absence of automated accessibility/offline regression coverage. One rubric defect: UX-2's \"every tappable control\" prose is broader than its grep-based check and a ~14px dismiss button slips through.",
+   "reviewNotes": "Overall: field-worker UX here is unusually strong for the scale \u2014 offline queue with backoff, drafts on every form, 44px+ targets, haptics, skeletons/empty states everywhere, focus-trapped native <dialog> and tours with focus restore, visualViewport keyboard handling in SageTriage, static QR landing pages. The three unmet criteria are the real remaining gaps. Verified-against-code status of OFI-BACKLOG UX items: #8 (root sync listeners), #13 (label associations), #14 (--fg-4 now #9E9E9E, ~7:1), #15 (visualViewport) are FIXED despite unchecked boxes; #23 (PullToRefresh animates height and re-renders children per touchmove \u2014 PullToRefresh.tsx:38,65; mid-range Android jank, worth fixing but sub-criterion), #24 partially fixed (nav roles cleaned; dead [role=\\\"tabbar\\\"] print selector remains at globals.css:260), #25 (72h identity TTL) OPEN and is UX-9. Additional sub-criterion finding: the prefers-reduced-motion block (globals.css:238-247) does not disable ::view-transition-old/new(root) animations (globals.css:138-150) because * does not match pseudo-elements on html \u2014 add an explicit reduced-motion rule; fold into UX-M1 if desired. Out-of-lane: multi-tab localStorage read-modify-write clobber (backlog #19) and signature/photo blob sync (#20) are data-integrity items for the backend dimension; shared-device identity switch-user purge (#21) belongs to enterprise/security; SageTriage prompt-injection (#9) backend. Uncertainty flags: UX-5/UX-7 were verified by code inspection only \u2014 no build was run (npx tsc/next build not executed to keep the review read-only and fast); the a11y axe criterion (UX-10) may surface new violations once run \u2014 fix them rather than loosening the assertion. For the roadmap executor: /inspect/[id] and /equipment/[id] use bundled static data, so adding equipment requires a rebuild \u2014 that is a design/backend concern, not scored here.",
+   "criteria": [
+    {
+     "id": "UX-1",
+     "criterion": "Offline-first capture on every field form: all six safety forms and the pre-trip inspection persist submissions to device storage synchronously (no network dependency), and sync/notify listeners are installed in the root layout so queued records upload on the 'online' event from any route.",
+     "verify": "Confirm src/app/layout.tsx mounts SyncProvider wrapping all children, and src/components/providers/SyncProvider.tsx calls installSyncListeners() and installNotifyListeners(); confirm submit paths in safety forms/PreTripInspection write to local stores (safety-records.ts / inspections.ts) before any fetch.",
+     "met": true,
+     "evidence": "src/app/layout.tsx:70 SyncProvider wraps app; SyncProvider.tsx:13-14 installs sync+notify listeners at root; safety-sync.ts:60-82 retries with backoff and leaves records pending offline; inspections.ts exposes queueNotifyPayload used by PreTripInspection.tsx:36."
+    },
+    {
+     "id": "UX-2",
+     "criterion": "Glove-friendly touch targets: the bottom tab bar reserves >=56px row height (--tab-bar-h in globals.css used by BottomTabBar), and every <button>, <a>, and <select> rendered inside PreTripInspection.tsx, ConfirmDialog.tsx, WorkOrderBoard.tsx, FormStepper.tsx, and the six safety form components declares an effective hit area >=44px in both axes via min-h-[44px]/min-w, explicit w-11 h-11 (or larger), or padding that computes to >=44px \u2014 verified by enumerating each interactive element in those files, not by grep count alone.",
+     "verify": "Enumerate every <button>, <a>, <select> in PreTripInspection.tsx, ConfirmDialog.tsx, WorkOrderBoard.tsx, FormStepper.tsx and the six safety form components; each has an effective >=44px hit area in both axes (min-h-[44px]+min-w, w-11/h-11 or larger, or padding that computes to >=44px). Also confirm --tab-bar-h >= 56px in globals.css and its use in BottomTabBar.tsx. Grep count alone is insufficient.",
+     "met": true,
+     "evidence": "globals.css:23 --tab-bar-h:56px; BottomTabBar.tsx:34 min-h-[var(--tab-bar-h)]; PreTripInspection.tsx:104-134 pass/fail/NA buttons min-h-[44px]; FormStepper.tsx pills min-h-[44px]; WorkOrderBoard.tsx:101,119 selects min-h-[44px]; grep shows 44px targets in 25+ components.",
+     "rewritten": true
+    },
+    {
+     "id": "UX-3",
+     "criterion": "Draft persistence on all long forms: the six safety forms use useFormDraft (debounced save + pagehide/visibilitychange flush + restore banner with dismiss) and the pre-trip inspection has an equivalent per-equipment draft mechanism, so an interrupted worker never retypes a form.",
+     "verify": "grep useFormDraft over src/components \u2014 HotWork, Height, ConfinedSpace, JHA, PTP, IncidentReport forms all call it; src/lib/use-draft.ts flushes on pagehide and visibilitychange; PreTripInspection.tsx defines its own draft: key with the same flush behavior.",
+     "met": true,
+     "evidence": "use-draft.ts:53-70 debounced save + pagehide/visibilitychange flush; all 6 safety forms call useFormDraft (e.g. PreTaskPlanForm.tsx:139, IncidentReportForm.tsx:130); PreTripInspection.tsx:45 DRAFT_KEY_PREFIX with mirrored flush (:493 comment)."
+    },
+    {
+     "id": "UX-4",
+     "criterion": "Mobile form ergonomics: numeric/decimal/search inputs declare inputMode, all six safety forms have programmatic label association (htmlFor/id) on their inputs, and a coarse-pointer CSS rule forces >=16px input font-size to block iOS focus zoom.",
+     "verify": "grep inputMode over src (hits in permit/PTP/inspection/search inputs); grep -c htmlFor per file in src/components/safety returns >0 for all six form files; globals.css contains the @media (pointer: coarse) input font-size: max(16px, 1em) rule.",
+     "met": true,
+     "evidence": "globals.css:127-131 coarse-pointer 16px rule; inputMode decimal/numeric/search in 8 files (HeightPermitForm.tsx:240, ConfinedSpaceForm.tsx:402, equipment/page.tsx:91 with enterKeyHint); htmlFor counts: Incident 12, Height 8, HotWork 11, ConfinedSpace 10, PTP 12, JHA 6."
+    },
+    {
+     "id": "UX-5",
+     "criterion": "No blank or dead-end screens: a root error.tsx with reset action, not-found.tsx and ~offline fallback page each link back into the app; every list view (equipment directory, work-order board, safety history) renders an explicit empty state with next-step guidance; client pages show skeletons before hydration.",
+     "verify": "Open src/app/error.tsx, not-found.tsx, ~offline/page.tsx and confirm recovery actions; confirm empty-state branches in equipment/page.tsx, WorkOrderBoard.tsx, SafetyHistory.tsx; confirm Skeleton usage in equipment page, SafetyDashboard, SafetyHistory, RecordView, EquipmentProfile.",
+     "met": true,
+     "evidence": "error.tsx reset button; not-found.tsx Back to Home link; ~offline/page.tsx retry+home; equipment/page.tsx:173-181 and WorkOrderBoard.tsx:156-167 empty states with guidance; SafetyHistory.tsx:154 no-match state; Skeleton imported in 5 view components + sw.ts offline fallback."
+    },
+    {
+     "id": "UX-6",
+     "criterion": "Connectivity and sync state are always visible: the header shows an offline chip driven by online/offline events, the tab bar shows a pending-sync badge with screen-reader text, sync outcomes surface via an aria-live toast, and AuthGate shows an 'offline as {name}' banner when working on cached identity.",
+     "verify": "Inspect NavHeader.tsx offline listener + WifiOff chip; BottomTabBar.tsx pendingSyncCount dot with sr-only text; SyncToast.tsx role=status/alert with aria-live; AuthGate.tsx offline-with-cached-identity banner branch.",
+     "met": true,
+     "evidence": "NavHeader.tsx:19-30,58-63 offline chip; BottomTabBar.tsx:48-53 pending-sync dot + sr-only count; SyncToast.tsx:49-51 role/aria-live by tone; AuthGate.tsx:93-105 offline banner naming the cached identity."
+    },
+    {
+     "id": "UX-7",
+     "criterion": "Scan-to-action speed: every pre-trip-required unit's /inspect/[id] page is statically generated at build (generateStaticParams), renders the checklist immediately from bundled data with zero client data fetch, warns when the unit is Out of Service, and non-inspectable units redirect to their profile instead of 404ing.",
+     "verify": "Confirm generateStaticParams in src/app/inspect/[id]/page.tsx filtered by requiresPreTrip; confirm InspectLanding renders PreTripInspection synchronously from props; confirm the Out of Service banner and the redirect(`/equipment/${id}`) branch.",
+     "met": true,
+     "evidence": "inspect/[id]/page.tsx:18-22 static params for all pre-trip units; :37-38 notFound/redirect branches; InspectLanding.tsx:54-60 OUT OF SERVICE warning, :62 checklist rendered directly from bundled equipment data (no fetch)."
+    },
+    {
+     "id": "UX-8",
+     "criterion": "Bypass blocks and landmarks (WCAG 2.4.1/1.3.1): the root layout renders a skip-to-content link as the first focusable element targeting the page's main landmark, and every page route exposes exactly one <main> landmark (directly or via its top-level component).",
+     "verify": "grep -riE 'skip.?(to|link|content)' src returns a skip link in layout.tsx; for each src/app/**/page.tsx (excluding api), grep '<main' in the page or its top-level rendered component returns exactly one match.",
+     "met": false,
+     "evidence": "No skip link anywhere (grep -riE 'skip.?(to|link|content)' src returns nothing); only 7 of ~22 routes render <main> \u2014 home (SafetyDashboard), all /safety/* pages (e.g. safety/ptp/page.tsx uses a bare div), /inspections, /beta, /admin/beta lack a main landmark."
+    },
+    {
+     "id": "UX-9",
+     "criterion": "Offline identity continuity: a worker who signed in once is never locked out of safety forms by time alone while offline \u2014 the cached-identity window is >=7 days (or stale identity degrades to a warning state that still allows capture), verified by identity tests.",
+     "verify": "grep IDENTITY_TTL_MS src/lib/identity.ts shows a TTL >= 7 days, or AuthGate.tsx renders children (with a verify-when-online warning) when offline with a stale cached identity; src/lib/__tests__/identity.test.ts asserts the extended window.",
+     "met": false,
+     "evidence": "identity.ts:39 IDENTITY_TTL_MS = 72h; AuthGate.tsx:93 requires !isIdentityStale() to render offline, else :107-118 shows a hard 'Sign in once to work offline' lockout \u2014 a crew offline >3 days cannot open any safety form (OFI-BACKLOG item 25, still open).",
+     "autonomyNote": "Default to the degrade-to-warning branch (still allows capture, smaller security surface); note the >=7-day-TTL alternative for the owner."
+    },
+    {
+     "id": "UX-10",
+     "criterion": "Automated UX regression guard: a Playwright config plus specs exist and run via an npm script \u2014 (a) an axe-core scan of at least /, /equipment, /safety/ptp and one /inspect/[id] page asserting zero serious/critical violations, and (b) an airplane-mode spec that submits a form with the browser context offline and asserts the record persists locally and queues for sync.",
+     "verify": "ls playwright.config.* at repo root succeeds; grep AxeBuilder and setOffline(true) in e2e specs; package.json contains a test:e2e script that runs them.",
+     "met": false,
+     "evidence": "No playwright.config.* exists (find returned nothing); zero *.spec.ts e2e files; package.json scripts are only dev/build/start/lint/test \u2014 Playwright 1.61 sits unused in devDependencies; all ~70 vitest files are unit tests in src/lib/__tests__.",
+     "autonomyNote": "Playwright: browsers preinstalled in remote env (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \u2014 do NOT run playwright install); e2e sign-in via ALLOW_DEV_LOGIN=1 + dummy NEXTAUTH_SECRET in a committed .env.test."
+    }
+   ]
+  },
+  "design": {
+   "key": "design",
+   "name": "Design",
+   "score": 4,
+   "initialScore": 4,
+   "verifiedScore": null,
+   "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
+   "reviewNotes": "Verified score 5/10 (DS-1,2,5,7,8 met). Rationale for exemptions frozen into DS-3: src/app/beta/page.tsx is a standalone dark-committed marketing landing (NavHeader.tsx:37 hides chrome for it) \u2014 retheming it is optional, not required; QRLabel.tsx and SignaturePad.tsx need literal black/white for physical labels and canvas signature export. Executor warnings: (1) inspections/page.tsx:102 embeds a URL-encoded gray #9CA3AF chevron in a data-URI select background \u2014 it escapes the DS-3 grep but should be tokenized (or use currentColor) while touching that file; (2) when retheming safety/review/action (DS-M1-T1) do not alter its token-based email-action logic \u2014 the page is linked from EHS review emails, so verify both approve and reject states in light theme; (3) DS-M2-T3 is a wide mechanical sweep \u2014 run the existing Vitest suite and npx tsc --noEmit after. Out-of-lane findings: text-blue-400 on light background in IncidentReportForm is ~2.2:1 contrast (a11y \u2014 UX dimension); safety/review/action duplicates input styling instead of using form-styles (code-quality overlap with backend/UX); docs/CLAUDE_DESIGN_HANDOFF.md is stale (references Roboto and pre-token hex values like #583AF6 that no longer match tailwind.config.ts) \u2014 if the docs dimension cares, it should be updated or archived; the light-theme *-strong contrast tokens (globals.css:30-35) are a genuinely strong pattern worth preserving in any refactor.",
+   "criteria": [
+    {
+     "id": "DS-1",
+     "criterion": "All Tailwind theme colors, radii, and shadows in tailwind.config.ts resolve to CSS custom properties that are defined in globals.css with values for BOTH [data-theme=\"dark\"] and [data-theme=\"light\"] blocks \u2014 zero literal color values in the Tailwind theme extension.",
+     "verify": "Read tailwind.config.ts theme.extend: every colors/borderRadius/boxShadow value matches var(--*). Then grep globals.css for each var name and confirm it appears in both the [data-theme=\"dark\"] and [data-theme=\"light\"] blocks (or :root with light overrides).",
+     "met": true,
+     "evidence": "tailwind.config.ts:15-49 \u2014 all colors/radii/shadows are var(--*) refs; globals.css:10-107 defines every token in :root (dark default), [data-theme=\"dark\"], and [data-theme=\"light\"] incl. semantic ok/warn/danger/expired and *-strong text-grade variants."
+    },
+    {
+     "id": "DS-2",
+     "criterion": "Theme switching is flash-free and complete: a pre-hydration inline script in layout.tsx sets data-theme from localStorage/prefers-color-scheme before paint, a user-facing light/dark/auto toggle exists, the meta theme-color is updated on switch, and color-scheme is set per theme in CSS.",
+     "verify": "layout.tsx <head> contains an inline script reading the theme key and stamping document.documentElement.dataset.theme; grep src/lib/theme.ts for meta[name=\"theme-color\"] sync; grep globals.css for color-scheme in both theme blocks; UserMenu renders a theme control.",
+     "met": true,
+     "evidence": "layout.tsx:52 \u2014 inline pre-hydration script sets dataset.theme from 'sage-theme'/matchMedia; theme.ts:36-40 syncs meta theme-color; globals.css:56,77,106 set color-scheme per theme; UserMenu.tsx:49-55,141 cycles Light/Dark/Auto."
+    },
+    {
+     "id": "DS-3",
+     "criterion": "Semantic tokens are the only color source in app UI: grep -rE '\\[#[0-9A-Fa-f]{3,8}\\]' and grep -rE '(bg|text|border|ring)-(red|blue|green|yellow|purple|gray|zinc|slate|neutral|amber|orange|emerald|teal|cyan)-[0-9]{2,3}' over src/app+src/components (*.tsx) each return zero lines, exempting only src/app/beta/, QRLabel.tsx, and SignaturePad.tsx.",
+     "verify": "Run both greps with the three exemptions filtered out; both must return 0 lines. Exemptions: beta marketing page is a committed dark-only landing; QRLabel/SignaturePad emit physical-print/canvas output that requires literal black/white.",
+     "met": false,
+     "evidence": "src/app/safety/review/action/page.tsx has 36 arbitrary-hex classnames (e.g. :157 bg-[#0A0A0A], :235 hover:bg-[#4722CC] \u2014 a color not in the token set); AuthGate.tsx:143 bg-[#572DFF], :174 text-gray-900; IncidentReportForm.tsx:40-66 has 10 default-palette classes (text-blue-400 etc.) with no light-theme variant."
+    },
+    {
+     "id": "DS-4",
+     "criterion": "Page-title typography is uniform: exactly one h1 size variant across route pages (a single base+sm: pair counts as one variant); beta landing and email-action screens excluded.",
+     "verify": "Page-title typography is uniform: enumerate the h1 rendered at the top of each route's page.tsx (or the dashboard component it delegates to) using a multiline-aware search (rg -U '<h1[^>]*className' across src/app/**/page.tsx plus the top-level dashboard components they render), extract font-size classes, and require exactly one size variant (a single base+sm: pair counts as one variant). Exclude the beta landing page and email-action confirmation screens.",
+     "met": false,
+     "evidence": "Tally shows 4+ size variants: text-xl (inspections/page.tsx:73, SafetyDashboard.tsx:101), text-2xl (admin/labels:78, privacy:17), text-2xl sm:text-3xl (equipment:73, work-orders:15), text-lg (safety/review/action:119). No single page-title scale.",
+     "rewritten": true
+    },
+    {
+     "id": "DS-5",
+     "criterion": "Single icon system: every UI icon comes from lucide-react \u2014 no inline <svg> elements in any .tsx file and no second icon package (heroicons, react-icons, @mui/icons, feather) in package.json dependencies.",
+     "verify": "grep -rl '<svg' src --include='*.tsx' returns 0 files; grep package.json for heroicons|react-icons|@mui|feather returns nothing; spot-check imports are from 'lucide-react'.",
+     "met": true,
+     "evidence": "grep -rl '<svg' src/**/*.tsx returns 0 files; package.json:18 lists lucide-react ^0.575.0 as the only icon dep; 66 tsx files import from 'lucide-react' (e.g. NavHeader.tsx:7, PmTracker.tsx:5)."
+    },
+    {
+     "id": "DS-6",
+     "criterion": "Primary action buttons come from a shared primitive: a Button component (src/components/ui/) or exported button class constants (src/lib/form-styles.ts) exists, and grep for inline className literals combining bg-mytra-purple with text-white across src/app+src/components returns zero occurrences outside that primitive.",
+     "verify": "ls src/components/ui or grep buttonCls src/lib/form-styles.ts confirms the primitive; then grep -rn 'bg-mytra-purple' src --include='*.tsx' piped through a text-white filter must hit only the primitive file.",
+     "met": false,
+     "evidence": "No src/components/ui dir and no buttonCls in src/lib/form-styles.ts (only labelCls/inputCls/textareaCls); 131 bg-mytra-purple occurrences across files, 31 files pair it inline with text-white \u2014 with drifted variants (review/action:235 hover:bg-[#4722CC] vs token hover #6B42FF)."
+    },
+    {
+     "id": "DS-7",
+     "criterion": "No horizontal overflow at phone widths from fixed-width elements (glows, tables, cards).",
+     "verify": "No horizontal overflow at phone widths from fixed-width elements: rg -n '(^|[^a-z-])w-\\[[0-9]{3,}px\\]' src --include='*.tsx' (excluding min-w-/max-w- prefixed matches) \u2014 every hit must either (a) carry max-w-full or be sm:/md:-scoped, or (b) sit inside an ancestor with overflow-hidden/overflow-x-clip that bounds it to the viewport. Verify AuthGate and beta glows specifically.",
+     "met": false,
+     "evidence": "OVERTURNED by adversarial auditor: The stated check fails: AuthGate.tsx:143 renders a literal w-[520px] h-[520px] glow with neither max-w-full nor an sm:/md: prefix. Unlike the beta page's 880px glow (wrapped in an overflow-hidden container at beta/page.tsx:122), AuthGate's glow has no clipping ancestor \u2014 Centered (AuthGate.tsx:286) is a plain flex div, and neither globals.css nor layout.tsx applies any overflow-x clip \u2014 so at 375px phone width the absolutely-positioned, center-translated 520px element extends ~70px past the right viewport edge and creates horizontal body scroll on the sign-in screen. The reviewer's evidence cited only the SageTriage hit and ignored the other grep hits the howToVerify explicitly requires to be capped.",
+     "rewritten": true
+    },
+    {
+     "id": "DS-8",
+     "criterion": "Motion is centralized and accessible: all @keyframes live in tailwind.config.ts or globals.css (component files contain no @keyframes and no inline animation shorthand beyond animationDelay), and globals.css contains a global prefers-reduced-motion: reduce block clamping animation and transition durations.",
+     "verify": "grep -rn '@keyframes' src --include='*.tsx' returns 0; grep style={{...animation in tsx shows only animationDelay; globals.css contains @media (prefers-reduced-motion: reduce) with animation-duration/transition-duration overrides.",
+     "met": true,
+     "evidence": "Keyframes centralized in tailwind.config.ts:50-106 and globals.css:145-150,220-222; inline styles are animationDelay only (SafetyDashboard.tsx:295, AuthGate.tsx:146); globals.css:238-247 clamps all animation/transition durations under prefers-reduced-motion."
+    },
+    {
+     "id": "DS-9",
+     "criterion": "Every physical artifact the app produces has a print-formatted surface: QR labels print via a print-grid, safety records (PTP/JHA/permits/incidents) print via the formal print-doc layout with signature lines, AND a completed signed pre-trip inspection has a record view that calls window.print() using the same print-doc classes.",
+     "verify": "grep -rln 'window.print' src --include='*.tsx' must include admin/labels, safety RecordView, and an inspections record surface; drive: submit an inspection, open its record, print preview shows print-doc-header + print-sig content.",
+     "met": false,
+     "evidence": "window.print exists only in RecordView.tsx (:270-272, formal layout :283-399) and admin/labels/page.tsx (:132, print-grid :52). PreTripInspection.tsx (1154 lines) has zero 'print' matches \u2014 signed inspections (touch signature, EHS-notified) have no printable record."
+    },
+    {
+     "id": "DS-10",
+     "criterion": "Link previews are branded: the root metadata export includes openGraph (title, description) and twitter card fields, and an OG image exists via src/app/opengraph-image.(tsx|png) or a metadata images reference to a file present in public/.",
+     "verify": "grep -rn 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' (or the referenced public/ asset) returns a file; next build lists an /opengraph-image route or the static asset resolves.",
+     "met": false,
+     "evidence": "grep for openGraph/twitter/og:image across src and public returns zero matches; find src/app -name 'opengraph-image*' is empty; layout.tsx:21-34 metadata has title/description/manifest/appleWebApp only. Beta signup links shared in Slack/email render bare.",
+     "autonomyNote": "Generate src/app/opengraph-image.tsx programmatically from theme tokens + app name; no external assets (keeps CSP intact)."
+    }
+   ]
+  },
+  "backend": {
+   "key": "backend",
+   "name": "Backend",
+   "score": 6,
+   "initialScore": 6,
+   "verifiedScore": null,
+   "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
+   "reviewNotes": "Verification basis: read all 17 non-NextAuth route.ts files plus api-auth, rate-limit, kv, beta, review-store/-token, safety-sync, inspections queue, email/slack helpers, auth, admin; ran full vitest (69 files / 694 tests, all pass, 7.5s). docs/roadmap/goals.json does not exist yet \u2014 this is the initial rubric. Out-of-lane findings: (1) enterprise/security \u2014 GET /api/safety/review/status lets ANY authenticated user read review status/notes for arbitrary Notion page IDs and record IDs (no ownership check); acceptable for a small internal tool but an IT buyer may flag it. (2) legal/enterprise \u2014 EHS_NOTIFY_EMAIL and review-decide default a personal address (mark.starr@mytra.ai) hardcoded in src/lib/email-notify.ts:15 and review/decide/route.ts:162. (3) beta.ts updateSignupStatus is read-modify-write without a lock \u2014 two admins deciding the same signup concurrently is last-write-wins; low materiality, not counted. (4) rate limiter deliberately fails OPEN on KV errors (documented at rate-limit.ts:7-8) \u2014 I treated this as an accepted design choice for safety tooling, not a defect; if a future security reviewer wants fail-closed on auth-sensitive endpoints, that belongs to their lane. (5) Sync queues are client-local (localStorage) by design; there is no server-side queue to poison \u2014 BE-6 judged against the documented client-queue architecture (docs/sync-architecture.svg, spec \u00a712 image-blob limitation). Executor warning: when adding zod safeParse (BE-M2), several route tests assert exact error strings/status codes \u2014 update tests in the same commit; and instrumentation.ts (BE-M1-T1) must guard against missing DSN or local dev builds will fail Sentry init.\"",
+   "criteria": [
+    {
+     "id": "BE-1",
+     "criterion": "Every route.ts under src/app/api (currently 18 files; the NextAuth [...nextauth] passthrough delegates auth to NextAuth by design) enforces authn/authz before any work: session routes call requireSession/getServerSession first, admin routes (admin/health, beta/decide) additionally check isAdmin, and the only unauthenticated handlers are beta/signup (public by design, IP rate-limited) and safety/review/decide (HMAC-token authorized with 24h expiry + timingSafeEqual, no fallback secret).",
+     "verify": "Per-file check of all 18 src/app/api/**/route.ts files: session routes call requireSession/getServerSession before any work; admin routes additionally check isAdmin; the only unauthenticated handlers are beta/signup (public by design, IP rate-limited) and safety/review/decide (HMAC token, timingSafeEqual, no fallback secret); [...nextauth] delegates to NextAuth by design.",
+     "met": true,
+     "evidence": "All 17 routes confirmed: requireSession (src/lib/api-auth.ts:4-10) or getServerSession (sage/triage/route.ts:81); isAdmin at api/admin/health/route.ts:14 and api/beta/decide/route.ts:9,38; token auth src/lib/review-token.ts:38-43; signup IP-limited route.ts:9-16.",
+     "rewritten": true
+    },
+    {
+     "id": "BE-2",
+     "criterion": "Durable rate limiting: every non-admin-only route handler calls rateLimit() before external side effects, keyed by session email (or platform-set IP for unauthenticated routes), backed by KV INCR+EXPIRE when KV_REST_API_URL is set, and returns 429 with a Retry-After header.",
+     "verify": "grep -rn 'rateLimit(' src/app/api \u2014 every route except auth passthrough and admin-only beta/decide + admin/health GET calls it; src/lib/rate-limit.ts uses kv.incr + kv.expire; rate-limit.test.ts passes.",
+     "met": false,
+     "evidence": "OVERTURNED by adversarial auditor: The criterion requires every rate-limited route to return 429 WITH a Retry-After header, and the evidence claims all 15 applicable routes do. False: src/app/api/beta/signup/route.ts:15 returns Response.json({error:'Too many requests'},{status:429}) with no Retry-After header. All 15 other 429 responses include it, and the KV INCR+EXPIRE backing (src/lib/rate-limit.ts:57-68) is real, but the criterion is a conjunction over every non-admin route and beta/signup fails it.",
+     "autonomyNote": "Verify KV-backed limiting with a mocked Upstash REST endpoint in vitest; production check is a documented human step."
+    },
+    {
+     "id": "BE-3",
+     "criterion": "Secrets fail closed: review-token signing throws without NEXTAUTH_SECRET/REVIEW_TOKEN_SECRET (no fallback), production email login requires EMAIL_LOGIN_CODE compared with timingSafeEqual, dev login is disabled when NODE_ENV=production, ADMIN_EMAILS is server-only (not NEXT_PUBLIC_), and admin/health reports booleans only \u2014 grep finds no hardcoded API keys in src.",
+     "verify": "Read src/lib/review-token.ts getSecret(), src/lib/auth.ts lines 36-50, src/lib/admin.ts; grep -rn 'sk-ant\\|apiKey: .[A-Za-z0-9]' src returns nothing; admin/health route returns !! booleans only.",
+     "met": true,
+     "evidence": "src/lib/review-token.ts:9-17 throws without secret; src/lib/auth.ts:36 dev login blocked in prod, :43-50 timingSafeEqual code gate; src/lib/admin.ts:13-14 server-only env; api/admin/health/route.ts:28-40 booleans only; secret grep clean."
+    },
+    {
+     "id": "BE-4",
+     "criterion": "Every call to Anthropic, Notion, Resend, and Slack is wrapped in try/catch and maps failure to a structured JSON response or explicit degraded outcome: AI routes return 502 on Anthropic errors and 503 when ANTHROPIC_API_KEY is unset, Notion failures return 502/503 (never crash), email/Slack helpers return 'sent'|'not-configured'|'failed' and never throw.",
+     "verify": "Inspect each AI route's catch block (502 + log); safety/sync and review/submit Notion error paths; src/lib/email-notify.ts and slack-notify.ts catch-all returns; drive an AI route with ANTHROPIC_API_KEY unset and confirm 503 JSON.",
+     "met": true,
+     "evidence": "All 9 Anthropic routes: 503 unconfigured + try/catch\u2192502 (e.g. suggest-toolbox/route.ts:34-38,89-95); Notion 503/502 mapping safety/sync/route.ts:74-81,202-205; email-notify.ts:56-80 and slack-notify.ts:21-40 return outcome enums, never throw."
+    },
+    {
+     "id": "BE-5",
+     "criterion": "KV data integrity uses atomic operations where concurrency exists: the beta signup index is maintained with SADD (not read-modify-write arrays, legacy array merged on read), review decisions take a SET NX lock so double-clicked approve/reject links are idempotent, first-login detection uses SADD return value, and every KV write of durable records carries a TTL.",
+     "verify": "Read src/lib/beta.ts addSignup/getAllIds, src/lib/review-store.ts decideReview lock, src/lib/user-tracker.ts isFirstLogin; confirm { ex: ... } on kv.set calls; beta.test.ts and review-store.test.ts pass.",
+     "met": true,
+     "evidence": "src/lib/beta.ts:19-21,34-35 SADD index + 180d TTL, legacy merge :42-49; src/lib/review-store.ts:71-73 NX decide lock, TTLs :46,:78; src/lib/user-tracker.ts:21-23 atomic sadd; covered by passing beta.test.ts / review-store.test.ts."
+    },
+    {
+     "id": "BE-6",
+     "criterion": "Offline sync queues are retry-safe and poison-proof: safety-sync has per-record in-flight dedup, bounded backoff (1s/2s/4s), a 5-minute circuit breaker on 503 not-configured; the server dedups by record ID (query-before-create + pageId update path) so retries never duplicate Notion pages; the inspection notify queue is capped at 50, drops permanently-invalid 400 payloads, and abandons items after 3 attempts.",
+     "verify": "Read src/lib/safety-sync.ts (inFlight set, delays array, syncDisabledUntil) and src/lib/inspections.ts flushNotifyQueue (res.status===400 drop, NOTIFY_MAX_ATTEMPTS, cap); read the dedup query in src/app/api/safety/sync/route.ts; safety-sync.test.ts and inspections-notify-queue.test.ts pass.",
+     "met": true,
+     "evidence": "src/lib/safety-sync.ts:51,59-79 (inFlight, backoff, 5-min breaker at :73); server dedup safety/sync/route.ts:138-160 + update path :162-193; src/lib/inspections.ts:377-378,441-448 (cap 50, drop on 400, 3 attempts); queue tests pass."
+    },
+    {
+     "id": "BE-7",
+     "criterion": "Payload size and caching discipline: routes accepting large bodies enforce explicit limits (content-length 413 guards on safety/sync and review/submit at 512KB, parse-document base64 cap 4.2MB with 413, notify signature capped at 300KB by schema, sage message/context/history caps), and all /api/* responses carry Cache-Control: no-store.",
+     "verify": "grep -n 'content-length\\|413' src/app/api/safety/sync/route.ts src/app/api/safety/review/submit/route.ts; parse-document route lines ~83-85; inspection-notify-schema.ts .max(300_000); next.config.mjs api headers block includes no-store.",
+     "met": true,
+     "evidence": "safety/sync/route.ts:42-45 and review/submit/route.ts:53-56 413 at 512KB; parse-document/route.ts:83-85 4.2MB cap; inspection-notify-schema.ts:47 signature max 300k; sage/triage/route.ts:103-125 caps; next.config.mjs /api/:path* Cache-Control no-store."
+    },
+    {
+     "id": "BE-8",
+     "criterion": "Every API route that reads a JSON request body validates it with a zod schema via .safeParse before use (schemas may live in src/lib and be shared), and grep finds zero 'as <Type>' casts or typed-let coercions on await req.json() in src/app/api.",
+     "verify": "grep -rn 'safeParse' src/app/api src/lib \u2014 every body-reading route resolves to a zod safeParse; grep -rn 'await req.json()) as\\|let body:' src/app/api returns nothing.",
+     "met": false,
+     "evidence": "Only inspections/notify validates via zod (route.ts:217). safety/sync/route.ts:49 casts '(await req.json()) as SafetyRecord'; review/submit/route.ts:58, sage/triage/route.ts:96 and all 9 AI routes + beta routes use typed-let coercion with manual field checks."
+    },
+    {
+     "id": "BE-9",
+     "criterion": "No route can crash or hang on a dependency: every KV operation awaited inside a route handler path is guarded so a KV outage returns a structured JSON error (not an unhandled 500), and every outbound fetch to Notion/Resend/Slack in server code passes AbortSignal.timeout (or equivalent) so a hung upstream cannot pin the function.",
+     "verify": "grep -rn 'AbortSignal.timeout|signal:' src/app/api src/lib returns a hit for every outbound fetch to Notion/Resend/Slack/Anthropic; then statically confirm every awaited KV call reachable from a route handler (addSignup, updateSignupStatus, getAllSignups, storeReviewSubmission, getReviewSubmission, decideReview) is inside a try/catch (in the route or a wrapper) that maps a KV throw to a structured JSON error response.",
+     "met": false,
+     "evidence": "Unguarded KV awaits: addSignup (beta/signup/route.ts:58), updateSignupStatus/getAllSignups (beta/decide/route.ts:26,42), storeReviewSubmission (review/submit/route.ts:122), getReviewSubmission/decideReview (review/decide/route.ts:39,55). Zero AbortSignal in src.",
+     "rewritten": true
+    },
+    {
+     "id": "BE-10",
+     "criterion": "Server errors reach Sentry: an instrumentation.ts exists with register() loading sentry.server.config (required for @sentry/nextjs v10 on Next 14) plus an onRequestError export using captureRequestError, and every route-handler catch block reports the error via Sentry.captureException (directly or through a shared helper) in addition to console.error.",
+     "verify": "find src -name 'instrumentation.ts' returns the file with register() and onRequestError; grep -rn 'captureException\\|captureRequestError' src returns hits covering every catch block in src/app/api/**/route.ts.",
+     "met": false,
+     "evidence": "sentry.server.config.ts exists at repo root but no instrumentation.ts anywhere (find returns nothing), so server-side Sentry never initializes on Next 14 with @sentry/nextjs ^10.58.0; grep for captureException/captureRequestError across src returns zero hits.",
+     "autonomyNote": "No SENTRY_DSN in loop env: assert via mocked @sentry/nextjs in unit tests + instrumentation.ts file-shape check."
+    }
+   ]
+  },
+  "enterprise": {
+   "key": "enterprise",
+   "name": "Enterprise Readiness",
+   "score": 4,
+   "initialScore": 4,
+   "verifiedScore": null,
+   "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
+   "reviewNotes": "Score 4/10 (EN-1, EN-2, EN-4, EN-5 met). Scope decisions and out-of-lane findings for the executor: (1) Multi-site/tenant scoping was deliberately EXCLUDED from the frozen rubric: this is a single-company single-shop tool (equipment.location is an optional free-text field, types.ts:35); at this scale a site registry would be speculative \u2014 revisit only if a pilot demands it. (2) API session gating is already solid (all 15 non-auth routes call requireSession/getServerSession; admin routes check isAdmin server-side \u2014 api-auth.ts, beta/decide, admin/health) but I left it to the backend dimension. (3) review/decide is intentionally session-less (HMAC token from email link, 24h expiry, rate-limited) \u2014 EN-M4-T2 must not break that path. (4) README.md:244 already contradicts reality (an admin role exists via admin.ts) \u2014 fixed by EN-M4-T3. (5) Full `npm audit` (with dev deps) shows 11 vulns (6 high) \u2014 the rubric only gates prod deps; dev-dep triage can ride along in docs/DEPENDENCY-AUDIT.md. (6) The next@14.2.35 high advisory's official fix is next@16 (breaking); the waiver path in EN-3 is the realistic route, but note several advisories are mitigated by Vercel-managed hosting \u2014 say so explicitly in the waiver. (7) Work orders, shop-management authorizations, PM completions, and training records are localStorage-only per device (work-orders.ts:15-25) \u2014 an IT buyer will eventually flag durability, but that is the backend dimension's server-sync concern. (8) Client-side per-record AuditEvents (safety-types.ts:44) are genuinely good; EN-8 adds the missing SERVER-side privileged-action log \u2014 don't conflate the two. (9) docs/roadmap/HARNESS.md references RUBRICS.md and goals.json which don't exist yet \u2014 presumably created after all six reviewers report. (10) Health endpoint returns 401 for authenticated non-admins where 403 would be more precise \u2014 cosmetic, not scored.",
+   "criteria": [
+    {
+     "id": "EN-1",
+     "criterion": "Every response carries a hardened header set: CSP (with frame-ancestors, base-uri, form-action), HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy are all emitted from next.config.mjs for source '/(.*)'.",
+     "verify": "Open next.config.mjs headers() \u2014 confirm all six headers on source '/(.*)' and CSP value contains frame-ancestors 'none', base-uri 'self', form-action 'self'.",
+     "met": true,
+     "evidence": "next.config.mjs:24-32 \u2014 X-Content-Type-Options, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, HSTS preload, and CSP with frame-ancestors 'none'; base-uri 'self'; form-action 'self' all set on source '/(.*)'; /api/* adds Cache-Control no-store (:39)."
+    },
+    {
+     "id": "EN-2",
+     "criterion": "SECURITY.md exists at repo root with a private disclosure channel (named email), an acknowledgment SLA in business days, a fix-target window, a scope statement, and a supported-versions statement.",
+     "verify": "Read SECURITY.md \u2014 confirm a contact email, a numeric acknowledgment SLA, a numeric fix window, a Scope section, and a Supported Versions section are all present.",
+     "met": true,
+     "evidence": "SECURITY.md:8 contact mark.starr@mytra.ai; :14-15 acknowledge within 2 business days, fix within 7 days for critical; :17-20 Scope section; :22-24 Supported Versions section."
+    },
+    {
+     "id": "EN-3",
+     "criterion": "Dependency hygiene: package-lock.json is git-tracked AND `npm audit --omit=dev` reports zero high/critical advisories, OR every high/critical advisory it reports appears by GHSA id in a git-tracked docs/DEPENDENCY-AUDIT.md with a dated risk acceptance rationale.",
+     "verify": "Run `git ls-files package-lock.json` (non-empty) and `npm audit --omit=dev`; if any high/critical remains, grep its GHSA id in docs/DEPENDENCY-AUDIT.md.",
+     "met": false,
+     "evidence": "package-lock.json is tracked, but `npm audit --omit=dev` reports 1 high (next 14.2.35: 14 advisories incl. GHSA-3g8h-86w9-wvmq) + 4 moderate; docs/DEPENDENCY-AUDIT.md does not exist \u2014 no waiver for any advisory.",
+     "autonomyNote": "npm audit needs registry access; transitively-unfixable advisories pass via dated GHSA risk-acceptance entries in docs/DEPENDENCY-AUDIT.md."
+    },
+    {
+     "id": "EN-4",
+     "criterion": "An admin-gated health endpoint exists at /api/admin/health that returns 401 to non-admins, live-probes KV connectivity (not just env presence), and reports configured/not-configured booleans for every integration (auth, Anthropic, Resend, Slack, Notion, Sentry-or-KV) without leaking secret values.",
+     "verify": "Read src/app/api/admin/health/route.ts \u2014 confirm isAdmin gate before payload, a kv.incr/ping call inside try/catch, and that all payload values are booleans/enums, never env values.",
+     "met": true,
+     "evidence": "src/app/api/admin/health/route.ts:13-15 isAdmin gate returns 401; :21 live `kv.incr('health:probe')` probe; :28-40 payload is booleans/status enums only (googleAuth, anthropic, resend, slackWebhook, notion, nextauthSecret, env)."
+    },
+    {
+     "id": "EN-5",
+     "criterion": "CSV export exists and is user-reachable for all three record classes: inspections, safety records (permits/PTPs/JHAs/incidents), and work orders \u2014 each has an exportToCsv-style function in src/lib and a UI handler that builds a Blob download.",
+     "verify": "Confirm exportInspectionsToCsv (lib/inspections.ts), exportSafetyToCsv (lib/safety-records.ts), exportToCsv (lib/work-orders.ts) each called from a page/component click handler that creates a text/csv Blob and anchors a download.",
+     "met": true,
+     "evidence": "src/lib/inspections.ts:476 + src/app/inspections/page.tsx:24-37 (Blob download); src/lib/safety-records.ts:829 + SafetyHistory.tsx:68-77; src/lib/work-orders.ts:190 + WorkOrderBoard.tsx:76 \u2014 all three CSV exports wired to UI download handlers."
+    },
+    {
+     "id": "EN-6",
+     "criterion": "A git-tracked retention schedule document exists (docs/DATA-RETENTION.md or a Retention section in README/privacy page) that enumerates each data store (localStorage records, IndexedDB blobs, Upstash KV keys, Notion databases, Resend/Slack payloads) with a named retention period or deletion trigger per store \u2014 no store described only as 'follows your organization's policies'.",
+     "verify": "Grep the doc for each store name (localStorage, IndexedDB, KV/Redis, Notion) and confirm each row states a concrete period (e.g. '3 years', 'until user clears', '30 days') or deletion trigger.",
+     "met": false,
+     "evidence": "Missing. Only vague text exists: src/app/privacy/page.tsx:140-144 says synced records 'follow your organization's retention policies'; no docs/DATA-RETENTION.md; README.md:203-209 describes stores but no periods for KV/Notion/Resend data."
+    },
+    {
+     "id": "EN-7",
+     "criterion": "Structured server logging: a shared logger module in src/lib emits single-line JSON with at least event, route, and outcome fields, and every file matching src/app/api/**/route.ts uses it \u2014 grep finds zero raw `console.` calls in src/app/api.",
+     "verify": "Run `grep -rn 'console\\.' src/app/api --include=route.ts` (expect zero matches) and confirm src/lib/log*.ts JSON.stringify's a fields object including event and route.",
+     "met": false,
+     "evidence": "Missing. No logger module exists in src/lib (grep 'logger' finds nothing); raw console.* calls remain in 10 API route files, e.g. src/app/api/safety/sync/route.ts (4 calls) and review/submit/route.ts (4 calls); lib code logs interpolated strings (rate-limit.ts:70)."
+    },
+    {
+     "id": "EN-8",
+     "criterion": "Server-side audit log of privileged actions: beta approve/reject (api/beta/decide) and EHS review decisions (api/safety/review/decide) each append an entry {actor, action, target, at} to a persistent KV list/stream, and an admin-only GET endpoint (e.g. /api/admin/audit) returns recent entries; both writes covered by a test in src/lib/__tests__.",
+     "verify": "Grep beta/decide and review/decide routes for the audit append call; GET /api/admin/audit as non-admin returns 401, as admin returns JSON entries; `vitest run` includes an audit-log test file that passes.",
+     "met": false,
+     "evidence": "Missing. api/beta/decide/route.ts approves/rejects with no persistent trace beyond the signup row; review/decide writes no actor log. AuditEvent (safety-types.ts:44-53) is client-side localStorage per record \u2014 no server-side, admin-queryable log of privileged actions exists."
+    },
+    {
+     "id": "EN-9",
+     "criterion": "RBAC beyond binary admin: a server-only module (src/lib/roles.ts or extended admin.ts) defines at least three roles (admin, ehs, worker) resolved from env allowlists, the NextAuth session callback exposes the role, at least one API route enforces the ehs (non-admin) role server-side, and README's Authorization section documents the role table (replacing the 'does not implement RBAC' statement).",
+     "verify": "Confirm the roles module exports a role-resolver used in lib/auth.ts session callback; grep an API route for the ehs-role check; README Authorization section lists all three roles and no longer contains 'does not implement role-based access control'.",
+     "met": false,
+     "evidence": "Missing. src/lib/admin.ts:13-23 is a binary ADMIN_EMAILS set only; README.md:244 states 'The application does not implement role-based access control... All authenticated users have equal access'; no route enforces an intermediate EHS/reviewer role.",
+     "autonomyNote": "Ship the RBAC mechanism with .env.example placeholders; populating real role allowlists is an owner (mark.starr) step \u2014 criterion verifiable with test fixtures."
+    },
+    {
+     "id": "EN-10",
+     "criterion": "Enterprise operations docs exist and are git-tracked: (a) an SSO doc naming the provider seam in src/lib/auth.ts with step-by-step Okta and Microsoft Entra OIDC provider addition (exact env var names and callback URL /api/auth/callback/[provider]); (b) a runbook doc with numbered incident-response steps and KV + Notion backup/restore procedures including at least one concrete command or script path per store.",
+     "verify": "Grep docs/ for 'Okta' and 'Entra' hitting an SSO doc that cites src/lib/auth.ts; grep the runbook for 'restore' sections covering both KV (Upstash) and Notion with a command or scripts/ path each.",
+     "met": false,
+     "evidence": "Missing. `grep -rni 'okta|entra|saml|oidc|runbook|restore' docs/ README.md` finds no SSO or ops runbook doc; auth.ts:4-7 mentions the swappable seam only in a code comment; scripts/ contains only demo/ and generate-splash.mjs \u2014 no backup tooling."
+    }
+   ]
+  },
+  "demo": {
+   "key": "demo",
+   "name": "MVP Demo Readiness",
+   "score": 7,
+   "initialScore": 7,
+   "verifiedScore": null,
+   "auditSummary": "The review is accurate: all 10 met/unmet claims were independently confirmed (gates pass \u2014 694/694 tests, tsc clean, build exit 0; nav, notify pipeline, env-var degradation, PWA manifest, and draft-recovery evidence all check out at the cited lines), so the score of 7/10 stands with zero overturns. The three unmet findings are real: src/lib/auth.ts:36 requires ALLOW_DEV_LOGIN==='1' while .env.example:9 and README.md:285 promise unset=auto, so the documented quickstart lands on 'Sign-in is not configured yet' \u2014 a demo-killing first-run bug. There is also no presenter runbook in docs/ and scripts/demo/record-demo.mjs never touches /inspect, interacts with the signature canvas, or fails on error (its safe() wrapper swallows all exceptions), so the headline QR->inspection->signature->EHS path is neither scripted for humans nor rehearsable by machine.",
+   "reviewNotes": "Out-of-lane findings for other reviewers: (1) UX/backend \u2014 PreTripInspection.handleSubmit (src/components/PreTripInspection.tsx:669) has no in-flight guard; a fast double-tap before React commits the step change could write a duplicate record and send two EHS emails. Synchronous path makes this low-probability but it is unguarded. (2) Legal/docs drift \u2014 README.md:109 says '594 tests' but the suite now runs 694; README.md:104 and .env.example:9 describe dev-login auto-enable that the code does not implement (this is my DM-6, but the doc-accuracy angle also touches the legal/enterprise lanes). (3) Design/branding \u2014 public/manifest.json description targets 'R&D and engineering teams' while the project frames a construction company; pick one audience string. (4) Demo dependency risk \u2014 the SDS tile and mobile tab link to an external app (https://sds-five-beta.vercel.app, src/lib/nav.ts:17); if that deployment is down mid-demo the tile dead-ends in a new tab. Consider a health note in the demo runbook (I folded a preload check into DM-M2-T1's pre-demo checklist). (5) kv.ts constructs the Upstash client with non-null assertions on env vars; safe today because every caller gates on KV_REST_API_URL first, but a future unguarded import could throw at request time \u2014 backend lane. Uncertainty flags: DM-1 gates were run in this container (Linux, Node from repo lockfile) \u2014 Vercel build env may differ; DM-7 asserts installability artifacts statically, not an actual Lighthouse run (no browser audit available here), but manifest+SW+icons satisfy Chrome's documented installability checklist. Scoring basis: 7/10 met; unmet DM-6 (first-run sign-in dead end contradicting quickstart), DM-9 (no presenter runbook), DM-10 (no automated rehearsal of the headline inspection path).",
+   "criteria": [
+    {
+     "id": "DM-1",
+     "criterion": "All three production gates pass in the repo as committed: `npm test` exits 0, `npx tsc --noEmit` exits 0, and `npm run build` exits 0.",
+     "verify": "Run `npm test`, `npx tsc --noEmit`, and `npm run build` at HEAD; all three exit 0.",
+     "met": true,
+     "evidence": "Ran all three: vitest 69 files / 694 tests passed (7.4s), tsc --noEmit produced no output, next build exited 0 with all routes generated (build log tail shows static/SSG route table).",
+     "rewritten": true
+    },
+    {
+     "id": "DM-2",
+     "criterion": "Seed fleet is real, not placeholder: >=30 fully populated equipment items; empty manualUrl only with a documented sourcing note; zero placeholder-text matches in app/components/data.",
+     "verify": "Seed fleet is real, not placeholder: src/data/equipment.ts contains >= 30 equipment items with non-empty name, oemManual, manualUrl, and keyPmSummary (items documented as custom/unsourced may have empty manualUrl only if oemManual explains why), and zero matches for `grep -rin 'lorem\\|coming soon\\|placeholder text\\|TBD\\|NEED:' src/app src/components src/data` excluding documented sourcing notes. Verify with both the count grep AND `grep -n \"manualUrl: ''\" src/data/equipment.ts` (each hit must have an explanatory oemManual note).",
+     "met": true,
+     "evidence": "src/data/equipment.ts \u2014 46 items with real OEM data (e.g. line 5 'Bridgeport Vertical Milling Machine', manualUrl, full PM schedule); placeholder grep across src/app, src/components, src/data returned zero matches.",
+     "rewritten": true
+    },
+    {
+     "id": "DM-3",
+     "criterion": "Zero dead-end navigation: every internal href in NAV_ITEMS (src/lib/nav.ts) and QUICK_ACTIONS (SafetyDashboard) resolves to an existing page.tsx, and an unknown /equipment/[id] or /inspect/[id] renders the branded not-found page with a working Back to Home link.",
+     "verify": "Cross-check each internal href in src/lib/nav.ts NAV_ITEMS and SafetyDashboard QUICK_ACTIONS against `find src/app -name page.tsx`; confirm src/app/equipment/[id]/page.tsx and src/app/inspect/[id]/page.tsx call notFound() for unknown ids and src/app/not-found.tsx links to /.",
+     "met": true,
+     "evidence": "nav.ts:39-50 + SafetyDashboard QUICK_ACTIONS hrefs (/inspections, /equipment, /work-orders, /admin/labels, /safety/{ptp,jha,incident,permits/*}) all have page.tsx; equipment/[id]/page.tsx:33 and inspect/[id]/page.tsx:37 call notFound(); not-found.tsx:13 links home."
+    },
+    {
+     "id": "DM-4",
+     "criterion": "The headline demo path is wired end-to-end in code: /inspect/[id] statically generates a QR landing for every pre-trip unit, submit is disabled until every item is answered AND a touch signature exists, the completed record POSTs to /api/inspections/notify which attaches the signature PNG to the EHS email, and the sent/queued/failed/skipped outcome is shown on the result screen.",
+     "verify": "Inspect src/app/inspect/[id]/page.tsx (generateStaticParams over requiresPreTrip), src/components/PreTripInspection.tsx (submit button `disabled={!allAnswered || !signature}`, fetch('/api/inspections/notify')), and src/app/api/inspections/notify/route.ts (attachments from signatureDataUrl); result step renders notifyStatus states.",
+     "met": true,
+     "evidence": "inspect/[id]/page.tsx:18-22 generateStaticParams; PreTripInspection.tsx:1029 disabled={!allAnswered || !signature}, :743 POST /api/inspections/notify; notify/route.ts:229-235 signature PNG attachment; PreTripInspection.tsx:1119-1138 sent/queued/failed banners."
+    },
+    {
+     "id": "DM-5",
+     "criterion": "Every optional integration degrades gracefully when its env vars are absent: KV (rate-limit falls back to in-memory Map; beta/user-tracker/review-store check hasKV), Resend (notify returns emailed:false 'not-configured' and the flow proceeds), Anthropic/AI (UI hidden unless NEXT_PUBLIC_AI_ASSIST=1; route returns 404/503, never crashes), and Sentry (dormant without DSN).",
+     "verify": "Confirm src/lib/rate-limit.ts branches on !process.env.KV_REST_API_URL; src/lib/{beta,user-tracker,review-store}.ts gate on KV_REST_API_URL; api/inspections/notify/route.ts returns {emailed:false, reason:'not-configured'} when !isEmailConfigured(); api/sage/triage/route.ts returns 404 without NEXT_PUBLIC_AI_ASSIST and 503 without ANTHROPIC_API_KEY; next.config.mjs applies withSentryConfig only when DSN set.",
+     "met": true,
+     "evidence": "rate-limit.ts:53 Map fallback; beta.ts:26, user-tracker.ts:12, review-store.ts:25 hasKV gates; notify/route.ts:206-208 not-configured no-op; sage/triage/route.ts:77-79 404 + :91-94 503; next.config.mjs sentryEnabled gate; SageTriage.tsx:10 hides UI."
+    },
+    {
+     "id": "DM-6",
+     "criterion": "First-run sign-in works exactly as the quickstart documents: after `cp .env.example .env.local && npm run dev` with Google OAuth unset and ALLOW_DEV_LOGIN unset, the dev Credentials provider is registered in non-production, so the sign-in screen shows the name+email form instead of 'Sign-in is not configured yet'.",
+     "verify": "In src/lib/auth.ts, the dev Credentials provider must be registered when `!hasGoogle && !isProduction` even if ALLOW_DEV_LOGIN is unset (and a unit test in src/lib/__tests__/auth.test.ts asserts it); or run `npm run dev` with an empty .env.local and confirm GET /api/auth/providers includes a 'dev' provider.",
+     "met": false,
+     "evidence": "src/lib/auth.ts:36 \u2014 allowDevLogin requires ALLOW_DEV_LOGIN==='1'; with .env.example defaults (var empty) and no Google, providers=[] so AuthGate.tsx:257 renders 'Sign-in is not configured yet' \u2014 contradicting README.md:104/229 and .env.example:9 ('unset = on when Google not configured')."
+    },
+    {
+     "id": "DM-7",
+     "criterion": "PWA installability artifacts are complete and linked: manifest.json declares name, short_name, start_url, display standalone, and 192+512 icons in both any and maskable purposes; layout.tsx links the manifest and themeColor; the Serwist service worker builds to public/sw.js and precaches the /~offline fallback page.",
+     "verify": "Inspect public/manifest.json for the required fields and all four icon entries (files must exist in public/icons); grep src/app/layout.tsx for manifest:'/manifest.json' and themeColor; confirm next.config.mjs passes additionalPrecacheEntries [{url:'/~offline'}] to withSerwistInit and src/app/~offline/page.tsx exists.",
+     "met": true,
+     "evidence": "manifest.json has name/short_name/start_url '/'/display standalone + icon-{192,512} and maskable variants (all files present in public/icons); layout.tsx:25 manifest link, :36-41 themeColor viewport; next.config.mjs additionalPrecacheEntries '/~offline'; ~offline/page.tsx exists."
+    },
+    {
+     "id": "DM-8",
+     "criterion": "Mid-demo mistakes are recoverable: an in-progress inspection auto-saves a draft (2s debounce plus synchronous flush on pagehide/visibilitychange) and restores after a refresh with a 'Start fresh' escape; a beforeunload guard is active during the checklist step; and the user menu offers a confirm-gated 'Delete all local data' reset for demo rehearsals.",
+     "verify": "Inspect src/components/PreTripInspection.tsx for draft restore on mount, flushDraft wired to pagehide/visibilitychange, and the beforeunload handler gated on step==='checklist'; inspect src/components/UserMenu.tsx for a ConfirmDialog that calls clearAllLocalData().",
+     "met": true,
+     "evidence": "PreTripInspection.tsx:430-458 draft restore + :466-505 flushDraft on pagehide/visibilitychange, :516-521 beforeunload guard during checklist, :786-799 restored banner with 'Start fresh'; UserMenu.tsx:104-117 'Delete all local data?' ConfirmDialog \u2192 clearAllLocalData()."
+    },
+    {
+     "id": "DM-9",
+     "criterion": "A presenter-facing live demo runbook exists in docs/ (e.g. docs/DEMO-SCRIPT.md) that a non-developer could follow: a pre-demo checklist naming the exact env flags to set (ALLOW_DEV_LOGIN, NEXT_PUBLIC_AI_ASSIST, ANTHROPIC_API_KEY, RESEND_API_KEY/EHS_NOTIFY_EMAIL), a numbered step sequence covering scan QR (/inspect/[id]) -> equipment -> checklist -> signature -> EHS email -> inspection history/CSV export, and a recovery section for refresh/offline/failed-email situations.",
+     "verify": "`ls docs/DEMO-SCRIPT.md` (or grep docs/ for a doc containing both '/inspect/' and a pre-demo env checklist); the doc must enumerate the full inspection happy path and at least three mid-demo recovery actions.",
+     "met": false,
+     "evidence": "No live-demo runbook exists: `grep -rin 'demo script\\|walkthrough\\|demo path' docs/ README.md` finds nothing presenter-facing; scripts/demo/README.md is a video-recorder guide whose storyboard (lines 8-17) covers sign-in/SDS/Sage/incident and omits the QR->inspection->signature->EHS-email path entirely.",
+     "autonomyNote": "Runbook documents the RESEND_API_KEY human step; criterion passes on the doc, not on live email."
+    },
+    {
+     "id": "DM-10",
+     "criterion": "The headline wow path is rehearsable by machine: a runnable Playwright script (scripts/demo/ or an e2e spec) drives sign-in -> /inspect/[id] -> answers every checklist item -> draws a signature on the canvas -> submits -> asserts the result screen and the notify outcome banner, exiting non-zero on any failed step.",
+     "verify": "A script exists whose page.goto targets include '/inspect/' and which interacts with the SignaturePad canvas and asserts the result step ('All Clear'/'Out of Service'); run it against `ALLOW_DEV_LOGIN=1 npm run dev` and confirm exit code 0.",
+     "met": false,
+     "evidence": "scripts/demo/record-demo.mjs beats only goto /safety, the external SDS URL, Sage, and /safety/incident (lines 76-143) \u2014 never /inspect or /equipment; `find . -name '*.spec.ts'` outside node_modules returns nothing; its safe() wrapper (line 51) swallows failures rather than failing the run.",
+     "autonomyNote": "Email leg: assert the 'skipped/not-configured' outcome banner (no RESEND_API_KEY needed); real-inbox confirmation stays a documented human step in the runbook."
+    }
+   ]
+  },
+  "legal": {
+   "key": "legal",
+   "name": "Legal",
+   "score": 2,
+   "initialScore": 2,
+   "verifiedScore": null,
+   "auditSummary": "All 10 met/unmet claims were independently re-verified against the code and every one held: 2/10 confirmed (LG-1, LG-7), no overturns. The review is accurate and its evidence line numbers check out, including the KV TTL details and the JhaForm disclaimer gap. The biggest real gap is that the privacy policy directly contradicts actual data flows: it claims signatures never leave the device while the notify route emails signature PNGs via Resend, claims no names are sent to the AI while sage-context injects worker and supervisor names into Anthropic prompts, omits Sentry and Upstash as subprocessors, and states records persist until manually cleared while a 90-day archiver and 7-day draft prune auto-delete them.",
+   "reviewNotes": "Out-of-lane findings (other dimensions): (1) Backend/enterprise \u2014 signature and photo blobs are never synced (safety-sync.ts:6 'NOT uploaded in v1'), so device loss destroys the only copy of legally meaningful permit/PTP signatures; inspection signatures survive only in the EHS email. Matches OFI-BACKLOG item 20. (2) Enterprise \u2014 shared-tablet identity inheritance (OFI item 21) undermines signer-identity assurance that LG-7 credits at the API layer. (3) Backend \u2014 review decidedBy attribution records the notify email regardless of clicker (OFI item 16). (4) Sentry client config enables error-session replay (replaysOnErrorSampleRate 1.0, sentry.client.config.ts:10); Sentry's default masking applies but enterprise reviewers may ask. Uncertainty flags: the privacy claim of 'a single HTTP-only session cookie' undercounts NextAuth's csrf/callback cookies \u2014 judged immaterial and not scored, but worth a one-word fix while editing the policy. CrewSignatureBlock's consent text says signatures are stored 'on this device' \u2014 accurate today, but it must be updated if blob sync (OFI 20) ships, or LG-2/LG-6 will regress. For LG-3 the cheapest fix is stripping userName from contextToPrompt (Sage loses personalization); the roadmap executor should pick disclosure-vs-strip deliberately. OFI-BACKLOG item 22 ('Minimize PII fan-out... add a beta privacy note') is unchecked and consistent with my LG-4/LG-9 findings \u2014 its claims verified true against code. Training records (shop-management.ts:47-55) already capture employeeName/completedAt/expiresAt/verifiedBy, which covers 1910.178(l)(6) certification elements; only the retention mapping doc (LG-M1-T4) is missing on the legal side.",
+   "criteria": [
+    {
+     "id": "LG-1",
+     "criterion": "A privacy policy page and terms-of-service page exist as routes, each showing a 'Last updated' date, and the sign-in gate displays a by-signing-in-you-agree link to both.",
+     "verify": "Open src/app/privacy/page.tsx and src/app/terms/page.tsx (both render with 'Last updated'); grep '/terms' and '/privacy' in src/components/AuthGate.tsx shows the agreement sentence.",
+     "met": true,
+     "evidence": "src/app/privacy/page.tsx:18 and src/app/terms/page.tsx:18 \u2014 'Last updated: June 2026'; src/components/AuthGate.tsx:272-277 \u2014 'By signing in you agree to our Terms and Privacy Policy' with links to /terms and /privacy."
+    },
+    {
+     "id": "LG-2",
+     "criterion": "The privacy policy's statement about signature handling matches the code: no sentence claims signatures stay on-device / are never shared while any code path transmits a signature image off-device.",
+     "verify": "grep -n 'not\\s*shared' src/app/privacy/page.tsx and compare with src/app/api/inspections/notify/route.ts \u2014 the policy must disclose the signature PNG email attachment or the code must not send it.",
+     "met": false,
+     "evidence": "src/app/privacy/page.tsx:62-64 claims 'Signatures are not shared with any external service in the current version', but src/app/api/inspections/notify/route.ts:230-234 attaches signatureDataUrl as a PNG to the EHS email sent via Resend.",
+     "autonomyNote": "Autonomous fix = truthful policy/consent text disclosing signature PNGs leave the device via EHS email; changing the data flow itself is an owner decision."
+    },
+    {
+     "id": "LG-3",
+     "criterion": "The privacy policy's claim about PII sent to the AI provider matches actual prompt payloads: either no worker/supervisor names appear in prompts built for Anthropic, or the policy discloses that names are included.",
+     "verify": "grep -n 'userName\\|supervisor' src/lib/sage-context.ts \u2014 if contextToPrompt emits 'Worker: <name>' or supervisor names, the privacy AI Features section must not say names are not sent.",
+     "met": false,
+     "evidence": "src/app/privacy/page.tsx:132-134 says 'We do not intentionally send personal information like names... to the AI', but src/lib/sage-context.ts:124 emits 'Worker: ${ctx.userName}' and :65 emits supervisor name; sent to Anthropic via src/app/api/sage/triage/route.ts:137."
+    },
+    {
+     "id": "LG-4",
+     "criterion": "The Third-Party Services section names every external service the code transmits or persists personal data to: Anthropic, Notion, Resend, Slack (including first-sign-in name/email notifications), Google, Sentry, and Upstash Redis/Vercel KV.",
+     "verify": "grep -in 'sentry\\|upstash\\|redis\\|vercel' src/app/privacy/page.tsx returns hits, and the Slack bullet covers sign-in notifications (compare src/lib/auth.ts:108).",
+     "met": false,
+     "evidence": "grep -i 'sentry|upstash|redis|vercel' on src/app/privacy/page.tsx returns nothing, yet sentry.client.config.ts:6 initializes Sentry, src/lib/kv.ts stores data in Upstash (user-tracker.ts:21, beta.ts:34, review-store.ts:46), and auth.ts:108 Slacks name+email on first sign-in."
+    },
+    {
+     "id": "LG-5",
+     "criterion": "The Data Retention section states the retention periods actually implemented (90-day local archive of synced safety records, 7-day draft prune, KV TTLs: known-users 90d, beta signups 180d, review submissions 7-30d) and maps OSHA-relevant record types (incident reports 29 CFR 1904.33, forklift operator training certification 29 CFR 1910.178(l)(6), daily inspections) to retention behavior in the policy or a linked docs/ compliance file.",
+     "verify": "Privacy retention section (src/app/privacy/page.tsx) lists the 90-day archiver and KV TTL periods matching safety-records.ts:868/891/916, user-tracker.ts:9, beta.ts:34, review-store.ts:46; a file matching docs/*retention*|*compliance* cites 1904.33 and 1910.178(l).",
+     "met": false,
+     "evidence": "src/app/privacy/page.tsx:141 claims records 'persist until you manually clear them', but safety-records.ts:868,891 auto-deletes synced records after 90 days (run on load, SyncProvider.tsx:11) and :916 prunes drafts after 7 days; find shows no retention/compliance doc in docs/.",
+     "autonomyNote": "Draft retention mapping with CFR citations, marked 'DRAFT \u2014 pending counsel review'; criterion passes on existence + accuracy of the draft."
+    },
+    {
+     "id": "LG-6",
+     "criterion": "Every SignaturePad capture surface displays adjacent text stating signing intent and where the signature is stored or transmitted (inspection sign-on, crew signature block, and incident reporter signature).",
+     "verify": "For each file importing SignaturePad that renders it (PreTripInspection.tsx, CrewSignatureBlock.tsx, IncidentReportForm.tsx), grep for an intent/consent sentence ('certify', 'By signing', 'consent') within the same JSX section as the pad.",
+     "met": false,
+     "evidence": "PreTripInspection.tsx:1008 and CrewSignatureBlock.tsx:130 have intent/consent text, but IncidentReportForm.tsx:668-669 renders SignaturePad with only the label 'Signature (optional)' and no intent or storage statement.",
+     "autonomyNote": "Same as LG-2: disclose honestly in consent text; data-flow redesign is an owner decision."
+    },
+    {
+     "id": "LG-7",
+     "criterion": "Signed inspections bind signer identity, ISO timestamp, and a server-verified submitter: the stored record carries inspectorName + createdAt + hasSignature, and the EHS notify route stamps the authenticated session email as 'Submitted by (verified)' rather than trusting client input.",
+     "verify": "Inspect src/lib/inspections.ts submitInspection record fields and src/app/api/inspections/notify/route.ts \u2014 requireSession() gates the route and verifiedSubmitter comes from session.user.email.",
+     "met": true,
+     "evidence": "src/lib/inspections.ts:280-295 \u2014 record stores inspectorName, createdAt (ISO), hasSignature; src/app/api/inspections/notify/route.ts:198,223,48 \u2014 requireSession() then verifiedSubmitter = session.user.email rendered as 'Submitted by (verified)'; signature PNG attached at :230."
+    },
+    {
+     "id": "LG-8",
+     "criterion": "Every UI surface that renders AI-generated safety suggestions displays an advisory disclaimer (not-a-substitute language): SageAssist, SageTriage, ConfinedSpaceForm atmospheric analysis, IncidentReportForm analysis, and JhaForm's parse-document/suggest-jha outputs.",
+     "verify": "grep -in 'advisory\\|not a substitute' in each component that fetches /api/safety/suggest-*|analyze-*|parse-document or /api/sage/triage \u2014 every such component must contain a disclaimer string.",
+     "met": false,
+     "evidence": "SageAssist.tsx:387, SageTriage.tsx:474, ConfinedSpaceForm.tsx:468, IncidentReportForm.tsx:560 have disclaimers, but JhaForm.tsx calls /api/safety/parse-document (:159) and /api/safety/suggest-jha (:219) with zero advisory/not-a-substitute text anywhere in the file."
+    },
+    {
+     "id": "LG-9",
+     "criterion": "The public beta signup form, which collects name/email/company and stores them in Upstash KV and posts them to Slack, displays a link to the privacy policy on the form.",
+     "verify": "grep -n '/privacy' src/app/beta/page.tsx returns a link rendered in the signup form section.",
+     "met": false,
+     "evidence": "grep -i 'privacy|consent|agree' over src/app/beta returns nothing; the form collects name/email/company/role (page.tsx:58-69) and posts to /api/beta/signup which stores to KV (beta.ts:34, 180d TTL) and Slacks the details (signup/route.ts:80)."
+    },
+    {
+     "id": "LG-10",
+     "criterion": "A third-party license notices artifact exists in the repo (e.g. THIRD_PARTY_NOTICES.md) listing every production dependency in package.json with its license identifier, and no production dependency carries a copyleft (GPL/AGPL/LGPL) license conflicting with the proprietary LICENSE.",
+     "verify": "ls repo root for THIRD_PARTY_NOTICES* and cross-check its entries against Object.keys(package.json dependencies); confirm no GPL-family license appears for any listed dep.",
+     "met": false,
+     "evidence": "No notices file exists (ls root shows only proprietary LICENSE; find for *licen*/*notice* returns nothing). Dep licenses verified permissive (all 11 prod deps MIT/ISC via node_modules package.json scan), so only the notices artifact is missing.",
+     "autonomyNote": "License inventory automatable; if a copyleft production dep is found, discovery+documentation = pass, replacement is an owner decision."
+    }
+   ]
+  }
+ },
+ "milestones": [
+  {
+   "id": "UX-M1",
+   "dimension": "ux",
+   "title": "Landmark structure and skip navigation",
+   "criteria": [
+    "UX-8"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "UX-M1-T1",
+     "description": "Add a visually-hidden-until-focused skip link as the first element inside <body> in src/app/layout.tsx (e.g. 'Skip to content' targeting #main), styled with the existing focus-visible ring tokens.",
+     "files": [
+      "src/app/layout.tsx",
+      "src/app/globals.css"
+     ],
+     "acceptance": "grep -riE 'skip.?(to|content)' src/app/layout.tsx returns the link; tabbing once on any route focuses it and activating it moves focus to the main landmark.",
+     "status": "pending"
+    },
+    {
+     "id": "UX-M1-T2",
+     "description": "Give every page route exactly one <main id=\"main\"> landmark: wrap SafetyDashboard, all /safety/* pages (ptp, jha, incident, permits/*, history, record/[id], review/action), /inspections, /beta, /admin/beta content in <main>, and add id=\"main\" to the existing mains (equipment, work-orders, inspect, terms, privacy, labels, ~offline, not-found, error).",
+     "files": [
+      "src/app/safety/ptp/page.tsx",
+      "src/app/safety/jha/page.tsx",
+      "src/app/safety/incident/page.tsx",
+      "src/app/safety/permits/hot-work/page.tsx",
+      "src/app/safety/permits/height/page.tsx",
+      "src/app/safety/permits/confined-space/page.tsx",
+      "src/app/safety/history/page.tsx",
+      "src/app/safety/record/[id]/page.tsx",
+      "src/app/safety/review/action/page.tsx",
+      "src/app/inspections/page.tsx",
+      "src/app/beta/page.tsx",
+      "src/app/admin/beta/page.tsx",
+      "src/components/safety/SafetyDashboard.tsx"
+     ],
+     "acceptance": "For each src/app/**/page.tsx (excluding api), grep '<main' in the page or its top-level rendered component returns exactly one match; no route renders two mains (check EquipmentProfile/InspectLanding are not double-wrapped).",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "UX-M2",
+   "dimension": "ux",
+   "title": "Offline identity continuity beyond 72 hours",
+   "criteria": [
+    "UX-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "UX-M2-T1",
+     "description": "Extend IDENTITY_TTL_MS in src/lib/identity.ts to 30 days and add a 'verify when online' soft-stale state (e.g. isIdentityAging() after 72h) that AuthGate renders as a warning banner while still allowing offline capture; update identity.test.ts for both windows.",
+     "files": [
+      "src/lib/identity.ts",
+      "src/components/AuthGate.tsx",
+      "src/lib/__tests__/identity.test.ts"
+     ],
+     "acceptance": "grep IDENTITY_TTL_MS src/lib/identity.ts shows >=7-day TTL; npx vitest run src/lib/__tests__/identity.test.ts passes with a case asserting a 5-day-old identity is usable offline; AuthGate offline branch renders children (with warning) rather than the lockout screen for aged-but-valid identity.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "UX-M3",
+   "dimension": "ux",
+   "title": "Automated accessibility and airplane-mode regression suite",
+   "criteria": [
+    "UX-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "UX-M3-T1",
+     "description": "Add playwright.config.ts (webServer: next build+start or dev, mobile viewport project e.g. Pixel 7) and an e2e/ directory; add @axe-core/playwright devDependency and a package.json script test:e2e.",
+     "files": [
+      "playwright.config.ts",
+      "package.json"
+     ],
+     "acceptance": "npx playwright test --list succeeds and package.json contains a test:e2e script.",
+     "status": "pending"
+    },
+    {
+     "id": "UX-M3-T2",
+     "description": "Write e2e/a11y.spec.ts running AxeBuilder against /, /equipment, /safety/ptp, and one /inspect/[id] page (using dev sign-in or the unauthenticated equipment routes) asserting zero serious/critical violations.",
+     "files": [
+      "e2e/a11y.spec.ts"
+     ],
+     "acceptance": "npm run test:e2e passes; grep AxeBuilder e2e/a11y.spec.ts hits all four routes and the assertion filters impact serious|critical.",
+     "status": "pending"
+    },
+    {
+     "id": "UX-M3-T3",
+     "description": "Write e2e/offline.spec.ts: load a form page, call context.setOffline(true), fill and submit a pre-trip inspection or PTP, and assert the record exists in localStorage with pending sync status and the pending-sync badge appears in the tab bar.",
+     "files": [
+      "e2e/offline.spec.ts"
+     ],
+     "acceptance": "npm run test:e2e passes; the spec contains setOffline(true), a form submit, and a localStorage assertion on the persisted record's pending state.",
+     "status": "pending"
+    },
+    {
+     "id": "UX-M3-TX1",
+     "description": "Wire the new Playwright suites (axe scans, airplane-mode spec, and later DM-M3's demo spec) into .github/workflows/ci.yml so they gate merges alongside tsc/lint/test/build.",
+     "files": [
+      ".github/workflows/ci.yml"
+     ],
+     "acceptance": "ci.yml contains a job running the Playwright specs; the workflow file parses (yaml) and references the same npm script the criteria use.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DS-M1",
+   "dimension": "design",
+   "title": "Tokenize every screen color (kill raw hex and default-palette classes)",
+   "criteria": [
+    "DS-3"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DS-M1-T1",
+     "description": "Retheme src/app/safety/review/action/page.tsx from 36 hardcoded dark hex classnames to token classes (bg-mytra-bg, text-fg, inputCls from src/lib/form-styles), removing the off-token hover:bg-[#4722CC] in favor of bg-mytra-purple/hover token, so the page renders correctly in light theme.",
+     "files": [
+      "src/app/safety/review/action/page.tsx"
+     ],
+     "acceptance": "grep -En '\\[#[0-9A-Fa-f]{3,8}\\]' src/app/safety/review/action/page.tsx returns 0 lines; page renders with correct fg/bg in both data-theme values.",
+     "status": "pending"
+    },
+    {
+     "id": "DS-M1-T2",
+     "description": "Replace the 10 default-palette classes in IncidentReportForm.tsx (CATEGORY_COLORS/CONTROL_LEVEL_COLORS text-blue-400 etc.) with CSS-variable-backed tokens added to globals.css with values in both dark and light blocks; also replace AuthGate.tsx:143 bg-[#572DFF] with bg-mytra-purple and :174 text-gray-900 with a token.",
+     "files": [
+      "src/components/safety/IncidentReportForm.tsx",
+      "src/components/AuthGate.tsx",
+      "src/app/globals.css",
+      "tailwind.config.ts"
+     ],
+     "acceptance": "Both DS-3 greps (arbitrary hex + default palette) over src/app+src/components excluding beta/QRLabel/SignaturePad return 0 lines.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DS-M2",
+   "dimension": "design",
+   "title": "Type scale and shared button primitive",
+   "criteria": [
+    "DS-4",
+    "DS-6"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DS-M2-T1",
+     "description": "Pick one page-title scale (recommend text-xl font-bold text-fg, the SafetyDashboard/inspections pattern) and apply it to every top-level page h1: equipment, work-orders, admin/labels, privacy, terms, error, not-found, ~offline, safety/review/action, admin/beta.",
+     "files": [
+      "src/app/equipment/page.tsx",
+      "src/app/work-orders/page.tsx",
+      "src/app/admin/labels/page.tsx",
+      "src/app/privacy/page.tsx",
+      "src/app/terms/page.tsx",
+      "src/app/error.tsx",
+      "src/app/not-found.tsx",
+      "src/app/~offline/page.tsx",
+      "src/app/safety/review/action/page.tsx"
+     ],
+     "acceptance": "grep -rEon '<h1 className=\"[^\"]*\"' src/app src/components --include='*.tsx' | grep -v beta/page | size-class tally yields exactly 1 variant.",
+     "status": "pending"
+    },
+    {
+     "id": "DS-M2-T2",
+     "description": "Add btnPrimaryCls/btnSecondaryCls exports to src/lib/form-styles.ts (or a src/components/ui/Button.tsx) encoding the canonical primary button (bg-mytra-purple text-white hover:bg-mytra-purple-hover rounded-lg min-h-[44px] press-scale + focus ring).",
+     "files": [
+      "src/lib/form-styles.ts"
+     ],
+     "acceptance": "grep -n 'btnPrimaryCls' src/lib/form-styles.ts returns the export; npx tsc --noEmit passes.",
+     "status": "pending"
+    },
+    {
+     "id": "DS-M2-T3",
+     "description": "Migrate the 31 files with inline 'bg-mytra-purple ... text-white' button literals to the shared primitive (mechanical sweep; keep per-site width/margin additions as appended classes).",
+     "files": [
+      "src/components/**",
+      "src/app/**"
+     ],
+     "acceptance": "grep -rn 'bg-mytra-purple' src --include='*.tsx' | grep 'text-white' hits only src/lib/form-styles.ts (or Button.tsx).",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DS-M3",
+   "dimension": "design",
+   "title": "Printable signed pre-trip inspection record",
+   "criteria": [
+    "DS-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DS-M3-T1",
+     "description": "Add a completed-inspection record view (route e.g. src/app/inspections/record/[id]/page.tsx or a post-submit record panel in PreTripInspection) that renders the signed inspection with the existing print-doc-header/print-doc-meta/print-sig-row classes from globals.css and a Print button calling window.print(), mirroring RecordView.tsx:269-272.",
+     "files": [
+      "src/app/inspections/",
+      "src/components/PreTripInspection.tsx"
+     ],
+     "acceptance": "grep -rln 'window.print' src --include='*.tsx' includes an inspections surface; completing an inspection then printing shows the formal header, checklist results, operator signature, and sig lines in print preview.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DS-M4",
+   "dimension": "design",
+   "title": "Branded link previews (OG/Twitter)",
+   "criteria": [
+    "DS-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DS-M4-T1",
+     "description": "Add openGraph (title, description, siteName, type) and twitter (card: summary_large_image) fields to the metadata export in src/app/layout.tsx, plus src/app/opengraph-image.tsx using next/og ImageResponse with the Sage wordmark, EHS badge, and token colors (#0A0A0A bg, #572DFF accent). Optionally a beta-specific one under src/app/beta/.",
+     "files": [
+      "src/app/layout.tsx",
+      "src/app/opengraph-image.tsx"
+     ],
+     "acceptance": "grep -n 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' returns the file; next build emits the /opengraph-image route.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "BE-M1",
+   "dimension": "backend",
+   "title": "Wire server-side Sentry error capture end to end",
+   "criteria": [
+    "BE-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "BE-M1-T1",
+     "description": "Add src/instrumentation.ts with register() importing sentry.server.config.ts (and sentry.edge.config.ts for the edge runtime) and export onRequestError = Sentry.captureRequestError, per @sentry/nextjs v10 + Next 14 requirements. Keep it a no-op when NEXT_PUBLIC_SENTRY_DSN is unset.",
+     "files": [
+      "src/instrumentation.ts",
+      "sentry.server.config.ts"
+     ],
+     "acceptance": "find src -name 'instrumentation.ts' returns the file; it contains register() loading the server config and an onRequestError export; npx tsc --noEmit and npm run build succeed.",
+     "status": "pending"
+    },
+    {
+     "id": "BE-M1-T2",
+     "description": "Add a shared reportServerError(scope, err) helper in src/lib (console.error + Sentry.captureException, safe when DSN unset) and call it from every catch block in src/app/api/**/route.ts and in email-notify.ts / slack-notify.ts failure paths. Add a unit test asserting the helper calls captureException when DSN is set.",
+     "files": [
+      "src/lib/report-error.ts",
+      "src/app/api/**/route.ts",
+      "src/lib/email-notify.ts",
+      "src/lib/slack-notify.ts"
+     ],
+     "acceptance": "grep -rn 'captureException\\|reportServerError' src/app/api src/lib shows every route catch block covered; vitest run passes including the new helper test.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "BE-M2",
+   "dimension": "backend",
+   "title": "Zod-validate every API request body",
+   "criteria": [
+    "BE-8"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "BE-M2-T1",
+     "description": "Create zod schemas in src/lib for the safety-record bodies (safety/sync, review/submit \u2014 model on the existing manual checks: id<=100, known type, valid createdAt, optional notionPageId regex) and migrate both routes to .safeParse, deleting the 'as SafetyRecord' cast. Preserve existing status codes (400/403/413) so safety-sync-route.test.ts and review-submit-route.test.ts still pass.",
+     "files": [
+      "src/lib/schemas.ts",
+      "src/app/api/safety/sync/route.ts",
+      "src/app/api/safety/review/submit/route.ts"
+     ],
+     "acceptance": "grep -rn 'await req.json()) as' src/app/api returns nothing; both routes call safeParse; vitest run passes.",
+     "status": "pending"
+    },
+    {
+     "id": "BE-M2-T2",
+     "description": "Add request-body zod schemas (with the current .trim/.slice caps expressed as .max) for the 9 Anthropic routes (sage/triage, parse-document, check-permits, suggest-jha/hazards/toolbox, analyze-atmosphere, analyze-incident, audit-ptp) and the beta signup/decide bodies; replace typed-let coercions with safeParse. Update route tests where error-message text changes.",
+     "files": [
+      "src/lib/schemas.ts",
+      "src/app/api/sage/triage/route.ts",
+      "src/app/api/safety/*/route.ts",
+      "src/app/api/beta/*/route.ts"
+     ],
+     "acceptance": "grep -rn 'safeParse' src/app/api src/lib covers every body-reading route; grep -rn 'let body:' src/app/api returns nothing; all 69 test files pass.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "BE-M3",
+   "dimension": "backend",
+   "title": "Resilience: guard KV calls and time-bound outbound fetches",
+   "criteria": [
+    "BE-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "BE-M3-T1",
+     "description": "Wrap the unguarded KV awaits in route handlers \u2014 addSignup (beta/signup:58), updateSignupStatus/getAllSignups (beta/decide:26,42), storeReviewSubmission (review/submit:122), getReviewSubmission/decideReview (review/decide:39,55) \u2014 so a KV throw returns a 503 JSON error (and reports via BE-M1's helper). Extend the corresponding route tests with a kv-throws case.",
+     "files": [
+      "src/app/api/beta/signup/route.ts",
+      "src/app/api/beta/decide/route.ts",
+      "src/app/api/safety/review/submit/route.ts",
+      "src/app/api/safety/review/decide/route.ts"
+     ],
+     "acceptance": "Route tests mocking kv.set/kv.get to throw assert a JSON 503 (not an unhandled rejection) for all four routes; vitest run passes.",
+     "status": "pending"
+    },
+    {
+     "id": "BE-M3-T2",
+     "description": "Add a fetchWithTimeout helper (AbortSignal.timeout, ~10s default, existing error mapping unchanged) and use it for every server-side fetch to api.notion.com, api.resend.com, and the Slack webhook across safety/sync, review/submit, review/status, review/decide, email-notify.ts, slack-notify.ts. Timeout must surface as the existing 'failed'/502 degraded path.",
+     "files": [
+      "src/lib/fetch-timeout.ts",
+      "src/app/api/safety/sync/route.ts",
+      "src/app/api/safety/review/*/route.ts",
+      "src/lib/email-notify.ts",
+      "src/lib/slack-notify.ts"
+     ],
+     "acceptance": "grep -rn 'AbortSignal.timeout\\|fetchWithTimeout' src shows every external fetch call site covered (grep for 'fetch(' in those files finds no bare external fetch); vitest run passes.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "EN-M1",
+   "dimension": "enterprise",
+   "title": "Dependency hygiene: triage and document supply-chain posture",
+   "criteria": [
+    "EN-3"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "EN-M1-T1",
+     "description": "Run `npm audit fix` (non-breaking) to clear the fixable prod advisories (brace-expansion in @serwist), commit the updated package-lock.json, and re-run `npm run test` + `npm run build` to confirm no regression.",
+     "files": [
+      "package-lock.json"
+     ],
+     "acceptance": "`npm audit --omit=dev` no longer lists brace-expansion; vitest suite and next build pass.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M1-T2",
+     "description": "Create docs/DEPENDENCY-AUDIT.md: a table of every remaining high/critical GHSA id from `npm audit --omit=dev` (the next@14.2.35 advisory set, next-auth/uuid chain) with dated risk-acceptance rationale (Vercel-managed hosting mitigations, no self-hosted image optimizer, upgrade plan to Next 15/16) and a review-by date. Link it from SECURITY.md.",
+     "files": [
+      "docs/DEPENDENCY-AUDIT.md",
+      "SECURITY.md"
+     ],
+     "acceptance": "Every GHSA id printed by `npm audit --omit=dev` at high/critical severity appears in docs/DEPENDENCY-AUDIT.md with a date; SECURITY.md references the file.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "EN-M2",
+   "dimension": "enterprise",
+   "title": "Enterprise documentation pack: retention, SSO path, runbooks",
+   "criteria": [
+    "EN-6",
+    "EN-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "EN-M2-T1",
+     "description": "Write docs/DATA-RETENTION.md enumerating every store (localStorage safety/inspection/work-order records, IndexedDB signature/photo blobs, Upstash KV keys by prefix \u2014 beta:, rl:, review:, health:probe \u2014 Notion databases, Resend/Slack notification payloads) each with a concrete retention period or deletion trigger, citing Cal/OSHA record-keeping horizons where relevant; update the vague sentence in src/app/privacy/page.tsx Data Retention section to state the concrete policy and link it.",
+     "files": [
+      "docs/DATA-RETENTION.md",
+      "src/app/privacy/page.tsx"
+     ],
+     "acceptance": "EN-6 check passes: the doc names localStorage, IndexedDB, KV/Redis, Notion, and email/Slack payloads each with a period or trigger; privacy page no longer says only 'follow your organization's retention policies'.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M2-T2",
+     "description": "Write docs/SSO.md: how identity works today (Google Workspace OIDC, domain allowlist, JWT sessions), then step-by-step Okta and Microsoft Entra ID provider addition \u2014 exact providers-array insertion point in src/lib/auth.ts, env var names (OKTA_CLIENT_ID/SECRET/ISSUER, ENTRA_CLIENT_ID/SECRET/TENANT_ID), callback URLs /api/auth/callback/okta and /api/auth/callback/azure-ad, and how emailAllowed + isAdmin keep applying. Link from README Authentication section.",
+     "files": [
+      "docs/SSO.md",
+      "README.md"
+     ],
+     "acceptance": "grep -i 'okta' docs/SSO.md and grep -i 'entra' docs/SSO.md both hit; doc cites src/lib/auth.ts and both callback URLs; README links to it.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M2-T3",
+     "description": "Write docs/RUNBOOKS.md with (a) numbered incident-response steps (detect via Sentry/health endpoint, contain by rotating NEXTAUTH_SECRET / revoking KV token / disabling env flags on Vercel, notify per SECURITY.md, post-mortem) and (b) backup/restore: add scripts/backup-kv.mjs that dumps review:*/beta:* keys to JSON via @upstash/redis SCAN, plus documented Notion export/restore steps and localStorage device-loss caveats.",
+     "files": [
+      "docs/RUNBOOKS.md",
+      "scripts/backup-kv.mjs"
+     ],
+     "acceptance": "EN-10(b) check passes: runbook has restore sections for both KV (citing scripts/backup-kv.mjs, which runs with KV_REST_API_URL/TOKEN set) and Notion with a concrete command/path each; incident-response section has numbered steps.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "EN-M3",
+   "dimension": "enterprise",
+   "title": "Observability and audit trail: structured logs + privileged-action log",
+   "criteria": [
+    "EN-7",
+    "EN-8"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "EN-M3-T1",
+     "description": "Add src/lib/log.ts exporting log(level, event, fields) that JSON.stringify's one line {ts, level, event, route?, actor?, outcome?, ...fields} to console; unit-test it (valid JSON, no secret fields).",
+     "files": [
+      "src/lib/log.ts",
+      "src/lib/__tests__/log.test.ts"
+     ],
+     "acceptance": "vitest passes a new log.test.ts asserting JSON.parse-able single-line output containing event and level keys.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M3-T2",
+     "description": "Migrate every console.* call in src/app/api/**/route.ts (10 files, incl. safety/sync, review/submit, review/decide, sage/triage, all AI suggest routes) and src/lib server modules used by routes (rate-limit.ts, slack-notify.ts, auth.ts) to the shared logger with event + route fields.",
+     "files": [
+      "src/app/api/safety/sync/route.ts",
+      "src/app/api/safety/review/submit/route.ts",
+      "src/app/api/safety/review/decide/route.ts",
+      "src/lib/rate-limit.ts",
+      "src/lib/slack-notify.ts",
+      "src/lib/auth.ts"
+     ],
+     "acceptance": "`grep -rn 'console\\.' src/app/api --include=route.ts` returns zero matches; test suite and build pass.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M3-T3",
+     "description": "Add src/lib/audit-log.ts (appendAudit({actor, action, target}) \u2192 LPUSH to KV key 'audit:log' with LTRIM cap ~1000, fail-open); call it from api/beta/decide POST (actor = session email, action = beta-approved/rejected, target = signup id) and api/safety/review/decide (actor = reviewer identity from token, action = review-approved/rejected, target = recordId).",
+     "files": [
+      "src/lib/audit-log.ts",
+      "src/app/api/beta/decide/route.ts",
+      "src/app/api/safety/review/decide/route.ts",
+      "src/lib/__tests__/audit-log.test.ts"
+     ],
+     "acceptance": "Grep confirms appendAudit called in both routes; new vitest file covers append shape and fail-open on KV error.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M3-T4",
+     "description": "Add GET /api/admin/audit returning the newest N audit entries, gated exactly like /api/admin/health (session + isAdmin, 401 otherwise); route test for the 401 path and the happy path with mocked KV.",
+     "files": [
+      "src/app/api/admin/audit/route.ts",
+      "src/lib/__tests__/admin-audit-route.test.ts"
+     ],
+     "acceptance": "EN-8 check passes: non-admin GET returns 401, admin GET returns JSON array of {actor, action, target, at}; tests green.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "EN-M4",
+   "dimension": "enterprise",
+   "title": "RBAC: three-role model, server-enforced and documented",
+   "criteria": [
+    "EN-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "EN-M4-T1",
+     "description": "Extend src/lib/admin.ts (or new src/lib/roles.ts) with resolveRole(email): 'admin' | 'ehs' | 'worker' using ADMIN_EMAILS and new EHS_EMAILS env allowlists; expose session.user.role in the NextAuth session callback alongside isAdmin; add the type augmentation and unit tests for precedence (admin wins over ehs) and case-insensitivity.",
+     "files": [
+      "src/lib/roles.ts",
+      "src/lib/auth.ts",
+      ".env.example",
+      "src/lib/__tests__/roles.test.ts"
+     ],
+     "acceptance": "vitest passes roles tests; session callback in src/lib/auth.ts sets session.user.role; .env.example documents EHS_EMAILS.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M4-T2",
+     "description": "Enforce the ehs role server-side on at least one route: require role ehs-or-admin on api/safety/review/decide's session-fallback path (or add the check to review/status detail access), returning 403 for workers; keep the HMAC email-link path working. Add a route test for the 403.",
+     "files": [
+      "src/app/api/safety/review/decide/route.ts",
+      "src/lib/__tests__/review-decide-rbac.test.ts"
+     ],
+     "acceptance": "A worker-role session hitting the guarded route gets 403 in the new test; admin/ehs sessions succeed; existing review tests still pass.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M4-T3",
+     "description": "Rewrite README 'Authorization Scope' (line ~244) into a role table (admin / ehs / worker with their capabilities) removing the 'does not implement role-based access control' sentence, and note server-side enforcement points.",
+     "files": [
+      "README.md"
+     ],
+     "acceptance": "grep 'does not implement role-based access control' README.md returns nothing; README lists all three roles.",
+     "status": "pending"
+    },
+    {
+     "id": "EN-M4-TX1",
+     "description": "Harden email-code login identity assurance: the single shared EMAIL_LOGIN_CODE currently lets anyone holding it sign in as ANY allowed-domain address (including ADMIN_EMAILS) with a freeform name (src/lib/auth.ts). Minimum: block ADMIN_EMAILS and elevated-role addresses from shared-code login (require OAuth or per-user code). Note the chosen approach in docs/SSO.md.",
+     "files": [
+      "src/lib/auth.ts",
+      "src/lib/__tests__/auth.test.ts"
+     ],
+     "acceptance": "A test proves an ADMIN_EMAILS address cannot authenticate via the shared email code; non-admin domain logins still work. This also protects LG-7's server-verified-identity claim.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DM-M1",
+   "dimension": "demo",
+   "title": "First-run sign-in works out of the box",
+   "criteria": [
+    "DM-6"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DM-M1-T1",
+     "description": "In src/lib/auth.ts, register the dev Credentials provider when Google OAuth is not configured in non-production (allowDevLogin = (ALLOW_DEV_LOGIN==='1' || (!hasGoogle && ALLOW_DEV_LOGIN !== '0')) && !isProduction), preserving the existing hard production gate, and add a unit test in src/lib/__tests__/auth.test.ts asserting the provider list is non-empty with GOOGLE_CLIENT_ID and ALLOW_DEV_LOGIN both unset in development.",
+     "files": [
+      "src/lib/auth.ts",
+      "src/lib/__tests__/auth.test.ts"
+     ],
+     "acceptance": "With an empty .env.local and NODE_ENV=development, GET /api/auth/providers returns a 'dev' provider (or the new unit test proves providers includes id 'dev'); npm test exits 0; production behavior (NODE_ENV=production, no flags) still yields zero credentials providers.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DM-M2",
+   "dimension": "demo",
+   "title": "Presenter demo runbook in docs/",
+   "criteria": [
+    "DM-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DM-M2-T1",
+     "description": "Write docs/DEMO-SCRIPT.md: (1) pre-demo checklist \u2014 env flags to set (ALLOW_DEV_LOGIN=1, NEXT_PUBLIC_AI_ASSIST=1 + ANTHROPIC_API_KEY, RESEND_API_KEY + EHS_NOTIFY_EMAIL), how to reset device state via UserMenu 'Delete all local data', and which /inspect/[id] QR/URL to preload; (2) a numbered 15-minute step sequence: sign in -> dashboard -> scan pre-trip QR (/inspect/[id]) -> equipment profile -> checklist with one staged critical fail -> signature -> result + 'EHS has been notified' -> /inspections history + CSV export -> /admin/labels print view -> Sage triage question -> airplane-mode submit + reconnect sync; (3) a recovery section covering refresh (draft restores), failed EHS email (queued banner wording), and wrong-tap back-navigation. Link it from README's demo row.",
+     "files": [
+      "docs/DEMO-SCRIPT.md",
+      "README.md"
+     ],
+     "acceptance": "docs/DEMO-SCRIPT.md exists, contains '/inspect/', names all four env flag groups, has a numbered step list covering QR->equipment->inspection->signature->EHS email->admin/history, and a recovery section with >= 3 mid-demo recovery actions (DM-9 howToVerify passes).",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DM-M3",
+   "dimension": "demo",
+   "title": "Machine-rehearsable inspection happy path",
+   "criteria": [
+    "DM-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DM-M3-T1",
+     "description": "Add scripts/demo/rehearse-inspection.mjs (core playwright, same pattern as record-demo.mjs but WITHOUT the failure-swallowing safe() wrapper): dev sign-in -> goto /inspect/<pre-trip id> -> fill inspector name -> Start Inspection -> tap Pass on every checklist item -> draw on the SignaturePad canvas via mouse events -> Submit -> assert the 'All Clear' result heading and a notifyStatus outcome (sent/skipped banner) appear; exit 1 on any missing element. Document the run command in scripts/demo/README.md.",
+     "files": [
+      "scripts/demo/rehearse-inspection.mjs",
+      "scripts/demo/README.md"
+     ],
+     "acceptance": "Against `ALLOW_DEV_LOGIN=1 npm run dev`, `node scripts/demo/rehearse-inspection.mjs` exits 0 after asserting the result screen; killing any step (e.g. wrong selector) makes it exit non-zero (DM-10 howToVerify passes).",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "LG-M1",
+   "dimension": "legal",
+   "title": "Make the privacy policy match actual data flows and retention",
+   "criteria": [
+    "LG-2",
+    "LG-3",
+    "LG-4",
+    "LG-5"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "LG-M1-T1",
+     "description": "Rewrite the Digital Signatures and Resend sections of src/app/privacy/page.tsx to disclose that the pre-trip inspection signature is emailed to EHS as a PNG attachment via Resend (or, alternatively, stop attaching it in api/inspections/notify/route.ts).",
+     "files": [
+      "src/app/privacy/page.tsx",
+      "src/app/api/inspections/notify/route.ts"
+     ],
+     "acceptance": "grep -n 'not shared' src/app/privacy/page.tsx returns nothing about signatures; the Digital Signatures section names the EHS email attachment flow, or the notify route no longer attaches signatureDataUrl.",
+     "status": "pending"
+    },
+    {
+     "id": "LG-M1-T2",
+     "description": "Reconcile the AI Features section with sage-context: either remove userName and supervisor name from contextToPrompt/summarizePtp in src/lib/sage-context.ts, or amend the privacy AI section to state worker names may be included in AI requests.",
+     "files": [
+      "src/lib/sage-context.ts",
+      "src/app/privacy/page.tsx"
+     ],
+     "acceptance": "Either grep 'userName' src/lib/sage-context.ts shows it is no longer emitted into the prompt string, or the privacy AI Features section explicitly discloses names are sent; the two are consistent.",
+     "status": "pending"
+    },
+    {
+     "id": "LG-M1-T3",
+     "description": "Add Sentry (error monitoring), Upstash Redis / Vercel KV (server-side storage of login emails, beta signups, review submissions), and Vercel (hosting) to the Third-Party Services list, and extend the Slack bullet to cover first-sign-in name/email notifications.",
+     "files": [
+      "src/app/privacy/page.tsx"
+     ],
+     "acceptance": "grep -in 'sentry' and grep -in 'upstash\\|vercel' src/app/privacy/page.tsx each return hits inside the Third-Party Services section; the Slack bullet mentions sign-in notifications.",
+     "status": "pending"
+    },
+    {
+     "id": "LG-M1-T4",
+     "description": "Rewrite the Data Retention section with the implemented periods (90-day local archive of synced records, 7-day draft prune, KV TTLs 90d/180d/7-30d) and add a docs/COMPLIANCE-RETENTION.md mapping incident reports (29 CFR 1904.33, 5 years), forklift training certification (29 CFR 1910.178(l)(6)), and daily inspections to app retention behavior, linked from the policy.",
+     "files": [
+      "src/app/privacy/page.tsx",
+      "docs/COMPLIANCE-RETENTION.md"
+     ],
+     "acceptance": "Privacy retention section states the 90-day archive and draft prune; docs/COMPLIANCE-RETENTION.md exists citing 1904.33 and 1910.178(l) and is referenced from the policy.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "LG-M2",
+   "dimension": "legal",
+   "title": "Close consent and AI-disclaimer gaps on capture surfaces",
+   "criteria": [
+    "LG-6",
+    "LG-8",
+    "LG-9"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "LG-M2-T1",
+     "description": "Add an intent/consent sentence above the reporter SignaturePad in IncidentReportForm.tsx (e.g. 'By signing you certify this report is accurate; your signature is stored on this device for recordkeeping').",
+     "files": [
+      "src/components/safety/IncidentReportForm.tsx"
+     ],
+     "acceptance": "grep -in 'By signing\\|certify' src/components/safety/IncidentReportForm.tsx returns a line adjacent to the SignaturePad render (~line 668).",
+     "status": "pending"
+    },
+    {
+     "id": "LG-M2-T2",
+     "description": "Add the standard advisory disclaimer ('AI suggestions are not a substitute for a competent safety assessment') to JhaForm.tsx near the Sage document-parse and suggest-jha result UI.",
+     "files": [
+      "src/components/safety/JhaForm.tsx"
+     ],
+     "acceptance": "grep -in 'not a substitute\\|advisory' src/components/safety/JhaForm.tsx returns at least one hit in the Sage sections.",
+     "status": "pending"
+    },
+    {
+     "id": "LG-M2-T3",
+     "description": "Add a privacy-policy link/notice to the public beta signup form near the submit button in src/app/beta/page.tsx.",
+     "files": [
+      "src/app/beta/page.tsx"
+     ],
+     "acceptance": "grep -n '/privacy' src/app/beta/page.tsx returns a link rendered within the signup form.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "LG-M3",
+   "dimension": "legal",
+   "title": "Third-party license notices artifact",
+   "criteria": [
+    "LG-10"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "LG-M3-T1",
+     "description": "Add THIRD_PARTY_NOTICES.md at repo root listing all 11 production dependencies with license identifier and copyright line (optionally generated by a small scripts/ generator reading package.json + node_modules).",
+     "files": [
+      "THIRD_PARTY_NOTICES.md",
+      "scripts/"
+     ],
+     "acceptance": "THIRD_PARTY_NOTICES.md exists at repo root and its dependency list matches Object.keys(package.json dependencies) exactly; no GPL-family license appears.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "DS-M5",
+   "dimension": "design",
+   "title": "Eliminate fixed-width horizontal overflow at phone widths (DS-7)",
+   "criteria": [
+    "DS-7"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "DS-M5-T1",
+     "description": "Fix AuthGate.tsx:143's literal w-[520px] h-[520px] glow (and every other DS-7 grep hit) to be viewport-safe: max-w-full, sm:/md: scoping, or an overflow-hidden ancestor \u2014 matching the beta page's contained-glow pattern.",
+     "files": [
+      "src/components/AuthGate.tsx"
+     ],
+     "acceptance": "DS-7 verify passes: every 3-digit-px w-[] hit (excluding min-w-/max-w-) is viewport-bounded; AuthGate renders without horizontal scroll at 360px width.",
+     "status": "pending"
+    }
+   ]
+  },
+  {
+   "id": "BE-M4",
+   "dimension": "backend",
+   "title": "Standards-compliant 429 responses on every rate-limited route (BE-2)",
+   "criteria": [
+    "BE-2"
+   ],
+   "status": "pending",
+   "tasks": [
+    {
+     "id": "BE-M4-T1",
+     "description": "Add a Retry-After header to every rate-limited 429 response (src/app/api/beta/signup/route.ts:15 confirmed missing; sweep all 15 rate-limited routes). Prefer a shared helper in src/lib/rate-limit.ts so future routes inherit it. Extend route tests to assert the header.",
+     "files": [
+      "src/lib/rate-limit.ts",
+      "src/app/api/beta/signup/route.ts"
+     ],
+     "acceptance": "BE-2 verify passes: every 429 response across rate-limited routes carries Retry-After; route tests assert it for beta/signup and at least two others.",
+     "status": "pending"
+    }
+   ]
+  }
+ ],
+ "order": [
+  "LG-M1",
+  "DM-M1",
+  "DS-M5",
+  "BE-M2",
+  "BE-M4",
+  "BE-M3",
+  "BE-M1",
+  "EN-M3",
+  "EN-M4",
+  "EN-M2",
+  "LG-M2",
+  "UX-M1",
+  "UX-M2",
+  "UX-M3",
+  "DM-M3",
+  "DM-M2",
+  "EN-M1",
+  "LG-M3",
+  "DS-M1",
+  "DS-M2",
+  "DS-M3",
+  "DS-M4"
+ ],
+ "orderReasons": {
+  "LG-M1": "false statements in a live privacy policy (signatures, AI PII, missing processors, wrong retention) are an active legal liability and pure doc edits; fix truthfulness before anything else.",
+  "DM-M1": "a small auth-config change in src/lib/auth.ts that unblocks first-run sign-in for every subsequent local run, e2e spec, and demo rehearsal; verify jointly with BE-3.",
+  "BE-M2": "zod-validate every request body: correctness-of-data foundation that later hardening, logging, and audit claims all sit on; do before adding more API surface.",
+  "BE-M3": "KV guards and outbound-fetch timeouts: makes the data path resilient so subsequent e2e and demo work isn't chasing flaky 500s/hangs.",
+  "BE-M1": "wire server Sentry (instrumentation.ts + captureException); do immediately before EN-M3 since they edit the same catch blocks.",
+  "EN-M3": "structured logger + privileged-action audit log in the same route-file pass as BE-M1; one shared helper satisfies BE-10, EN-7, EN-8 together.",
+  "EN-M4": "implement the three-role RBAC (EN-9) now so the docs milestone can describe reality; also the moment to address the shared-code impersonation gap.",
+  "EN-M2": "enterprise doc pack (retention/SSO/runbook) after RBAC exists and reusing LG-M1's retention inventory; drop its duplicated EN-9 task.",
+  "LG-M2": "consent text at signature pads, AI disclaimers, beta-form privacy link: small UI strings closing real legal exposure on capture surfaces.",
+  "UX-M1": "skip link + landmark structure: cheap, and must land before the axe suite so UX-M3's scans pass first try.",
+  "UX-M2": "extend/degrade the offline identity window: one-module change that the airplane-mode spec depends on (a locked-out identity fails offline capture).",
+  "UX-M3": "build the Playwright harness (axe scans + airplane-mode spec); this is the shared e2e foundation for the demo spec.",
+  "DM-M3": "machine-rehearsable inspection happy path reusing UX-M3's harness; asserts the notify banner including the 'skipped' no-key path.",
+  "DM-M2": "presenter demo runbook written only after DM-M1/DM-M3 finalize the exact flows and env flags it documents.",
+  "EN-M1": "dependency audit triage once the dependency set has stabilized (after Playwright/axe additions), so the audit doc doesn't immediately go stale.",
+  "LG-M3": "third-party license notices generated from the same final dependency tree as EN-M1; automate with a license checker.",
+  "DS-M1": "tokenize all remaining raw colors; must precede any further visual polish and finishes with an axe contrast re-run.",
+  "DS-M2": "unified type scale + shared Button primitive on top of the completed token layer.",
+  "DS-M3": "printable signed pre-trip record; benefits from DS-M2's primitives and pairs with the (recommended) server-side inspection persistence gap work.",
+  "DS-M4": "OG/Twitter branded previews: pure external polish with zero dependencies, safe to do last.",
+  "DS-M5": "phone-width overflow on the sign-in gate is demo-visible and a one-file fix; slot it with the early cheap wins",
+  "BE-M4": "same route files as BE-M2's validation pass; one-line-per-route fix while the context is loaded"
+ },
+ "coordination": [
+  "UX-10 and DM-10 both require standing up the same Playwright infrastructure (config, npm script, auth bootstrap, browser install) plus specs \u2014 build the harness once in UX-M3 and have DM-M3 add only its spec; also decide once whether these run in CI (see gaps).",
+  "EN-9 appears in BOTH EN-M2 and EN-M4 \u2014 the milestone plan double-books the RBAC criterion; fold EN-M2's README role-table task into EN-M4 and drop EN-9 from EN-M2 so the score isn't double-counted and the work isn't split across two milestones.",
+  "EN-6 (retention schedule doc) and LG-5 (retention section in privacy policy with OSHA mapping) describe the same retention content twice \u2014 author one canonical docs/DATA-RETENTION.md during LG-M1/EN-M2 and have the privacy page link/summarize it, or the two documents will drift.",
+  "EN-7 (structured logger in every api route, zero console.*) and BE-10 (Sentry.captureException in every route catch block) rewrite the exact same error paths in the same ~15 route files \u2014 execute BE-M1 and EN-M3 as one pass with a single shared log+capture helper.",
+  "LG-4 (name every third-party service handling personal data) and EN-6 (enumerate every data store) require the same service/store inventory (Anthropic, Notion, Resend, Slack, Upstash, Sentry, Google) \u2014 build the inventory once and reuse.",
+  "DM-6 and BE-3 both govern the dev/email Credentials provider registration logic in src/lib/auth.ts \u2014 the DM-M1 fix (register dev login by default in non-production) must be verified against BE-3's production-lockout requirement in the same change, or fixing one will regress the other.",
+  "UX-3 and DM-8 both assert the pre-trip draft persistence mechanism (debounce + pagehide flush + restore); both are met, but the re-scoring loop should treat them as one implementation so a refactor is re-verified under both ids together.",
+  "DS-M1 (retokenizing all colors, DS-3) can change rendered contrast after UX-M3's axe suite is green \u2014 schedule an axe re-run as part of DS-M1's definition of done rather than discovering the flip at the next full review."
+ ],
+ "backlog": [
+  "Identity assurance / impersonation: src/lib/auth.ts (lines 74-85) lets anyone holding the single shared EMAIL_LOGIN_CODE sign in as ANY allowed-domain email \u2014 including an ADMIN_EMAILS address \u2014 with a freeform name. This undermines LG-7's 'server-verified submitter' claim on signed OSHA inspections and makes EN-9 RBAC spoofable (roles resolve from a self-asserted email). No criterion requires per-user credentials, email verification, or admin-login step-up. Absorb into ENTERPRISE (new criterion alongside EN-9/EN-10) with a LEGAL note on LG-7's wording.",
+  "Server-side durability of inspection records: pre-trip inspections live only in device localStorage (src/lib/inspections.ts) plus a one-shot email PNG \u2014 there is no Notion/KV sync path like safety records have (src/lib/safety-sync.ts covers safety records only). A cleared browser or lost phone destroys OSHA daily-inspection history, and EHS has no fleet-wide inspection view across devices. EN-5's CSV export only exports the local device's data. Absorb into BACKEND (sync inspections server-side) with ENTERPRISE retention implications.",
+  "Cross-device data model for work orders / PM / training: src/lib/work-orders.ts and shop-management.ts are localStorage-only, so a work order created on one mechanic's phone is invisible to everyone else \u2014 an embarrassing discovery in any multi-user pilot demo. No criterion in any dimension tests multi-device visibility of operational records. Absorb into BACKEND (or explicitly document single-device scope in README/demo script if deferred).",
+  "PWA service-worker update lifecycle: no criterion covers how deployed updates reach installed clients (skipWaiting/clients.claim/update-available prompt). A stale Serwist SW can pin field devices to an old checklist or broken code after a fix ships \u2014 directly undermines the 10/10 loop since fixes may never reach the verifying client. Absorb into UX (offline/PWA area) or DEMO.",
+  "Prompt-injection and AI-output handling: JhaForm's parse-document feeds user-uploaded file content into Anthropic prompts and pipes suggestions back into safety-critical form fields; no criterion covers injection hardening, output length/schema constraints on what gets written into records, or sanitization of AI text rendering. LG-8 covers disclaimers only. Absorb into BACKEND (Sage/parse-document routes).",
+  "PII hygiene in telemetry and Slack: no criterion verifies that worker names, emails, or signature data are excluded/scrubbed from Sentry events (client and server), Slack notifications, and the structured logs EN-7 will introduce \u2014 EN-7 as written could even increase PII in logs. Absorb into ENTERPRISE (EN-7 should specify PII-safe field allowlist) with LEGAL cross-reference in LG-4.",
+  "Data-subject deletion / worker offboarding: the app stores worker PII in KV (known-users), Notion pages, Resend/Slack archives, and devices, but no criterion requires an actual deletion procedure or endpoint when an employee leaves or requests erasure \u2014 the privacy policy rewrite (LG-M1) will otherwise promise rights with no implementation. Absorb into LEGAL (policy truthfulness) + ENTERPRISE runbook (EN-10 could add a deletion procedure).",
+  "CI as an enforced gate: .github/workflows/ci.yml exists and runs tsc/lint/test/build, but no criterion pins it \u2014 nothing requires the new Playwright suites (UX-10, DM-10) to run in CI, or branch protection so the autonomous loop can't merge a red build. Absorb into DEMO (extend DM-1) so the loop's own changes stay verified.",
+  "Spanish-language support: US construction crews are heavily Spanish-speaking and OSHA expects training/safety communication in a language workers understand; the app is English-only with no i18n criterion anywhere. Absorb into UX as an explicitly-scoped post-pilot criterion (or a documented exclusion) so the roadmap makes a conscious decision rather than an omission."
+ ],
+ "autonomyRisks": [
+  "EN-3 (EN-M1): `npm audit` needs live registry access through the sandbox proxy, and high/critical advisories may be transitively unfixable on Next 14 \u2014 unblock via the criterion's own escape hatch (dated GHSA risk-acceptance entries in docs/DEPENDENCY-AUDIT.md). Also note EN-3 is time-flaky: a new advisory published mid-loop flips it back to unmet through no code change; the loop should treat it as re-triageable, not a regression.",
+  "UX-10 and DM-10: Playwright browser binaries and OS deps must install in the loop's environment (npx playwright install --with-deps needs network); e2e sign-in needs ALLOW_DEV_LOGIN=1 and a NEXTAUTH_SECRET at test time \u2014 unblock with a committed .env.test of dev-only values and a webServer block in playwright.config that sets them.",
+  "DM-9/DM-10 email leg: sending the real EHS email requires a production RESEND_API_KEY and a human inbox to confirm receipt \u2014 unblock by having the spec assert the 'skipped/not-configured' outcome banner (explicitly allowed by DM-4's outcome display) and putting the live-key verification step in the DM-M2 runbook as a human pre-demo task.",
+  "BE-2 (durable rate limiting): verifying KV-backed INCR+EXPIRE behavior requires KV_REST_API_URL \u2014 unblock with a mocked Upstash REST endpoint in vitest; production verification stays a documented human step.",
+  "BE-10 (Sentry): no SENTRY_DSN in the loop environment means capture can't be observed live \u2014 unblock by asserting via a mocked @sentry/nextjs module in unit tests plus the instrumentation.ts file-shape check the criterion already specifies.",
+  "EN-9 (RBAC allowlists): which real humans are 'ehs' vs 'admin' is an owner decision (env allowlists) \u2014 unblock by shipping the mechanism with .env.example placeholders and flagging the population step for mark.starr@mytra.ai; the criterion is verifiable with test envs.",
+  "UX-9 (offline identity window): choosing >=7-day cached identity vs degrade-to-warning is a security/product tradeoff, not purely technical \u2014 unblock by defaulting to the criterion's degrade-to-warning branch (still allows capture, smaller security surface) and documenting the decision rather than waiting on a human.",
+  "LG-2/LG-6 (signature handling): the honest fix is a policy/consent-text rewrite disclosing that signature PNGs leave the device via the EHS email \u2014 the agent can do that autonomously; actually changing the data flow (keeping signatures on-device) is a product decision that would stall the loop, so the rewrite path should be the default.",
+  "LG-5 (OSHA retention mapping) and LG-M1 generally: mapping 29 CFR 1904.33 / 1910.178(l)(6) to retention behavior is legal judgment \u2014 the agent should draft with citations and mark the docs 'DRAFT \u2014 pending counsel review' so the criterion can pass on existence+accuracy while flagging the human sign-off; a 10/10 legal score should not be read as legal advice.",
+  "LG-10: license inventory is automatable (license-checker over package.json), but if a copyleft production dependency is actually found, replacement is a human/architecture decision \u2014 unblock by treating discovery+documentation as the criterion pass and opening a follow-up for replacement.",
+  "DS-10 (OG image): brand asset selection could stall on 'what should it look like' \u2014 unblock by generating src/app/opengraph-image.tsx programmatically from existing theme tokens and the app name; no external assets (also keeps CSP intact).",
+  "Grep-defined criteria (DS-3, DS-4, DS-6, BE-8, EN-7) invite superficial compliance from an autonomous agent (e.g., renaming a class to dodge the grep) \u2014 the verify step should pair each grep with at least one rendered-output or behavioral spot-check so the loop optimizes the product, not the regex."
+ ],
+ "log": [
+  {
+   "iteration": 0,
+   "date": "2026-07-06",
+   "event": "initial-review",
+   "details": "13-agent workflow (6 reviewers, 6 adversarial verifiers, 1 completeness critic; ~885k tokens, 427 tool calls). Overturns applied: DS-7 met->false, BE-2 met->false. Rubric refinements adopted for BE-1, BE-9, DM-1, DM-2, DS-4, DS-7, UX-2 (see verifier rubricFixes). EN-9 de-duplicated from EN-M2. Critic gaps folded: impersonation->EN-M4-TX1, CI enforcement->UX-M3-TX1; the rest in backlog[]. Baseline gates all green at commit 95f92ef."
+  }
+ ]
+}
