@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 3,
+ "iteration": 4,
  "gates": [
   {
    "id": "lint",
@@ -202,7 +202,7 @@
   "backend": {
    "key": "backend",
    "name": "Backend",
-   "score": 6,
+   "score": 7,
    "initialScore": 6,
    "verifiedScore": null,
    "auditSummary": "The review was largely accurate: 9 of 10 verdicts held up under independent verification, including the three honest unmet calls (BE-8 zod, BE-9 KV/timeout resilience, BE-10 Sentry), and all five cited test files pass. One met claim was overturned: BE-2's evidence that all rate-limited routes return 429 + Retry-After is false \u2014 beta/signup omits the header. The biggest real gaps are BE-10 (sentry.server.config.ts exists but no instrumentation.ts means server-side Sentry never initializes on @sentry/nextjs v10 + Next 14, and zero captureException calls exist) and BE-9 (unguarded KV awaits in beta/review routes plus no AbortSignal on any outbound fetch).",
@@ -263,8 +263,10 @@
      "id": "BE-8",
      "criterion": "Every API route that reads a JSON request body validates it with a zod schema via .safeParse before use (schemas may live in src/lib and be shared), and grep finds zero 'as <Type>' casts or typed-let coercions on await req.json() in src/app/api.",
      "verify": "grep -rn 'safeParse' src/app/api src/lib \u2014 every body-reading route resolves to a zod safeParse; grep -rn 'await req.json()) as\\|let body:' src/app/api returns nothing.",
-     "met": false,
-     "evidence": "Only inspections/notify validates via zod (route.ts:217). safety/sync/route.ts:49 casts '(await req.json()) as SafetyRecord'; review/submit/route.ts:58, sage/triage/route.ts:96 and all 9 AI routes + beta routes use typed-let coercion with manual field checks."
+     "met": true,
+     "evidence": "All 15 body-reading routes under src/app/api resolve to zod .safeParse (sync:48-55, review/submit:65, sage/triage:99, notify:217, beta x2, 9 AI routes); grep for 'as <Type>' casts and typed-let coercions returns nothing.",
+     "verifiedBy": "verify-criteria wf_0c404c41-5e4 (1-vote adversarial)",
+     "verifiedAtIteration": 4
     },
     {
      "id": "BE-9",
@@ -906,7 +908,7 @@
    "criteria": [
     "BE-8"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "BE-M2-T1",
@@ -917,7 +919,7 @@
       "src/app/api/safety/review/submit/route.ts"
      ],
      "acceptance": "grep -rn 'await req.json()) as' src/app/api returns nothing; both routes call safeParse; vitest run passes.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "BE-M2-T2",
@@ -929,7 +931,7 @@
       "src/app/api/beta/*/route.ts"
      ],
      "acceptance": "grep -rn 'safeParse' src/app/api src/lib covers every body-reading route; grep -rn 'let body:' src/app/api returns nothing; all 69 test files pass.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -1856,6 +1858,22 @@
    ],
    "refuted": [],
    "notes": "Sign-in glow contained; no horizontal scroll at phone widths. Design 4->5. Ops note: stray next-server on :3010 would not die; future browser checks must use fresh ports."
+  },
+  {
+   "iteration": 4,
+   "date": "2026-07-06",
+   "milestone": "BE-M2",
+   "event": "iteration",
+   "tasksDone": [
+    "BE-M2-T1",
+    "BE-M2-T2"
+   ],
+   "gates": "lint OK, tsc OK, 699/699 tests, build OK",
+   "verified": [
+    "BE-8"
+   ],
+   "refuted": [],
+   "notes": "6-agent fan-out migrated 13 routes to zod safeParse via 6 new schema modules; status codes/pinned strings/middleware order preserved; silent truncation -> explicit .max rejection only where unpinned. Backend 6->7."
   }
  ]
 }

@@ -36,9 +36,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 4. BE-M2 — Zod-validate every API request body
 *Dimension: Backend · flips: BE-8 · why here: zod-validate every request body: correctness-of-data foundation that later hardening, logging, and audit claims all sit on; do before adding more API surface.*
 
-- [ ] **BE-M2-T1** Create zod schemas in src/lib for the safety-record bodies (safety/sync, review/submit — model on the existing manual checks: id<=100, known type, valid createdAt, optional notionPageId regex) and migrate both routes to .safeParse, deleting the 'as SafetyRecord' cast. Preserve existing status codes (400/403/413) so safety-sync-route.test.ts and review-submit-route.test.ts still pass.
+- [x] **BE-M2-T1** Create zod schemas in src/lib for the safety-record bodies (safety/sync, review/submit — model on the existing manual checks: id<=100, known type, valid createdAt, optional notionPageId regex) and migrate both routes to .safeParse, deleting the 'as SafetyRecord' cast. Preserve existing status codes (400/403/413) so safety-sync-route.test.ts and review-submit-route.test.ts still pass.
   - *Acceptance:* grep -rn 'await req.json()) as' src/app/api returns nothing; both routes call safeParse; vitest run passes.
-- [ ] **BE-M2-T2** Add request-body zod schemas (with the current .trim/.slice caps expressed as .max) for the 9 Anthropic routes (sage/triage, parse-document, check-permits, suggest-jha/hazards/toolbox, analyze-atmosphere, analyze-incident, audit-ptp) and the beta signup/decide bodies; replace typed-let coercions with safeParse. Update route tests where error-message text changes.
+- [x] **BE-M2-T2** Add request-body zod schemas (with the current .trim/.slice caps expressed as .max) for the 9 Anthropic routes (sage/triage, parse-document, check-permits, suggest-jha/hazards/toolbox, analyze-atmosphere, analyze-incident, audit-ptp) and the beta signup/decide bodies; replace typed-let coercions with safeParse. Update route tests where error-message text changes.
   - *Acceptance:* grep -rn 'safeParse' src/app/api src/lib covers every body-reading route; grep -rn 'let body:' src/app/api returns nothing; all 69 test files pass.
 
 ### 5. BE-M4 — Standards-compliant 429 responses on every rate-limited route (BE-2)
