@@ -2,6 +2,7 @@ import { verifyReviewToken } from '@/lib/review-token'
 import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
+import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -19,17 +20,20 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
-  let body: { token: string; note?: string }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { token, note } = body
-  if (!token || typeof token !== 'string') {
+  const parsedBody = ReviewDecideBodySchema.safeParse(raw)
+  if (!parsedBody.success) {
+    // The only fatal schema failure is the token (note is .catch-tolerant),
+    // so the pre-schema error message still fits.
     return Response.json({ error: 'Missing token' }, { status: 400 })
   }
+  const { token, note } = parsedBody.data
 
   const parsed = verifyReviewToken(token)
   if (!parsed) {
@@ -52,7 +56,8 @@ export async function POST(req: Request) {
   }
 
   const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
-  const decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', typeof note === 'string' ? note.slice(0, 500) : undefined)
+  // note is already truncated to 500 chars by ReviewDecideBodySchema
+  const decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', note)
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }

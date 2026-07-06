@@ -1,7 +1,8 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { isAdmin } from '@/lib/admin'
-import { updateSignupStatus, getAllSignups, type BetaStatus } from '@/lib/beta'
+import { updateSignupStatus, getAllSignups } from '@/lib/beta'
+import { BetaDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { sendBetaEmail } from './email'
 
 export async function POST(req: Request) {
@@ -10,18 +11,18 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { id?: string; status?: string }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const id = String(body.id ?? '')
-  const status = body.status as BetaStatus
-  if (!id || (status !== 'approved' && status !== 'rejected')) {
+  const parsed = BetaDecideBodySchema.safeParse(raw)
+  if (!parsed.success) {
     return Response.json({ error: 'id and status (approved|rejected) required' }, { status: 400 })
   }
+  const { id, status } = parsed.data
 
   const signup = await updateSignupStatus(id, status)
   if (!signup) {

@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
+import { CheckPermitsBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
 
 const SYSTEM_PROMPT = `You are Sage, an EHS safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
@@ -40,20 +41,26 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { scopeOfWork?: string; location?: string; hazards?: string[] }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ missing_permits: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
+  const parsed = CheckPermitsBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ missing_permits: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
+
+  const scopeOfWork = (body.scopeOfWork ?? '').trim()
   if (!scopeOfWork) {
     return Response.json({ missing_permits: [], error: 'No scope of work provided' }, { status: 400 })
   }
 
-  const location = (body.location ?? '').trim().slice(0, 200)
-  const hazards = Array.isArray(body.hazards) ? body.hazards.map((h) => String(h).slice(0, 200)) : []
+  const location = (body.location ?? '').trim()
+  const hazards = body.hazards ?? []
 
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,

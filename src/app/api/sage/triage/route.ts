@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SageTriageBodySchema } from '@/lib/sage-triage-schema'
 
 const TriageSchema = z.object({
   reply: z.string(),
@@ -68,11 +69,6 @@ APP NAVIGATION:
 
 export const maxDuration = 60
 
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
-
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_AI_ASSIST !== '1') {
     return Response.json({ error: 'Sage is not enabled' }, { status: 404 })
@@ -93,32 +89,31 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { message?: string; context?: string; history?: Message[]; localHour?: number }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const message = (body.message ?? '').trim()
+  const parsed = SageTriageBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
+
+  const message = body.message.trim()
   if (!message || message.length > 500) {
     return Response.json({ error: 'Message required (max 500 chars)' }, { status: 400 })
   }
 
   const userName = session.user.name ?? session.user.email.split('@')[0]
-  const clientContext = typeof body.context === 'string' ? body.context.slice(0, 2000) : ''
-  const clientHour = typeof body.localHour === 'number' ? body.localHour : undefined
+  const clientContext = body.context ?? ''
+  const clientHour = body.localHour
   const fallbackContext = `Worker: ${userName}\nTime: ${timeOfDay(clientHour)}`
   const contextBlock = clientContext || fallbackContext
 
-  const history: Message[] = Array.isArray(body.history)
-    ? body.history.slice(-10).filter(
-        (m) =>
-          (m.role === 'user' || m.role === 'assistant') &&
-          typeof m.content === 'string' &&
-          m.content.length <= 2000
-      )
-    : []
+  const history = body.history ?? []
 
   const sanitizedHistory = history.map((m) =>
     m.role === 'assistant' ? { ...m, content: m.content.slice(0, 1000) } : m

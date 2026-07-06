@@ -3,6 +3,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SuggestJhaBodySchema } from '@/lib/suggest-schemas'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Job Hazard Analysis (JHA) tool used by engineers and operations teams.
 
@@ -53,17 +54,19 @@ export async function POST(req: Request) {
     return Response.json({ steps: [], error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { jobTitle?: string; steps?: string[] }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ steps: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const jobTitle = (body.jobTitle ?? '').trim().slice(0, 200)
-  const steps = Array.isArray(body.steps)
-    ? body.steps.map((s) => String(s ?? '').trim().slice(0, 300)).filter(Boolean)
-    : []
+  const parsed = SuggestJhaBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ steps: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const { jobTitle } = parsed.data
+  const steps = parsed.data.steps.filter(Boolean)
 
   if (steps.length === 0) {
     return Response.json({ steps: [], error: 'No task steps provided' }, { status: 400 })

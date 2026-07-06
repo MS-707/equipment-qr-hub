@@ -7,9 +7,9 @@ import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 import { createReviewToken } from '@/lib/review-token'
 import { storeReviewSubmission } from '@/lib/review-store'
 import { escapeSlack } from '@/lib/slack-notify'
+import { ReviewSubmitBodySchema, firstInvalidField } from '@/lib/safety-record-schema'
 
 const NOTION_VERSION = '2022-06-28'
-const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
@@ -55,24 +55,28 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Request body too large' }, { status: 413 })
   }
 
-  let body: { record: SafetyRecord; notionPageId: string | null }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { record, notionPageId } = body
-
-  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
-    return Response.json({ error: 'Missing or invalid record id' }, { status: 400 })
+  const parsed = ReviewSubmitBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    const field = firstInvalidField(parsed.error)
+    const msg =
+      field === 'type' ? 'Missing or invalid record type'
+      : field === 'createdAt' ? 'Invalid createdAt'
+      : field === 'notionPageId' ? 'Invalid Notion page ID'
+      : 'Missing or invalid record id'
+    return Response.json({ error: msg }, { status: 400 })
   }
-  if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
-    return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
-  }
-  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
-    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
-  }
+  // Schema pins id/type/createdAt/notionPageId and passes all other record
+  // keys through; free-text fields are re-guarded below via sanitize/safeStr.
+  const record = parsed.data.record as unknown as SafetyRecord
+  // '' and absent both mean "no page yet" — normalize to null like before.
+  const notionPageId = parsed.data.notionPageId || null
 
   const sessionEmail = session?.user?.email
   if (sessionEmail) {
@@ -81,10 +85,6 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
     }
     ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
-  }
-
-  if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
-    return Response.json({ error: 'Invalid Notion page ID' }, { status: 400 })
   }
 
   // ── Notion (optional record store) ───────────────────────────

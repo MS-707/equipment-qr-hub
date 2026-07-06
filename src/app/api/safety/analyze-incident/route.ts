@@ -3,6 +3,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { IncidentRequestSchema } from '@/lib/analyze-schemas'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced construction safety incident analyst embedded in an EHS incident reporting tool.
 
@@ -65,23 +66,29 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { description?: string; incidentType?: string; severity?: string; bodyPartAffected?: string; immediateActions?: string; location?: string }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ rootCauses: [], correctiveActions: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const description = (body.description ?? '').trim().slice(0, 5000)
+  const parsed = IncidentRequestSchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ rootCauses: [], correctiveActions: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
+
+  const description = body.description ?? ''
   if (!description) {
     return Response.json({ rootCauses: [], correctiveActions: [], error: 'No description provided' }, { status: 400 })
   }
 
-  const incidentType = (body.incidentType ?? '').trim().slice(0, 100)
-  const severity = (body.severity ?? '').trim().slice(0, 50)
-  const bodyPartAffected = (body.bodyPartAffected ?? '').trim().slice(0, 200)
-  const immediateActions = (body.immediateActions ?? '').trim().slice(0, 2000)
-  const location = (body.location ?? '').trim().slice(0, 200)
+  const incidentType = body.incidentType ?? ''
+  const severity = body.severity ?? ''
+  const bodyPartAffected = body.bodyPartAffected ?? ''
+  const immediateActions = body.immediateActions ?? ''
+  const location = body.location ?? ''
 
   const userMessage = [
     `Incident type: ${incidentType || 'not specified'}`,

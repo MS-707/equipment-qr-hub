@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
+import { ParseDocumentBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. A worker has uploaded a planning document (task plan, method statement, scope of work, or similar) and wants to create a Job Hazard Analysis from it.
@@ -67,12 +68,18 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { documentText?: string; documentBase64?: string; fileName?: string }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
+
+  const parsed = ParseDocumentBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
 
   const documentText = (body.documentText ?? '').trim()
   const documentBase64 = (body.documentBase64 ?? '').trim()

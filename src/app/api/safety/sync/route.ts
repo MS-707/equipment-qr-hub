@@ -9,6 +9,7 @@
 import type { SafetyRecord } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SafetyRecordSchema, firstInvalidField } from '@/lib/safety-record-schema'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -44,21 +45,29 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Request body too large' }, { status: 413 })
   }
 
-  let record: SafetyRecord
+  let raw: unknown
   try {
-    record = (await req.json()) as SafetyRecord
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
-    return Response.json({ error: 'Invalid record id' }, { status: 400 })
+  const parsed = SafetyRecordSchema.safeParse(raw)
+  if (!parsed.success) {
+    const field = firstInvalidField(parsed.error)
+    const msg =
+      field === 'type' ? 'Invalid record type'
+      : field === 'createdAt' ? 'Invalid createdAt'
+      : 'Invalid record id'
+    return Response.json({ error: msg }, { status: 400 })
   }
-  if (!record?.type || typeof record.type !== 'string' || !DB_MAP[record.type]) {
+  // Schema pins id/type/createdAt and passes all other keys through; the
+  // Notion property builders below re-guard every free-text field via safeStr.
+  const record = parsed.data as unknown as SafetyRecord
+
+  // Valid type enum but no DB id configured for it — same 400 as before zod.
+  if (!DB_MAP[record.type]) {
     return Response.json({ error: 'Invalid record type' }, { status: 400 })
-  }
-  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
-    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
   const sessionEmail = session?.user?.email

@@ -3,6 +3,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { AtmoRequestSchema } from '@/lib/analyze-schemas'
 
 const SYSTEM_PROMPT = `You are an expert confined space atmospheric analyst for a construction safety platform called Sage EHS.
 
@@ -51,26 +52,26 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: {
-    readings?: { oxygen?: number | null; lel?: number | null; co?: number | null; h2s?: number | null }
-    spaceDescription?: string
-    hazards?: string[]
-  }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
+
+  const parsed = AtmoRequestSchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
 
   const readings = body.readings
   if (!readings) {
     return Response.json({ error: 'No readings provided' }, { status: 400 })
   }
 
-  const spaceDescription = (body.spaceDescription ?? '').trim().slice(0, 2000)
-  const hazards = Array.isArray(body.hazards)
-    ? body.hazards.map((h) => String(h).slice(0, 200))
-    : []
+  const spaceDescription = body.spaceDescription ?? ''
+  const hazards = body.hazards ?? []
 
   const lines = [
     'Atmospheric readings:',
