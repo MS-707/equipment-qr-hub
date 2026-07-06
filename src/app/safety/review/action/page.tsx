@@ -24,7 +24,9 @@ export default function ReviewActionPage() {
         <Loader2 className="w-8 h-8 animate-spin text-[#572DFF]" />
       </div>
     }>
-      <ReviewActionInner />
+      <main id="main" className="contents">
+        <ReviewActionInner />
+      </main>
     </Suspense>
   )
 }

@@ -66,6 +66,7 @@ export default function InspectionsPage() {
   if (!mounted) return null
 
   return (
+    <main id="main" className="contents">
     <div className="max-w-2xl mx-auto px-4 py-6 animate-fadeIn">
       {/* Page header */}
       <div className="flex items-center gap-2.5 mb-6">
@@ -133,5 +134,6 @@ export default function InspectionsPage() {
         <PreTripInspection key={selectedId} equipment={selectedEquipment} />
       )}
     </div>
+    </main>
   )
 }

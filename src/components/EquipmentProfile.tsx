@@ -116,7 +116,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const swipeHandlers = useSwipe(goNext, goPrev)
 
   return (
-    <main className="min-h-screen bg-mytra-bg">
+    <main id="main" className="min-h-screen bg-mytra-bg">
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link

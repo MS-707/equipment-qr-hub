@@ -115,6 +115,7 @@ export default function BetaPage() {
   }
 
   return (
+    <main id="main" className="contents">
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
       {/* Hero */}
       <header className="relative">
@@ -949,5 +950,6 @@ export default function BetaPage() {
         )}
       </section>
     </div>
+    </main>
   )
 }

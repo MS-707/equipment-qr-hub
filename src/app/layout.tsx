@@ -66,6 +66,16 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1640x2360.png" />
       </head>
       <body className="font-sans bg-mytra-bg text-fg min-h-screen pb-[calc(var(--tab-bar-h)+env(safe-area-inset-bottom)+1rem)] md:pb-0">
+        {/* WCAG 2.4.1 bypass block: first focusable element on every route */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100]
+                     focus:inline-flex focus:items-center focus:min-h-[44px] focus:px-4 focus:py-2
+                     focus:bg-mytra-card focus:text-fg focus:border focus:border-mytra-purple
+                     focus:rounded-lg focus:shadow-card focus:outline-none"
+        >
+          Skip to content
+        </a>
         <AuthProvider>
           <SyncProvider>
             <NavHeader />

@@ -189,7 +189,9 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone: 
 export default function BetaAdminPage() {
   return (
     <AuthGate>
-      <BetaAdmin />
+      <main id="main" className="contents">
+        <BetaAdmin />
+      </main>
     </AuthGate>
   )
 }

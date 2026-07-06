@@ -6,7 +6,9 @@ import RecordView from '@/components/safety/RecordView'
 export default function RecordPage({ params }: { params: { id: string } }) {
   return (
     <AuthGate>
-      <RecordView id={params.id} />
+      <main id="main" className="contents">
+        <RecordView id={params.id} />
+      </main>
     </AuthGate>
   )
 }

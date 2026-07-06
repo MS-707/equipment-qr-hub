@@ -6,7 +6,9 @@ import SafetyHistory from '@/components/safety/SafetyHistory'
 export default function SafetyHistoryPage() {
   return (
     <AuthGate>
-      <SafetyHistory />
+      <main id="main" className="contents">
+        <SafetyHistory />
+      </main>
     </AuthGate>
   )
 }

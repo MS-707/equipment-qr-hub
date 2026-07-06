@@ -30,7 +30,7 @@ export default function LabelsPage() {
 
   if (!canAccess) {
     return (
-      <main className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
+      <main id="main" className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
         <div className="bg-mytra-card border border-mytra-border rounded-card p-6 text-center max-w-sm">
           <ShieldAlert className="w-8 h-8 text-warn mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-fg">Admin Access Required</h2>
