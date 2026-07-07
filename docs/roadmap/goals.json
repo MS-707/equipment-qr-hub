@@ -2239,6 +2239,18 @@
    "event": "design-dimension-complete",
    "panel": "Design completion panel: DS-4/7/9/10 3-3 unanimous; DS-3 2-1 (dissent: inline #EAB308 borderLeft in admin/labels evading both greps \u2014 fixed with var(--hue-amber)); DS-6 2-1 (dissent cited beta-page CTAs, which are rubric-exempt \u2014 no action). design verifiedScore=10, FIFTH dimension done.",
    "notes": "Owner polish block DS-M1..M4 complete and panel-locked."
+  },
+  {
+   "iteration": 21,
+   "date": "2026-07-07",
+   "event": "owner-pause",
+   "details": "Paused mid-ES-M1 (WIP committed: provider/catalogs/kill-switch/keygen; tests+gates pending). Resume 10:20Z for max 3h per owner."
   }
- ]
+ ],
+ "sessionWindow": {
+  "pausedAt": "2026-07-07T05:20Z",
+  "resumeAt": "2026-07-07T10:20Z",
+  "hardStopAt": "2026-07-07T13:20Z",
+  "note": "Owner: pause 5h, then run for MAX 3 hours. Every /goal next preflight must check hardStopAt \u2014 past it, finish the in-flight step, push, and STOP the loop with a summary."
+ }
 }
