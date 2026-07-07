@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 14,
+ "iteration": 15,
  "gates": [
   {
    "id": "lint",
@@ -396,7 +396,7 @@
   "demo": {
    "key": "demo",
    "name": "MVP Demo Readiness",
-   "score": 8,
+   "score": 9,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "The review is accurate: all 10 met/unmet claims were independently confirmed (gates pass \u2014 694/694 tests, tsc clean, build exit 0; nav, notify pipeline, env-var degradation, PWA manifest, and draft-recovery evidence all check out at the cited lines), so the score of 7/10 stands with zero overturns. The three unmet findings are real: src/lib/auth.ts:36 requires ALLOW_DEV_LOGIN==='1' while .env.example:9 and README.md:285 promise unset=auto, so the documented quickstart lands on 'Sign-in is not configured yet' \u2014 a demo-killing first-run bug. There is also no presenter runbook in docs/ and scripts/demo/record-demo.mjs never touches /inspect, interacts with the signature canvas, or fails on error (its safe() wrapper swallows all exceptions), so the headline QR->inspection->signature->EHS path is neither scripted for humans nor rehearsable by machine.",
@@ -474,9 +474,11 @@
      "id": "DM-10",
      "criterion": "The headline wow path is rehearsable by machine: a runnable Playwright script (scripts/demo/ or an e2e spec) drives sign-in -> /inspect/[id] -> answers every checklist item -> draws a signature on the canvas -> submits -> asserts the result screen and the notify outcome banner, exiting non-zero on any failed step.",
      "verify": "A script exists whose page.goto targets include '/inspect/' and which interacts with the SignaturePad canvas and asserts the result step ('All Clear'/'Out of Service'); run it against `ALLOW_DEV_LOGIN=1 npm run dev` and confirm exit code 0.",
-     "met": false,
-     "evidence": "scripts/demo/record-demo.mjs beats only goto /safety, the external SDS URL, Sage, and /safety/incident (lines 76-143) \u2014 never /inspect or /equipment; `find . -name '*.spec.ts'` outside node_modules returns nothing; its safe() wrapper (line 51) swallows failures rather than failing the run.",
-     "autonomyNote": "Email leg: assert the 'skipped/not-configured' outcome banner (no RESEND_API_KEY needed); real-inbox confirmation stays a documented human step in the runbook."
+     "met": true,
+     "evidence": "scripts/demo/rehearse-inspection.mjs drives sign-in -> /inspect/24 -> 26 items -> canvas signature -> submit; asserts result heading + notify outcome; fail() exits 1 (negative-tested). Verifier executed it live: REHEARSAL PASSED, exit 0.",
+     "autonomyNote": "Email leg: assert the 'skipped/not-configured' outcome banner (no RESEND_API_KEY needed); real-inbox confirmation stays a documented human step in the runbook.",
+     "verifiedBy": "verify-criteria wf_73188ceb-784 (1-vote adversarial, ran the script live)",
+     "verifiedAtIteration": 15
     }
    ]
   },
@@ -1232,7 +1234,7 @@
    "criteria": [
     "DM-10"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DM-M3-T1",
@@ -1242,7 +1244,7 @@
       "scripts/demo/README.md"
      ],
      "acceptance": "Against `ALLOW_DEV_LOGIN=1 npm run dev`, `node scripts/demo/rehearse-inspection.mjs` exits 0 after asserting the result screen; killing any step (e.g. wrong selector) makes it exit non-zero (DM-10 howToVerify passes).",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2084,6 +2086,21 @@
    "refuted": [],
    "panel": "Dimension completion panel (resumed after pause, cached votes reused): UX-9 3/3, UX-10 3/3, UX-8 2/3 \u2014 survived; the dissenting edge-case vote (skip link dead on error/404 mains lacking id) was fixed anyway before locking. ux verifiedScore=10, dimension done.",
    "notes": "Playwright harness shipped; axe scans caught 7 real contrast violations (fixed); offline pre-trip capture proven end-to-end. UX is the SECOND dimension at a verified 10/10."
+  },
+  {
+   "iteration": 15,
+   "date": "2026-07-07",
+   "milestone": "DM-M3",
+   "event": "iteration",
+   "tasksDone": [
+    "DM-M3-T1"
+   ],
+   "gates": "tsc OK, 739/739 tests, build OK (lint via build)",
+   "verified": [
+    "DM-10"
+   ],
+   "refuted": [],
+   "notes": "Rehearsal script shipped; found+fixed two real bugs: prod CSP killed dev hydration (dev unsafe-eval exemption), and skipped notify outcome was invisible. Demo 8->9."
   }
  ]
 }

@@ -136,7 +136,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 15. DM-M3 — Machine-rehearsable inspection happy path
 *Dimension: MVP Demo Readiness · flips: DM-10 · why here: machine-rehearsable inspection happy path reusing UX-M3's harness; asserts the notify banner including the 'skipped' no-key path.*
 
-- [ ] **DM-M3-T1** Add scripts/demo/rehearse-inspection.mjs (core playwright, same pattern as record-demo.mjs but WITHOUT the failure-swallowing safe() wrapper): dev sign-in -> goto /inspect/<pre-trip id> -> fill inspector name -> Start Inspection -> tap Pass on every checklist item -> draw on the SignaturePad canvas via mouse events -> Submit -> assert the 'All Clear' result heading and a notifyStatus outcome (sent/skipped banner) appear; exit 1 on any missing element. Document the run command in scripts/demo/README.md.
+- [x] **DM-M3-T1** Add scripts/demo/rehearse-inspection.mjs (core playwright, same pattern as record-demo.mjs but WITHOUT the failure-swallowing safe() wrapper): dev sign-in -> goto /inspect/<pre-trip id> -> fill inspector name -> Start Inspection -> tap Pass on every checklist item -> draw on the SignaturePad canvas via mouse events -> Submit -> assert the 'All Clear' result heading and a notifyStatus outcome (sent/skipped banner) appear; exit 1 on any missing element. Document the run command in scripts/demo/README.md.
   - *Acceptance:* Against `ALLOW_DEV_LOGIN=1 npm run dev`, `node scripts/demo/rehearse-inspection.mjs` exits 0 after asserting the result screen; killing any step (e.g. wrong selector) makes it exit non-zero (DM-10 howToVerify passes).
 
 ### 16. DM-M2 — Presenter demo runbook in docs/
