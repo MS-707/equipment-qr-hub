@@ -16,7 +16,7 @@
 | Upstash Redis (KV) | Beta signups | 180-day TTL | `src/lib/beta.ts` |
 | Upstash Redis (KV) | EHS review submissions | 7-day TTL; 30 days once decided | `src/lib/review-store.ts` |
 | Notion | Synced safety records | Organization's workspace policy | `src/lib/safety-sync.ts` |
-| Email (Resend) | Pre-trip inspection notifications incl. signature PNG | Recipient mailbox retention | `src/app/api/inspections/notify/route.ts` |
+| Email (Resend) | Pre-trip inspection notifications incl. signature PNG | App stores no copy; deletion trigger = recipient mailbox deletion (durable copy) + Resend log purge | `src/app/api/inspections/notify/route.ts` |
 
 ## OSHA mapping
 

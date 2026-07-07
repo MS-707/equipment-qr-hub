@@ -34,8 +34,8 @@ July 2026.
 | Store | What | Retention / trigger |
 |---|---|---|
 | Notion | Synced safety records (system of record post-sync) | Organization's Notion workspace policy — **must satisfy the 5-year 1904.33 horizon for incidents** (see COMPLIANCE-RETENTION.md) |
-| Resend / recipient mailboxes | EHS notification emails incl. signed pre-trip PNG attachments | Recipient mailbox retention; org email policy |
-| Slack | Record-submitted and first-sign-in notifications | Workspace message retention policy |
+| Resend / recipient mailboxes | EHS notification emails incl. signed pre-trip PNG attachments | App stores no copy — the payload exists only in the send call. Deletion triggers: Resend dashboard log purge (Resend retains send logs per its published schedule), and recipient mailbox deletion for the durable copy |
+| Slack | Record-submitted and first-sign-in notifications | App stores no copy. Deletion trigger: deleting the message in Slack (or the workspace retention job, if the org has configured one) removes the only copy |
 | Sentry | Error events (stack traces, device info) | Sentry plan default (90 days) |
 | Vercel | Serverless request logs (incl. structured JSON app logs) | Vercel plan log retention |
 
