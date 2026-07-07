@@ -234,9 +234,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 25. DS-M1 — Tokenize every screen color (kill raw hex and default-palette classes)
 *Dimension: Design · flips: DS-3 · why here: tokenize all remaining raw colors; must precede any further visual polish and finishes with an axe contrast re-run.*
 
-- [ ] **DS-M1-T1** Retheme src/app/safety/review/action/page.tsx from 36 hardcoded dark hex classnames to token classes (bg-mytra-bg, text-fg, inputCls from src/lib/form-styles), removing the off-token hover:bg-[#4722CC] in favor of bg-mytra-purple/hover token, so the page renders correctly in light theme.
+- [x] **DS-M1-T1** Retheme src/app/safety/review/action/page.tsx from 36 hardcoded dark hex classnames to token classes (bg-mytra-bg, text-fg, inputCls from src/lib/form-styles), removing the off-token hover:bg-[#4722CC] in favor of bg-mytra-purple/hover token, so the page renders correctly in light theme.
   - *Acceptance:* grep -En '\[#[0-9A-Fa-f]{3,8}\]' src/app/safety/review/action/page.tsx returns 0 lines; page renders with correct fg/bg in both data-theme values.
-- [ ] **DS-M1-T2** Replace the 10 default-palette classes in IncidentReportForm.tsx (CATEGORY_COLORS/CONTROL_LEVEL_COLORS text-blue-400 etc.) with CSS-variable-backed tokens added to globals.css with values in both dark and light blocks; also replace AuthGate.tsx:143 bg-[#572DFF] with bg-mytra-purple and :174 text-gray-900 with a token.
+- [x] **DS-M1-T2** Replace the 10 default-palette classes in IncidentReportForm.tsx (CATEGORY_COLORS/CONTROL_LEVEL_COLORS text-blue-400 etc.) with CSS-variable-backed tokens added to globals.css with values in both dark and light blocks; also replace AuthGate.tsx:143 bg-[#572DFF] with bg-mytra-purple and :174 text-gray-900 with a token.
   - *Acceptance:* Both DS-3 greps (arbitrary hex + default palette) over src/app+src/components excluding beta/QRLabel/SignaturePad return 0 lines.
 
 ### 26. DS-M2 — Type scale and shared button primitive

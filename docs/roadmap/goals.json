@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 16,
+ "iteration": 18,
  "gates": [
   {
    "id": "lint",
@@ -123,7 +123,7 @@
   "design": {
    "key": "design",
    "name": "Design",
-   "score": 5,
+   "score": 6,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
@@ -147,8 +147,10 @@
      "id": "DS-3",
      "criterion": "Semantic tokens are the only color source in app UI: grep -rE '\\[#[0-9A-Fa-f]{3,8}\\]' and grep -rE '(bg|text|border|ring)-(red|blue|green|yellow|purple|gray|zinc|slate|neutral|amber|orange|emerald|teal|cyan)-[0-9]{2,3}' over src/app+src/components (*.tsx) each return zero lines, exempting only src/app/beta/, QRLabel.tsx, and SignaturePad.tsx.",
      "verify": "Run both greps with the three exemptions filtered out; both must return 0 lines. Exemptions: beta marketing page is a committed dark-only landing; QRLabel/SignaturePad emit physical-print/canvas output that requires literal black/white.",
-     "met": false,
-     "evidence": "src/app/safety/review/action/page.tsx has 36 arbitrary-hex classnames (e.g. :157 bg-[#0A0A0A], :235 hover:bg-[#4722CC] \u2014 a color not in the token set); AuthGate.tsx:143 bg-[#572DFF], :174 text-gray-900; IncidentReportForm.tsx:40-66 has 10 default-palette classes (text-blue-400 etc.) with no light-theme variant."
+     "met": true,
+     "evidence": "Both DS-3 greps return 0 over src/app+src/components (exemptions: beta/, QRLabel, SignaturePad); review/action rethemed (36 hex), IncidentReportForm maps on theme-aware hue tokens, AuthGate off raw hex. Dissent findings (invalid var()+hex tint in RecordView, inline '#fff') fixed same iteration.",
+     "verifiedBy": "verify-criteria wf_3a30dd6b-ac9 (3-vote panel, 2-1 met; dissent findings fixed anyway)",
+     "verifiedAtIteration": 18
     },
     {
      "id": "DS-4",
@@ -305,7 +307,7 @@
    "name": "Enterprise Readiness",
    "score": 10,
    "initialScore": 4,
-   "verifiedScore": null,
+   "verifiedScore": 10,
    "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
    "reviewNotes": "Score 4/10 (EN-1, EN-2, EN-4, EN-5 met). Scope decisions and out-of-lane findings for the executor: (1) Multi-site/tenant scoping was deliberately EXCLUDED from the frozen rubric: this is a single-company single-shop tool (equipment.location is an optional free-text field, types.ts:35); at this scale a site registry would be speculative \u2014 revisit only if a pilot demands it. (2) API session gating is already solid (all 15 non-auth routes call requireSession/getServerSession; admin routes check isAdmin server-side \u2014 api-auth.ts, beta/decide, admin/health) but I left it to the backend dimension. (3) review/decide is intentionally session-less (HMAC token from email link, 24h expiry, rate-limited) \u2014 EN-M4-T2 must not break that path. (4) README.md:244 already contradicts reality (an admin role exists via admin.ts) \u2014 fixed by EN-M4-T3. (5) Full `npm audit` (with dev deps) shows 11 vulns (6 high) \u2014 the rubric only gates prod deps; dev-dep triage can ride along in docs/DEPENDENCY-AUDIT.md. (6) The next@14.2.35 high advisory's official fix is next@16 (breaking); the waiver path in EN-3 is the realistic route, but note several advisories are mitigated by Vercel-managed hosting \u2014 say so explicitly in the waiver. (7) Work orders, shop-management authorizations, PM completions, and training records are localStorage-only per device (work-orders.ts:15-25) \u2014 an IT buyer will eventually flag durability, but that is the backend dimension's server-sync concern. (8) Client-side per-record AuditEvents (safety-types.ts:44) are genuinely good; EN-8 adds the missing SERVER-side privileged-action log \u2014 don't conflate the two. (9) docs/roadmap/HARNESS.md references RUBRICS.md and goals.json which don't exist yet \u2014 presumably created after all six reviewers report. (10) Health endpoint returns 401 for authenticated non-admins where 403 would be more precise \u2014 cosmetic, not scored.",
    "criteria": [
@@ -352,8 +354,8 @@
      "criterion": "A git-tracked retention schedule document exists (docs/DATA-RETENTION.md or a Retention section in README/privacy page) that enumerates each data store (localStorage records, IndexedDB blobs, Upstash KV keys, Notion databases, Resend/Slack payloads) with a named retention period or deletion trigger per store \u2014 no store described only as 'follows your organization's policies'.",
      "verify": "Grep the doc for each store name (localStorage, IndexedDB, KV/Redis, Notion) and confirm each row states a concrete period (e.g. '3 years', 'until user clears', '30 days') or deletion trigger.",
      "met": true,
-     "evidence": "docs/DATA-RETENTION.md enumerates localStorage/IndexedDB/KV-by-prefix/Notion/email/Slack/Sentry/Vercel rows, each with a concrete period or trigger; Notion row mandates the 5-year 1904.33 horizon via COMPLIANCE-RETENTION.md.",
-     "verifiedBy": "verify-criteria wf_6dc220b1-5c1 / wf_9ce6c28e-0c1 (EN-10 confirmed after one refutation)",
+     "evidence": "DATA-RETENTION.md: every store row has a concrete period or named deletion trigger incl. Resend/Slack (app-stores-no-copy + trigger); all constants verified against code. 3/3 votes on re-panel.",
+     "verifiedBy": "verify-criteria wf_3a30dd6b-ac9 (3-vote re-panel after wf_cca84511-475 refuted 2-1)",
      "verifiedAtIteration": 10
     },
     {
@@ -393,7 +395,8 @@
      "verifiedBy": "verify-criteria wf_6dc220b1-5c1 / wf_9ce6c28e-0c1 (EN-10 confirmed after one refutation)",
      "verifiedAtIteration": 10
     }
-   ]
+   ],
+   "status": "done"
   },
   "demo": {
    "key": "demo",
@@ -790,7 +793,7 @@
    "criteria": [
     "DS-3"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DS-M1-T1",
@@ -799,7 +802,7 @@
       "src/app/safety/review/action/page.tsx"
      ],
      "acceptance": "grep -En '\\[#[0-9A-Fa-f]{3,8}\\]' src/app/safety/review/action/page.tsx returns 0 lines; page renders with correct fg/bg in both data-theme values.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "DS-M1-T2",
@@ -811,7 +814,7 @@
       "tailwind.config.ts"
      ],
      "acceptance": "Both DS-3 greps (arbitrary hex + default palette) over src/app+src/components excluding beta/QRLabel/SignaturePad return 0 lines.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2144,6 +2147,25 @@
    "date": "2026-07-07",
    "event": "owner-reorder",
    "details": "Mark asked to run the four Design polish milestones first. New pending order: DS-M1..DS-M4, then ES-M1, ES-M2, ES-M3, ES-M4, ES-M5, ES-M6, LG-M3. Enterprise completion panel resumes in parallel from cached run wf_cca84511-475."
+  },
+  {
+   "iteration": 18,
+   "date": "2026-07-07",
+   "milestone": "DS-M1",
+   "event": "iteration+enterprise-dimension-complete",
+   "tasksDone": [
+    "DS-M1-T1",
+    "DS-M1-T2"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK, e2e 5/5",
+   "verified": [
+    "DS-3"
+   ],
+   "refuted": [
+    "EN-6 (panel 2-1: Resend/Slack rows were org-policy deferrals; fixed with concrete deletion triggers, re-panel 3/3)"
+   ],
+   "panel": "Enterprise completion: EN-3/8/9/10 3-3 unanimous, EN-7 2-1 (console.error in beta email helper \u2014 fixed), EN-6 refuted then re-confirmed 3/3. enterprise verifiedScore=10, FOURTH dimension done.",
+   "notes": "DS-M1 tokenization done; DS-3 dissent exposed a real bug (invalid var()+hex tint = severity pill background never rendered) \u2014 fixed. Design 5->6."
   }
  ]
 }
