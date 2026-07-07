@@ -9,7 +9,7 @@ export default function Error({
   reset: () => void
 }) {
   return (
-    <main className="min-h-screen bg-mytra-bg flex items-center justify-center px-4">
+    <main id="main" className="min-h-screen bg-mytra-bg flex items-center justify-center px-4">
       <div className="text-center">
         <AlertTriangle className="w-12 h-12 text-warn mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-fg mb-2">Something went wrong</h1>
