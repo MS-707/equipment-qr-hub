@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 15,
+ "iteration": 16,
  "gates": [
   {
    "id": "lint",
@@ -398,7 +398,7 @@
    "name": "MVP Demo Readiness",
    "score": 10,
    "initialScore": 7,
-   "verifiedScore": null,
+   "verifiedScore": 10,
    "auditSummary": "The review is accurate: all 10 met/unmet claims were independently confirmed (gates pass \u2014 694/694 tests, tsc clean, build exit 0; nav, notify pipeline, env-var degradation, PWA manifest, and draft-recovery evidence all check out at the cited lines), so the score of 7/10 stands with zero overturns. The three unmet findings are real: src/lib/auth.ts:36 requires ALLOW_DEV_LOGIN==='1' while .env.example:9 and README.md:285 promise unset=auto, so the documented quickstart lands on 'Sign-in is not configured yet' \u2014 a demo-killing first-run bug. There is also no presenter runbook in docs/ and scripts/demo/record-demo.mjs never touches /inspect, interacts with the signature canvas, or fails on error (its safe() wrapper swallows all exceptions), so the headline QR->inspection->signature->EHS path is neither scripted for humans nor rehearsable by machine.",
    "reviewNotes": "Out-of-lane findings for other reviewers: (1) UX/backend \u2014 PreTripInspection.handleSubmit (src/components/PreTripInspection.tsx:669) has no in-flight guard; a fast double-tap before React commits the step change could write a duplicate record and send two EHS emails. Synchronous path makes this low-probability but it is unguarded. (2) Legal/docs drift \u2014 README.md:109 says '594 tests' but the suite now runs 694; README.md:104 and .env.example:9 describe dev-login auto-enable that the code does not implement (this is my DM-6, but the doc-accuracy angle also touches the legal/enterprise lanes). (3) Design/branding \u2014 public/manifest.json description targets 'R&D and engineering teams' while the project frames a construction company; pick one audience string. (4) Demo dependency risk \u2014 the SDS tile and mobile tab link to an external app (https://sds-five-beta.vercel.app, src/lib/nav.ts:17); if that deployment is down mid-demo the tile dead-ends in a new tab. Consider a health note in the demo runbook (I folded a preload check into DM-M2-T1's pre-demo checklist). (5) kv.ts constructs the Upstash client with non-null assertions on env vars; safe today because every caller gates on KV_REST_API_URL first, but a future unguarded import could throw at request time \u2014 backend lane. Uncertainty flags: DM-1 gates were run in this container (Linux, Node from repo lockfile) \u2014 Vercel build env may differ; DM-7 asserts installability artifacts statically, not an actual Lighthouse run (no browser audit available here), but manifest+SW+icons satisfy Chrome's documented installability checklist. Scoring basis: 7/10 met; unmet DM-6 (first-run sign-in dead end contradicting quickstart), DM-9 (no presenter runbook), DM-10 (no automated rehearsal of the headline inspection path).",
    "criteria": [
@@ -482,7 +482,8 @@
      "verifiedBy": "verify-criteria wf_73188ceb-784 (1-vote adversarial, ran the script live)",
      "verifiedAtIteration": 15
     }
-   ]
+   ],
+   "status": "done"
   },
   "legal": {
    "key": "legal",
@@ -2103,6 +2104,22 @@
    ],
    "refuted": [],
    "notes": "Rehearsal script shipped; found+fixed two real bugs: prod CSP killed dev hydration (dev unsafe-eval exemption), and skipped notify outcome was invisible. Demo 8->9."
+  },
+  {
+   "iteration": 16,
+   "date": "2026-07-07",
+   "milestone": "DM-M2",
+   "event": "iteration+dimension-complete",
+   "tasksDone": [
+    "DM-M2-T1"
+   ],
+   "gates": "doc-only milestone; suite green at HEAD",
+   "verified": [
+    "DM-9"
+   ],
+   "refuted": [],
+   "panel": "Dimension completion panel: DM-6/DM-9/DM-10 x 3 lenses = 9/9 votes MET (two votes executed the rehearsal script live). demo verifiedScore=10, dimension done.",
+   "notes": "Presenter runbook shipped. DEMO is the THIRD dimension at a verified 10/10."
   }
  ]
 }
