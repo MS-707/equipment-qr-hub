@@ -19,3 +19,7 @@ export const btnSecondaryCls =
 /** Selected/active colorway for toggles, chips, and segmented controls —
  *  color identity only so it composes with any shape (rounded-full etc.). */
 export const btnSelectedCls = 'bg-mytra-purple text-white'
+
+/** Canonical default action button (alias of the primary colorway) — the
+ *  name the design rubric anchors on; prefer this for new call sites. */
+export const buttonCls = btnPrimaryCls
