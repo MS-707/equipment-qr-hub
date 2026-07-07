@@ -125,7 +125,7 @@
    "name": "Design",
    "score": 10,
    "initialScore": 4,
-   "verifiedScore": null,
+   "verifiedScore": 10,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
    "reviewNotes": "Verified score 5/10 (DS-1,2,5,7,8 met). Rationale for exemptions frozen into DS-3: src/app/beta/page.tsx is a standalone dark-committed marketing landing (NavHeader.tsx:37 hides chrome for it) \u2014 retheming it is optional, not required; QRLabel.tsx and SignaturePad.tsx need literal black/white for physical labels and canvas signature export. Executor warnings: (1) inspections/page.tsx:102 embeds a URL-encoded gray #9CA3AF chevron in a data-URI select background \u2014 it escapes the DS-3 grep but should be tokenized (or use currentColor) while touching that file; (2) when retheming safety/review/action (DS-M1-T1) do not alter its token-based email-action logic \u2014 the page is linked from EHS review emails, so verify both approve and reject states in light theme; (3) DS-M2-T3 is a wide mechanical sweep \u2014 run the existing Vitest suite and npx tsc --noEmit after. Out-of-lane findings: text-blue-400 on light background in IncidentReportForm is ~2.2:1 contrast (a11y \u2014 UX dimension); safety/review/action duplicates input styling instead of using form-styles (code-quality overlap with backend/UX); docs/CLAUDE_DESIGN_HANDOFF.md is stale (references Roboto and pre-token hex values like #583AF6 that no longer match tailwind.config.ts) \u2014 if the docs dimension cares, it should be updated or archived; the light-theme *-strong contrast tokens (globals.css:30-35) are a genuinely strong pattern worth preserving in any refactor.",
    "criteria": [
@@ -214,7 +214,8 @@
      "verifiedBy": "verify-criteria wf_3a05c278-d7e (1-vote adversarial)",
      "verifiedAtIteration": 21
     }
-   ]
+   ],
+   "status": "done"
   },
   "backend": {
    "key": "backend",
@@ -2231,6 +2232,13 @@
    "date": "2026-07-07",
    "event": "owner-directive",
    "details": "Platform is safety-agnostic, not construction-specific. Fixed: OG image tagline/alt, three AI system prompts (suggest-jha, analyze-atmosphere, analyze-incident), beta placeholder. Beta hero and app copy verified already-neutral. ES-M2 glossary scope adjusted to workplace-general."
+  },
+  {
+   "iteration": 21,
+   "date": "2026-07-07",
+   "event": "design-dimension-complete",
+   "panel": "Design completion panel: DS-4/7/9/10 3-3 unanimous; DS-3 2-1 (dissent: inline #EAB308 borderLeft in admin/labels evading both greps \u2014 fixed with var(--hue-amber)); DS-6 2-1 (dissent cited beta-page CTAs, which are rubric-exempt \u2014 no action). design verifiedScore=10, FIFTH dimension done.",
+   "notes": "Owner polish block DS-M1..M4 complete and panel-locked."
   }
  ]
 }

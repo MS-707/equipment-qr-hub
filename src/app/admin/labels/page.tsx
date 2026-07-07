@@ -141,7 +141,7 @@ export default function LabelsPage() {
           {/* Pre-trip labels: only units that require an inspection */}
           {labelSet === 'pre-trip' && (
             <section>
-              <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid #EAB308' }}>
+              <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid var(--hue-amber)' }}>
                 <h2 className="text-lg font-semibold text-fg">Pre-Trip Inspection Labels</h2>
                 <span className="text-xs text-fg-4">
                   {preTripEquipment.length} unit{preTripEquipment.length !== 1 ? 's' : ''}
