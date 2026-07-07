@@ -1106,7 +1106,8 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             </div>
           )}
 
-          {/* EHS email outcome — only surfaced when email is configured */}
+          {/* EHS email outcome — every terminal state gets a line so demos and the
+              rehearsal script can assert the notify result (DM-10) */}
           {photoSaveFailed && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <Camera className="w-4 h-4 text-warn shrink-0 mt-0.5" />
@@ -1118,6 +1119,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           )}
           {notifyStatus === 'sent' && (
             <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
+          )}
+          {notifyStatus === 'skipped' && (
+            <p data-notify-outcome="skipped" className="text-sm text-fg-3 text-center">
+              EHS email isn&apos;t configured — the signed record is saved on this device.
+            </p>
           )}
           {notifyStatus === 'queued' && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
