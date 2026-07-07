@@ -86,12 +86,14 @@ if (allowDevLogin || allowEmailLogin) {
         const email = (creds?.email ?? '').toString().trim().toLowerCase()
         const name = (creds?.name ?? '').toString().trim()
         if (!emailAllowed(email)) return null
-        // Identity assurance: the shared EMAIL_LOGIN_CODE must never mint an
-        // elevated session in production — anyone holding the code could
-        // otherwise sign in AS an admin/ehs address with a freeform name.
-        // Elevated roles use OAuth (Google) in production. Dev stays open
-        // (NODE_ENV-gated, never reachable in production builds).
-        if (isProduction && resolveRole(email) !== 'worker') {
+        // Identity assurance: once a stronger provider (Google OAuth) exists,
+        // the shared EMAIL_LOGIN_CODE must never mint an elevated session in
+        // production — anyone holding the code could otherwise sign in AS an
+        // admin/ehs address with a freeform name; elevated roles must use
+        // OAuth. But when NO OAuth is configured the shared code is the only
+        // door for everyone, so blocking admins there just locks them out of
+        // their own app with no alternative — gate the block on hasGoogle.
+        if (isProduction && hasGoogle && resolveRole(email) !== 'worker') {
           log('warn', 'code-login-blocked-elevated', { email })
           return null
         }

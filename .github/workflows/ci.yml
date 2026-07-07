@@ -46,6 +46,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Drop broken third-party apt repos (runner flake guard)
+        # packages.microsoft.com intermittently serves invalid signatures on
+        # GH runners, which kills `playwright install --with-deps` at apt
+        # time before any test runs. We don't need those repos.
+        run: sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/azure-cli.sources /etc/apt/sources.list.d/azure-cli.list || true
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 

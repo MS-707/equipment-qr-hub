@@ -85,9 +85,13 @@ for the mailbox, not any authorization logic. No callers outside
 - **Shared email-code logins are worker-only in production.** `EMAIL_LOGIN_CODE`
   is a single shared secret, so it cannot prove WHICH person is signing in.
   `src/lib/auth.ts` refuses to mint `admin`/`ehs` sessions from it in
-  production (`resolveRole(email) !== 'worker'` → rejected, logged as
-  `code-login-blocked-elevated`). Elevated roles authenticate with OAuth,
-  where the provider verifies the mailbox owner.
+  production **once Google OAuth is configured** (`isProduction && hasGoogle &&
+  resolveRole(email) !== 'worker'` → rejected, logged as
+  `code-login-blocked-elevated`). Elevated roles then authenticate with OAuth,
+  where the provider verifies the mailbox owner. Before any OAuth is set up
+  the shared code is the only door, so it stays open to everyone (including
+  admins) — otherwise the owner is locked out of their own app with no
+  alternative. Setting up Google automatically re-engages the block.
 - Roles resolve server-side from `ADMIN_EMAILS` / `EHS_EMAILS` env allowlists
   (`src/lib/roles.ts`); the client only ever sees the resolved
   `session.user.role`.
