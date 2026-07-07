@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 20,
+ "iteration": 21,
  "gates": [
   {
    "id": "lint",
@@ -123,7 +123,7 @@
   "design": {
    "key": "design",
    "name": "Design",
-   "score": 9,
+   "score": 10,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
@@ -208,9 +208,11 @@
      "id": "DS-10",
      "criterion": "Link previews are branded: the root metadata export includes openGraph (title, description) and twitter card fields, and an OG image exists via src/app/opengraph-image.(tsx|png) or a metadata images reference to a file present in public/.",
      "verify": "grep -rn 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' (or the referenced public/ asset) returns a file; next build lists an /opengraph-image route or the static asset resolves.",
-     "met": false,
-     "evidence": "grep for openGraph/twitter/og:image across src and public returns zero matches; find src/app -name 'opengraph-image*' is empty; layout.tsx:21-34 metadata has title/description/manifest/appleWebApp only. Beta signup links shared in Slack/email render bare.",
-     "autonomyNote": "Generate src/app/opengraph-image.tsx programmatically from theme tokens + app name; no external assets (keeps CSP intact)."
+     "met": true,
+     "evidence": "layout.tsx exports openGraph + twitter summary_large_image; opengraph-image.tsx renders the branded 1200x630 PNG via next/og (route in build table, served live as image/png); metadataBase added per verifier note.",
+     "autonomyNote": "Generate src/app/opengraph-image.tsx programmatically from theme tokens + app name; no external assets (keeps CSP intact).",
+     "verifiedBy": "verify-criteria wf_3a05c278-d7e (1-vote adversarial)",
+     "verifiedAtIteration": 21
     }
    ]
   },
@@ -900,7 +902,7 @@
    "criteria": [
     "DS-10"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DS-M4-T1",
@@ -910,7 +912,7 @@
       "src/app/opengraph-image.tsx"
      ],
      "acceptance": "grep -n 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' returns the file; next build emits the /opengraph-image route.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2207,6 +2209,21 @@
    ],
    "refuted": [],
    "notes": "Printable signed pre-trip record shipped with result-screen entry link. Design 8->9."
+  },
+  {
+   "iteration": 21,
+   "date": "2026-07-07",
+   "milestone": "DS-M4",
+   "event": "iteration",
+   "tasksDone": [
+    "DS-M4-T1"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK; live PNG render proof",
+   "verified": [
+    "DS-10"
+   ],
+   "refuted": [],
+   "notes": "Branded link previews shipped; metadataBase set per verifier note. Design 9->10 met \u2014 completion panel launched. Owner polish block (DS-M1..M4) COMPLETE."
   }
  ]
 }

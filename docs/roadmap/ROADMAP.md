@@ -258,7 +258,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 28. DS-M4 — Branded link previews (OG/Twitter)
 *Dimension: Design · flips: DS-10 · why here: OG/Twitter branded previews: pure external polish with zero dependencies, safe to do last.*
 
-- [ ] **DS-M4-T1** Add openGraph (title, description, siteName, type) and twitter (card: summary_large_image) fields to the metadata export in src/app/layout.tsx, plus src/app/opengraph-image.tsx using next/og ImageResponse with the Sage wordmark, EHS badge, and token colors (#0A0A0A bg, #572DFF accent). Optionally a beta-specific one under src/app/beta/.
+- [x] **DS-M4-T1** Add openGraph (title, description, siteName, type) and twitter (card: summary_large_image) fields to the metadata export in src/app/layout.tsx, plus src/app/opengraph-image.tsx using next/og ImageResponse with the Sage wordmark, EHS badge, and token colors (#0A0A0A bg, #572DFF accent). Optionally a beta-specific one under src/app/beta/.
   - *Acceptance:* grep -n 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' returns the file; next build emits the /opengraph-image route.
 
 ## Beyond the rubrics — backlog (owner decision needed to promote)

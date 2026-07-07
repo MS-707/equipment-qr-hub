@@ -19,6 +19,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
+  // Absolute base for OG/Twitter image URLs (falls back sensibly in previews)
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'),
   title: 'Sage | EHS',
   description: 'AI-powered EHS safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for teams of every size',
   applicationName: 'Sage',
