@@ -15,6 +15,7 @@ import {
   ChevronUp,
   ClipboardCheck,
   RotateCcw,
+  Printer,
 } from 'lucide-react'
 import {
   EquipmentItem,
@@ -42,6 +43,7 @@ import SignaturePad from '@/components/SignaturePad'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
 import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
+import Link from 'next/link'
 
 const DRAFT_KEY_PREFIX = 'draft:inspection:'
 const DRAFT_SAVE_DELAY = 2000
@@ -370,6 +372,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
   // Result step
   const [submittedRecord, setSubmittedRecord] = useState<{
+    id: string
     result: 'pass' | 'fail'
     hasCriticalFail: boolean
     criticalNaCount: number
@@ -720,6 +723,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     }
 
     setSubmittedRecord({
+      id: record.id,
       result: record.result,
       hasCriticalFail: record.hasCriticalFail,
       criticalNaCount: record.criticalNaCount,
@@ -1113,6 +1117,14 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                 The inspection record itself is saved — retake photos for the work order if needed.
               </p>
             </div>
+          )}
+          {submittedRecord && (
+            <Link
+              href={`/inspections/record/${encodeURIComponent(submittedRecord.id)}`}
+              className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
+            >
+              <Printer className="w-4 h-4" /> View / print signed record
+            </Link>
           )}
           {notifyStatus === 'sent' && (
             <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
