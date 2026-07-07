@@ -14,6 +14,7 @@ import {
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
 import { formatDate } from '@/lib/datetime'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 const PM_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual'] as const
 const FREQ_KEYS: Record<string, keyof EquipmentItem> = {
@@ -165,8 +166,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
               <button
                 onClick={handleAssign}
                 disabled={!driName.trim()}
-                className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                           hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
               >
                 Assign
               </button>
@@ -247,8 +247,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
           <div className="flex gap-2 mt-2">
             <button
               onClick={handleLogCompletion}
-              className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                         hover:bg-mytra-purple-hover transition-colors"
+              className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
             >
               Mark Complete
             </button>

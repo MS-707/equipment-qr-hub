@@ -3,7 +3,9 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
-import type { PreTaskPlan } from '@/lib/safety-types'
+import { AuditPtpRequestSchema } from '@/lib/analyze-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety auditor embedded in a Pre-Task Plan (PTP) tool. You review completed PTPs before submission to catch critical safety gaps.
 
@@ -92,17 +94,19 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { ptp?: PreTaskPlan }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/audit-ptp', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const ptp = body.ptp
-  if (!ptp || typeof ptp !== 'object' || ptp.type !== 'ptp') {
+  const parsed = AuditPtpRequestSchema.safeParse(raw)
+  if (!parsed.success) {
     return Response.json({ error: 'Invalid or missing PTP record' }, { status: 400 })
   }
+  const ptp = parsed.data.ptp
 
   const userMessage = [
     `Date: ${ptp.date}`,
@@ -132,7 +136,7 @@ export async function POST(req: Request) {
   ].join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
@@ -146,7 +150,7 @@ export async function POST(req: Request) {
 
     return Response.json(result)
   } catch (err) {
-    console.error('[sage] audit-ptp failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/audit-ptp', err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },
       { status: 502 }

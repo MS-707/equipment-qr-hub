@@ -24,7 +24,7 @@ import PermitChecklist, { criticalRemaining } from './PermitChecklist'
 import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
 
 const PFAS = 'PFAS (harness + lanyard/SRL)'
 
@@ -325,7 +325,7 @@ export default function HeightPermitForm() {
           type="button"
           onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
           disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {!workDescription.trim() || !location.trim()
             ? 'Describe the work and location'

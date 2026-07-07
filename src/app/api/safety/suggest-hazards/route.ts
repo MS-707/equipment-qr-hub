@@ -4,6 +4,9 @@ import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { critique, hintDescriptions } from '@/lib/hazard-critic'
+import { SuggestHazardsBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Pre-Task Plan (PTP) tool used by engineers and operations teams.
 
@@ -74,23 +77,23 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { scopeOfWork?: string; location?: string; followUp?: boolean; existingHazards?: string[] }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/suggest-hazards', err)
     return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
+  const parsed = SuggestHazardsBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ hazards: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const { scopeOfWork, location, followUp, existingHazards } = parsed.data
+
   if (!scopeOfWork) {
     return Response.json({ hazards: [], error: 'No scope of work provided' }, { status: 400 })
   }
-
-  const location = (body.location ?? '').trim().slice(0, 200)
-  const followUp = body.followUp === true
-  const existingHazards = Array.isArray(body.existingHazards)
-    ? body.existingHazards.slice(0, 50).map((h) => String(h).slice(0, 200))
-    : []
 
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
@@ -103,7 +106,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const startMs = Date.now()
 
     // Phase 1: generate initial suggestions
@@ -123,7 +126,7 @@ export async function POST(req: Request) {
 
     return Response.json({ hazards: hazards.slice(0, 8) })
   } catch (err) {
-    console.error('[sage] suggest-hazards failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/suggest-hazards', err)
     return Response.json(
       { hazards: [], error: 'Sage is temporarily unavailable' },
       { status: 502 }

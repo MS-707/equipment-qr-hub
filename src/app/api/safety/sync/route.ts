@@ -9,6 +9,9 @@
 import type { SafetyRecord } from '@/lib/safety-types'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SafetyRecordSchema, firstInvalidField } from '@/lib/safety-record-schema'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const NOTION_VERSION = '2022-06-28'
 
@@ -44,21 +47,30 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Request body too large' }, { status: 413 })
   }
 
-  let record: SafetyRecord
+  let raw: unknown
   try {
-    record = (await req.json()) as SafetyRecord
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/sync', err)
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
-    return Response.json({ error: 'Invalid record id' }, { status: 400 })
+  const parsed = SafetyRecordSchema.safeParse(raw)
+  if (!parsed.success) {
+    const field = firstInvalidField(parsed.error)
+    const msg =
+      field === 'type' ? 'Invalid record type'
+      : field === 'createdAt' ? 'Invalid createdAt'
+      : 'Invalid record id'
+    return Response.json({ error: msg }, { status: 400 })
   }
-  if (!record?.type || typeof record.type !== 'string' || !DB_MAP[record.type]) {
+  // Schema pins id/type/createdAt and passes all other keys through; the
+  // Notion property builders below re-guard every free-text field via safeStr.
+  const record = parsed.data as unknown as SafetyRecord
+
+  // Valid type enum but no DB id configured for it — same 400 as before zod.
+  if (!DB_MAP[record.type]) {
     return Response.json({ error: 'Invalid record type' }, { status: 400 })
-  }
-  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
-    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
   }
 
   const sessionEmail = session?.user?.email
@@ -142,7 +154,7 @@ export async function POST(req: Request) {
     if (typeof claimed === 'string' && /^[0-9a-f]{8}-?[0-9a-f-]{4,28}$/i.test(claimed)) {
       existingPageId = claimed
     } else {
-      const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+      const existingCheck = await fetchWithTimeout(`https://api.notion.com/v1/databases/${dbId}/query`, {
         method: 'POST',
         headers: notionHeaders,
         body: JSON.stringify({
@@ -164,7 +176,7 @@ export async function POST(req: Request) {
       // closed/revoked, review decided). Refresh the queryable properties and
       // append the new snapshot — appending preserves the prior snapshots as
       // an audit trail instead of destroying them.
-      const propRes = await fetch(`https://api.notion.com/v1/pages/${existingPageId}`, {
+      const propRes = await fetchWithTimeout(`https://api.notion.com/v1/pages/${existingPageId}`, {
         method: 'PATCH',
         headers: notionHeaders,
         body: JSON.stringify({ properties }),
@@ -173,12 +185,12 @@ export async function POST(req: Request) {
         // A stale/foreign client pageId 404s here — fall through to create
         // only when the page truly doesn't exist; other errors are sync fails.
         if (propRes.status !== 404) {
-          console.error('[sync] Notion property update error:', await propRes.text())
+          reportServerError('api/safety/sync', new Error(`Notion property update error: ${await propRes.text()}`))
           return Response.json({ error: 'Notion sync failed' }, { status: 502 })
         }
         existingPageId = null
       } else {
-        const appendRes = await fetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, {
+        const appendRes = await fetchWithTimeout(`https://api.notion.com/v1/blocks/${existingPageId}/children`, {
           method: 'PATCH',
           headers: notionHeaders,
           body: JSON.stringify({
@@ -186,21 +198,21 @@ export async function POST(req: Request) {
           }),
         })
         if (!appendRes.ok) {
-          console.error('[sync] Notion snapshot append error:', await appendRes.text())
+          reportServerError('api/safety/sync', new Error(`Notion snapshot append error: ${await appendRes.text()}`))
           return Response.json({ error: 'Notion sync failed' }, { status: 502 })
         }
         return Response.json({ ok: true, notionPageId: existingPageId, updated: true })
       }
     }
 
-    const res = await fetch('https://api.notion.com/v1/pages', {
+    const res = await fetchWithTimeout('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: notionHeaders,
       body: JSON.stringify({ parent: { database_id: dbId }, properties, children: jsonBlocks() }),
     })
 
     if (!res.ok) {
-      console.error('[sync] Notion API error:', await res.text())
+      reportServerError('api/safety/sync', new Error(`Notion API error: ${await res.text()}`))
       return Response.json({ error: 'Notion sync failed' }, { status: 502 })
     }
 
@@ -208,7 +220,7 @@ export async function POST(req: Request) {
     const pageId = typeof page?.id === 'string' ? page.id : null
     return Response.json({ ok: true, notionPageId: pageId })
   } catch (e) {
-    console.error('[sync] unexpected error:', e instanceof Error ? e.message : e)
+    reportServerError('api/safety/sync', e)
     return Response.json({ error: 'Sync failed' }, { status: 500 })
   }
 }

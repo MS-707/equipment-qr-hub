@@ -24,7 +24,7 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
   }
 
   return (
-    <main className="min-h-screen bg-mytra-bg">
+    <main id="main" className="min-h-screen bg-mytra-bg">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-5 animate-blurIn">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -35,19 +35,19 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
               Pre-Trip Inspection
             </span>
             <span
-              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
-              style={{ backgroundColor: `${categoryColor}18`, color: categoryColor }}
+              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full text-fg-2"
+              style={{ backgroundColor: `${categoryColor}18` }}
             >
               {equipment.category}
             </span>
             <span
-              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full"
-              style={{ backgroundColor: `${statusColor}18`, color: statusColor }}
+              className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full text-fg-2"
+              style={{ backgroundColor: `${statusColor}18` }}
             >
               {status}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-fg leading-tight">{equipment.name}</h1>
+          <h1 className="text-xl font-bold text-fg leading-tight">{equipment.name}</h1>
           <p className="text-xs text-fg-3 mt-1">Item #{equipment.itemNumber}{equipment.location ? ` · ${equipment.location}` : ''}</p>
         </div>
 

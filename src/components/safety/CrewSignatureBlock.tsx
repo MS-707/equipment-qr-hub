@@ -8,6 +8,7 @@ import type { CrewSignature } from '@/lib/safety-types'
 import { newSignature } from '@/lib/safety-records'
 import { getCrewRoster, crewRoles, rememberCrewMember } from '@/data/crew'
 import { haptic } from '@/lib/haptic'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 export interface SignatureData {
   signatures: CrewSignature[]
@@ -175,9 +176,7 @@ export default function CrewSignatureBlock({
               type="button"
               onClick={save}
               disabled={!name.trim() || !dataUrl}
-              className="flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold bg-mytra-purple text-white
-                         hover:bg-mytra-purple-hover transition-colors
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`${btnPrimaryCls} flex-1 py-2.5 min-h-[44px] text-sm font-semibold`}
             >
               Save signature
             </button>

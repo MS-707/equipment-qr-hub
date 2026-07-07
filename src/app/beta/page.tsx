@@ -115,6 +115,7 @@ export default function BetaPage() {
   }
 
   return (
+    <main id="main" className="contents">
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
       {/* Hero */}
       <header className="relative">
@@ -890,7 +891,7 @@ export default function BetaPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="beta-company" className="block text-xs text-[#9A9A9A] mb-1">Company <span aria-hidden="true" className="text-[#E66A6A]">*</span></label>
-                <input id="beta-company" type="text" required autoComplete="organization" maxLength={200} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Construction" className={inputCls} />
+                <input id="beta-company" type="text" required autoComplete="organization" maxLength={200} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Industries" className={inputCls} />
               </div>
               <div>
                 <label htmlFor="beta-role" className="block text-xs text-[#9A9A9A] mb-1">Your role <span aria-hidden="true" className="text-[#E66A6A]">*</span></label>
@@ -935,6 +936,12 @@ export default function BetaPage() {
                 Fill in all required fields to continue.
               </p>
             )}
+            <p className="text-xs text-[#9A9A9A] text-center">
+              We store your name, email, and company to run the beta program.{' '}
+              <a href="/privacy" className="underline hover:text-white transition-colors">
+                Privacy policy
+              </a>
+            </p>
 
             <p className="text-xs text-[#9A9A9A] text-center">
               We only use your info to process this request and send beta access instructions.
@@ -943,5 +950,6 @@ export default function BetaPage() {
         )}
       </section>
     </div>
+    </main>
   )
 }

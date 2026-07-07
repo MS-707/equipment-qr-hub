@@ -2,6 +2,8 @@ import { addSignup, type BetaSignup } from '@/lib/beta'
 import { sendEhsNotification } from '@/lib/email-notify'
 import { sendSlackMessage, escapeSlack } from '@/lib/slack-notify'
 import { rateLimit } from '@/lib/rate-limit'
+import { BetaSignupBodySchema } from '@/lib/beta-decide-schemas'
+import { reportServerError } from '@/lib/report-error'
 
 export async function POST(req: Request) {
   // x-real-ip is set by Vercel; the last x-forwarded-for hop is the one the
@@ -12,35 +14,30 @@ export async function POST(req: Request) {
     'unknown'
   const rl = await rateLimit(`beta-signup:${ip}`, 5, 60_000)
   if (!rl.ok) {
-    return Response.json({ error: 'Too many requests' }, { status: 429 })
+    return Response.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    )
   }
 
-  let body: Record<string, unknown>
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/beta/signup', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const name = String(body.name ?? '').trim()
-  const email = String(body.email ?? '').trim().toLowerCase()
-  const company = String(body.company ?? '').trim()
-  const role = String(body.role ?? '').trim()
-  const crewSize = String(body.crewSize ?? '').trim()
-  const reason = String(body.reason ?? '').trim()
-
-  if (!name || !email || !company || !role) {
-    return Response.json({ error: 'Name, email, company, and role are required' }, { status: 400 })
+  const parsed = BetaSignupBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    // superRefine issues carry the exact messages tests pin ('required',
+    // 'Invalid email address', 'Input too long'); plain type errors
+    // (non-object body, non-string fields) fall back to the generic message.
+    const message =
+      parsed.error.issues.find((i) => i.code === 'custom')?.message ?? 'Invalid request body'
+    return Response.json({ error: message }, { status: 400 })
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return Response.json({ error: 'Invalid email address' }, { status: 400 })
-  }
-  if (
-    name.length > 100 || email.length > 200 || company.length > 200 ||
-    role.length > 200 || crewSize.length > 200 || reason.length > 1000
-  ) {
-    return Response.json({ error: 'Input too long' }, { status: 400 })
-  }
+  const { name, email, company, role, crewSize, reason } = parsed.data
 
   const id = `beta-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
   const signup: BetaSignup = {
@@ -55,7 +52,13 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   }
 
-  await addSignup(signup)
+  try {
+    await addSignup(signup)
+  } catch (err) {
+    reportServerError('api/beta/signup', err)
+    // KV outage must surface as a retryable error, not a silent drop
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 
   const appUrl = process.env.NEXTAUTH_URL || 'https://sage-ehs.mytra.ai'
 

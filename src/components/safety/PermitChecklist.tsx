@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Check, AlertTriangle, MessageSquarePlus } from 'lucide-react'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { haptic } from '@/lib/haptic'
+import { btnSelectedCls } from '@/lib/form-styles'
 
 interface PermitChecklistProps {
   items: PermitCheckItem[]
@@ -58,7 +59,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         aria-label={`${item.checked ? 'Uncheck' : 'Check'}: ${item.label}`}
                         className={`shrink-0 mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                           item.checked
-                            ? 'bg-mytra-purple border-mytra-purple text-white'
+                            ? `${btnSelectedCls} border-mytra-purple`
                             : 'bg-mytra-bg border-mytra-border text-transparent hover:border-mytra-purple/50'
                         }`}
                       >

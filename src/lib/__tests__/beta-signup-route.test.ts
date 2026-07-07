@@ -40,11 +40,12 @@ const validSignup = {
 }
 
 describe('POST /api/beta/signup', () => {
-  it('returns 429 when rate limited', async () => {
+  it('returns 429 with Retry-After when rate limited', async () => {
     vi.mocked(rateLimit).mockResolvedValue({ ok: false, retryAfter: 60 })
     const { POST } = await import('@/app/api/beta/signup/route')
     const res = await POST(makeReq(validSignup))
     expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBe('60')
   })
 
   it('returns 400 for invalid JSON', async () => {
@@ -106,5 +107,16 @@ describe('POST /api/beta/signup', () => {
       company: 'ACME Construction',
       status: 'pending',
     }))
+  })
+})
+
+describe('KV outage (BE-9)', () => {
+  it('returns 503 when addSignup throws (KV down)', async () => {
+    vi.mocked(addSignup).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/beta/signup/route')
+    const res = await POST(makeReq(validSignup))
+    expect(res.status).toBe(503)
+    const data = await res.json()
+    expect(data.error).toContain('temporarily unavailable')
   })
 })

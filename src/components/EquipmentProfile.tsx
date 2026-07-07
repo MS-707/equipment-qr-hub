@@ -116,7 +116,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
   const swipeHandlers = useSwipe(goNext, goPrev)
 
   return (
-    <main className="min-h-screen bg-mytra-bg">
+    <main id="main" className="min-h-screen bg-mytra-bg">
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link
@@ -153,7 +153,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-fg leading-tight">
+            <h1 className="text-xl font-bold text-fg leading-tight">
               {equipment.name}
             </h1>
             <ModuleTourButton tourId="equipment-detail" />

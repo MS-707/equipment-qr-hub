@@ -3,6 +3,7 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useId } from 'react'
 import { Sparkles, ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 const SEEN_KEY = 'sage-onboarding-seen'
 export const START_TOUR_EVENT = 'sage:start-tour'
@@ -208,8 +209,7 @@ export default function OnboardingTour() {
             <button
               type="button"
               onClick={startTour}
-              className="w-full min-h-[44px] py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white
-                         hover:bg-mytra-purple-hover transition-colors inline-flex items-center justify-center gap-2"
+              className={`${btnPrimaryCls} w-full min-h-[44px] py-3 text-sm font-semibold inline-flex items-center justify-center gap-2`}
             >
               Take a quick tour <ArrowRight className="w-4 h-4" />
             </button>
@@ -315,8 +315,7 @@ export default function OnboardingTour() {
               type="button"
               onClick={() => (isLast ? finish() : goToStep(stepIndex + 1))}
               disabled={spotPhase === 'stepping'}
-              className="min-h-[40px] px-4 rounded-lg text-sm font-semibold bg-mytra-purple text-white
-                         hover:bg-mytra-purple-hover transition-colors inline-flex items-center gap-1.5"
+              className={`${btnPrimaryCls} min-h-[40px] px-4 text-sm font-semibold inline-flex items-center gap-1.5`}
             >
               {isLast ? 'Done' : 'Next'}
               {!isLast && <ArrowRight className="w-4 h-4" />}

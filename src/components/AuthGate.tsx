@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useSession, signIn, getProviders } from 'next-auth/react'
 import { ShieldCheck, WifiOff, Loader2 } from 'lucide-react'
-import { setCurrentIdentity, getCurrentIdentity, isIdentityStale } from '@/lib/identity'
+import { setCurrentIdentity, getCurrentIdentity, isIdentityStale, isIdentityAging } from '@/lib/identity'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 type ProvidersMap = Awaited<ReturnType<typeof getProviders>>
 
@@ -91,12 +92,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const cached = getCurrentIdentity()
 
   if (!online && cached && !isIdentityStale()) {
+    const aging = isIdentityAging()
     return (
       <>
         <div className="no-print bg-warn/10 border-b border-warn/20 px-4 py-2 text-center">
           <p className="text-xs text-warn/80 inline-flex items-center gap-1.5">
             <WifiOff className="w-3.5 h-3.5" />
-            Offline — signed in as {cached.name}. Records will sync when you reconnect.
+            {aging
+              ? `Offline — working as ${cached.name}. It's been a while: verify your sign-in next time you're online.`
+              : `Offline — signed in as ${cached.name}. Records will sync when you reconnect.`}
           </p>
         </div>
         {children}
@@ -140,7 +144,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="relative w-full max-w-sm">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/2 w-[520px] h-[520px] -translate-x-1/2 rounded-full bg-[#572DFF]/[0.09] blur-3xl animate-glowPulse [will-change:opacity]"
+          className="pointer-events-none absolute -top-32 left-1/2 w-[520px] h-[520px] -translate-x-1/2 rounded-full bg-mytra-purple/10 blur-3xl animate-glowPulse [will-change:opacity]"
         />
       <div className="relative w-full bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
         <div className="flex items-center gap-2 mb-1 animate-blurIn" style={{ animationDelay: '60ms' }}>
@@ -171,8 +175,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => signIn('google')}
-            className="w-full py-3 rounded-lg text-sm font-semibold bg-white text-gray-900
-                       hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-lg text-sm font-semibold bg-white text-black
+                       hover:opacity-90 transition-colors flex items-center justify-center gap-2"
           >
             Continue with Google
           </button>
@@ -240,9 +244,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             <button
               type="submit"
               disabled={submitting || !devEmail.trim() || (needsCode && !devCode.trim())}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
             >
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>
@@ -282,8 +284,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
+  // relative + overflow-hidden bounds the decorative sign-in glow (a fixed
+  // 520px circle) to this section so it can never cause horizontal scroll on
+  // phones — same containment pattern as the beta page backdrop.
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+    <div className="relative w-full overflow-hidden min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
       {children}
     </div>
   )

@@ -16,6 +16,9 @@ const withSerwist = withSerwistInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Required on Next 14 for src/instrumentation.ts to load the Sentry
+  // server/edge init at boot (stable in Next 15, experimental here).
+  experimental: { instrumentationHook: true },
   async headers() {
     return [
       {
@@ -29,7 +32,10 @@ const nextConfig = {
           // connect-src: KV/upstash is server-only (lib/kv.ts) — deliberately
           // NOT whitelisted for the browser. base-uri/form-action matter more
           // than usual because script-src allows 'unsafe-inline'.
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.vercel-storage.com https://*.ingest.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" },
+          // Dev needs 'unsafe-eval' for the Next.js/webpack runtime — without it
+          // hydration dies and AuthGate hangs at "Checking your sign-in".
+          // Production CSP is unchanged.
+          { key: 'Content-Security-Policy', value: `default-src 'self'; script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.vercel-storage.com https://*.ingest.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'` },
         ],
       },
       {

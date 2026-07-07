@@ -1,6 +1,7 @@
 'use client'
 
 import { PPE_OPTIONS } from '@/data/safety-checklists'
+import { btnSelectedCls } from '@/lib/form-styles'
 
 interface PPESelectorProps {
   selected: string[]
@@ -24,7 +25,7 @@ export default function PPESelector({ selected, onChange }: PPESelectorProps) {
             aria-pressed={on}
             className={`text-xs font-medium px-3 py-2.5 rounded-full border transition-colors duration-150 min-h-[44px] ${
               on
-                ? 'bg-mytra-purple text-white border-mytra-purple'
+                ? `${btnSelectedCls} border-mytra-purple`
                 : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg hover:border-mytra-purple/50'
             }`}
           >

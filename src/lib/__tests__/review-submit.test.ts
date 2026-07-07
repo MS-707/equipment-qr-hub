@@ -24,12 +24,12 @@ const record = {
   type: 'ptp',
   notionPageId: null,
   createdByEmail: 'test@example.com',
-} as never
+}
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn())
-  vi.mocked(getSafetyRecordById).mockReturnValue(record)
-  vi.mocked(markSubmittedForReview).mockReset().mockReturnValue(record)
+  vi.mocked(getSafetyRecordById).mockReturnValue(record as never)
+  vi.mocked(markSubmittedForReview).mockReset().mockReturnValue(record as never)
   vi.mocked(markSynced).mockReset()
 })
 

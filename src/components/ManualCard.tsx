@@ -3,6 +3,7 @@
 import { BookOpen, ExternalLink, FileText } from 'lucide-react'
 import { EquipmentItem } from '@/lib/types'
 import { stripRegCitations } from '@/lib/strip-citations'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface ManualCardProps {
   equipment: EquipmentItem
@@ -29,9 +30,7 @@ export default function ManualCard({ equipment }: ManualCardProps) {
               href={equipment.manualUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-mytra-purple hover:bg-mytra-purple-hover
-                         text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors
-                         shadow-sm hover:shadow-md hover:shadow-mytra-purple/20 press-scale shrink-0 min-h-[44px]"
+              className={`${btnPrimaryCls} inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 shadow-sm hover:shadow-md hover:shadow-mytra-purple/20 press-scale shrink-0 min-h-[44px]`}
             >
               {isPdf ? (
                 <>

@@ -7,9 +7,11 @@ import { buildRecordSubject, buildRecordText } from '@/lib/record-share'
 import { createReviewToken } from '@/lib/review-token'
 import { storeReviewSubmission } from '@/lib/review-store'
 import { escapeSlack } from '@/lib/slack-notify'
+import { ReviewSubmitBodySchema, firstInvalidField } from '@/lib/safety-record-schema'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const NOTION_VERSION = '2022-06-28'
-const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
 
 const DB_MAP: Record<string, string | undefined> = {
   'ptp': process.env.NOTION_PTP_DB_ID,
@@ -55,24 +57,29 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Request body too large' }, { status: 413 })
   }
 
-  let body: { record: SafetyRecord; notionPageId: string | null }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/review/submit', err)
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { record, notionPageId } = body
-
-  if (!record?.id || typeof record.id !== 'string' || record.id.length > 100) {
-    return Response.json({ error: 'Missing or invalid record id' }, { status: 400 })
+  const parsed = ReviewSubmitBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    const field = firstInvalidField(parsed.error)
+    const msg =
+      field === 'type' ? 'Missing or invalid record type'
+      : field === 'createdAt' ? 'Invalid createdAt'
+      : field === 'notionPageId' ? 'Invalid Notion page ID'
+      : 'Missing or invalid record id'
+    return Response.json({ error: msg }, { status: 400 })
   }
-  if (!record?.type || typeof record.type !== 'string' || !(record.type in DB_MAP)) {
-    return Response.json({ error: 'Missing or invalid record type' }, { status: 400 })
-  }
-  if (typeof record.createdAt !== 'string' || record.createdAt.length > 30 || isNaN(new Date(record.createdAt).getTime())) {
-    return Response.json({ error: 'Invalid createdAt' }, { status: 400 })
-  }
+  // Schema pins id/type/createdAt/notionPageId and passes all other record
+  // keys through; free-text fields are re-guarded below via sanitize/safeStr.
+  const record = parsed.data.record as unknown as SafetyRecord
+  // '' and absent both mean "no page yet" — normalize to null like before.
+  const notionPageId = parsed.data.notionPageId || null
 
   const sessionEmail = session?.user?.email
   if (sessionEmail) {
@@ -81,10 +88,6 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Record owner mismatch' }, { status: 403 })
     }
     ;(record as { createdByEmail: string }).createdByEmail = sessionEmail
-  }
-
-  if (notionPageId && !NOTION_ID_RE.test(notionPageId)) {
-    return Response.json({ error: 'Invalid Notion page ID' }, { status: 400 })
   }
 
   // ── Notion (optional record store) ───────────────────────────
@@ -97,7 +100,7 @@ export async function POST(req: Request) {
         if (syncResult.ok) pageId = syncResult.pageId
       }
       if (pageId) {
-        const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        const res = await fetchWithTimeout(`https://api.notion.com/v1/pages/${pageId}`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${notionKey}`,
@@ -107,10 +110,10 @@ export async function POST(req: Request) {
           body: JSON.stringify({ properties: { 'EHS Review': { select: { name: 'Pending' } } } }),
         })
         notionOk = res.ok
-        if (!res.ok) console.error('[review/submit] Notion PATCH error:', await res.text())
+        if (!res.ok) reportServerError('api/safety/review/submit', new Error(`Notion PATCH error: ${await res.text()}`))
       }
     } catch (e) {
-      console.error('[review/submit] Notion error:', e instanceof Error ? e.message : e)
+      reportServerError('api/safety/review/submit', e)
     }
   }
 
@@ -119,6 +122,7 @@ export async function POST(req: Request) {
     (typeof s === 'string' ? s : '').replace(/[\r\n]/g, ' ').slice(0, max)
 
   const submitterEmail = sanitize(session?.user?.email || record.createdByEmail || '', 200)
+  try {
   await storeReviewSubmission({
     recordId: record.id,
     recordType: record.type,
@@ -130,6 +134,12 @@ export async function POST(req: Request) {
     // poller sees the decision instead of eternal "Pending".
     notionPageId: pageId || undefined,
   })
+  } catch (err) {
+    reportServerError('api/safety/review/submit', err)
+    // KV outage: without a stored submission the email decide-links would
+    // 404, so fail the request as retryable instead of sending dead links
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 
   // ── Email notification (primary EHS channel) ─────────────────
   let emailed = false
@@ -170,7 +180,7 @@ export async function POST(req: Request) {
   if (slackUrl) {
     const label = SAFETY_TYPE_LABELS[record.type] ?? record.type
     try {
-      const slackRes = await fetch(slackUrl, {
+      const slackRes = await fetchWithTimeout(slackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,7 +188,8 @@ export async function POST(req: Request) {
         }),
       })
       slackOk = slackRes.ok
-    } catch {
+    } catch (err) {
+      reportServerError('api/safety/review/submit', err)
       // Slack is best-effort
     }
   }
@@ -203,7 +214,7 @@ async function syncToNotion(
   // POST and this review submit concurrently — without this query, whichever
   // lost the race created a second page for the same record.
   try {
-    const existingCheck = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+    const existingCheck = await fetchWithTimeout(`https://api.notion.com/v1/databases/${dbId}/query`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -222,7 +233,10 @@ async function syncToNotion(
         return { ok: true, pageId: results[0].id }
       }
     }
-  } catch { /* fall through to create */ }
+  } catch (err) {
+    // fall through to create — but a failing existence check is still worth seeing
+    reportServerError('api/safety/review/submit', err)
+  }
 
   const safeStr = (v: unknown, max = 200) =>
     typeof v === 'string' ? v.slice(0, max) : ''
@@ -254,7 +268,7 @@ async function syncToNotion(
   }
 
   try {
-    const res = await fetch('https://api.notion.com/v1/pages', {
+    const res = await fetchWithTimeout('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -265,14 +279,14 @@ async function syncToNotion(
     })
 
     if (!res.ok) {
-      console.error('[review/submit] Notion create error:', await res.text())
+      reportServerError('api/safety/review/submit', new Error(`Notion create error: ${await res.text()}`))
       return { ok: false, error: 'Notion API error' }
     }
 
     const page = (await res.json()) as { id: string }
     return { ok: true, pageId: page.id }
   } catch (e) {
-    console.error('[review/submit] sync error:', e instanceof Error ? e.message : e)
+    reportServerError('api/safety/review/submit', e)
     return { ok: false, error: 'Sync failed' }
   }
 }

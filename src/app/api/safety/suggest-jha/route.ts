@@ -3,6 +3,9 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SuggestJhaBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor embedded in a Job Hazard Analysis (JHA) tool used by engineers and operations teams.
 
@@ -17,7 +20,7 @@ RISK MATRIX (per EHS-MGT-001, 5×5 Severity × Likelihood):
   Likelihood: 1 Rare (exceptional circumstances only), 2 Unlikely (not expected, controls would need to fail), 3 Possible (has occurred in similar operations), 4 Likely (will probably occur, current controls insufficient), 5 Almost Certain (expected to occur, controls absent or ineffective)
   Score = Severity × Likelihood → low (1-4), medium (5-9), high (10-16), critical (20-25)
 
-Return exactly one analysis object per input step, in the same order. Do not cite specific regulatory codes in the output. Base your analysis on standard construction and industrial safety practice.`
+Return exactly one analysis object per input step, in the same order. Do not cite specific regulatory codes in the output. Base your analysis on standard workplace and industrial safety practice across industries.`
 
 const StepAnalysisSchema = z.object({
   steps: z.array(
@@ -53,17 +56,20 @@ export async function POST(req: Request) {
     return Response.json({ steps: [], error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { jobTitle?: string; steps?: string[] }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/suggest-jha', err)
     return Response.json({ steps: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const jobTitle = (body.jobTitle ?? '').trim().slice(0, 200)
-  const steps = Array.isArray(body.steps)
-    ? body.steps.map((s) => String(s ?? '').trim().slice(0, 300)).filter(Boolean)
-    : []
+  const parsed = SuggestJhaBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ steps: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const { jobTitle } = parsed.data
+  const steps = parsed.data.steps.filter(Boolean)
 
   if (steps.length === 0) {
     return Response.json({ steps: [], error: 'No task steps provided' }, { status: 400 })
@@ -81,7 +87,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
@@ -93,7 +99,7 @@ export async function POST(req: Request) {
     // Align to the number of steps we sent, so the client can map by index.
     return Response.json({ steps: analysed.slice(0, boundedSteps.length) })
   } catch (err) {
-    console.error('[sage] suggest-jha failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/suggest-jha', err)
     return Response.json({ steps: [], error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

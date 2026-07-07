@@ -45,3 +45,4 @@ evals/sage/out/
 
 # Demo recording output
 scripts/demo/out/
+test-results/

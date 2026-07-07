@@ -3,6 +3,9 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { SuggestToolboxBodySchema } from '@/lib/suggest-schemas'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. Generate a concise 2-minute toolbox talk for a team based on today's job scope, hazards, and conditions. The talk should be practical, plain-language, and ready to read aloud at a team meeting. Keep talking points to 3-4 bullet points. End with one discussion question to engage the team.`
 
@@ -38,23 +41,23 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { scopeOfWork?: string; location?: string; hazards?: string[]; weather?: string }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/suggest-toolbox', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
+  const parsed = SuggestToolboxBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const { scopeOfWork, location, hazards, weather } = parsed.data
+
   if (!scopeOfWork) {
     return Response.json({ error: 'No scope of work provided' }, { status: 400 })
   }
-
-  const location = (body.location ?? '').trim().slice(0, 200)
-  const hazards = Array.isArray(body.hazards)
-    ? body.hazards.slice(0, 20).map((h) => String(h).slice(0, 200))
-    : []
-  const weather = (body.weather ?? '').trim().slice(0, 200)
 
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
@@ -66,7 +69,7 @@ export async function POST(req: Request) {
     .join('\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
       discussion_question: result.discussion_question,
     })
   } catch (err) {
-    console.error('[sage] suggest-toolbox failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/suggest-toolbox', err)
     return Response.json(
       { error: 'Sage is temporarily unavailable' },
       { status: 502 }

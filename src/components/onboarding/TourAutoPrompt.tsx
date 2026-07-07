@@ -7,6 +7,7 @@ import { GraduationCap, X } from 'lucide-react'
 import { findTourForRoute } from '@/tours'
 import { isTourSeen } from '@/lib/tourState'
 import { requestModuleTour, TOUR_ACTIVE_EVENT } from './ModuleTourEngine'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 const DISMISS_KEY = 'sage-tour-prompt-dismissed'
 const ONBOARDING_SEEN_KEY = 'sage-onboarding-seen'
@@ -79,8 +80,7 @@ export default function TourAutoPrompt() {
           <button
             type="button"
             onClick={takeTour}
-            className="shrink-0 min-h-[36px] px-3.5 rounded-full text-xs font-semibold bg-mytra-purple text-white
-                       hover:bg-mytra-purple-hover transition-colors"
+            className={`${btnPrimaryCls} shrink-0 min-h-[36px] px-3.5 rounded-full text-xs font-semibold`}
           >
             Tour
           </button>
@@ -121,8 +121,7 @@ export default function TourAutoPrompt() {
           <button
             type="button"
             onClick={takeTour}
-            className="flex-1 min-h-[36px] py-2 rounded-lg text-xs font-semibold bg-mytra-purple text-white
-                       hover:bg-mytra-purple-hover transition-colors"
+            className={`${btnPrimaryCls} flex-1 min-h-[36px] py-2 text-xs font-semibold`}
           >
             Show me around
           </button>

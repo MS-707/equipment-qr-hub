@@ -13,6 +13,7 @@ import {
   setCurrentIdentity,
   getCurrentIdentity,
   isIdentityStale,
+  isIdentityAging,
   clearCurrentIdentity,
   CURRENT_USER_KEY,
 } from '../identity'
@@ -84,10 +85,11 @@ describe('isIdentityStale', () => {
     expect(isIdentityStale()).toBe(false)
   })
 
-  it('returns true after 72 hours', () => {
+  it('is aging (not stale) after 72 hours — capture still allowed', () => {
     setCurrentIdentity({ name: 'Eve', email: 'e@x.com' })
     vi.advanceTimersByTime(72 * 60 * 60 * 1000 + 1)
-    expect(isIdentityStale()).toBe(true)
+    expect(isIdentityStale()).toBe(false)
+    expect(isIdentityAging()).toBe(true)
   })
 
   it('returns false just before 72 hours', () => {
@@ -103,5 +105,30 @@ describe('clearCurrentIdentity', () => {
     expect(store[CURRENT_USER_KEY]).toBeDefined()
     clearCurrentIdentity()
     expect(store[CURRENT_USER_KEY]).toBeUndefined()
+  })
+})
+
+describe('extended offline window (UX-9)', () => {
+  it('a 5-day-old identity is still usable offline (not stale, but aging)', () => {
+    setCurrentIdentity({ name: 'Dana', email: 'dana@mytra.ai', image: null })
+    vi.advanceTimersByTime(5 * 24 * 60 * 60 * 1000)
+    expect(isIdentityStale()).toBe(false)
+    expect(isIdentityAging()).toBe(true)
+  })
+
+  it('a fresh identity is neither stale nor aging', () => {
+    setCurrentIdentity({ name: 'Dana', email: 'dana@mytra.ai', image: null })
+    vi.advanceTimersByTime(60 * 60 * 1000)
+    expect(isIdentityStale()).toBe(false)
+    expect(isIdentityAging()).toBe(false)
+  })
+
+  it('goes stale only after the 30-day hard ceiling', () => {
+    setCurrentIdentity({ name: 'Dana', email: 'dana@mytra.ai', image: null })
+    vi.advanceTimersByTime(30 * 24 * 60 * 60 * 1000 - 1000)
+    expect(isIdentityStale()).toBe(false)
+    vi.advanceTimersByTime(2000)
+    expect(isIdentityStale()).toBe(true)
+    expect(isIdentityAging()).toBe(false)
   })
 })

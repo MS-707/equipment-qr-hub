@@ -8,6 +8,9 @@
  *                       (Settings → Apps → Incoming Webhooks → Add New)
  */
 
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
+
 export type SlackOutcome = 'sent' | 'not-configured' | 'failed'
 
 export function escapeSlack(s: string): string {
@@ -23,18 +26,18 @@ export async function sendSlackMessage(text: string): Promise<SlackOutcome> {
   if (!url) return 'not-configured'
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
     })
     if (!res.ok) {
-      console.error('[slack-notify] webhook error:', res.status, await res.text())
+      reportServerError('lib/slack-notify', new Error(`webhook error ${res.status}: ${await res.text()}`))
       return 'failed'
     }
     return 'sent'
   } catch (e) {
-    console.error('[slack-notify] unexpected error:', e instanceof Error ? e.message : e)
+    reportServerError('lib/slack-notify', e)
     return 'failed'
   }
 }

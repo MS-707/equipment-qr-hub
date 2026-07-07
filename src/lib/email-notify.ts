@@ -12,6 +12,9 @@
  *                        (defaults to Resend's onboarding sender for testing)
  */
 
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
+
 const DEFAULT_RECIPIENT = 'mark.starr@mytra.ai'
 const DEFAULT_SENDER = 'Sage EHS <onboarding@resend.dev>'
 
@@ -54,7 +57,7 @@ export async function sendEhsNotification({ subject, text, html, attachments }: 
   const from = process.env.EHS_NOTIFY_FROM || DEFAULT_SENDER
 
   try {
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetchWithTimeout('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -70,12 +73,12 @@ export async function sendEhsNotification({ subject, text, html, attachments }: 
       }),
     })
     if (!res.ok) {
-      console.error('[email-notify] Resend error:', await res.text())
+      reportServerError('lib/email-notify', new Error(`Resend error: ${await res.text()}`))
       return 'failed'
     }
     return 'sent'
   } catch (e) {
-    console.error('[email-notify] unexpected error:', e instanceof Error ? e.message : e)
+    reportServerError('lib/email-notify', e)
     return 'failed'
   }
 }

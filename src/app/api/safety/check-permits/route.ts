@@ -2,7 +2,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
+import { CheckPermitsBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an EHS safety advisor. Given a scope of work and identified hazards, determine if any work permits are required. Only flag permits that are genuinely needed — do not over-flag.`
 
@@ -40,20 +43,27 @@ export async function POST(req: Request) {
     )
   }
 
-  let body: { scopeOfWork?: string; location?: string; hazards?: string[] }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/check-permits', err)
     return Response.json({ missing_permits: [], error: 'Invalid request body' }, { status: 400 })
   }
 
-  const scopeOfWork = (body.scopeOfWork ?? '').trim().slice(0, 1000)
+  const parsed = CheckPermitsBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ missing_permits: [], error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
+
+  const scopeOfWork = (body.scopeOfWork ?? '').trim()
   if (!scopeOfWork) {
     return Response.json({ missing_permits: [], error: 'No scope of work provided' }, { status: 400 })
   }
 
-  const location = (body.location ?? '').trim().slice(0, 200)
-  const hazards = Array.isArray(body.hazards) ? body.hazards.map((h) => String(h).slice(0, 200)) : []
+  const location = (body.location ?? '').trim()
+  const hazards = body.hazards ?? []
 
   const userMessage = [
     `Scope of work: ${scopeOfWork}`,
@@ -64,7 +74,7 @@ export async function POST(req: Request) {
     .join('\n\n')
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
 
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
@@ -77,7 +87,7 @@ export async function POST(req: Request) {
     const missing_permits = message.parsed_output?.missing_permits ?? []
     return Response.json({ missing_permits })
   } catch (err) {
-    console.error('[sage] check-permits failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/check-permits', err)
     return Response.json(
       { missing_permits: [], error: 'Sage is temporarily unavailable' },
       { status: 502 }

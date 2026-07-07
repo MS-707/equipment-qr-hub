@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+vi.mock('next-auth/next', () => ({ getServerSession: vi.fn() }))
+vi.mock('@/lib/auth', () => ({ authOptions: {} }))
+vi.mock('@/lib/audit-log', () => ({
+  appendAudit: vi.fn(() => Promise.resolve()),
+}))
 vi.mock('@/lib/review-token', () => ({
   verifyReviewToken: vi.fn(),
 }))
@@ -15,6 +20,8 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 
 import { verifyReviewToken } from '@/lib/review-token'
+import { appendAudit } from '@/lib/audit-log'
+import { getServerSession } from 'next-auth/next'
 import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
@@ -289,5 +296,87 @@ describe('GET /api/safety/review/decide', () => {
     expect(data.recordLabel).toBe('Pre-Task Plan')
     expect(data.action).toBe('approve')
     expect(data.status).toBe('pending')
+  })
+})
+
+describe('KV outage (BE-9)', () => {
+  it('returns 503 when getReviewSubmission throws (KV down)', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(503)
+  })
+
+  it('returns 503 when decideReview throws (KV down)', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockRejectedValue(new Error('kv down'))
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(503)
+  })
+})
+
+describe('audit trail (EN-8)', () => {
+  it('appends an audit entry when a review is decided', async () => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(verifyReviewToken).mockReturnValue({ recordId: 'PTP-2026-0001', action: 'approve', ts: 0 })
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockResolvedValue({ ...pendingSubmission, status: 'approved', decidedBy: 'x', decidedAt: 'y' })
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({ token: 'valid-token' }))
+    expect(res.status).toBe(200)
+    expect(appendAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'review-approved', target: 'PTP-2026-0001' })
+    )
+  })
+})
+
+describe('in-app session decisions (EN-9 role enforcement)', () => {
+  const sessionBody = { recordId: 'PTP-2026-0001', action: 'approve' }
+
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_EHS_REVIEW = '1'
+    vi.mocked(getServerSession).mockResolvedValue(null)
+  })
+
+  it('returns 401 when no session and no token', async () => {
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq(sessionBody))
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 403 for a worker-role session', async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { email: 'crew@mytra.ai' } } as never)
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq(sessionBody))
+    expect(res.status).toBe(403)
+    const data = await res.json()
+    expect(data.error).toContain('role required')
+  })
+
+  it('lets an ehs-role session decide and audits with their identity', async () => {
+    vi.stubEnv('EHS_EMAILS', 'safety@mytra.ai')
+    vi.mocked(getServerSession).mockResolvedValue({ user: { email: 'safety@mytra.ai' } } as never)
+    vi.mocked(getReviewSubmission).mockResolvedValue(pendingSubmission)
+    vi.mocked(decideReview).mockResolvedValue({ ...pendingSubmission, status: 'approved', decidedBy: 'safety@mytra.ai', decidedAt: 'z' })
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq(sessionBody))
+    expect(res.status).toBe(200)
+    expect(decideReview).toHaveBeenCalledWith('PTP-2026-0001', 'approved', 'safety@mytra.ai', undefined)
+    expect(appendAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ actor: 'safety@mytra.ai', action: 'review-approved' })
+    )
+  })
+
+  it('still returns 400 Missing token when neither token nor recordId+action present', async () => {
+    const { POST } = await import('@/app/api/safety/review/decide/route')
+    const res = await POST(makePostReq({}))
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('Missing token')
   })
 })

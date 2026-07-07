@@ -15,7 +15,7 @@ import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
 import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 import { getOfflineAnalysis } from '@/lib/incident-patterns'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
@@ -38,11 +38,11 @@ interface AnalysisResult {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  equipment: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  process: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  training: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  environment: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  management: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  equipment: 'bg-hue-blue/10 text-hue-blue border-hue-blue/20',
+  process: 'bg-hue-amber/10 text-hue-amber border-hue-amber/20',
+  training: 'bg-hue-green/10 text-hue-green border-hue-green/20',
+  environment: 'bg-hue-cyan/10 text-hue-cyan border-hue-cyan/20',
+  management: 'bg-hue-violet/10 text-hue-violet border-hue-violet/20',
 }
 
 const CONTROL_LEVEL_ORDER: AnalysisCorrectiveAction['controlLevel'][] = [
@@ -58,11 +58,11 @@ const CONTROL_LEVEL_LABELS: Record<string, string> = {
 }
 
 const CONTROL_LEVEL_COLORS: Record<string, string> = {
-  elimination: 'bg-emerald-500/10 text-emerald-400',
-  substitution: 'bg-teal-500/10 text-teal-400',
-  engineering: 'bg-blue-500/10 text-blue-400',
-  administrative: 'bg-amber-500/10 text-amber-400',
-  ppe: 'bg-orange-500/10 text-orange-400',
+  elimination: 'bg-hue-green/10 text-hue-green',
+  substitution: 'bg-hue-teal/10 text-hue-teal',
+  engineering: 'bg-hue-blue/10 text-hue-blue',
+  administrative: 'bg-hue-amber/10 text-hue-amber',
+  ppe: 'bg-hue-orange/10 text-hue-orange',
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -337,7 +337,7 @@ export default function IncidentReportForm() {
                 onClick={() => setIncidentType(t.value)}
                 className={`text-xs font-medium py-2 rounded-lg transition-colors min-h-[44px] ${
                   incidentType === t.value
-                    ? 'bg-mytra-purple text-white'
+                    ? `${btnSelectedCls}`
                     : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                 }`}
               >
@@ -360,7 +360,7 @@ export default function IncidentReportForm() {
                   className="text-xs font-medium py-2 rounded-lg border capitalize transition-colors min-h-[44px]"
                   style={
                     on
-                      ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: '#fff', borderColor: INCIDENT_SEVERITY_COLORS[s] }
+                      ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: 'white', borderColor: INCIDENT_SEVERITY_COLORS[s] }
                       : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                   }
                 >
@@ -666,6 +666,10 @@ export default function IncidentReportForm() {
         </div>
         <div>
           <label className={labelCls}>Signature (optional)</label>
+          <p className="text-xs text-fg-3 mb-2">
+            By signing you certify this report is accurate to the best of your knowledge.
+            Your signature is stored on this device with the report for recordkeeping.
+          </p>
           <SignaturePad onChange={(url) => setReporterSig(url)} />
         </div>
       </section>
@@ -681,7 +685,7 @@ export default function IncidentReportForm() {
           type="button"
           onClick={submit}
           disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {canSubmit ? 'File Report' : 'Describe what happened and add location'}
         </button>

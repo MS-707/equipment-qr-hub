@@ -2,7 +2,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { requireSession } from '@/lib/api-auth'
+import { ParseDocumentBodySchema } from '@/lib/doc-analysis-schemas'
 import { rateLimit } from '@/lib/rate-limit'
+import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const SYSTEM_PROMPT = `You are Sage, an experienced EHS safety advisor. A worker has uploaded a planning document (task plan, method statement, scope of work, or similar) and wants to create a Job Hazard Analysis from it.
 
@@ -67,12 +70,19 @@ export async function POST(req: Request) {
     return Response.json({ error: 'AI assistant not configured' }, { status: 503 })
   }
 
-  let body: { documentText?: string; documentBase64?: string; fileName?: string }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/parse-document', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
+
+  const parsed = ParseDocumentBodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const body = parsed.data
 
   const documentText = (body.documentText ?? '').trim()
   const documentBase64 = (body.documentBase64 ?? '').trim()
@@ -104,7 +114,7 @@ export async function POST(req: Request) {
       ]
 
   try {
-    const client = new Anthropic({ apiKey: key })
+    const client = new Anthropic({ apiKey: key, timeout: ANTHROPIC_TIMEOUT_MS })
     const message = await client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
@@ -118,7 +128,7 @@ export async function POST(req: Request) {
     }
     return Response.json(result)
   } catch (err) {
-    console.error('[sage] parse-document failed:', err instanceof Error ? err.message : err)
+    reportServerError('api/safety/parse-document', err)
     return Response.json({ error: 'Sage is temporarily unavailable' }, { status: 502 })
   }
 }

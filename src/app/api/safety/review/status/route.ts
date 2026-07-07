@@ -1,6 +1,8 @@
 import { requireSession } from '@/lib/api-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { getReviewSubmission } from '@/lib/review-store'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
 
 const NOTION_VERSION = '2022-06-28'
 const NOTION_ID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
@@ -54,7 +56,10 @@ export async function GET(req: Request) {
               reviewNote: sub.note,
             }
           }
-        } catch { /* skip — retried next poll */ }
+        } catch (err) {
+          // skip — retried next poll; still report so a wedged Notion shows up
+          reportServerError('api/safety/review/status', err)
+        }
       })
     )
   }
@@ -74,7 +79,7 @@ export async function GET(req: Request) {
   await Promise.all(
     pageIds.map(async (pageId) => {
       try {
-        const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        const res = await fetchWithTimeout(`https://api.notion.com/v1/pages/${pageId}`, {
           headers: {
             Authorization: `Bearer ${notionKey}`,
             'Notion-Version': NOTION_VERSION,
@@ -98,7 +103,8 @@ export async function GET(req: Request) {
         const reviewNote = noteProp?.rich_text?.[0]?.plain_text
 
         decisions[pageId] = { status, reviewerName, reviewNote }
-      } catch {
+      } catch (err) {
+        reportServerError('api/safety/review/status', err)
         // Skip failed pages — they'll be retried on next poll
       }
     })

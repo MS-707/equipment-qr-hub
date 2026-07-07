@@ -80,3 +80,22 @@ ffmpeg -ss 1.5 -i portrait.mp4 -t 30 -c copy portrait_30s.mp4
 - The recorder runs headless Chromium at a mobile viewport for portrait; the app's
   responsive layout renders its mobile UI (bottom tab bar) below the 640px
   breakpoint and the desktop nav above it (landscape).
+
+
+## Pre-demo rehearsal (DM-10)
+
+`rehearse-inspection.mjs` machine-drives the headline path — sign-in →
+QR landing → full checklist → touch signature → submit → result screen +
+EHS-notify outcome — and exits non-zero the moment any step breaks. Run it
+before every live demo:
+
+```bash
+ALLOW_DEV_LOGIN=1 NEXTAUTH_SECRET=dev-only npm run dev   # terminal 1
+node scripts/demo/rehearse-inspection.mjs                # terminal 2 — exit 0 = demo-ready
+```
+
+Set `NEXTAUTH_SECRET` so the notify call authenticates (without it the email
+leg reports the queued/offline path). Without `RESEND_API_KEY` the expected
+outcome line is "EHS email isn't configured" — the real-inbox check stays a
+human step (docs/RUNBOOKS.md). `DEMO_EQUIPMENT=<itemNumber>` picks the unit;
+`PW_CHROMIUM_PATH` pins a browser binary in sandboxed environments.

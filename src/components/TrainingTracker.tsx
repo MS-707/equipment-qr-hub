@@ -12,6 +12,7 @@ import {
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
 import { formatDate } from '@/lib/datetime'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface TrainingTrackerProps {
   equipment: EquipmentItem
@@ -198,8 +199,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         <button
                           onClick={handleAdd}
                           disabled={!empName.trim() || !validEmail}
-                          className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                                     hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
                         >
                           Record Training
                         </button>

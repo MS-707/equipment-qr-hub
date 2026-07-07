@@ -6,7 +6,9 @@ import SafetyDashboard from '@/components/safety/SafetyDashboard'
 export default function Home() {
   return (
     <AuthGate>
-      <SafetyDashboard />
+      <main id="main" className="contents">
+        <SafetyDashboard />
+      </main>
     </AuthGate>
   )
 }

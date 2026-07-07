@@ -7,6 +7,7 @@ import { Printer, ArrowLeft, ShieldAlert, ClipboardCheck, QrCode } from 'lucide-
 import { getAllEquipment, getCategories } from '@/lib/equipment'
 import { CATEGORY_COLORS, EquipmentCategory, requiresPreTrip } from '@/lib/types'
 import QRLabel from '@/components/QRLabel'
+import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 
 export default function LabelsPage() {
   const { data: session } = useSession()
@@ -30,7 +31,7 @@ export default function LabelsPage() {
 
   if (!canAccess) {
     return (
-      <main className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
+      <main id="main" className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
         <div className="bg-mytra-card border border-mytra-border rounded-card p-6 text-center max-w-sm">
           <ShieldAlert className="w-8 h-8 text-warn mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-fg">Admin Access Required</h2>
@@ -75,7 +76,7 @@ export default function LabelsPage() {
               <ArrowLeft size={16} />
               Back to Equipment
             </Link>
-            <h1 className="text-2xl font-bold text-fg">
+            <h1 className="text-xl font-bold text-fg">
               QR Label Generator
             </h1>
             <p className="text-fg-3 mt-1">
@@ -110,7 +111,7 @@ export default function LabelsPage() {
                   aria-checked={labelSet === 'equipment'}
                   onClick={() => setLabelSet('equipment')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-sm font-medium transition-colors ${
-                    labelSet === 'equipment' ? 'bg-mytra-purple text-white' : 'bg-mytra-bg text-fg-3 hover:text-fg'
+                    labelSet === 'equipment' ? `${btnSelectedCls}` : 'bg-mytra-bg text-fg-3 hover:text-fg'
                   }`}
                 >
                   <QrCode size={15} /> Equipment
@@ -121,7 +122,7 @@ export default function LabelsPage() {
                   aria-checked={labelSet === 'pre-trip'}
                   onClick={() => setLabelSet('pre-trip')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-sm font-medium transition-colors ${
-                    labelSet === 'pre-trip' ? 'bg-mytra-purple text-white' : 'bg-mytra-bg text-fg-3 hover:text-fg'
+                    labelSet === 'pre-trip' ? `${btnSelectedCls}` : 'bg-mytra-bg text-fg-3 hover:text-fg'
                   }`}
                 >
                   <ClipboardCheck size={15} /> Pre-Trip
@@ -130,7 +131,7 @@ export default function LabelsPage() {
             </div>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 bg-mytra-purple hover:bg-mytra-purple-hover text-white font-medium text-sm px-5 py-2 min-h-[44px] rounded-lg transition-colors shrink-0"
+              className={`${btnPrimaryCls} inline-flex items-center gap-2 font-medium text-sm px-5 py-2 min-h-[44px] shrink-0`}
             >
               <Printer size={16} />
               {labelSet === 'pre-trip' ? 'Print Pre-Trip Labels' : 'Print All Labels'}
@@ -140,7 +141,7 @@ export default function LabelsPage() {
           {/* Pre-trip labels: only units that require an inspection */}
           {labelSet === 'pre-trip' && (
             <section>
-              <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid #EAB308' }}>
+              <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid var(--hue-amber)' }}>
                 <h2 className="text-lg font-semibold text-fg">Pre-Trip Inspection Labels</h2>
                 <span className="text-xs text-fg-4">
                   {preTripEquipment.length} unit{preTripEquipment.length !== 1 ? 's' : ''}

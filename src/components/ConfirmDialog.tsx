@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useId } from 'react'
 import { haptic } from '@/lib/haptic'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -97,7 +98,7 @@ export default function ConfirmDialog({
           className={`flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors
             ${variant === 'danger'
               ? 'bg-danger text-white hover:bg-danger/90'
-              : 'bg-mytra-purple text-white hover:bg-mytra-purple-hover'
+              : `${btnPrimaryCls}`
             }`}
         >
           {confirmLabel}

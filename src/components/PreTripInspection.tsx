@@ -15,6 +15,7 @@ import {
   ChevronUp,
   ClipboardCheck,
   RotateCcw,
+  Printer,
 } from 'lucide-react'
 import {
   EquipmentItem,
@@ -41,6 +42,8 @@ import { getCurrentIdentity } from '@/lib/identity'
 import SignaturePad from '@/components/SignaturePad'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
+import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
+import Link from 'next/link'
 
 const DRAFT_KEY_PREFIX = 'draft:inspection:'
 const DRAFT_SAVE_DELAY = 2000
@@ -369,6 +372,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
   // Result step
   const [submittedRecord, setSubmittedRecord] = useState<{
+    id: string
     result: 'pass' | 'fail'
     hasCriticalFail: boolean
     criticalNaCount: number
@@ -719,6 +723,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     }
 
     setSubmittedRecord({
+      id: record.id,
       result: record.result,
       hasCriticalFail: record.hasCriticalFail,
       criticalNaCount: record.criticalNaCount,
@@ -845,7 +850,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                     onClick={() => setShift(s)}
                     className={`flex-1 text-sm font-medium py-2 min-h-[44px] rounded-lg transition-colors duration-150 ${
                       shift === s
-                        ? 'bg-mytra-purple text-white'
+                        ? `${btnSelectedCls}`
                         : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50'
                     }`}
                   >
@@ -900,9 +905,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               type="button"
               onClick={() => setStep('checklist')}
               disabled={!inspectorName.trim() || !operatorAuthorized}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
               Start Inspection
             </button>
@@ -1027,9 +1030,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               type="button"
               onClick={handleSubmit}
               disabled={!allAnswered || !signature}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
               {missingNotes.size > 0
                 ? 'Add notes to failed items'
@@ -1106,7 +1107,8 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             </div>
           )}
 
-          {/* EHS email outcome — only surfaced when email is configured */}
+          {/* EHS email outcome — every terminal state gets a line so demos and the
+              rehearsal script can assert the notify result (DM-10) */}
           {photoSaveFailed && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <Camera className="w-4 h-4 text-warn shrink-0 mt-0.5" />
@@ -1116,8 +1118,21 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               </p>
             </div>
           )}
+          {submittedRecord && (
+            <Link
+              href={`/inspections/record/${encodeURIComponent(submittedRecord.id)}`}
+              className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
+            >
+              <Printer className="w-4 h-4" /> View / print signed record
+            </Link>
+          )}
           {notifyStatus === 'sent' && (
             <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
+          )}
+          {notifyStatus === 'skipped' && (
+            <p data-notify-outcome="skipped" className="text-sm text-fg-3 text-center">
+              EHS email isn&apos;t configured — the signed record is saved on this device.
+            </p>
           )}
           {notifyStatus === 'queued' && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">

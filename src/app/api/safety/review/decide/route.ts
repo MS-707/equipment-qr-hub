@@ -2,6 +2,13 @@ import { verifyReviewToken } from '@/lib/review-token'
 import { getReviewSubmission, decideReview } from '@/lib/review-store'
 import { isEmailConfigured } from '@/lib/email-notify'
 import { rateLimit } from '@/lib/rate-limit'
+import { ReviewDecideBodySchema } from '@/lib/beta-decide-schemas'
+import { fetchWithTimeout } from '@/lib/fetch-timeout'
+import { reportServerError } from '@/lib/report-error'
+import { appendAudit } from '@/lib/audit-log'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
+import { isEhsOrAdmin } from '@/lib/roles'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 
@@ -19,24 +26,55 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } })
   }
 
-  let body: { token: string; note?: string }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { token, note } = body
-  if (!token || typeof token !== 'string') {
+  const parsedBody = ReviewDecideBodySchema.safeParse(raw)
+  if (!parsedBody.success) {
+    // The only fatal schema failure is the token (note is .catch-tolerant),
+    // so the pre-schema error message still fits.
+    return Response.json({ error: 'Missing token' }, { status: 400 })
+  }
+  const { token, note, recordId: bodyRecordId, action: bodyAction } = parsedBody.data
+
+  // Two authorization paths: the HMAC email-link token (EHS decides from
+  // their inbox, no session), or a signed-in session with the ehs/admin
+  // role deciding in-app (EN-9). Workers get 403 on the session path.
+  let target: { recordId: string; action: 'approve' | 'reject' }
+  let actor = 'EHS reviewer (via email link)'
+  if (token) {
+    const parsed = verifyReviewToken(token)
+    if (!parsed) {
+      return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
+    }
+    target = { recordId: parsed.recordId, action: parsed.action }
+  } else if (bodyRecordId && bodyAction) {
+    const session = await getServerSession(authOptions)
+    const email = session?.user?.email
+    if (!email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!isEhsOrAdmin(email)) {
+      return Response.json({ error: 'EHS or admin role required' }, { status: 403 })
+    }
+    target = { recordId: bodyRecordId, action: bodyAction }
+    actor = email
+  } else {
     return Response.json({ error: 'Missing token' }, { status: 400 })
   }
 
-  const parsed = verifyReviewToken(token)
-  if (!parsed) {
-    return Response.json({ error: 'Invalid or expired link. Review links expire after 24 hours.' }, { status: 403 })
+  let submission
+  try {
+    submission = await getReviewSubmission(target.recordId)
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
   }
-
-  const submission = await getReviewSubmission(parsed.recordId)
   if (!submission) {
     return Response.json({ error: 'Review submission not found. It may have expired.' }, { status: 404 })
   }
@@ -51,11 +89,20 @@ export async function POST(req: Request) {
     })
   }
 
-  const status = parsed.action === 'approve' ? 'approved' as const : 'rejected' as const
-  const decided = await decideReview(parsed.recordId, status, 'EHS reviewer (via email link)', typeof note === 'string' ? note.slice(0, 500) : undefined)
+  const status = target.action === 'approve' ? 'approved' as const : 'rejected' as const
+  // note is already truncated to 500 chars by ReviewDecideBodySchema
+  let decided
+  try {
+    decided = await decideReview(target.recordId, status, actor, note)
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!decided) {
     return Response.json({ error: 'Failed to record decision' }, { status: 500 })
   }
+
+  await appendAudit({ actor, action: `review-${status}`, target: target.recordId })
 
   // Propagate the decision to the record's Notion page (best-effort): the
   // device poller reads the 'EHS Review' property, so without this PATCH an
@@ -103,7 +150,13 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Invalid or expired link' }, { status: 403 })
   }
 
-  const submission = await getReviewSubmission(parsed.recordId)
+  let submission
+  try {
+    submission = await getReviewSubmission(parsed.recordId)
+  } catch (err) {
+    reportServerError('api/safety/review/decide', err)
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!submission) {
     return Response.json({ error: 'Submission not found' }, { status: 404 })
   }
@@ -138,7 +191,7 @@ async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmi
     if (sub.note) {
       properties['EHS Review Note'] = { rich_text: [{ text: { content: sub.note.slice(0, 500) } }] }
     }
-    const res = await fetch(`https://api.notion.com/v1/pages/${sub.notionPageId}`, {
+    const res = await fetchWithTimeout(`https://api.notion.com/v1/pages/${sub.notionPageId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -147,9 +200,9 @@ async function patchNotionDecision(sub: import('@/lib/review-store').ReviewSubmi
       },
       body: JSON.stringify({ properties }),
     })
-    if (!res.ok) console.error('[review-decide] Notion PATCH error:', await res.text())
+    if (!res.ok) reportServerError('api/safety/review/decide', new Error(`Notion PATCH error: ${await res.text()}`))
   } catch (e) {
-    console.error('[review-decide] Notion PATCH failed:', e instanceof Error ? e.message : e)
+    reportServerError('api/safety/review/decide', e)
   }
 }
 
@@ -198,7 +251,7 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
       ]
 
   try {
-    const res = await fetch(RESEND_URL, {
+    const res = await fetchWithTimeout(RESEND_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -209,12 +262,12 @@ async function sendDecisionEmail(sub: import('@/lib/review-store').ReviewSubmiss
       }),
     })
     if (!res.ok) {
-      console.error('[review-decide] email error:', await res.text())
+      reportServerError('api/safety/review/decide', new Error(`email error: ${await res.text()}`))
       return false
     }
     return true
   } catch (e) {
-    console.error('[review-decide] email failed:', e instanceof Error ? e.message : e)
+    reportServerError('api/safety/review/decide', e)
     return false
   }
 }

@@ -1,8 +1,11 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { isAdmin } from '@/lib/admin'
-import { updateSignupStatus, getAllSignups, type BetaStatus } from '@/lib/beta'
+import { updateSignupStatus, getAllSignups } from '@/lib/beta'
+import { BetaDecideBodySchema } from '@/lib/beta-decide-schemas'
 import { sendBetaEmail } from './email'
+import { reportServerError } from '@/lib/report-error'
+import { appendAudit } from '@/lib/audit-log'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
@@ -10,23 +13,32 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { id?: string; status?: string }
+  let raw: unknown
   try {
-    body = await req.json()
-  } catch {
+    raw = await req.json()
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const id = String(body.id ?? '')
-  const status = body.status as BetaStatus
-  if (!id || (status !== 'approved' && status !== 'rejected')) {
+  const parsed = BetaDecideBodySchema.safeParse(raw)
+  if (!parsed.success) {
     return Response.json({ error: 'id and status (approved|rejected) required' }, { status: 400 })
   }
+  const { id, status } = parsed.data
 
-  const signup = await updateSignupStatus(id, status)
+  let signup
+  try {
+    signup = await updateSignupStatus(id, status)
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
   if (!signup) {
     return Response.json({ error: 'Signup not found' }, { status: 404 })
   }
+
+  await appendAudit({ actor: session.user.email, action: `beta-${status}`, target: id })
 
   await sendBetaEmail(signup, status)
 
@@ -39,5 +51,10 @@ export async function GET() {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  return Response.json({ signups: await getAllSignups() })
+  try {
+    return Response.json({ signups: await getAllSignups() })
+  } catch (err) {
+    reportServerError('api/beta/decide', err)
+    return Response.json({ error: 'Storage temporarily unavailable, try again shortly' }, { status: 503 })
+  }
 }

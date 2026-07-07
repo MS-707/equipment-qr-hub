@@ -30,6 +30,14 @@
   /* Text-grade semantic colors: ≥4.5:1 on tinted card backgrounds in both
      themes. Use for safety-critical message TEXT; the base tokens remain for
      fills, borders, and icons. */
+  /* categorical hues (incident root-cause, hierarchy of controls) */
+  --hue-blue: #60A5FA;
+  --hue-amber: #FBBF24;
+  --hue-green: #34D399;
+  --hue-cyan: #22D3EE;
+  --hue-violet: #C084FC;
+  --hue-teal: #2DD4BF;
+  --hue-orange: #FB923C;
   --ok-strong: #5BD695;
   --warn-strong: #FFC53D;
   --danger-strong: #F08C8C;
@@ -71,6 +79,14 @@
   --shadow-card: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-raised: 0 4px 12px rgba(0,0,0,0.75);
   --shadow-pop: 0 8px 24px rgba(0,0,0,0.55);
+  /* categorical hues — darkened for AA on light surfaces */
+  --hue-blue: #1D4ED8;
+  --hue-amber: #92400E;
+  --hue-green: #047857;
+  --hue-cyan: #0E7490;
+  --hue-violet: #6D28D9;
+  --hue-teal: #0F766E;
+  --hue-orange: #C2410C;
   --ok-strong: #5BD695;
   --warn-strong: #FFC53D;
   --danger-strong: #F08C8C;
@@ -93,7 +109,7 @@
   --shadow-raised: 0 2px 8px rgba(0,0,0,0.08);
   --shadow-pop: 0 6px 16px rgba(0,0,0,0.10);
   --ok: #1F9D55;
-  --warn: #E8A317;
+  --warn: #8F6400;
   --danger: #D14343;
   --expired: #DA7B2B;
   --ok-strong: #15703D;

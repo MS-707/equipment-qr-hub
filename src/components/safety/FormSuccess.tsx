@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CheckCircle2, WifiOff, Send, Loader2, AlertTriangle } from 'lucide-react'
 import { haptic } from '@/lib/haptic'
 import type { ReviewSubmitState } from '@/lib/review-submit'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface FormSuccessProps {
   id: string
@@ -117,7 +118,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
 
       <Link
         href={`/safety/record/${id}`}
-        className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+        className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
         View / Print
       </Link>

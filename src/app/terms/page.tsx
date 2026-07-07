@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function TermsOfService() {
   return (
-    <main className="max-w-2xl mx-auto px-4 pt-6 pb-8 space-y-6">
+    <main id="main" className="max-w-2xl mx-auto px-4 pt-6 pb-8 space-y-6">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm text-mytra-purple hover:underline"
@@ -14,7 +14,7 @@ export default function TermsOfService() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-fg">Terms of Service</h1>
+        <h1 className="text-xl font-bold text-fg">Terms of Service</h1>
         <p className="text-xs text-fg-3 mt-1">Last updated: June 2026</p>
       </div>
 
