@@ -38,11 +38,11 @@ interface AnalysisResult {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  equipment: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  process: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  training: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  environment: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  management: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  equipment: 'bg-hue-blue/10 text-hue-blue border-hue-blue/20',
+  process: 'bg-hue-amber/10 text-hue-amber border-hue-amber/20',
+  training: 'bg-hue-green/10 text-hue-green border-hue-green/20',
+  environment: 'bg-hue-cyan/10 text-hue-cyan border-hue-cyan/20',
+  management: 'bg-hue-violet/10 text-hue-violet border-hue-violet/20',
 }
 
 const CONTROL_LEVEL_ORDER: AnalysisCorrectiveAction['controlLevel'][] = [
@@ -58,11 +58,11 @@ const CONTROL_LEVEL_LABELS: Record<string, string> = {
 }
 
 const CONTROL_LEVEL_COLORS: Record<string, string> = {
-  elimination: 'bg-emerald-500/10 text-emerald-400',
-  substitution: 'bg-teal-500/10 text-teal-400',
-  engineering: 'bg-blue-500/10 text-blue-400',
-  administrative: 'bg-amber-500/10 text-amber-400',
-  ppe: 'bg-orange-500/10 text-orange-400',
+  elimination: 'bg-hue-green/10 text-hue-green',
+  substitution: 'bg-hue-teal/10 text-hue-teal',
+  engineering: 'bg-hue-blue/10 text-hue-blue',
+  administrative: 'bg-hue-amber/10 text-hue-amber',
+  ppe: 'bg-hue-orange/10 text-hue-orange',
 }
 
 const PRIORITY_COLORS: Record<string, string> = {

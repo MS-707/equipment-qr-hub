@@ -143,7 +143,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="relative w-full max-w-sm">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/2 w-[520px] h-[520px] -translate-x-1/2 rounded-full bg-[#572DFF]/[0.09] blur-3xl animate-glowPulse [will-change:opacity]"
+          className="pointer-events-none absolute -top-32 left-1/2 w-[520px] h-[520px] -translate-x-1/2 rounded-full bg-mytra-purple/10 blur-3xl animate-glowPulse [will-change:opacity]"
         />
       <div className="relative w-full bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
         <div className="flex items-center gap-2 mb-1 animate-blurIn" style={{ animationDelay: '60ms' }}>
@@ -174,8 +174,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => signIn('google')}
-            className="w-full py-3 rounded-lg text-sm font-semibold bg-white text-gray-900
-                       hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-lg text-sm font-semibold bg-white text-black
+                       hover:opacity-90 transition-colors flex items-center justify-center gap-2"
           >
             Continue with Google
           </button>
