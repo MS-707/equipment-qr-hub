@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 13,
+ "iteration": 14,
  "gates": [
   {
    "id": "lint",
@@ -34,7 +34,7 @@
    "name": "UX",
    "score": 10,
    "initialScore": 7,
-   "verifiedScore": null,
+   "verifiedScore": 10,
    "auditSummary": "All ten met/unmet judgments were independently re-verified and none overturned: the seven met criteria have real code behind them (root SyncProvider installing online-event sync+notify listeners, synchronous local persistence before any fetch in all seven field forms, useFormDraft with pagehide/visibilitychange flush across six safety forms plus a mirrored pre-trip draft, inputMode/htmlFor/coarse-pointer 16px rule, error/not-found/~offline recovery pages with empty states and skeletons, offline chip + pending-sync badge + aria-live toast + cached-identity banner, and fully static /inspect/[id] pages with OOS warning and profile redirect). The three unmet criteria are genuinely unmet: no skip link exists and most routes lack a <main> landmark; identity.ts:39 caps offline identity at 72h and AuthGate hard-locks stale-offline workers out of all forms; Playwright ships in devDependencies with zero config, zero specs, and no e2e script. Biggest real gaps are the 72h offline lockout (a direct field-reliability risk for multi-day remote crews) and the complete absence of automated accessibility/offline regression coverage. One rubric defect: UX-2's \"every tappable control\" prose is broader than its grep-based check and a ~14px dismiss button slips through.",
    "reviewNotes": "Overall: field-worker UX here is unusually strong for the scale \u2014 offline queue with backoff, drafts on every form, 44px+ targets, haptics, skeletons/empty states everywhere, focus-trapped native <dialog> and tours with focus restore, visualViewport keyboard handling in SageTriage, static QR landing pages. The three unmet criteria are the real remaining gaps. Verified-against-code status of OFI-BACKLOG UX items: #8 (root sync listeners), #13 (label associations), #14 (--fg-4 now #9E9E9E, ~7:1), #15 (visualViewport) are FIXED despite unchecked boxes; #23 (PullToRefresh animates height and re-renders children per touchmove \u2014 PullToRefresh.tsx:38,65; mid-range Android jank, worth fixing but sub-criterion), #24 partially fixed (nav roles cleaned; dead [role=\\\"tabbar\\\"] print selector remains at globals.css:260), #25 (72h identity TTL) OPEN and is UX-9. Additional sub-criterion finding: the prefers-reduced-motion block (globals.css:238-247) does not disable ::view-transition-old/new(root) animations (globals.css:138-150) because * does not match pseudo-elements on html \u2014 add an explicit reduced-motion rule; fold into UX-M1 if desired. Out-of-lane: multi-tab localStorage read-modify-write clobber (backlog #19) and signature/photo blob sync (#20) are data-integrity items for the backend dimension; shared-device identity switch-user purge (#21) belongs to enterprise/security; SageTriage prompt-injection (#9) backend. Uncertainty flags: UX-5/UX-7 were verified by code inspection only \u2014 no build was run (npx tsc/next build not executed to keep the review read-only and fast); the a11y axe criterion (UX-10) may surface new violations once run \u2014 fix them rather than loosening the assertion. For the roadmap executor: /inspect/[id] and /equipment/[id] use bundled static data, so adding equipment requires a rebuild \u2014 that is a design/backend concern, not scored here.",
    "criteria": [
@@ -117,7 +117,8 @@
      "verifiedBy": "verify-criteria wf_8464d860-e11 (1-vote adversarial)",
      "verifiedAtIteration": 14
     }
-   ]
+   ],
+   "status": "done"
   },
   "design": {
    "key": "design",
@@ -2064,6 +2065,25 @@
    ],
    "refuted": [],
    "notes": "30-day offline identity ceiling + 72h aging nudge; field lockout eliminated. UX 8->9. Owner note: shorter ceiling is a one-liner in identity.ts."
+  },
+  {
+   "iteration": 14,
+   "date": "2026-07-07",
+   "milestone": "UX-M3",
+   "event": "iteration+dimension-complete",
+   "tasksDone": [
+    "UX-M3-T1",
+    "UX-M3-T2",
+    "UX-M3-T3",
+    "UX-M3-TX1"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK; e2e suite 15/15 across 3 repeats",
+   "verified": [
+    "UX-10"
+   ],
+   "refuted": [],
+   "panel": "Dimension completion panel (resumed after pause, cached votes reused): UX-9 3/3, UX-10 3/3, UX-8 2/3 \u2014 survived; the dissenting edge-case vote (skip link dead on error/404 mains lacking id) was fixed anyway before locking. ux verifiedScore=10, dimension done.",
+   "notes": "Playwright harness shipped; axe scans caught 7 real contrast violations (fixed); offline pre-trip capture proven end-to-end. UX is the SECOND dimension at a verified 10/10."
   }
  ]
 }
