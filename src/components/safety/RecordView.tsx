@@ -771,7 +771,7 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
         <div className="flex items-center gap-2 mb-2">
           <span
             className="text-xs font-semibold uppercase px-2 py-0.5 rounded"
-            style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity], backgroundColor: INCIDENT_SEVERITY_COLORS[incident.severity] + '1A' }}
+            style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity], backgroundColor: `color-mix(in srgb, ${INCIDENT_SEVERITY_COLORS[incident.severity]} 10%, transparent)` }}
           >
             {incident.severity}
           </span>

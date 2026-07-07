@@ -360,7 +360,7 @@ export default function IncidentReportForm() {
                   className="text-xs font-medium py-2 rounded-lg border capitalize transition-colors min-h-[44px]"
                   style={
                     on
-                      ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: '#fff', borderColor: INCIDENT_SEVERITY_COLORS[s] }
+                      ? { backgroundColor: INCIDENT_SEVERITY_COLORS[s], color: 'white', borderColor: INCIDENT_SEVERITY_COLORS[s] }
                       : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                   }
                 >
