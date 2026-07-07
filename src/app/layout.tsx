@@ -31,6 +31,19 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  openGraph: {
+    title: 'Sage | EHS',
+    description:
+      'AI-powered EHS safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for teams of every size',
+    siteName: 'Sage EHS',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sage | EHS',
+    description:
+      'AI-powered EHS safety — Pre-Task Plans, permits, incident reporting, and equipment tracking for teams of every size',
+  },
 }
 
 export const viewport: Viewport = {
