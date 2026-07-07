@@ -22,3 +22,10 @@ associated infrastructure operated by Mytra AI, Inc.
 ## Supported Versions
 
 Only the latest deployed version receives security updates.
+
+## Dependency Posture
+
+Production dependencies are audited with `npm audit --omit=dev`;
+`package-lock.json` is git-tracked. Advisories that only resolve via breaking
+framework upgrades are risk-accepted with dated rationale and a review-by date
+in [docs/DEPENDENCY-AUDIT.md](docs/DEPENDENCY-AUDIT.md).
