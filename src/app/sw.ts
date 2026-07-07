@@ -38,7 +38,10 @@ const serwist = new Serwist({
     // Auth and safety APIs must always hit the network — never serve from cache.
     {
       matcher: ({ url }) =>
-        url.pathname.startsWith("/api/auth") || url.pathname.startsWith("/api/safety"),
+        url.pathname.startsWith("/api/auth") ||
+        url.pathname.startsWith("/api/safety") ||
+        // i18n kill switch must never be cache-served (docs/i18n/DESIGN.md)
+        url.pathname.startsWith("/api/i18n"),
       handler: new NetworkOnly(),
     },
     {

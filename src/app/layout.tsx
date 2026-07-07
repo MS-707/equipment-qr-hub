@@ -6,6 +6,7 @@ import NavHeader from '@/components/NavHeader'
 import BottomTabBar from '@/components/BottomTabBar'
 import StorageAlert from '@/components/StorageAlert'
 import AuthProvider from '@/components/providers/AuthProvider'
+import { I18nProvider } from '@/lib/i18n'
 import SyncProvider from '@/components/providers/SyncProvider'
 
 const SyncToast = dynamic(() => import('@/components/SyncToast'), { ssr: false })
@@ -62,9 +63,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{localStorage.removeItem('sage-locale');var t=localStorage.getItem('sage-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}else{var d=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=d?'dark':'light'}}catch(e){document.documentElement.dataset.theme='dark'}})()` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var l=localStorage.getItem('sage-locale-v2');if(l==='es'){document.documentElement.lang='es'}var t=localStorage.getItem('sage-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}else{var d=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=d?'dark':'light'}}catch(e){document.documentElement.dataset.theme='dark'}})()` }} />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         {/* iOS PWA Splash Screens — one per common device profile; a missing
             profile means a blank flash at standalone launch */}
@@ -92,6 +93,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <AuthProvider>
+          <I18nProvider>
           <SyncProvider>
             <NavHeader />
             {children}
@@ -104,6 +106,7 @@ export default function RootLayout({
             <SyncToast />
             <SwUpdateBanner />
           </SyncProvider>
+          </I18nProvider>
         </AuthProvider>
       </body>
     </html>
