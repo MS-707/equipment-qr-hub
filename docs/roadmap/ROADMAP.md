@@ -220,9 +220,9 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 23. EN-M1 — Dependency hygiene: triage and document supply-chain posture
 *Dimension: Enterprise Readiness · flips: EN-3 · why here: dependency audit triage once the dependency set has stabilized (after Playwright/axe additions), so the audit doc doesn't immediately go stale.*
 
-- [ ] **EN-M1-T1** Run `npm audit fix` (non-breaking) to clear the fixable prod advisories (brace-expansion in @serwist), commit the updated package-lock.json, and re-run `npm run test` + `npm run build` to confirm no regression.
+- [x] **EN-M1-T1** Run `npm audit fix` (non-breaking) to clear the fixable prod advisories (brace-expansion in @serwist), commit the updated package-lock.json, and re-run `npm run test` + `npm run build` to confirm no regression.
   - *Acceptance:* `npm audit --omit=dev` no longer lists brace-expansion; vitest suite and next build pass.
-- [ ] **EN-M1-T2** Create docs/DEPENDENCY-AUDIT.md: a table of every remaining high/critical GHSA id from `npm audit --omit=dev` (the next@14.2.35 advisory set, next-auth/uuid chain) with dated risk-acceptance rationale (Vercel-managed hosting mitigations, no self-hosted image optimizer, upgrade plan to Next 15/16) and a review-by date. Link it from SECURITY.md.
+- [x] **EN-M1-T2** Create docs/DEPENDENCY-AUDIT.md: a table of every remaining high/critical GHSA id from `npm audit --omit=dev` (the next@14.2.35 advisory set, next-auth/uuid chain) with dated risk-acceptance rationale (Vercel-managed hosting mitigations, no self-hosted image optimizer, upgrade plan to Next 15/16) and a review-by date. Link it from SECURITY.md.
   - *Acceptance:* Every GHSA id printed by `npm audit --omit=dev` at high/critical severity appears in docs/DEPENDENCY-AUDIT.md with a date; SECURITY.md references the file.
 
 ### 24. LG-M3 — Third-party license notices artifact

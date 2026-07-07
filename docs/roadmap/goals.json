@@ -303,7 +303,7 @@
   "enterprise": {
    "key": "enterprise",
    "name": "Enterprise Readiness",
-   "score": 9,
+   "score": 10,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "All 10 met/unmet claims were independently re-verified and confirmed accurate \u2014 no overturns; the review even slightly understated EN-7 (12 API route files with raw console.* calls, not 10). Headers, SECURITY.md, the admin health probe, and the three CSV export paths genuinely hold up in code. The biggest real gap is the complete absence of server-side accountability infrastructure: no audit log of privileged actions (EN-8), no RBAC beyond a binary admin allowlist with README explicitly disclaiming RBAC (EN-9), and no SSO/runbook/retention documentation (EN-6, EN-10). Confirmed score: 4/10.",
@@ -327,9 +327,11 @@
      "id": "EN-3",
      "criterion": "Dependency hygiene: package-lock.json is git-tracked AND `npm audit --omit=dev` reports zero high/critical advisories, OR every high/critical advisory it reports appears by GHSA id in a git-tracked docs/DEPENDENCY-AUDIT.md with a dated risk acceptance rationale.",
      "verify": "Run `git ls-files package-lock.json` (non-empty) and `npm audit --omit=dev`; if any high/critical remains, grep its GHSA id in docs/DEPENDENCY-AUDIT.md.",
-     "met": false,
-     "evidence": "package-lock.json is tracked, but `npm audit --omit=dev` reports 1 high (next 14.2.35: 14 advisories incl. GHSA-3g8h-86w9-wvmq) + 4 moderate; docs/DEPENDENCY-AUDIT.md does not exist \u2014 no waiver for any advisory.",
-     "autonomyNote": "npm audit needs registry access; transitively-unfixable advisories pass via dated GHSA risk-acceptance entries in docs/DEPENDENCY-AUDIT.md."
+     "met": true,
+     "evidence": "package-lock.json git-tracked; npm audit --omit=dev has 0 critical and every high GHSA (5, all via next@14) carries a dated risk-acceptance row in docs/DEPENDENCY-AUDIT.md with platform rationale + 2026-10-01 review-by; brace-expansion fixed non-breaking.",
+     "autonomyNote": "npm audit needs registry access; transitively-unfixable advisories pass via dated GHSA risk-acceptance entries in docs/DEPENDENCY-AUDIT.md.",
+     "verifiedBy": "verify-criteria wf_720efcd3-d55 (1-vote adversarial)",
+     "verifiedAtIteration": 17
     },
     {
      "id": "EN-4",
@@ -1013,7 +1015,7 @@
    "criteria": [
     "EN-3"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "EN-M1-T1",
@@ -1022,7 +1024,7 @@
       "package-lock.json"
      ],
      "acceptance": "`npm audit --omit=dev` no longer lists brace-expansion; vitest suite and next build pass.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "EN-M1-T2",
@@ -1032,7 +1034,7 @@
       "SECURITY.md"
      ],
      "acceptance": "Every GHSA id printed by `npm audit --omit=dev` at high/critical severity appears in docs/DEPENDENCY-AUDIT.md with a date; SECURITY.md references the file.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2120,6 +2122,22 @@
    "refuted": [],
    "panel": "Dimension completion panel: DM-6/DM-9/DM-10 x 3 lenses = 9/9 votes MET (two votes executed the rehearsal script live). demo verifiedScore=10, dimension done.",
    "notes": "Presenter runbook shipped. DEMO is the THIRD dimension at a verified 10/10."
+  },
+  {
+   "iteration": 17,
+   "date": "2026-07-07",
+   "milestone": "EN-M1",
+   "event": "iteration",
+   "tasksDone": [
+    "EN-M1-T1",
+    "EN-M1-T2"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK (re-proven after npm audit fix --omit=dev pruned devDependencies \u2014 near-miss: a ; in the command chain let the push proceed past a red tsc; content was benign, gates re-proven at the same commit)",
+   "verified": [
+    "EN-3"
+   ],
+   "refuted": [],
+   "notes": "Dependency risk register shipped. Enterprise 9->10 met, completion panel launched. Process lesson logged: never --omit=dev on installing commands; never ; after a gate in a push chain."
   }
  ]
 }
