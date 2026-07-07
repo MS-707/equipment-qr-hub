@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 18,
+ "iteration": 19,
  "gates": [
   {
    "id": "lint",
@@ -123,7 +123,7 @@
   "design": {
    "key": "design",
    "name": "Design",
-   "score": 6,
+   "score": 8,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
@@ -156,9 +156,11 @@
      "id": "DS-4",
      "criterion": "Page-title typography is uniform: exactly one h1 size variant across route pages (a single base+sm: pair counts as one variant); beta landing and email-action screens excluded.",
      "verify": "Page-title typography is uniform: enumerate the h1 rendered at the top of each route's page.tsx (or the dashboard component it delegates to) using a multiline-aware search (rg -U '<h1[^>]*className' across src/app/**/page.tsx plus the top-level dashboard components they render), extract font-size classes, and require exactly one size variant (a single base+sm: pair counts as one variant). Exclude the beta landing page and email-action confirmation screens.",
-     "met": false,
-     "evidence": "Tally shows 4+ size variants: text-xl (inspections/page.tsx:73, SafetyDashboard.tsx:101), text-2xl (admin/labels:78, privacy:17), text-2xl sm:text-3xl (equipment:73, work-orders:15), text-lg (safety/review/action:119). No single page-title scale.",
-     "rewritten": true
+     "met": true,
+     "evidence": "Every in-scope route h1 is text-xl (verifier enumerated all 13 incl. delegated dashboards); beta landing and email-action screens excluded per rubric; multiline pass clean.",
+     "rewritten": true,
+     "verifiedBy": "verify-criteria wf_de8c8e5c-abb / wf_fc2fcdb9-894 (DS-6 confirmed after identifier-literal refutation)",
+     "verifiedAtIteration": 19
     },
     {
      "id": "DS-5",
@@ -171,8 +173,10 @@
      "id": "DS-6",
      "criterion": "Primary action buttons come from a shared primitive: a Button component (src/components/ui/) or exported button class constants (src/lib/form-styles.ts) exists, and grep for inline className literals combining bg-mytra-purple with text-white across src/app+src/components returns zero occurrences outside that primitive.",
      "verify": "ls src/components/ui or grep buttonCls src/lib/form-styles.ts confirms the primitive; then grep -rn 'bg-mytra-purple' src --include='*.tsx' piped through a text-white filter must hit only the primitive file.",
-     "met": false,
-     "evidence": "No src/components/ui dir and no buttonCls in src/lib/form-styles.ts (only labelCls/inputCls/textareaCls); 131 bg-mytra-purple occurrences across files, 31 files pair it inline with text-white \u2014 with drifted variants (review/action:235 hover:bg-[#4722CC] vs token hover #6B42FF)."
+     "met": true,
+     "evidence": "form-styles.ts exports buttonCls/btnPrimaryCls/btnSecondaryCls/btnSelectedCls, referenced 92x; bg-mytra-purple+text-white pair exists only in the primitive file (0 hits across 71 candidate lines).",
+     "verifiedBy": "verify-criteria wf_de8c8e5c-abb / wf_fc2fcdb9-894 (DS-6 confirmed after identifier-literal refutation)",
+     "verifiedAtIteration": 19
     },
     {
      "id": "DS-7",
@@ -826,7 +830,7 @@
     "DS-4",
     "DS-6"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DS-M2-T1",
@@ -843,7 +847,7 @@
       "src/app/safety/review/action/page.tsx"
      ],
      "acceptance": "grep -rEon '<h1 className=\"[^\"]*\"' src/app src/components --include='*.tsx' | grep -v beta/page | size-class tally yields exactly 1 variant.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "DS-M2-T2",
@@ -852,7 +856,7 @@
       "src/lib/form-styles.ts"
      ],
      "acceptance": "grep -n 'btnPrimaryCls' src/lib/form-styles.ts returns the export; npx tsc --noEmit passes.",
-     "status": "pending"
+     "status": "done"
     },
     {
      "id": "DS-M2-T3",
@@ -862,7 +866,7 @@
       "src/app/**"
      ],
      "acceptance": "grep -rn 'bg-mytra-purple' src --include='*.tsx' | grep 'text-white' hits only src/lib/form-styles.ts (or Button.tsx).",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2166,6 +2170,26 @@
    ],
    "panel": "Enterprise completion: EN-3/8/9/10 3-3 unanimous, EN-7 2-1 (console.error in beta email helper \u2014 fixed), EN-6 refuted then re-confirmed 3/3. enterprise verifiedScore=10, FOURTH dimension done.",
    "notes": "DS-M1 tokenization done; DS-3 dissent exposed a real bug (invalid var()+hex tint = severity pill background never rendered) \u2014 fixed. Design 5->6."
+  },
+  {
+   "iteration": 19,
+   "date": "2026-07-07",
+   "milestone": "DS-M2",
+   "event": "iteration",
+   "tasksDone": [
+    "DS-M2-T1",
+    "DS-M2-T2",
+    "DS-M2-T3"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK, e2e 5/5",
+   "verified": [
+    "DS-4",
+    "DS-6"
+   ],
+   "refuted": [
+    "DS-6 (first attempt: rubric greps the literal identifier buttonCls; alias exported, re-confirmed)"
+   ],
+   "notes": "One title scale + shared button primitives; 32 files migrated; lint caught one sweep corruption (fixed). Design 6->8."
   }
  ]
 }

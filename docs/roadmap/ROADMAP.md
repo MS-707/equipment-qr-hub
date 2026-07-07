@@ -242,11 +242,11 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 26. DS-M2 — Type scale and shared button primitive
 *Dimension: Design · flips: DS-4, DS-6 · why here: unified type scale + shared Button primitive on top of the completed token layer.*
 
-- [ ] **DS-M2-T1** Pick one page-title scale (recommend text-xl font-bold text-fg, the SafetyDashboard/inspections pattern) and apply it to every top-level page h1: equipment, work-orders, admin/labels, privacy, terms, error, not-found, ~offline, safety/review/action, admin/beta.
+- [x] **DS-M2-T1** Pick one page-title scale (recommend text-xl font-bold text-fg, the SafetyDashboard/inspections pattern) and apply it to every top-level page h1: equipment, work-orders, admin/labels, privacy, terms, error, not-found, ~offline, safety/review/action, admin/beta.
   - *Acceptance:* grep -rEon '<h1 className="[^"]*"' src/app src/components --include='*.tsx' | grep -v beta/page | size-class tally yields exactly 1 variant.
-- [ ] **DS-M2-T2** Add btnPrimaryCls/btnSecondaryCls exports to src/lib/form-styles.ts (or a src/components/ui/Button.tsx) encoding the canonical primary button (bg-mytra-purple text-white hover:bg-mytra-purple-hover rounded-lg min-h-[44px] press-scale + focus ring).
+- [x] **DS-M2-T2** Add btnPrimaryCls/btnSecondaryCls exports to src/lib/form-styles.ts (or a src/components/ui/Button.tsx) encoding the canonical primary button (bg-mytra-purple text-white hover:bg-mytra-purple-hover rounded-lg min-h-[44px] press-scale + focus ring).
   - *Acceptance:* grep -n 'btnPrimaryCls' src/lib/form-styles.ts returns the export; npx tsc --noEmit passes.
-- [ ] **DS-M2-T3** Migrate the 31 files with inline 'bg-mytra-purple ... text-white' button literals to the shared primitive (mechanical sweep; keep per-site width/margin additions as appended classes).
+- [x] **DS-M2-T3** Migrate the 31 files with inline 'bg-mytra-purple ... text-white' button literals to the shared primitive (mechanical sweep; keep per-site width/margin additions as appended classes).
   - *Acceptance:* grep -rn 'bg-mytra-purple' src --include='*.tsx' | grep 'text-white' hits only src/lib/form-styles.ts (or Button.tsx).
 
 ### 27. DS-M3 — Printable signed pre-trip inspection record
