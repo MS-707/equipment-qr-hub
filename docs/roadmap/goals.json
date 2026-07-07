@@ -1754,18 +1754,18 @@
   "UX-M3",
   "DM-M3",
   "DM-M2",
+  "EN-M1",
+  "DS-M1",
+  "DS-M2",
+  "DS-M3",
+  "DS-M4",
   "ES-M1",
   "ES-M2",
   "ES-M3",
   "ES-M4",
   "ES-M5",
   "ES-M6",
-  "EN-M1",
-  "LG-M3",
-  "DS-M1",
-  "DS-M2",
-  "DS-M3",
-  "DS-M4"
+  "LG-M3"
  ],
  "orderReasons": {
   "LG-M1": "false statements in a live privacy policy (signatures, AI PII, missing processors, wrong retention) are an active legal liability and pure doc edits; fix truthfulness before anything else.",
@@ -2138,6 +2138,12 @@
    ],
    "refuted": [],
    "notes": "Dependency risk register shipped. Enterprise 9->10 met, completion panel launched. Process lesson logged: never --omit=dev on installing commands; never ; after a gate in a push chain."
+  },
+  {
+   "iteration": 17,
+   "date": "2026-07-07",
+   "event": "owner-reorder",
+   "details": "Mark asked to run the four Design polish milestones first. New pending order: DS-M1..DS-M4, then ES-M1, ES-M2, ES-M3, ES-M4, ES-M5, ES-M6, LG-M3. Enterprise completion panel resumes in parallel from cached run wf_cca84511-475."
   }
  ]
 }
