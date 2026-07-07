@@ -4,7 +4,7 @@
  "goal": "All seven dimensions verified at full score against the frozen rubrics",
  "createdAt": "2026-07-06",
  "branch": "claude/construction-safety-audits-HC6MA",
- "iteration": 19,
+ "iteration": 20,
  "gates": [
   {
    "id": "lint",
@@ -123,7 +123,7 @@
   "design": {
    "key": "design",
    "name": "Design",
-   "score": 8,
+   "score": 9,
    "initialScore": 4,
    "verifiedScore": null,
    "auditSummary": "The review is largely accurate: all five unmet verdicts (DS-3, DS-4, DS-6, DS-9, DS-10) reproduce exactly, and DS-1, DS-2, DS-5, DS-8 hold up under re-verification. One met verdict was overturned: DS-7 fails its own grep-based check because AuthGate's uncapped 520px decorative glow has no clipping ancestor and causes real horizontal scroll on the sign-in page at phone widths. The biggest genuine gaps remain the absence of any shared Button primitive (51 inline bg-mytra-purple/text-white pairings with drifted hover variants) and two fully hardcoded dark-only surfaces (safety/review/action, IncidentReportForm) that break light-theme parity, plus signed pre-trip inspections having no printable record.",
@@ -199,8 +199,10 @@
      "id": "DS-9",
      "criterion": "Every physical artifact the app produces has a print-formatted surface: QR labels print via a print-grid, safety records (PTP/JHA/permits/incidents) print via the formal print-doc layout with signature lines, AND a completed signed pre-trip inspection has a record view that calls window.print() using the same print-doc classes.",
      "verify": "grep -rln 'window.print' src --include='*.tsx' must include admin/labels, safety RecordView, and an inspections record surface; drive: submit an inspection, open its record, print preview shows print-doc-header + print-sig content.",
-     "met": false,
-     "evidence": "window.print exists only in RecordView.tsx (:270-272, formal layout :283-399) and admin/labels/page.tsx (:132, print-grid :52). PreTripInspection.tsx (1154 lines) has zero 'print' matches \u2014 signed inspections (touch signature, EHS-notified) have no printable record."
+     "met": true,
+     "evidence": "window.print on all three surfaces (admin/labels, RecordView, inspections/record/[id]); record view renders print-doc-header/meta + operator/supervisor print-sig rows with the IndexedDB touch signature. Live proof: print media shows doc header+sig rows, screen chrome hidden.",
+     "verifiedBy": "verify-criteria wf_a4f9d464-d80 (1-vote adversarial)",
+     "verifiedAtIteration": 20
     },
     {
      "id": "DS-10",
@@ -877,7 +879,7 @@
    "criteria": [
     "DS-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DS-M3-T1",
@@ -887,7 +889,7 @@
       "src/components/PreTripInspection.tsx"
      ],
      "acceptance": "grep -rln 'window.print' src --include='*.tsx' includes an inspections surface; completing an inspection then printing shows the formal header, checklist results, operator signature, and sig lines in print preview.",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
@@ -2190,6 +2192,21 @@
     "DS-6 (first attempt: rubric greps the literal identifier buttonCls; alias exported, re-confirmed)"
    ],
    "notes": "One title scale + shared button primitives; 32 files migrated; lint caught one sweep corruption (fixed). Design 6->8."
+  },
+  {
+   "iteration": 20,
+   "date": "2026-07-07",
+   "milestone": "DS-M3",
+   "event": "iteration",
+   "tasksDone": [
+    "DS-M3-T1"
+   ],
+   "gates": "lint OK, tsc OK, 739/739 tests, build OK + live print-media proof",
+   "verified": [
+    "DS-9"
+   ],
+   "refuted": [],
+   "notes": "Printable signed pre-trip record shipped with result-screen entry link. Design 8->9."
   }
  ]
 }

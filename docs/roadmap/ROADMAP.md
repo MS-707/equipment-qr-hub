@@ -252,7 +252,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 ### 27. DS-M3 — Printable signed pre-trip inspection record
 *Dimension: Design · flips: DS-9 · why here: printable signed pre-trip record; benefits from DS-M2's primitives and pairs with the (recommended) server-side inspection persistence gap work.*
 
-- [ ] **DS-M3-T1** Add a completed-inspection record view (route e.g. src/app/inspections/record/[id]/page.tsx or a post-submit record panel in PreTripInspection) that renders the signed inspection with the existing print-doc-header/print-doc-meta/print-sig-row classes from globals.css and a Print button calling window.print(), mirroring RecordView.tsx:269-272.
+- [x] **DS-M3-T1** Add a completed-inspection record view (route e.g. src/app/inspections/record/[id]/page.tsx or a post-submit record panel in PreTripInspection) that renders the signed inspection with the existing print-doc-header/print-doc-meta/print-sig-row classes from globals.css and a Print button calling window.print(), mirroring RecordView.tsx:269-272.
   - *Acceptance:* grep -rln 'window.print' src --include='*.tsx' includes an inspections surface; completing an inspection then printing shows the formal header, checklist results, operator signature, and sig lines in print preview.
 
 ### 28. DS-M4 — Branded link previews (OG/Twitter)
