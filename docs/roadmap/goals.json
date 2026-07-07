@@ -396,7 +396,7 @@
   "demo": {
    "key": "demo",
    "name": "MVP Demo Readiness",
-   "score": 9,
+   "score": 10,
    "initialScore": 7,
    "verifiedScore": null,
    "auditSummary": "The review is accurate: all 10 met/unmet claims were independently confirmed (gates pass \u2014 694/694 tests, tsc clean, build exit 0; nav, notify pipeline, env-var degradation, PWA manifest, and draft-recovery evidence all check out at the cited lines), so the score of 7/10 stands with zero overturns. The three unmet findings are real: src/lib/auth.ts:36 requires ALLOW_DEV_LOGIN==='1' while .env.example:9 and README.md:285 promise unset=auto, so the documented quickstart lands on 'Sign-in is not configured yet' \u2014 a demo-killing first-run bug. There is also no presenter runbook in docs/ and scripts/demo/record-demo.mjs never touches /inspect, interacts with the signature canvas, or fails on error (its safe() wrapper swallows all exceptions), so the headline QR->inspection->signature->EHS path is neither scripted for humans nor rehearsable by machine.",
@@ -466,9 +466,11 @@
      "id": "DM-9",
      "criterion": "A presenter-facing live demo runbook exists in docs/ (e.g. docs/DEMO-SCRIPT.md) that a non-developer could follow: a pre-demo checklist naming the exact env flags to set (ALLOW_DEV_LOGIN, NEXT_PUBLIC_AI_ASSIST, ANTHROPIC_API_KEY, RESEND_API_KEY/EHS_NOTIFY_EMAIL), a numbered step sequence covering scan QR (/inspect/[id]) -> equipment -> checklist -> signature -> EHS email -> inspection history/CSV export, and a recovery section for refresh/offline/failed-email situations.",
      "verify": "`ls docs/DEMO-SCRIPT.md` (or grep docs/ for a doc containing both '/inspect/' and a pre-demo env checklist); the doc must enumerate the full inspection happy path and at least three mid-demo recovery actions.",
-     "met": false,
-     "evidence": "No live-demo runbook exists: `grep -rin 'demo script\\|walkthrough\\|demo path' docs/ README.md` finds nothing presenter-facing; scripts/demo/README.md is a video-recorder guide whose storyboard (lines 8-17) covers sign-in/SDS/Sage/incident and omits the QR->inspection->signature->EHS-email path entirely.",
-     "autonomyNote": "Runbook documents the RESEND_API_KEY human step; criterion passes on the doc, not on live email."
+     "met": true,
+     "evidence": "docs/DEMO-SCRIPT.md: env checklist (all four flag groups + human test-email step), 10-step QR->equipment->checklist->signature->EHS email->history/CSV sequence, six recovery moves.",
+     "autonomyNote": "Runbook documents the RESEND_API_KEY human step; criterion passes on the doc, not on live email.",
+     "verifiedBy": "verify-criteria wf_4c5fa891-8d9 (1-vote adversarial)",
+     "verifiedAtIteration": 16
     },
     {
      "id": "DM-10",
@@ -1213,7 +1215,7 @@
    "criteria": [
     "DM-9"
    ],
-   "status": "pending",
+   "status": "done",
    "tasks": [
     {
      "id": "DM-M2-T1",
@@ -1223,7 +1225,7 @@
       "README.md"
      ],
      "acceptance": "docs/DEMO-SCRIPT.md exists, contains '/inspect/', names all four env flag groups, has a numbered step list covering QR->equipment->inspection->signature->EHS email->admin/history, and a recovery section with >= 3 mid-demo recovery actions (DM-9 howToVerify passes).",
-     "status": "pending"
+     "status": "done"
     }
    ]
   },
