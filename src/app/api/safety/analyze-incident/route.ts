@@ -7,7 +7,7 @@ import { IncidentRequestSchema } from '@/lib/analyze-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 import { reportServerError } from '@/lib/report-error'
 
-const SYSTEM_PROMPT = `You are Sage, an experienced construction safety incident analyst embedded in an EHS incident reporting tool.
+const SYSTEM_PROMPT = `You are Sage, an experienced workplace safety incident analyst embedded in an EHS incident reporting tool.
 
 Given an incident description and context, perform a root cause analysis using the 5-Why methodology and the Hierarchy of Controls framework.
 

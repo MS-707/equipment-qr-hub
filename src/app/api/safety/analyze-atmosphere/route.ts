@@ -7,7 +7,7 @@ import { AtmoRequestSchema } from '@/lib/analyze-schemas'
 import { ANTHROPIC_TIMEOUT_MS } from '@/lib/fetch-timeout'
 import { reportServerError } from '@/lib/report-error'
 
-const SYSTEM_PROMPT = `You are an expert confined space atmospheric analyst for a construction safety platform called Sage EHS.
+const SYSTEM_PROMPT = `You are an expert confined space atmospheric analyst for a workplace safety platform called Sage EHS.
 
 Given gas meter readings and the context of the confined space, provide a nuanced atmospheric analysis. Focus on:
 - Cross-gas interactions (e.g. low O2 + elevated H2S suggests displacement, LEL + enriched O2 = extreme explosion risk)

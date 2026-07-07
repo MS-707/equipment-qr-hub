@@ -891,7 +891,7 @@ export default function BetaPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="beta-company" className="block text-xs text-[#9A9A9A] mb-1">Company <span aria-hidden="true" className="text-[#E66A6A]">*</span></label>
-                <input id="beta-company" type="text" required autoComplete="organization" maxLength={200} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Construction" className={inputCls} />
+                <input id="beta-company" type="text" required autoComplete="organization" maxLength={200} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Industries" className={inputCls} />
               </div>
               <div>
                 <label htmlFor="beta-role" className="block text-xs text-[#9A9A9A] mb-1">Your role <span aria-hidden="true" className="text-[#E66A6A]">*</span></label>

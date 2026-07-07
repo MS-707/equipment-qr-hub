@@ -1501,7 +1501,7 @@
    "tasks": [
     {
      "id": "ES-M2-T1",
-     "description": "Author docs/i18n/glossary.json (~100 term pairs MINED FROM THE ACTUAL APP SURFACE \u2014 src/data/*, safety components: fire watch, tie-off, guardrail, lockout/tagout etc. \u2014 mapped to mandated neutral-LatAm Spanish; register rules: usted, imperative, <=6th-grade reading; forbidden regionalisms/Iberian forms; do-not-translate list: regRefs, OSHA/Cal-OSHA, brand, model numbers) via generation agent + 5-lens adversarial review; write docs/i18n/review/glossary.json evidence; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json \u2014 owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance.",
+     "description": "Author docs/i18n/glossary.json (~100 term pairs MINED FROM THE ACTUAL APP SURFACE \u2014 src/data/*, safety components: fire watch, tie-off, guardrail, lockout/tagout etc. \u2014 mapped to mandated neutral-LatAm Spanish \u2014 workplace-safety-general vocabulary with strong construction/industrial coverage, NOT construction-only (owner directive 2026-07-07); register rules: usted, imperative, <=6th-grade reading; forbidden regionalisms/Iberian forms; do-not-translate list: regRefs, OSHA/Cal-OSHA, brand, model numbers) via generation agent + 5-lens adversarial review; write docs/i18n/review/glossary.json evidence; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json \u2014 owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance.",
      "files": [],
      "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
      "status": "pending"
@@ -1816,7 +1816,8 @@
   "LG-4 (name every third-party service handling personal data) and EN-6 (enumerate every data store) require the same service/store inventory (Anthropic, Notion, Resend, Slack, Upstash, Sentry, Google) \u2014 build the inventory once and reuse.",
   "DM-6 and BE-3 both govern the dev/email Credentials provider registration logic in src/lib/auth.ts \u2014 the DM-M1 fix (register dev login by default in non-production) must be verified against BE-3's production-lockout requirement in the same change, or fixing one will regress the other.",
   "UX-3 and DM-8 both assert the pre-trip draft persistence mechanism (debounce + pagehide flush + restore); both are met, but the re-scoring loop should treat them as one implementation so a refactor is re-verified under both ids together.",
-  "DS-M1 (retokenizing all colors, DS-3) can change rendered contrast after UX-M3's axe suite is green \u2014 schedule an axe re-run as part of DS-M1's definition of done rather than discovering the flip at the next full review."
+  "DS-M1 (retokenizing all colors, DS-3) can change rendered contrast after UX-M3's axe suite is green \u2014 schedule an axe re-run as part of DS-M1's definition of done rather than discovering the flip at the next full review.",
+  "OWNER DIRECTIVE (2026-07-07): Sage EHS is a safety-AGNOSTIC platform \u2014 great for construction crews but never positioned or biased construction-only. Applies to all user-facing copy, AI system prompts, marketing surfaces, and the ES glossary scope. Construction-specific seed data (equipment fleet, demo script) is fine as THIS org's data."
  ],
  "backlog": [
   "Identity assurance / impersonation: src/lib/auth.ts (lines 74-85) lets anyone holding the single shared EMAIL_LOGIN_CODE sign in as ANY allowed-domain email \u2014 including an ADMIN_EMAILS address \u2014 with a freeform name. This undermines LG-7's 'server-verified submitter' claim on signed OSHA inspections and makes EN-9 RBAC spoofable (roles resolve from a self-asserted email). No criterion requires per-user credentials, email verification, or admin-login step-up. Absorb into ENTERPRISE (new criterion alongside EN-9/EN-10) with a LEGAL note on LG-7's wording.",
@@ -2224,6 +2225,12 @@
    ],
    "refuted": [],
    "notes": "Branded link previews shipped; metadataBase set per verifier note. Design 9->10 met \u2014 completion panel launched. Owner polish block (DS-M1..M4) COMPLETE."
+  },
+  {
+   "iteration": 21,
+   "date": "2026-07-07",
+   "event": "owner-directive",
+   "details": "Platform is safety-agnostic, not construction-specific. Fixed: OG image tagline/alt, three AI system prompts (suggest-jha, analyze-atmosphere, analyze-incident), beta placeholder. Beta hero and app copy verified already-neutral. ES-M2 glossary scope adjusted to workplace-general."
   }
  ]
 }

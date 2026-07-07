@@ -20,7 +20,7 @@ RISK MATRIX (per EHS-MGT-001, 5×5 Severity × Likelihood):
   Likelihood: 1 Rare (exceptional circumstances only), 2 Unlikely (not expected, controls would need to fail), 3 Possible (has occurred in similar operations), 4 Likely (will probably occur, current controls insufficient), 5 Almost Certain (expected to occur, controls absent or ineffective)
   Score = Severity × Likelihood → low (1-4), medium (5-9), high (10-16), critical (20-25)
 
-Return exactly one analysis object per input step, in the same order. Do not cite specific regulatory codes in the output. Base your analysis on standard construction and industrial safety practice.`
+Return exactly one analysis object per input step, in the same order. Do not cite specific regulatory codes in the output. Base your analysis on standard workplace and industrial safety practice across industries.`
 
 const StepAnalysisSchema = z.object({
   steps: z.array(

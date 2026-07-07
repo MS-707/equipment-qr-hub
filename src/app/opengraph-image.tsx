@@ -9,7 +9,7 @@ import { ImageResponse } from 'next/og'
  */
 
 export const runtime = 'edge'
-export const alt = 'Sage EHS — AI-powered safety for construction teams'
+export const alt = 'Sage EHS — AI-powered safety for any workplace'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -53,7 +53,7 @@ export default function OpenGraphImage() {
           </div>
         </div>
         <div style={{ display: 'flex', fontSize: 36, color: '#C9C9C9', marginTop: 28, maxWidth: 900, lineHeight: 1.35 }}>
-          Scan. Inspect. Sign. AI-powered safety records for construction teams — built for gloves, sunlight, and dead zones.
+          Scan. Inspect. Sign. AI-powered safety records for teams in the field — built for gloves, sunlight, and dead zones.
         </div>
         <div style={{ display: 'flex', marginTop: 44, fontSize: 24, color: '#8f8f8f' }}>
           Pre-trip inspections · Permits · JHAs · Incident reports · Toolbox talks
