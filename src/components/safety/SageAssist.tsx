@@ -7,6 +7,7 @@ import type { HazardEntry, RiskLevel } from '@/lib/safety-types'
 import { RISK_COLORS, RISK_LABELS } from '@/lib/safety-types'
 import { cryptoRandomId } from '@/lib/safety-records'
 import { PPE_OPTIONS } from '@/data/safety-checklists'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface Suggestion {
   description: string
@@ -368,9 +369,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
               type="button"
               onClick={addSelected}
               disabled={selected.size === 0}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                         disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
+              className={`${btnPrimaryCls} flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-sm font-medium min-h-[44px]`}
             >
               <Plus className="w-4 h-4" /> Add selected
             </button>
@@ -477,9 +476,7 @@ export default function SageAssist({ scopeOfWork, location, existingHazards, onA
                 type="button"
                 onClick={addSelectedPpe}
                 disabled={selectedPpe.size === 0}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium
-                           bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors
-                           disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
+                className={`${btnPrimaryCls} flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-sm font-medium min-h-[44px]`}
               >
                 <Plus className="w-4 h-4" /> Add selected PPE
               </button>

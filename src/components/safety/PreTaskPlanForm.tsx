@@ -14,7 +14,7 @@ import HazardTable from './HazardTable'
 import PPESelector from './PPESelector'
 import SageAssist from './SageAssist'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
 import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { localToday } from '@/lib/datetime'
@@ -517,7 +517,7 @@ export default function PreTaskPlanForm() {
               handleSubmit()
             }}
             disabled={canSubmit && sageEnabled && auditResult !== null && auditBlocksSubmit}
-            className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
           >
             {sigData.signatures.length === 0
               ? 'At least one crew member must sign'
@@ -606,7 +606,7 @@ export default function PreTaskPlanForm() {
                   onClick={() => setShift(s)}
                   className={`flex-1 text-xs font-medium py-2.5 rounded-lg transition-colors min-h-[44px] inline-flex items-center justify-center ${
                     shift === s
-                      ? 'bg-mytra-purple text-white'
+                      ? `${btnSelectedCls}`
                       : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                   }`}
                 >
@@ -785,7 +785,7 @@ export default function PreTaskPlanForm() {
             if (!canContinue) { setShowValidation(true); return }
             setStep('signon')
           }}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {canContinue ? 'Continue to crew sign-on' : 'Complete scope, location & muster point'}
         </button>
@@ -857,7 +857,7 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
       )}
       <Link
         href={`/safety/record/${submittedId}`}
-        className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+        className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
         View / Print
       </Link>

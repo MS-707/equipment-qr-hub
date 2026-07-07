@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, Shield } from 'lucide-react'
-import { inputCls } from '@/lib/form-styles'
+import { inputCls, btnPrimaryCls } from '@/lib/form-styles'
 
 interface ReviewInfo {
   recordId: string
@@ -235,7 +235,7 @@ function ReviewActionInner() {
             <div className="flex flex-col gap-2 pt-2">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full py-2.5 rounded-lg text-sm font-medium bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+                className={`${btnPrimaryCls} w-full py-2.5 text-sm font-medium`}
               >
                 Try again
               </button>

@@ -36,6 +36,7 @@ import PullToRefresh from '@/components/PullToRefresh'
 import SyncQueuePanel from './SyncQueuePanel'
 import { localToday } from '@/lib/datetime'
 import { SDS_EXTERNAL_URL } from '@/lib/nav'
+import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 
 function today(): string {
   return localToday()
@@ -172,7 +173,7 @@ export default function SafetyDashboard() {
                          transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] border
                          press-scale animate-blurIn ${
               primary
-                ? 'bg-mytra-purple text-white border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-raised hover:shadow-mytra-purple/20'
+                ? `${btnSelectedCls} border-mytra-purple hover:bg-mytra-purple-hover hover:shadow-raised hover:shadow-mytra-purple/20`
                 : 'bg-mytra-card text-fg-2 border-mytra-border hover:bg-mytra-card-hover hover:shadow-raised'
             }`
             const style = { animationDelay: `${100 + i * 40}ms` }
@@ -246,8 +247,7 @@ export default function SafetyDashboard() {
             <p className="text-xs text-fg-3 mb-4">No safety records yet. Start your day with a Pre-Task Plan.</p>
             <Link
               href="/safety/ptp"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors min-h-[44px]"
+              className={`${btnPrimaryCls} inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium min-h-[44px]`}
             >
               <ClipboardList className="w-4 h-4" /> Start PTP
             </Link>

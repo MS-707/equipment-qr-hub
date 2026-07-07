@@ -17,7 +17,7 @@ import PermitChecklist, { criticalRemaining } from './PermitChecklist'
 import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
 import FormStepper, { useActiveStep, type FormStep } from './FormStepper'
 import ValidationSummary, { type ValidationError } from './ValidationSummary'
@@ -601,7 +601,7 @@ export default function ConfinedSpaceForm() {
           type="button"
           disabled={!canSubmit}
           onClick={() => { if (canSubmit) { setConfirmOpen(true) } else { setShowValidation(true) } }}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {!spaceDescription.trim() || !location.trim()
             ? 'Describe the space and location'

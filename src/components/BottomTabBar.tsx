@@ -7,6 +7,7 @@ import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { haptic } from '@/lib/haptic'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 import { usePendingSyncCount } from '@/hooks/usePendingSyncCount'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
@@ -40,8 +41,7 @@ export default function BottomTabBar() {
               <span className="relative">
                 <Icon className="w-7 h-7" />
                 {badgeCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-xs font-bold rounded-full bg-mytra-purple text-white tabular-nums">
+                  <span className={`${btnPrimaryCls} absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-bold rounded-full tabular-nums`}>
                     {badgeCount}
                   </span>
                 )}

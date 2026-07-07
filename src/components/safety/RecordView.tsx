@@ -304,7 +304,7 @@ export default function RecordView({ id }: { id: string }) {
             <ReviewStatusBadge record={r} />
           </div>
         </div>
-        <h1 className="text-lg font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
+        <h1 className="text-xl font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
         <dl className="grid grid-cols-2 gap-2 mt-3 text-sm">
           <Field label="Project" value={r.projectName} />
           <Field label="Location" value={r.location} />

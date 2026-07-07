@@ -153,7 +153,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-fg leading-tight">
+            <h1 className="text-xl font-bold text-fg leading-tight">
               {equipment.name}
             </h1>
             <ModuleTourButton tourId="equipment-detail" />

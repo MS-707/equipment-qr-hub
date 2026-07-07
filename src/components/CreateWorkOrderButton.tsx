@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Plus, X, CalendarDays } from 'lucide-react'
 import { PmType } from '@/lib/types'
 import { createWorkOrder } from '@/lib/work-orders'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface CreateWorkOrderButtonProps {
   equipmentId: number
@@ -116,8 +117,7 @@ export default function CreateWorkOrderButton({
 
       <button
         onClick={handleCreate}
-        className="w-full bg-mytra-purple hover:bg-mytra-purple/80 text-white text-xs
-                   font-medium py-2 rounded-lg transition-colors"
+        className={`${btnPrimaryCls} w-full hover:bg-mytra-purple/80 text-xs font-medium py-2`}
       >
         Create Work Order
       </button>

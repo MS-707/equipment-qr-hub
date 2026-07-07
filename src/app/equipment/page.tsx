@@ -11,6 +11,7 @@ import { EquipmentCategory, CATEGORY_COLORS } from '@/lib/types'
 import EquipmentCard from '@/components/EquipmentCard'
 import { EquipmentCardSkeleton } from '@/components/Skeleton'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
+import { btnSelectedCls } from '@/lib/form-styles'
 
 type FilterCategory = EquipmentCategory | 'all'
 
@@ -70,7 +71,7 @@ export default function EquipmentDirectory() {
       {/* ── Header ──────────────────────────────────── */}
       <header className="mb-6">
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-bold text-fg">
+          <h1 className="text-xl sm:text-xl font-bold text-fg">
             Equipment
           </h1>
           <span className="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-mytra-purple/20 text-mytra-purple">
@@ -120,7 +121,7 @@ export default function EquipmentDirectory() {
           className={`min-h-[44px] text-sm font-medium px-4 py-1.5 rounded-full transition-colors
             ${
               selectedCategory === 'all'
-                ? 'bg-mytra-purple text-white'
+                ? `${btnSelectedCls}`
                 : 'bg-mytra-card border border-mytra-border text-fg-3 hover:bg-mytra-card-hover'
             }`}
         >

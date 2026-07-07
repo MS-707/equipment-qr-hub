@@ -47,7 +47,7 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
               {status}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-fg leading-tight">{equipment.name}</h1>
+          <h1 className="text-xl font-bold text-fg leading-tight">{equipment.name}</h1>
           <p className="text-xs text-fg-3 mt-1">Item #{equipment.itemNumber}{equipment.location ? ` · ${equipment.location}` : ''}</p>
         </div>
 

@@ -9,6 +9,7 @@ import { NAV_ITEMS, isNavItemActive, type BadgeKey } from '@/lib/nav'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 import UserMenu from '@/components/UserMenu'
 import HelpButton from '@/components/onboarding/HelpButton'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 export default function NavHeader() {
   const pathname = usePathname()
@@ -83,9 +84,7 @@ export default function NavHeader() {
                 <Icon size={16} />
                 <span className="hidden md:inline">{longLabel}</span>
                 {badgeCount > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px]
-                                   px-1 text-xs font-bold rounded-full
-                                   bg-mytra-purple text-white">
+                  <span className={`${btnPrimaryCls} inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-bold rounded-full`}>
                     {badgeCount}
                   </span>
                 )}

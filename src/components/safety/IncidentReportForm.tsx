@@ -15,7 +15,7 @@ import { getCurrentIdentity } from '@/lib/identity'
 import { toLocalInput, toIso } from '@/lib/datetime'
 import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 import { getOfflineAnalysis } from '@/lib/incident-patterns'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
@@ -337,7 +337,7 @@ export default function IncidentReportForm() {
                 onClick={() => setIncidentType(t.value)}
                 className={`text-xs font-medium py-2 rounded-lg transition-colors min-h-[44px] ${
                   incidentType === t.value
-                    ? 'bg-mytra-purple text-white'
+                    ? `${btnSelectedCls}`
                     : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                 }`}
               >
@@ -685,7 +685,7 @@ export default function IncidentReportForm() {
           type="button"
           onClick={submit}
           disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {canSubmit ? 'File Report' : 'Describe what happened and add location'}
         </button>

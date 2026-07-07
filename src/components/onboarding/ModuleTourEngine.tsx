@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { findTourForRoute, type ModuleTourStep } from '@/tours'
 import { markTourSeen } from '@/lib/tourState'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 export const MODULE_TOUR_EVENT = 'sage:start-module-tour'
 export const TOUR_ACTIVE_EVENT = 'sage:tour-active'
@@ -313,8 +314,7 @@ export default function ModuleTourEngine() {
               type="button"
               onClick={() => (isLast ? finish() : goToStep(stepIndex + 1))}
               disabled={phase === 'exiting'}
-              className="min-h-[40px] px-4 rounded-lg text-sm font-semibold bg-mytra-purple text-white
-                         hover:bg-mytra-purple-hover transition-colors inline-flex items-center gap-1.5"
+              className={`${btnPrimaryCls} min-h-[40px] px-4 text-sm font-semibold inline-flex items-center gap-1.5`}
             >
               {isLast ? 'Done' : 'Next'}
               {!isLast && <ArrowRight className="w-4 h-4" />}

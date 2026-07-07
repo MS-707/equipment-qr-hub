@@ -9,6 +9,7 @@ import { getAllSafetyRecords, onSafetyChange, exportSafetyToCsv } from '@/lib/sa
 import SafetyRecordCard from './SafetyRecordCard'
 import { RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
+import { btnSelectedCls } from '@/lib/form-styles'
 
 const TYPE_FILTERS: { key: SafetyRecordType | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -121,7 +122,7 @@ export default function SafetyHistory() {
               onClick={() => setFilter(t.key)}
               className={`shrink-0 text-xs font-medium px-3 py-2.5 rounded-full border transition-colors min-h-[44px] ${
                 filter === t.key
-                  ? 'bg-mytra-purple text-white border-mytra-purple'
+                  ? `${btnSelectedCls} border-mytra-purple`
                   : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg'
               }`}
             >

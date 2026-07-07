@@ -18,6 +18,7 @@ import { getAllSafetyRecords, onSafetyChange } from '@/lib/safety-records'
 import { retrySyncRecord, retryAllPending, getSyncAvailableAt } from '@/lib/safety-sync'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -180,9 +181,7 @@ export default function SyncQueuePanel() {
               type="button"
               disabled={syncingAll || syncUnavailable}
               onClick={handleRetryAll}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-50 disabled:cursor-not-allowed
-                         transition-colors"
+              className={`${btnPrimaryCls} w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-sm font-medium disabled:opacity-50`}
             >
               {syncingAll ? (
                 <>

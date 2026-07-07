@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Eraser, Maximize2, X } from 'lucide-react'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface SignaturePadProps {
   onChange: (dataUrl: string | null, isEmpty: boolean) => void
@@ -420,8 +421,7 @@ export default function SignaturePad({
             <button
               type="button"
               onClick={saveExpanded}
-              className="flex-1 py-2.5 rounded-lg text-sm font-medium min-h-[44px]
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+              className={`${btnPrimaryCls} flex-1 py-2.5 text-sm font-medium min-h-[44px]`}
             >
               Save
             </button>

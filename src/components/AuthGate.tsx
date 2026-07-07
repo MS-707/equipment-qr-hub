@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession, signIn, getProviders } from 'next-auth/react'
 import { ShieldCheck, WifiOff, Loader2 } from 'lucide-react'
 import { setCurrentIdentity, getCurrentIdentity, isIdentityStale, isIdentityAging } from '@/lib/identity'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 type ProvidersMap = Awaited<ReturnType<typeof getProviders>>
 
@@ -243,9 +244,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             <button
               type="submit"
               disabled={submitting || !devEmail.trim() || (needsCode && !devCode.trim())}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
             >
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>

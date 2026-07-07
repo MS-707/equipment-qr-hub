@@ -29,7 +29,7 @@ import { trySyncRecord } from '@/lib/safety-sync'
 import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { useFormDraft } from '@/lib/use-draft'
 import PPESelector from './PPESelector'
-import { labelCls, inputCls, textareaCls } from '@/lib/form-styles'
+import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
 import { localToday } from '@/lib/datetime'
 
@@ -605,7 +605,7 @@ export default function JhaForm() {
           type="button"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="w-full py-3 rounded-lg text-sm font-semibold transition-colors bg-mytra-purple text-white hover:bg-mytra-purple-hover disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {canSubmit ? 'Save Job Hazard Analysis' : 'Enter a job title and at least one step'}
         </button>
@@ -872,7 +872,7 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
       )}
       <Link
         href={`/safety/record/${submittedId}`}
-        className="block w-full text-center py-3 rounded-lg text-sm font-semibold bg-mytra-purple text-white hover:bg-mytra-purple-hover transition-colors"
+        className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
         View / Print
       </Link>

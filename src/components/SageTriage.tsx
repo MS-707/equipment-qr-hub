@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Loader2, WifiOff } from 'lucide-react'
 import { getCurrentIdentity } from '@/lib/identity'
 import { buildSageContext, contextToPrompt } from '@/lib/sage-context'
 import { matchFaq } from '@/lib/sage-faq'
+import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 const HISTORY_KEY = 'sage-triage-history'
@@ -345,10 +346,7 @@ function SageTriageInner() {
             onPointerMove={onFabPointerMove}
             onPointerUp={onFabPointerUp}
             aria-label="Open safety assistant (drag to move)"
-            className={`w-12 h-12 rounded-full touch-none select-none cursor-grab active:cursor-grabbing
-                       bg-mytra-purple text-white shadow-pop flex items-center justify-center
-                       hover:bg-mytra-purple-hover transition-colors
-                       ${showPulse ? 'animate-pulse' : ''}`}
+            className={`${btnSelectedCls} w-12 h-12 rounded-full touch-none select-none cursor-grab active:cursor-grabbing shadow-pop flex items-center justify-center transition-colors ${showPulse ? 'animate-pulse' : ''}`}
           >
             <MessageCircle className="w-5 h-5 pointer-events-none" />
           </button>
@@ -371,7 +369,7 @@ function SageTriageInner() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-mytra-border shrink-0">
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold">
+              <span className={`${btnPrimaryCls} w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold`}>
                 S
               </span>
               <span className="text-sm font-semibold text-fg">Sage</span>
@@ -395,7 +393,7 @@ function SageTriageInner() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" role="log" aria-live="polite">
             {/* Greeting */}
             <div className="flex gap-2">
-              <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+              <span className={`${btnPrimaryCls} w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5`}>
                 S
               </span>
               <div className="bg-mytra-card-hover rounded-lg rounded-tl-sm px-3 py-2 text-sm text-fg max-w-[85%]">
@@ -407,14 +405,14 @@ function SageTriageInner() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                 {msg.role === 'assistant' && (
-                  <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                  <span className={`${btnPrimaryCls} w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5`}>
                     S
                   </span>
                 )}
                 <div
                   className={`rounded-lg px-3 py-2 text-sm max-w-[85%] ${
                     msg.role === 'user'
-                      ? 'bg-mytra-purple text-white rounded-tr-sm'
+                      ? `${btnSelectedCls} rounded-tr-sm`
                       : 'bg-mytra-card-hover text-fg rounded-tl-sm'
                   }`}
                 >
@@ -458,7 +456,7 @@ function SageTriageInner() {
             {/* Typing indicator */}
             {loading && (
               <div className="flex gap-2">
-                <span className="w-6 h-6 rounded-full bg-mytra-purple flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                <span className={`${btnPrimaryCls} w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5`}>
                   S
                 </span>
                 <div className="bg-mytra-card-hover rounded-lg rounded-tl-sm px-3 py-2">
@@ -494,9 +492,7 @@ function SageTriageInner() {
               type="submit"
               disabled={!input.trim() || loading}
               aria-label="Send message"
-              className="w-11 h-11 flex items-center justify-center rounded-lg
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className={`${btnPrimaryCls} w-11 h-11 flex items-center justify-center`}
             >
               <Send className="w-4 h-4" />
             </button>

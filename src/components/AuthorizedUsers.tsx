@@ -14,6 +14,7 @@ import {
 } from '@/lib/shop-management'
 import { getCurrentIdentity } from '@/lib/identity'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { btnPrimaryCls } from '@/lib/form-styles'
 
 interface AuthorizedUsersProps {
   itemNumber: number
@@ -154,8 +155,7 @@ export default function AuthorizedUsers({ itemNumber }: AuthorizedUsersProps) {
                   <button
                     onClick={handleAdd}
                     disabled={!name.trim() || !validEmail}
-                    className="flex-1 bg-mytra-purple text-white text-xs font-medium py-2 rounded-lg
-                               hover:bg-mytra-purple-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
                   >
                     Add
                   </button>

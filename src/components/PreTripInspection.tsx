@@ -41,6 +41,7 @@ import { getCurrentIdentity } from '@/lib/identity'
 import SignaturePad from '@/components/SignaturePad'
 import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop-management'
 import { formatDateTime } from '@/lib/datetime'
+import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 
 const DRAFT_KEY_PREFIX = 'draft:inspection:'
 const DRAFT_SAVE_DELAY = 2000
@@ -845,7 +846,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                     onClick={() => setShift(s)}
                     className={`flex-1 text-sm font-medium py-2 min-h-[44px] rounded-lg transition-colors duration-150 ${
                       shift === s
-                        ? 'bg-mytra-purple text-white'
+                        ? `${btnSelectedCls}`
                         : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50'
                     }`}
                   >
@@ -900,9 +901,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               type="button"
               onClick={() => setStep('checklist')}
               disabled={!inspectorName.trim() || !operatorAuthorized}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
               Start Inspection
             </button>
@@ -1027,9 +1026,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               type="button"
               onClick={handleSubmit}
               disabled={!allAnswered || !signature}
-              className="w-full py-3 rounded-lg text-sm font-semibold transition-colors duration-150
-                         bg-mytra-purple text-white hover:bg-mytra-purple-hover
-                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-mytra-purple"
+              className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
               {missingNotes.size > 0
                 ? 'Add notes to failed items'
