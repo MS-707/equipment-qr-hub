@@ -51,13 +51,58 @@ describe('notify queue', () => {
     expect(q[0].payload.record.id).toBe('INS-5')
   })
 
-  it('flush delivers and dequeues on success', async () => {
+  const okJson = (body: unknown) =>
+    ({ ok: true, status: 200, json: () => Promise.resolve(body) }) as Response
+
+  it('flush delivers and dequeues on success (emailed:true)', async () => {
     queueNotifyPayload({ record: { id: 'INS-1' } })
     queueNotifyPayload({ record: { id: 'INS-2' } })
-    vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response)
+    vi.mocked(fetch).mockResolvedValue(okJson({ emailed: true, outcome: 'sent' }))
     await flushNotifyQueue()
     expect(getNotifyQueueLength()).toBe(0)
     expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('dequeues a not-configured 200 (can never send here — no point retrying)', async () => {
+    queueNotifyPayload({ record: { id: 'INS-1' } })
+    vi.mocked(fetch).mockResolvedValue(okJson({ emailed: false, reason: 'not-configured' }))
+    await flushNotifyQueue()
+    expect(getNotifyQueueLength()).toBe(0)
+  })
+
+  it('RETAINS a 200 that failed at the email provider (emailed:false, outcome:failed)', async () => {
+    // Regression: previously any 2xx dequeued the item, so a Resend-side
+    // rejection permanently discarded the queued inspection e-mail.
+    queueNotifyPayload({ record: { id: 'INS-1' } })
+    vi.mocked(fetch).mockResolvedValue(okJson({ emailed: false, outcome: 'failed' }))
+    await flushNotifyQueue()
+    expect(getNotifyQueueLength()).toBe(1)
+    expect(JSON.parse(store[QUEUE_KEY])[0].attempts).toBe(1)
+  })
+
+  it('a 401 keeps the WHOLE queue intact and burns NO attempts', async () => {
+    // Regression: three signed-out page loads used to destroy the queue.
+    queueNotifyPayload({ record: { id: 'INS-1' } })
+    queueNotifyPayload({ record: { id: 'INS-2' } })
+    vi.mocked(fetch).mockResolvedValue({ ok: false, status: 401 } as Response)
+    await flushNotifyQueue()
+    await flushNotifyQueue()
+    await flushNotifyQueue()
+    await flushNotifyQueue() // four signed-out flushes — nothing dropped
+    const q = JSON.parse(store[QUEUE_KEY])
+    expect(q).toHaveLength(2)
+    expect(q[0].attempts).toBe(0)
+    expect(q[1].attempts).toBe(0)
+  })
+
+  it('delivers the queue after sign-in once the 401 clears', async () => {
+    queueNotifyPayload({ record: { id: 'INS-1' } })
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 401 } as Response)
+    await flushNotifyQueue()
+    expect(getNotifyQueueLength()).toBe(1) // still signed out
+    vi.mocked(fetch).mockResolvedValueOnce(okJson({ emailed: true, outcome: 'sent' }))
+    await flushNotifyQueue()
+    expect(getNotifyQueueLength()).toBe(0) // signed in → sent
   })
 
   it('drops permanently-invalid payloads (400) instead of poisoning the queue', async () => {
@@ -83,7 +128,7 @@ describe('notify queue', () => {
     queueNotifyPayload({ record: { id: 'INS-2' } })
     queueNotifyPayload({ record: { id: 'INS-3' } })
     vi.mocked(fetch)
-      .mockResolvedValueOnce({ ok: true, status: 200 } as Response)
+      .mockResolvedValueOnce(okJson({ emailed: true, outcome: 'sent' }))
       .mockRejectedValueOnce(new TypeError('network dropped'))
     await flushNotifyQueue()
     const q = JSON.parse(store[QUEUE_KEY])

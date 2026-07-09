@@ -16,6 +16,7 @@ import {
   ClipboardCheck,
   RotateCcw,
   Printer,
+  LogIn,
 } from 'lucide-react'
 import {
   EquipmentItem,
@@ -383,7 +384,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
   // server-side (nothing to surface); 'queued' means it will auto-send on
   // reconnect; 'failed' must be shown so "EHS knows" is never assumed when
   // nothing was delivered.
-  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'queued' | 'failed'>('idle')
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'pending' | 'sent' | 'skipped' | 'queued' | 'signin-required' | 'failed'>('idle')
 
   // Local save failure (storage quota/corruption) — the inspection was NOT
   // persisted; keep the operator on the checklist with their answers intact.
@@ -752,7 +753,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
     })
       .then(async (res) => {
         if (!res.ok) {
-          if (res.status === 400) setNotifyStatus('failed')
+          // 401 = not signed in. The record is queued and WILL send once the
+          // operator signs in (the queue flushes on the next foreground), so
+          // tell them that honestly instead of blaming their connection.
+          if (res.status === 401) setNotifyStatus(queueNotifyPayload(notifyPayload) ? 'signin-required' : 'failed')
+          else if (res.status === 400) setNotifyStatus('failed')
           else setNotifyStatus(queueNotifyPayload(notifyPayload) ? 'queued' : 'failed')
           return
         }
@@ -1139,6 +1144,15 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
               <p className="text-sm text-warn-strong">
                 The EHS email is queued and will send automatically when your connection returns.
+              </p>
+            </div>
+          )}
+          {notifyStatus === 'signin-required' && (
+            <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/30 rounded-lg px-4 py-3">
+              <LogIn className="w-4 h-4 text-mytra-purple shrink-0 mt-0.5" />
+              <p className="text-sm text-fg">
+                The signed record is saved on this device. Sign in to send the EHS email —
+                it will send automatically once you do.
               </p>
             </div>
           )}

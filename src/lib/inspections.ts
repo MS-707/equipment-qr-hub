@@ -435,10 +435,41 @@ export async function flushNotifyQueue(): Promise<void> {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(item.payload),
         })
-        // 2xx (sent or not-configured) → delivered/no-op, dequeue.
+
+        // 401 = signed out. Auth is a whole-session state, so every remaining
+        // item would 401 too. Keep the entire queue INTACT without burning an
+        // attempt and stop — a later flush (after sign-in) delivers it. This
+        // is why a queued inspection e-mail survives a signed-out session
+        // instead of being silently destroyed after three page loads.
+        if (res.status === 401) {
+          remaining.push(...queue.slice(i))
+          break
+        }
+
+        if (res.ok) {
+          // A 2xx alone is NOT proof of delivery: the route returns 200 with
+          // {emailed:false, outcome:'failed'} when the e-mail provider itself
+          // rejects/times out. Only dequeue when the send actually succeeded
+          // (emailed) or can never succeed here (no provider configured);
+          // a provider-side failure is transient and worth retrying.
+          let delivered = true
+          try {
+            const body = (await res.json()) as { emailed?: boolean; reason?: string }
+            if (body.emailed === false && body.reason !== 'not-configured') delivered = false
+          } catch {
+            // No/!JSON body on a 2xx — treat as delivered rather than loop.
+          }
+          if (delivered) continue
+          item.attempts += 1
+          if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
+          continue
+        }
+
         // 400 → permanently invalid payload; drop it rather than poison the
         // queue with something that can never succeed.
-        if (res.ok || res.status === 400) continue
+        if (res.status === 400) continue
+
+        // 429 / 5xx → retryable.
         item.attempts += 1
         if (item.attempts < NOTIFY_MAX_ATTEMPTS) remaining.push(item)
       } catch {
@@ -456,13 +487,23 @@ export async function flushNotifyQueue(): Promise<void> {
   }
 }
 
-/** Wire background flushing: once at load, again on reconnect. */
+/**
+ * Wire background flushing: once at load, again on reconnect, and again each
+ * time the tab returns to the foreground. The foreground trigger is what
+ * delivers an inspection e-mail that queued while the user was signed out —
+ * signing in and returning to the tab flushes it, no full reload required.
+ */
 export function installNotifyListeners(): () => void {
   if (typeof window === 'undefined') return () => {}
   void flushNotifyQueue()
   const onOnline = () => { void flushNotifyQueue() }
+  const onVisible = () => { if (document.visibilityState === 'visible') void flushNotifyQueue() }
   window.addEventListener('online', onOnline)
-  return () => window.removeEventListener('online', onOnline)
+  document.addEventListener('visibilitychange', onVisible)
+  return () => {
+    window.removeEventListener('online', onOnline)
+    document.removeEventListener('visibilitychange', onVisible)
+  }
 }
 
 // ── Export helpers ────────────────────────────────────
