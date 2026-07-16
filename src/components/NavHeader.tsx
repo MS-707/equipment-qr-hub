@@ -49,7 +49,9 @@ export default function NavHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: Logo / Title */}
         <Link href="/" className="flex items-center gap-2">
+          {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
           <span className="text-lg font-bold text-fg">Sage</span>
+          {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>

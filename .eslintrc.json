@@ -2,13 +2,26 @@
   "extends": ["next/core-web-vitals", "next/typescript"],
   "overrides": [
     {
-      // i18n conversion ratchet (ES-M1-T7, docs/i18n/DESIGN.md): raw JSX text
-      // is an error ONLY inside directories that have been converted to t().
-      // The glob list starts closed (matches nothing) and is widened one
-      // cluster per ES milestone — partial coverage stays visible and
-      // ratcheted, never accidental. Do NOT add a directory here until every
-      // user-facing string in it flows through t().
-      "files": ["src/components/__i18n-converted__/**/*.tsx"],
+      // i18n conversion ratchet (ES-M2-T5, docs/i18n/DESIGN.md): raw JSX text
+      // is an error ONLY inside files converted to t(). Widened one cluster
+      // per ES milestone — partial coverage stays visible and ratcheted,
+      // never accidental. Do NOT add a file until every user-facing string
+      // in it flows through t(). Brand tokens ("Sage", "EHS") carry inline
+      // eslint-disable lines with justification — visible exceptions.
+      "files": [
+        "src/components/BottomTabBar.tsx",
+        "src/components/NavHeader.tsx",
+        "src/components/UserMenu.tsx",
+        "src/components/AuthGate.tsx",
+        "src/components/SwUpdateBanner.tsx",
+        "src/components/SyncToast.tsx",
+        "src/components/StorageAlert.tsx",
+        "src/components/ConfirmDialog.tsx",
+        "src/components/safety/SafetyDashboard.tsx",
+        "src/app/error.tsx",
+        "src/app/not-found.tsx",
+        "src/app/~offline/page.tsx"
+      ],
       "rules": {
         "no-restricted-syntax": [
           "error",

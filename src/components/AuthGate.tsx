@@ -150,7 +150,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="relative w-full bg-mytra-card shadow-card border border-mytra-border rounded-xl p-6 animate-fadeInUp">
         <div className="flex items-center gap-2 mb-1 animate-blurIn" style={{ animationDelay: '60ms' }}>
           <ShieldCheck className="w-6 h-6 text-mytra-purple" />
+          {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
           <span className="text-lg font-bold text-fg">Sage</span>
+          {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
           <span className="text-xs bg-mytra-purple/20 text-mytra-purple rounded px-1.5 py-0.5 font-medium">
             EHS
           </span>

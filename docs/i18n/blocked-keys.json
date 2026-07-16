@@ -1,0 +1,4 @@
+{
+  "note": "Keys that failed 5-lens review 3 times (docs/i18n/PIPELINE.md). Their es value is the exact English source. Each entry must EITHER suppress its namespace OR appear justified in e2e/es-leakage-allowlist.json — the i18n-pipeline-rules vitest enforces the exclusive-or and the size cap (20).",
+  "blocked": []
+}
