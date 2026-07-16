@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { CheckCircle2, WifiOff, AlertCircle, X } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 
 export type SyncToastEvent = {
   tone: 'ok' | 'warn' | 'danger'
@@ -24,6 +25,7 @@ const TONE: Record<SyncToastEvent['tone'], { Icon: typeof CheckCircle2; cls: str
 
 export default function SyncToast() {
   const [toast, setToast] = useState<SyncToastEvent | null>(null)
+  const t = useT()
 
   const handleEvent = useCallback((e: SyncToastEvent) => {
     setToast(e)
@@ -56,7 +58,7 @@ export default function SyncToast() {
         <button
           type="button"
           onClick={() => setToast(null)}
-          aria-label="Dismiss"
+          aria-label={t('common.dismiss', undefined, 'Dismiss')}
           className="ml-1 -mr-1.5 w-7 h-7 -my-1.5 flex items-center justify-center rounded-full hover:bg-current/10"
         >
           <X className="w-3.5 h-3.5" />

@@ -31,7 +31,7 @@ describe('storage-key versioning (June rollback residue)', () => {
 
 describe('resolve + fallback chain (locale → en → defaultEn → key)', () => {
   it('resolves a nested key from the en catalog', () => {
-    expect(getT('en')('nav.home')).toBe('Home')
+    expect(getT('en')('nav.home.label')).toBe('Home')
   })
 
   it('falls back to the key itself when nothing matches', () => {
@@ -54,12 +54,12 @@ describe('resolve + fallback chain (locale → en → defaultEn → key)', () =>
 describe('kill switch + namespace suppression', () => {
   it('esEnabled:false forces English regardless of chosen locale', () => {
     const t = getT('es', flags({ esEnabled: false }))
-    expect(t('nav.home')).toBe('Home')
+    expect(t('nav.home.label')).toBe('Home')
   })
 
   it('a suppressed namespace serves English while others stay on locale', () => {
     const t = getT('es', flags({ suppressedNamespaces: ['nav'] }))
-    expect(t('nav.home')).toBe('Home')
+    expect(t('nav.home.label')).toBe('Home')
   })
 })
 
@@ -113,6 +113,6 @@ describe("plurals via Intl.PluralRules (kills the '(s)' hack)", () => {
   })
 
   it('non-plural keys ignore a count var gracefully', () => {
-    expect(getT('en')('nav.home', { count: 5 })).toBe('Home')
+    expect(getT('en')('nav.home.label', { count: 5 })).toBe('Home')
   })
 })

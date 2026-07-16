@@ -62,6 +62,27 @@ export function effectiveLocale(locale: Locale, flags: I18nFlags): Locale {
   return flags.esEnabled ? locale : 'en'
 }
 
+/** Stored locale for NON-React lib code (toasts built outside components).
+ *  Components must use useLocale() — this is a point-in-time read. */
+export function getStoredLocale(): Locale {
+  if (typeof window === 'undefined') return 'en'
+  try { return localStorage.getItem(LOCALE_STORAGE_KEY) === 'es' ? 'es' : 'en' } catch { return 'en' }
+}
+
+/** Last-known-good kill-switch flags for non-React lib code. */
+export function getStoredFlags(): I18nFlags {
+  if (typeof window === 'undefined') return DEFAULT_FLAGS
+  try {
+    const raw = localStorage.getItem(FLAG_STORAGE_KEY)
+    return raw ? { ...DEFAULT_FLAGS, ...JSON.parse(raw) } : DEFAULT_FLAGS
+  } catch { return DEFAULT_FLAGS }
+}
+
+/** One-call translator for lib code: stored locale + last-known-good flags. */
+export function getStoredT(): TFunction {
+  return getT(getStoredLocale(), getStoredFlags())
+}
+
 /** Non-hook translator for lib code (date labels, share text). */
 export function getT(locale: Locale, flags: I18nFlags = DEFAULT_FLAGS): TFunction {
   const effective = effectiveLocale(locale, flags)

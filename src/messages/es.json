@@ -29,10 +29,12 @@
     "none": "None",
     "or": "or",
     "and": "and",
+    "offline": "Offline",
     "tapToStart": "Tap to start",
     "tapToRenew": "Tap to renew",
     "viewAll": "View all",
     "viewRecord": "View record",
+    "backHome": "Back to Home",
     "savedLocally": "Saved locally. Will sync automatically when connection returns.",
     "saveFailed": "Save failed:",
     "storageFull": "Device storage is full. Free up space or sync pending records before continuing.",
@@ -43,35 +45,66 @@
     "dAgo": "{n}d ago"
   },
   "nav": {
-    "home": "Home",
-    "safety": "Safety",
-    "equipment": "Equipment",
-    "inspections": "Inspections",
-    "workOrders": "Work Orders"
+    "home": { "label": "Home", "long": "Home" },
+    "preTrip": { "label": "Pre-Trip", "long": "Pre-Trip" },
+    "equipment": { "label": "Assets", "long": "Equipment" },
+    "sds": { "label": "SDS", "long": "Safety Data Sheets" },
+    "workOrders": { "label": "Orders", "long": "Work Orders" },
+    "qrLabels": { "label": "QR", "long": "QR Labels" },
+    "mainAria": "Main navigation",
+    "tabBarAria": "Tab bar",
+    "waitingToSync": {
+      "one": "1 record waiting to sync",
+      "other": "{count} records waiting to sync"
+    }
   },
   "user": {
-    "signIn": "Sign in",
     "signOut": "Sign out",
     "deleteMyData": "Delete my data",
     "deleteConfirmTitle": "Delete all local data?",
-    "deleteConfirmBody": "This will permanently remove all your safety records, inspection data, signatures, and preferences from this device. This action cannot be undone.",
-    "theme": "Theme",
+    "deleteConfirmBody": "This permanently removes all safety records, signatures, photos, and drafts from this device. Synced records in Notion are not affected. This cannot be undone.",
+    "deleteEverything": "Delete everything",
+    "theme": "Theme: {label}",
     "dark": "Dark",
     "light": "Light",
-    "system": "System",
+    "auto": "Auto",
     "language": "Language",
     "english": "English",
-    "spanish": "Español"
+    "spanish": "Español (beta)"
+  },
+  "auth": {
+    "checkingSignIn": "Checking your sign-in…",
+    "offlineAgingBanner": "Offline — working as {name}. It's been a while: verify your sign-in next time you're online.",
+    "offlineBanner": "Offline — signed in as {name}. Records will sync when you reconnect.",
+    "offlineNoCacheTitle": "Sign in once to work offline",
+    "offlineNoCacheBody": "Connect to the internet and sign in with your company account. After that, Sage works offline on this device.",
+    "intro": "Sign in with your company account to access safety forms. Your identity is recorded on every plan, permit, and signature.",
+    "errAccessDeniedCode": "Sign-in failed. Check that your email is on an approved domain and the access code is correct.",
+    "errAccessDenied": "That account isn't on an approved domain. Use your company email.",
+    "errGeneric": "Sign-in failed. Please try again.",
+    "continueGoogle": "Continue with Google",
+    "fullName": "Full name",
+    "namePlaceholder": "Your name",
+    "companyEmail": "Company email",
+    "emailPlaceholder": "Your company email",
+    "accessCode": "Access code",
+    "codePlaceholder": "Shared access code",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "devNote": "Dev sign-in (Google not configured yet). Restricted to the approved email domain.",
+    "notConfigured": "Sign-in is not configured yet. Ask your administrator to set up Google OAuth or enable development login.",
+    "browseEquipment": "Browse equipment without signing in",
+    "agreePrefix": "By signing in you agree to our",
+    "terms": "Terms",
+    "privacy": "Privacy Policy"
   },
   "dashboard": {
     "greeting": "Hello, {name}",
     "homeTitle": "Home",
     "todaysPtp": "Today's PTP",
-    "dayNofM": "Day {n} of {m}",
     "active": "Active",
     "expired": "Expired",
     "notStarted": "Not started",
-    "logged": "Logged",
     "crewSigned": "{count} crew signed",
     "activePermits": "Active permits",
     "openNow": "open now",
@@ -79,6 +112,7 @@
     "last7days": "last 7 days",
     "quickActions": "Quick actions",
     "recentActivity": "Recent activity",
+    "viewHistory": "View history",
     "startPtp": "Start PTP",
     "jobHazardAnalysis": "Job Hazard Analysis",
     "workAtHeight": "Work-at-Height",
@@ -103,10 +137,6 @@
     "emptySub": "No safety records yet. Start your day with a Pre-Task Plan."
   },
   "sync": {
-    "pendingSync": {
-      "one": "1 record pending sync",
-      "other": "{count} records pending sync"
-    },
     "syncAll": "Sync All",
     "syncing": "Syncing...",
     "syncedToCloud": "Synced to cloud",
@@ -122,11 +152,31 @@
   },
   "update": {
     "newVersion": "A new version is available.",
-    "refresh": "Refresh"
+    "updateNow": "Update now"
   },
   "confirm": {
-    "areYouSure": "Are you sure?",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. Try refreshing the page.",
+    "tryAgain": "Try Again",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The equipment or page you are looking for does not exist."
+  },
+  "offline": {
+    "title": "You are offline",
+    "body": "This page hasn't been cached yet. Connect to the network and try again.",
+    "tryAgain": "Try again"
+  },
+  "storage": {
+    "safetyStore": "Safety records",
+    "inspectionStore": "Inspection records",
+    "corrupt": "{store} could not be loaded — storage may be corrupted. Your data backup is being restored. If records are missing, contact your safety officer.",
+    "quarantined": {
+      "one": "1 safety record from another app version was set aside — nothing was deleted. They will be recovered in a future update; mention this to your safety officer.",
+      "other": "{count} safety records from another app version were set aside — nothing was deleted. They will be recovered in a future update; mention this to your safety officer."
+    }
   }
 }

@@ -7,9 +7,11 @@ import { clearCurrentIdentity } from '@/lib/identity'
 import { useTheme, type ThemePreference } from '@/lib/theme'
 import { clearAllLocalData } from '@/lib/safety-records'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { useT } from '@/lib/i18n'
 
 export default function UserMenu() {
   const { data: session, status } = useSession()
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -51,7 +53,12 @@ export default function UserMenu() {
   }
 
   const themeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
-  const themeLabel = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto'
+  const themeLabel =
+    theme === 'light'
+      ? t('user.light', undefined, 'Light')
+      : theme === 'dark'
+        ? t('user.dark', undefined, 'Dark')
+        : t('user.auto', undefined, 'Auto')
   const ThemeIcon = themeIcon
 
   useEffect(() => {
@@ -103,9 +110,9 @@ export default function UserMenu() {
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Delete all local data?"
-        message="This permanently removes all safety records, signatures, photos, and drafts from this device. Synced records in Notion are not affected. This cannot be undone."
-        confirmLabel="Delete everything"
+        title={t('user.deleteConfirmTitle', undefined, 'Delete all local data?')}
+        message={t('user.deleteConfirmBody', undefined, 'This permanently removes all safety records, signatures, photos, and drafts from this device. Synced records in Notion are not affected. This cannot be undone.')}
+        confirmLabel={t('user.deleteEverything', undefined, 'Delete everything')}
         variant="danger"
         onConfirm={async () => {
           await clearAllLocalData()
@@ -138,7 +145,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
                        hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
-            <ThemeIcon className="w-4 h-4" /> Theme: {themeLabel}
+            <ThemeIcon className="w-4 h-4" /> {t('user.theme', { label: themeLabel })}
           </button>
           <button
             type="button"
@@ -150,7 +157,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-fg-2 hover:text-fg
                        hover:bg-mytra-card-hover rounded transition-colors min-h-[44px]"
           >
-            <LogOut className="w-4 h-4" /> Sign out
+            <LogOut className="w-4 h-4" /> {t('user.signOut', undefined, 'Sign out')}
           </button>
           <div className="h-px bg-mytra-border my-1" />
           <button
@@ -160,7 +167,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-danger/80 hover:text-danger
                        hover:bg-danger/5 rounded transition-colors min-h-[44px]"
           >
-            <Trash2 className="w-4 h-4" /> Delete my data
+            <Trash2 className="w-4 h-4" /> {t('user.deleteMyData', undefined, 'Delete my data')}
           </button>
         </div>
       )}

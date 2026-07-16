@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useId } from 'react'
 import { haptic } from '@/lib/haptic'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -20,13 +21,16 @@ export default function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   variant = 'default',
   inputPrompt,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useT()
+  const confirmText = confirmLabel ?? t('confirm.confirm', undefined, 'Confirm')
+  const cancelText = cancelLabel ?? t('confirm.cancel', undefined, 'Cancel')
   const ref = useRef<HTMLDialogElement>(null)
   const [inputValue, setInputValue] = useState('')
   const titleId = useId()
@@ -87,7 +91,7 @@ export default function ConfirmDialog({
                      bg-mytra-bg border border-mytra-border text-fg-2
                      hover:text-fg hover:bg-mytra-card-hover transition-colors"
         >
-          {cancelLabel}
+          {cancelText}
         </button>
         <button
           type="button"
@@ -101,7 +105,7 @@ export default function ConfirmDialog({
               : `${btnPrimaryCls}`
             }`}
         >
-          {confirmLabel}
+          {confirmText}
         </button>
       </div>
     </dialog>

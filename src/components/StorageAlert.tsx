@@ -3,23 +3,26 @@
 import { useState, useEffect } from 'react'
 import { AlertTriangle, Archive } from 'lucide-react'
 import { getQuarantinedRecords } from '@/lib/safety-records'
+import { useT } from '@/lib/i18n'
+import type { MessageKey } from '@/lib/i18n-keys'
 
-const STORE_LABELS: Record<string, string> = {
-  'eqr-safety-records': 'Safety records',
-  'eqr-inspections': 'Inspection records',
+const STORE_LABEL_KEYS: Record<string, { key: MessageKey; en: string }> = {
+  'eqr-safety-records': { key: 'storage.safetyStore', en: 'Safety records' },
+  'eqr-inspections': { key: 'storage.inspectionStore', en: 'Inspection records' },
 }
 
 const QUARANTINE_DISMISS_KEY = 'eqr-quarantine-dismissed-at'
 
 export default function StorageAlert() {
+  const t = useT()
   const [visible, setVisible] = useState(false)
-  const [storeLabel, setStoreLabel] = useState('Safety records')
+  const [store, setStore] = useState(STORE_LABEL_KEYS['eqr-safety-records'])
   const [quarantineCount, setQuarantineCount] = useState(0)
 
   useEffect(() => {
     const handler = (e: Event) => {
       const key = (e as CustomEvent).detail?.key as string | undefined
-      if (key && STORE_LABELS[key]) setStoreLabel(STORE_LABELS[key])
+      if (key && STORE_LABEL_KEYS[key]) setStore(STORE_LABEL_KEYS[key])
       setVisible(true)
     }
     window.addEventListener('eqr:storage-corruption', handler)
@@ -57,15 +60,14 @@ export default function StorageAlert() {
           <div className="max-w-2xl mx-auto flex items-center gap-2 justify-center">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <p className="text-sm font-medium">
-              {storeLabel} could not be loaded — storage may be corrupted. Your data backup is being
-              restored. If records are missing, contact your safety officer.
+              {t('storage.corrupt', { store: t(store.key, undefined, store.en) })}
             </p>
             <button
               type="button"
               onClick={() => setVisible(false)}
               className="ml-2 text-white/70 hover:text-white text-sm shrink-0 min-h-[44px] flex items-center"
             >
-              Dismiss
+              {t('common.dismiss', undefined, 'Dismiss')}
             </button>
           </div>
         </div>
@@ -75,16 +77,14 @@ export default function StorageAlert() {
           <div className="max-w-2xl mx-auto flex items-center gap-2 justify-center">
             <Archive className="w-4 h-4 shrink-0" />
             <p className="text-sm font-medium">
-              {quarantineCount} safety {quarantineCount === 1 ? 'record' : 'records'} from another app
-              version {quarantineCount === 1 ? 'was' : 'were'} set aside — nothing was deleted. They will be
-              recovered in a future update; mention this to your safety officer.
+              {t('storage.quarantined', { count: quarantineCount })}
             </p>
             <button
               type="button"
               onClick={dismissQuarantine}
               className="ml-2 text-black/60 hover:text-black text-sm shrink-0 min-h-[44px] flex items-center"
             >
-              Dismiss
+              {t('common.dismiss', undefined, 'Dismiss')}
             </button>
           </div>
         </div>

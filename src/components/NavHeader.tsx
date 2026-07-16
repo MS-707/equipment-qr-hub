@@ -10,12 +10,14 @@ import { useLiveCounts } from '@/hooks/useLiveCounts'
 import UserMenu from '@/components/UserMenu'
 import HelpButton from '@/components/onboarding/HelpButton'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 export default function NavHeader() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const { openOrders, openSafety } = useLiveCounts()
   const [online, setOnline] = useState(true)
+  const t = useT()
 
   useEffect(() => {
     setOnline(navigator.onLine)
@@ -55,14 +57,14 @@ export default function NavHeader() {
 
         {/* Right: Nav Links — hidden on the login splash for a clean welcome screen */}
         {!onLoginSplash && (
-        <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-5">
+        <nav aria-label={t('nav.mainAria', undefined, 'Main navigation')} className="flex items-center gap-3 sm:gap-5">
           {!online && (
-            <span aria-label="Offline" className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
+            <span aria-label={t('common.offline', undefined, 'Offline')} className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-warn/15 text-warn">
               <WifiOff className="w-3 h-3" />
-              <span className="hidden sm:inline">Offline</span>
+              <span className="hidden sm:inline">{t('common.offline', undefined, 'Offline')}</span>
             </span>
           )}
-          {NAV_ITEMS.filter(item => (!item.adminOnly || session?.user?.isAdmin) && !item.hideOnDesktop).map(({ href, longLabel, icon: Icon, badge }) => {
+          {NAV_ITEMS.filter(item => (!item.adminOnly || session?.user?.isAdmin) && !item.hideOnDesktop).map(({ href, longLabel, longLabelKey, icon: Icon, badge }) => {
             /* Nav links are hidden on mobile — BottomTabBar handles them */
             const isActive = isNavItemActive(href, pathname)
             const badgeCount = badge ? badgeCounts[badge] : 0
@@ -82,7 +84,7 @@ export default function NavHeader() {
                   }`}
               >
                 <Icon size={16} />
-                <span className="hidden md:inline">{longLabel}</span>
+                <span className="hidden md:inline">{t(longLabelKey, undefined, longLabel)}</span>
                 {badgeCount > 0 && (
                   <span className={`${btnPrimaryCls} inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-bold rounded-full`}>
                     {badgeCount}

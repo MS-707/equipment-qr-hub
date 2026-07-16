@@ -8,12 +8,14 @@ import { haptic } from '@/lib/haptic'
 import { useLiveCounts } from '@/hooks/useLiveCounts'
 import { usePendingSyncCount } from '@/hooks/usePendingSyncCount'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 export default function BottomTabBar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { openOrders, openSafety } = useLiveCounts()
   const pendingSyncCount = usePendingSyncCount()
+  const t = useT()
   if (pathname.startsWith('/beta')) return null
 
   const badgeCounts: Record<BadgeKey, number> = {
@@ -25,10 +27,10 @@ export default function BottomTabBar() {
     <nav
       className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-mytra-card border-t border-mytra-border no-print"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      aria-label="Tab bar"
+      aria-label={t('nav.tabBarAria', undefined, 'Tab bar')}
     >
       <div className="flex items-stretch">
-        {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, icon: Icon, badge, external }) => {
+        {NAV_ITEMS.filter(item => !item.adminOnly || session?.user?.isAdmin).map(({ href, label, labelKey, icon: Icon, badge, external }) => {
           const isActive = !external && isNavItemActive(href, pathname)
           const badgeCount = badge ? badgeCounts[badge] : 0
 
@@ -48,12 +50,12 @@ export default function BottomTabBar() {
                 {href === '/' && pendingSyncCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-danger rounded-full">
                     <span className="sr-only">
-                      {pendingSyncCount} record{pendingSyncCount === 1 ? '' : 's'} waiting to sync
+                      {t('nav.waitingToSync', { count: pendingSyncCount })}
                     </span>
                   </span>
                 )}
               </span>
-              <span className="text-[13px] font-medium leading-tight">{label}</span>
+              <span className="text-[13px] font-medium leading-tight">{t(labelKey, undefined, label)}</span>
               {isActive && <span className="w-8 h-[3px] rounded-full bg-mytra-purple" />}
             </>
           )

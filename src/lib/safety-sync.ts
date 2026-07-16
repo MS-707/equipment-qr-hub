@@ -9,6 +9,7 @@
 
 import { getSafetyRecordById, getAllSafetyRecords, markSynced, markSyncFailed } from '@/lib/safety-records'
 import { notifySyncResult } from '@/components/SyncToast'
+import { getStoredT } from '@/lib/i18n-core'
 
 let syncDisabledUntil = 0
 
@@ -66,7 +67,7 @@ export async function trySyncRecord(id: string, notify = true): Promise<boolean>
       try {
         const result = await attemptSync(id)
         if (result === 'ok') {
-          if (notify) notifySyncResult({ tone: 'ok', message: 'Synced to cloud' })
+          if (notify) notifySyncResult({ tone: 'ok', message: getStoredT()('sync.syncedToCloud', undefined, 'Synced to cloud') })
           return true
         }
         if (result === 'not-configured') {
@@ -81,9 +82,9 @@ export async function trySyncRecord(id: string, notify = true): Promise<boolean>
     markSyncFailed(id)
     if (notify) {
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        notifySyncResult({ tone: 'warn', message: 'Saved offline — will sync when back online' })
+        notifySyncResult({ tone: 'warn', message: getStoredT()('sync.savedOffline', undefined, 'Saved offline — will sync when back online') })
       } else {
-        notifySyncResult({ tone: 'danger', message: 'Sync failed — will retry' })
+        notifySyncResult({ tone: 'danger', message: getStoredT()('sync.syncFailed', undefined, 'Sync failed — will retry') })
       }
     }
     return false
@@ -109,7 +110,7 @@ export async function syncAllPending({ notify = false }: { notify?: boolean } = 
     if (ok) synced++
   }
   if (notify && synced > 0) {
-    notifySyncResult({ tone: 'ok', message: `${synced} record${synced === 1 ? '' : 's'} synced` })
+    notifySyncResult({ tone: 'ok', message: getStoredT()('sync.recordsSynced', { count: synced }) })
   }
 }
 
