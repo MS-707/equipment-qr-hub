@@ -29,9 +29,10 @@ const pageCachePlugins = () => [
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
-  // NO skipWaiting: updates wait for the user to tap the SwUpdateBanner
-  // (SKIP_WAITING message below). skipWaiting: true force-reloaded every
-  // open client mid-task on deploy and made the banner dead code.
+  // NO auto-skip-waiting: updates wait for the user to tap the SwUpdateBanner
+  // (SKIP_WAITING message below). Enabling it force-reloaded every open
+  // client mid-task on deploy and made the banner dead code. The
+  // sw-i18n-invariants vitest pins this stays off.
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [

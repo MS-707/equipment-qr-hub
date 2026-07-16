@@ -87,20 +87,35 @@
     "reportIncident": "Report Incident",
     "sdsBinder": "SDS Library",
     "preTripInspection": "Pre-Trip Inspection",
-    "needsRevision": "{count} record(s) need(s) revision — returned by EHS",
-    "approvedByEhs": "{count} record(s) approved by EHS",
-    "pendingSync": "{count} record(s) pending sync",
+    "needsRevision": {
+      "one": "1 record needs revision — returned by EHS",
+      "other": "{count} records need revision — returned by EHS"
+    },
+    "approvedByEhs": {
+      "one": "1 record approved by EHS",
+      "other": "{count} records approved by EHS"
+    },
+    "pendingSync": {
+      "one": "1 record pending sync",
+      "other": "{count} records pending sync"
+    },
     "emptyTitle": "Ready to go",
     "emptySub": "No safety records yet. Start your day with a Pre-Task Plan."
   },
   "sync": {
-    "pendingSync": "{count} record(s) pending sync",
+    "pendingSync": {
+      "one": "1 record pending sync",
+      "other": "{count} records pending sync"
+    },
     "syncAll": "Sync All",
     "syncing": "Syncing...",
     "syncedToCloud": "Synced to cloud",
     "syncFailed": "Sync failed — will retry",
     "savedOffline": "Saved offline — will sync when back online",
-    "recordsSynced": "{count} record(s) synced",
+    "recordsSynced": {
+      "one": "1 record synced",
+      "other": "{count} records synced"
+    },
     "pending": "Pending",
     "failed": "Failed",
     "synced": "Synced"

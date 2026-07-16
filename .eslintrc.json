@@ -1,3 +1,23 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "overrides": [
+    {
+      // i18n conversion ratchet (ES-M1-T7, docs/i18n/DESIGN.md): raw JSX text
+      // is an error ONLY inside directories that have been converted to t().
+      // The glob list starts closed (matches nothing) and is widened one
+      // cluster per ES milestone — partial coverage stays visible and
+      // ratcheted, never accidental. Do NOT add a directory here until every
+      // user-facing string in it flows through t().
+      "files": ["src/components/__i18n-converted__/**/*.tsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "JSXText[value=/[A-Za-z]{2,}/]",
+            "message": "Raw JSX text in an i18n-converted surface — route user-facing copy through t() (see docs/i18n/DESIGN.md)."
+          }
+        ]
+      }
+    }
+  ]
 }
