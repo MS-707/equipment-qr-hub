@@ -601,7 +601,7 @@
     "spanish": {
       "key": "spanish",
       "name": "Spanish Language Support",
-      "score": 0,
+      "score": 4,
       "initialScore": 0,
       "verifiedScore": null,
       "auditSummary": "Added 2026-07-06 by owner request. Architecture chosen by a 9-agent design tournament (3 forensics readers on the reverted WI-2 attempt, 3 designers, 3 judges): revive-and-gate won 2/3 lenses (avg 85.7 vs 80.7 content-first, 68.3 library-grade) with grafts absorbed from both losers. Full spec: docs/i18n/DESIGN.md.",
@@ -611,29 +611,37 @@
           "id": "ES-1",
           "criterion": "Hardened i18n provider: all-occurrence split/join interpolation, Intl.PluralRules .one/.other variant selection, generated typed keys enforced by tsc, locale→en→key fallback with dev-only warnings — unit tested.",
           "verify": "Read src/lib/i18n.tsx: interpolation uses split/join (not first-match replace); plural selection via Intl.PluralRules; t() key param typed from generated src/lib/i18n-keys.d.ts; vitest covers resolve/interpolate/plural/fallback; npx tsc --noEmit green.",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md"
+          "met": true,
+          "evidence": "src/lib/i18n-core.ts:47 split/join interpolation (no .replace in file); :79 Intl.PluralRules variant selection; :21,59 MessageKey typed keys from generated i18n-keys.d.ts; :71-75 es→en→defaultEn→key fallback with NODE_ENV-gated warns; i18n.test.ts 16/16 green; tsc clean",
+          "verifiedBy": "verify-criteria workflow wf_51c887bc-32d (1-vote, fresh agents)",
+          "verifiedAtIteration": 22
         },
         {
           "id": "ES-2",
           "criterion": "Storage migration and pre-paint language: locale persisted under 'sage-locale-v2'; the layout.tsx purge of the old 'sage-locale' key is deleted; document.documentElement.lang stamped pre-paint from storage; hydration-safe (suppressHydrationWarning on <html>, useLayoutEffect storage read).",
           "verify": "grep \"removeItem('sage-locale')\" src/app/layout.tsx returns nothing; grep 'sage-locale-v2' src/app/layout.tsx hits the pre-paint lang stamp; sw-i18n-invariants vitest green (also pins: no skipWaiting:true, sage-theme stamping unchanged).",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md"
+          "met": true,
+          "evidence": "layout.tsx: grep removeItem('sage-locale') → nothing; layout.tsx:68 pre-paint sage-locale-v2 lang stamp; sw-i18n-invariants.test.ts 12/12 green (skipWaiting absent, v2 never purged, theme stamp intact, suppressHydrationWarning on <html>)",
+          "verifiedBy": "verify-criteria workflow wf_51c887bc-32d (1-vote, fresh agents)",
+          "verifiedAtIteration": 22
         },
         {
           "id": "ES-3",
           "criterion": "Catalog CI gates live in npm test: en/es key parity, zero placeholders, interpolation-var parity, plural-variant parity, and generated-key-types freshness all fail the build when violated.",
           "verify": "src/lib/__tests__/i18n-catalog.test.ts exists and npm test is green; spot-check: temporarily removing an es key or inserting \"[TODO\" locally makes the suite fail (restore after).",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md"
+          "met": true,
+          "evidence": "i18n-catalog.test.ts:50-161 all five gates (parity/placeholder/var-parity/plural-parity/keygen freshness) in npm test; spot-check: injected [TODO into es.json → suite failed (2 tests), restored clean; full run 78 files/791 tests green",
+          "verifiedBy": "verify-criteria workflow wf_51c887bc-32d (1-vote, fresh agents)",
+          "verifiedAtIteration": 22
         },
         {
           "id": "ES-4",
           "criterion": "Runtime kill switch: /api/i18n/status serves {esEnabled, suppressedNamespaces[]} from Upstash KV; sw.ts has a NetworkOnly matcher for it; the provider fetches on mount AND visibilitychange with a last-known-good localStorage fallback.",
           "verify": "Read src/app/api/i18n/status/route.ts (KV-backed, no console.*), the sw.ts NetworkOnly entry, and the provider's mount+visibilitychange fetch; a route test covers KV-absent defaults (esEnabled true, empty suppression).",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md"
+          "met": true,
+          "evidence": "api/i18n/status/route.ts:13-32 KV-backed, reportServerError, zero console.*; sw.ts:40-47 NetworkOnly matcher /api/i18n; i18n.tsx:71-91 mount+visibilitychange fetch with last-known-good localStorage; i18n-status-route.test.ts 6/6 green incl. KV-absent defaults",
+          "verifiedBy": "verify-criteria workflow wf_51c887bc-32d (1-vote, fresh agents)",
+          "verifiedAtIteration": 22
         },
         {
           "id": "ES-5",
@@ -1430,63 +1438,63 @@
         "ES-3",
         "ES-4"
       ],
-      "status": "pending",
+      "status": "done",
       "tasks": [
         {
           "id": "ES-M1-T1",
           "description": "Restore src/lib/i18n.tsx from d20573d with fixes: split/join interpolation (all occurrences), Intl.PluralRules .one/.other variant selection, dev-only missing-key/unreplaced-var console.warn, t(key, vars, defaultEn?) overload, STORAGE_KEY='sage-locale-v2', useState('en') + useLayoutEffect storage read (synchronous pre-paint re-render — no initializer localStorage read, no one-frame English flash; fall back to useEffect only if jank is measured on low-end devices).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T2",
           "description": "Edit src/app/layout.tsx inline head script: delete removeItem('sage-locale') and add pre-paint document.documentElement.lang stamping from sage-locale-v2; add suppressHydrationWarning to <html>; keep sage-theme logic behaviorally identical (DS-2).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T3",
           "description": "Add scripts/gen-i18n-keys.mjs generating src/lib/i18n-keys.d.ts union type from en.json; wire t()'s key param to it.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T4",
           "description": "Create src/messages/en.json re-extracted from HEAD for cluster-1 keys only (seed key names from d20573d map; verify strings against current components — 'returned by EHS', 'SDS Library'); es.json with identical key set, values pending ES-M2 (gate allows empty catalogs only via an explicit 'pending-translation' manifest that must be empty by ES-M2).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T5",
           "description": "Add /api/i18n/status route returning {esEnabled, suppressedNamespaces[]} from Upstash KV (keys i18n:es-enabled default true, i18n:suppressed-namespaces default [], no console.*) + NetworkOnly matcher entry in sw.ts + provider fetch on mount AND on visibilitychange/foreground (field PWAs stay open whole shifts) with localStorage last-known-good 'sage-i18n-flag-v1'.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T6",
           "description": "Add src/lib/__tests__/i18n-catalog.test.ts (parity, zero-placeholder, var-parity, plural-parity, keygen freshness) and sw-i18n-invariants.test.ts (no skipWaiting:true; no removeItem('sage-locale-v2'); theme stamping present; LG-6/LG-8 literal greps; no locale prefix in NAV_ITEMS hrefs).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T7",
           "description": "Add .eslintrc.json overrides scaffold with no-restricted-syntax JSXText rule and an empty files glob (ratchet starts closed).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M1-T8",
           "description": "Wire I18nProvider into layout.tsx providers with NO toggle anywhere; add unit tests for resolve/interpolate/plural fallback chains.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw",
-          "status": "pending"
+          "status": "done"
         }
       ],
       "milestoneAcceptance": "npm run lint && tsc && vitest && next build all green; grep -c \"sage-locale'\" src/app/layout.tsx returns 0 and grep 'sage-locale-v2' src/app/layout.tsx returns the lang-stamp line; grep -rn 'skipWaiting: true' src/app/sw.ts returns nothing; grep -rn 'Español\\|setLocale' src/components/UserMenu.tsx returns nothing (toggle absent); Playwright smoke: rendered pages byte-identical English, html[lang='en']."
@@ -2252,6 +2260,23 @@
       "date": "2026-07-16",
       "event": "owner-resume",
       "details": "Owner relaunched the autonomous loop for the Spanish track (ES-M1..ES-M6) + LG-M3 with emphasis on dynamic-workflow gating and user-story/Playwright verification. Stale 2026-07-07 pause window cleared. Note: main gained the PR#29 auth hotfix + notify-queue fixes (d397861) since iteration 21; branch restarted from origin/main."
+    },
+    {
+      "iteration": 22,
+      "date": "2026-07-16",
+      "milestone": "ES-M1",
+      "tasksDone": [
+        "ES-M1-T1..T8 (T1-T5,T8-wiring were WIP from it.21; this iteration added i18n-core extraction, all four test files, eslint ratchet, e2e dark-smoke, killed 5 '(s)' hacks with plural groups + plural-aware keygen)"
+      ],
+      "gates": "lint ✓ tsc ✓ vitest 791 ✓ build ✓ playwright 9/9 ✓ (4 new i18n-dark user stories)",
+      "verified": [
+        "ES-1",
+        "ES-2",
+        "ES-3",
+        "ES-4"
+      ],
+      "refuted": [],
+      "notes": "spanish 0→4. Panel spot-checked the placeholder gate destructively ([TODO injection failed the suite, restored). Vitest/.tsx transform limitation solved architecturally: pure-TS i18n-core.ts (also satisfies ES-7's non-hook getT need). Next: ES-M2 glossary + pipeline + cluster 1 dark."
     }
   ],
   "sessionWindow": null
