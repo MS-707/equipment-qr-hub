@@ -1,0 +1,155 @@
+{
+  "artifact": "docs/i18n/glossary.json",
+  "pipeline": "docs/i18n/PIPELINE.md",
+  "rounds": [
+    {
+      "round": 1,
+      "verdicts": [
+        {
+          "failures": [
+            {
+              "en": "Tag \"DO NOT USE\" (tag out defective equipment)",
+              "reason": "Internal register inconsistency: the embedded tag text \"NO USAR\" is an infinitive prohibition, but the glossary's binding register rule (usted imperative for instructions) is enforced on every parallel caps prohibition — the CRITICAL FAIL entry explicitly forbids \"no operar (infinitive — instructions use usted imperative)\", and NO ENTRE, EVACÚE, and the printed label ESCANEE ANTES DE OPERAR all use usted imperative. The app prints its own tags, and a defective unit will show tag \"NO USAR\" beside banner \"FALLA CRÍTICA — NO OPERE\" — two moods for the same command class, violating the one-register rule the glossary itself codifies.",
+              "suggestion": "etiquete \"NO USE\""
+            }
+          ],
+          "lens": "Register: usted, imperative, <=6th-grade reading level, no academic/legal jargon",
+          "passCount": 110
+        },
+        {
+          "failures": [
+            {
+              "en": "Job Hazard Analysis (JHA)",
+              "reason": "The es value 'análisis de peligros del trabajo' deviates from the officially-used OSHA form. OSHA 3071's Spanish edition — which this entry's own note cites as its anchor — is titled 'Análisis de peligros en el trabajo', and the OSHA outreach/training ecosystem uniformly uses 'análisis de peligros en el trabajo (JHA)' (verified via web against osha.gov-linked course catalogs). DESIGN.md binds terminology to OSHA official Spanish where it exists, so the 'en el' form is the better-established term; 'del trabajo' is a near-synonym with no safety drift, but it breaks the official-anchor rule and would fail the glossary-consistency gate against OSHA-sourced copy.",
+              "suggestion": "análisis de peligros en el trabajo (JHA)"
+            }
+          ],
+          "lens": "OSHA-es terminology accuracy",
+          "passCount": 110
+        },
+        {
+          "lens": "regional-neutrality",
+          "failures": [
+            {
+              "en": "Welding PPE (jacket, gloves, shield)",
+              "reason": "'Chaqueta' has a divergent meaning across LatAm countries: in Mexico it is widely-known vulgar slang (the garment is 'chamarra' there), so the mandated term reads as crude to what is typically the largest Spanish-speaking nationality on US worksites, undermining the serious register of safety copy. The glossary bans milder cross-country collisions in the other direction ('cascos' for earmuffs, 'plática', 'pantalla facial'), so by its own standard this fails regional neutrality. Every single-country garment word (chamarra MX, campera AR, casaca PE) is equally regional, so the neutral fix is the garment-agnostic 'ropa protectora'.",
+              "suggestion": "EPP de soldadura (ropa protectora, guantes y careta)"
+            }
+          ],
+          "passCount": 110
+        },
+        {
+          "failures": [
+            {
+              "en": "Hot work / fire",
+              "reason": "Semantic drop: the es value back-translates as only 'hot work' — the '/ fire' half of the hazard label vanished. Every other slashed hazard row in this glossary translates all elements (silice/polvo/humos; resbalones, tropiezos y caidas; interaccion con publico y vehiculos), so a worker scanning the Spanish hazard list for a plain fire hazard (flammable storage, battery charging — the platform is safety-agnostic, not hot-work-only) finds no row covering it. Dropped condition = automatic FAIL under this lens.",
+              "suggestion": "trabajo en caliente / incendio"
+            },
+            {
+              "en": "Ring test",
+              "reason": "False-friend calque: 'anillo' in Spanish means only a ring-shaped object (jewelry/circle) and carries no acoustic sense, so 'prueba de anillo' back-translates as 'ring-object test' — the load-bearing meaning (tap the wheel and listen for a clear ring vs a dull thud BEFORE mounting) is unrecoverable from the term. Under stress a worker could look for a ring-shaped part or skip the check entirely and mount a cracked wheel (explosion hazard, 1910.215). The forbidden list ('prueba del aro') repeats the same calque instead of fixing it; the comprehensible 6th-grade term is the sound test.",
+              "suggestion": "prueba de sonido"
+            }
+          ],
+          "lens": "safety-accuracy",
+          "passCount": 109
+        },
+        {
+          "lens": "internal-consistency",
+          "failures": [
+            {
+              "en": "Attendant (confined space)",
+              "reason": "Bare 'vigía' collides with the Fire watch entry: Attendant mandates es 'vigía' while the Fire watch entry's note says \"UI standardizes 'vigía'\" for that role too (its es is 'vigía de incendios'). Two distinct safety-critical roles share one head noun, and they co-occur on the same job whenever hot work happens in or near a confined space — both permit types exist in this app. A 'Vigía:' role field cannot tell workers which duty applies (the attendant must never leave the opening; the fire watch stays ≥30 min after hot work), so the ambiguity can leave an occupied confined space unattended. The glossary's own standard treats exactly this collision class as disqualifying (it forbids 'cascos' because it 'collides with hard hat' and 'equipo' because it 'collides with equipment'), so mandating the same bare term for two roles is internally inconsistent — and a safety-meaning ambiguity, which cannot pass.",
+              "suggestion": "vigía de espacio confinado (short form 'vigía' only inside unambiguous confined-space-only screens; correspondingly fix the Fire watch note to standardize the full 'vigía de incendios', never bare 'vigía')"
+            }
+          ],
+          "passCount": 110
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "verdicts": [
+        {
+          "lens": "register",
+          "failures": [
+            {
+              "en": "Out of Service",
+              "reason": "Internal imperative-register contradiction: the note says the banner 'pairs with the NO USAR tag', but the glossary's own 'Tag DO NOT USE' entry mandates the tag text 'NO USE' and explicitly forbids 'NO USAR' as an infinitive that violates the caps usted-imperative rule (NO OPERE / NO ENTRE / NO USE). A translator following this note verbatim would print the banned infinitive on physical tags.",
+              "suggestion": "FUERA DE SERVICIO — with the note corrected to: \"Caps on tags and banners; pairs with the 'NO USE' tag.\""
+            }
+          ],
+          "passCount": 110
+        },
+        {
+          "lens": "OSHA-es terminology accuracy",
+          "failures": [
+            {
+              "en": "Engulfment",
+              "reason": "'Engullimiento' is neither the OSHA-es nor the LatAm-regulatory term, and the note's claimed anchor is unsupported. Verified: OSHA's own Spanish grain-engulfment materials use 'atrapamientos/inmersiones'; OSHA-es confined-space definitions render engulf as 'envolver/sumergir a un entrante'; MX NOM-033-STPS-2015 says 'sumersión o inmersión'; Colombia Res. 0491/2020 says 'sepultar, sumergir, envolver o atrapar'. 'Engullir' is a food verb (gulp down) and its derived noun is rare, so crews may not recognize 'engullimiento' as this fatal confined-space/grain hazard — a comprehension gap on a life-critical hazard row.",
+              "suggestion": "atrapamiento e inmersión en material a granel (keep the existing plain gloss 'quedar sepultado por material a granel'; also correct the note's false OSHA-es attribution)"
+            },
+            {
+              "en": "Out of Service",
+              "reason": "The es value 'FUERA DE SERVICIO' is correct, but the entry's note pairs it with \"the 'NO USAR' tag\" — the exact infinitive form the Tag \"DO NOT USE\" entry explicitly forbids (that entry mandates the usted-imperative tag text 'NO USE'). The glossary contradicts itself and, followed as written, would propagate the forbidden tag wording onto printed defective-equipment tags.",
+              "suggestion": "FUERA DE SERVICIO — unchanged; fix the note to read \"pairs with the 'NO USE' tag\" so it matches the mandated tag text"
+            }
+          ],
+          "passCount": 109
+        },
+        {
+          "lens": "Regional neutrality (Iberian forms, country-specific slang, divergent meanings across LatAm)",
+          "failures": [],
+          "passCount": 111
+        },
+        {
+          "lens": "safety-accuracy",
+          "failures": [
+            {
+              "en": "STOP",
+              "reason": "Back-translation ambiguity on a life-safety alarm: bare 'ALTO' also means 'high', and this same glossary uses 'alto' as the risk level High ('nivel de riesgo: ... alto ...'). On an atmo-check screen next to elevated gas readings, 'ALTO' can be misread as a HIGH-reading label rather than a stop order — especially by South American workers, whose road-sign stop word is PARE (the note itself concedes this). A stressed worker parsing 'LEL 12% — ALTO' as 'LEL high' instead of 'STOP' is exactly the misread-under-stress failure this lens exists to catch.",
+              "suggestion": "DETENGA EL TRABAJO (always render the full usted imperative as the alarm state; if a short attention word is kept, only ever as 'ALTO — DETENGA EL TRABAJO', never bare 'ALTO' adjacent to gas readings or risk-level labels)"
+            },
+            {
+              "en": "Crew sign-on / sign-off",
+              "reason": "Semantic drift in the first half: 'firma de ingreso' back-translates as 'entry / sign-in signature'. In LatAm field Spanish 'ingreso' is the standard word for physically entering a site or confined space ('permiso de ingreso a espacio confinado'), so the phrase reads as an attendance/entry log — the roll-call meaning the entry itself forbids ('pase de lista') — and drops the safety meaning of sign-on: the crew signing that they have read and accept the plan's hazards and controls. On a job that also runs a confined-space permit, 'firma de ingreso (cuadrilla)' is plausibly misread as the entrant/entry record, a dangerous role confusion.",
+              "suggestion": "firma de aceptación del plan (cuadrilla) / firma de aprobación"
+            },
+            {
+              "en": "Out of Service",
+              "reason": "Internal contradiction that mandates two conflicting prohibition tags: this entry's note says it 'pairs with the NO USAR tag', but the Tag \"DO NOT USE\" entry mandates the tag text 'NO USE' and explicitly forbids 'NO USAR' as an infinitive that breaks the usted-imperative rule for caps prohibitions (NO OPERE / NO ENTRE). Following this note verbatim prints defective-equipment tags in the exact forbidden form, so field tags will disagree ('NO USE' vs 'NO USAR') on the same prohibition.",
+              "suggestion": "FUERA DE SERVICIO (es value unchanged; correct the note to read: pairs with the 'NO USE' tag — matching the Tag \"DO NOT USE\" entry's mandated usted-imperative text)"
+            }
+          ],
+          "passCount": 108
+        },
+        {
+          "lens": "Internal consistency (one en concept = one es term; forbidden lists vs mandated terms; doNotTranslate overlap)",
+          "failures": [
+            {
+              "en": "Out of Service",
+              "reason": "Stale cross-reference contradicting a mandated term: the note says the status \"pairs with the 'NO USAR' tag\", but the Tag \"DO NOT USE\" entry mandates tag text 'NO USE' and explicitly lists 'NO USAR' as forbidden (infinitive; caps prohibitions use usted imperative like NO OPERE). A translator following this note reproduces a forbidden string on a safety tag.",
+              "suggestion": "es stays \"FUERA DE SERVICIO\"; correct the note to: \"Caps on tags and banners; pairs with the 'NO USE' tag.\""
+            },
+            {
+              "en": "Noise",
+              "reason": "Forbidden list contradicts another entry's mandated term: 'sonido' is forbidden without the glossary's own '(alone)'/'(bare)' scoping convention, while the Ring test entry mandates 'prueba de sonido'. A forbidden-lexeme consistency/neutrality scan (or a literal reader) flags the mandated ring-test term as violating the Noise entry.",
+              "suggestion": "es stays \"ruido\"; scope the forbidden entry to \"sonido (alone, as the hazard label — understates the hazard; OK inside 'prueba de sonido')\""
+            },
+            {
+              "en": "Preventive maintenance (PM)",
+              "reason": "Forbidden list contradicts another entry's mandated term: 'servicio' is forbidden unscoped ('vague'), while the Out of Service entry mandates 'FUERA DE SERVICIO'. Same defect class as 'sonido' — the glossary elsewhere marks such words '(alone)' when they legitimately occur inside another mandated term.",
+              "suggestion": "es stays \"mantenimiento preventivo (PM)\"; scope the forbidden entry to \"servicio (alone, for PM — vague; OK inside 'FUERA DE SERVICIO')\""
+            }
+          ],
+          "passCount": 108
+        }
+      ],
+      "note": "fix applied after this round; final independent verification recorded in round 3 below"
+    }
+  ],
+  "workflowRuns": [
+    "wf_e2e2bd20-fc2 (author + 2 review-fix rounds)",
+    "wf_61dc8099-328 (final verification, appended on completion)"
+  ]
+}

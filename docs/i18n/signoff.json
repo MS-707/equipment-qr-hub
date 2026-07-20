@@ -1,0 +1,15 @@
+{
+  "note": "Owner counter-signatures for safety-critical Spanish content (docs/i18n/PIPELINE.md). Pending entries NEVER block milestones — they gate only removing '(beta)' from the language toggle (goals.json autonomyNote).",
+  "packets": [
+    {
+      "packet": "glossary",
+      "artifact": "docs/i18n/glossary.json",
+      "reviewPacket": "docs/i18n/review/packet-glossary.md",
+      "sha256esValues": "69a5c1c021ce9946033d50ba88ce4abcf73d747fd5f0331ec3ca07519180f92c",
+      "status": "pending",
+      "generated": "2026-07-16",
+      "signedBy": null,
+      "signedDate": null
+    }
+  ]
+}

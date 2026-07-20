@@ -1,0 +1,1060 @@
+{
+  "note": "Mandated en→es terminology for all Sage EHS Spanish content (docs/i18n/PIPELINE.md). Authored from app-surface mining, corrected through 5-lens adversarial review (evidence: docs/i18n/review/glossary.json). Safety-agnostic scope per owner directive 2026-07-07.",
+  "registerRules": [
+    "Usted en todo momento; nunca tú ni vosotros — 'escanee', jamás 'escanea' ni 'escanead'.",
+    "Instrucciones y advertencias al trabajador en imperativo de usted: 'No opere', 'Evacúe', 'Detenga el trabajo'.",
+    "Botones y menús en infinitivo (convención es-419: 'Enviar', 'Emitir permiso'); el imperativo de usted queda para instrucciones y alarmas.",
+    "Nivel de lectura ≤ 6.º grado: frases cortas (≈15 palabras máx.), voz activa, una acción por frase, cero jerga legal.",
+    "Español latinoamericano neutro; prohibidas formas ibéricas: coger, vosotros, ordenador, gafas, cualificado, fallo, caducado, monitorización, EPI, bombona, barandilla, carretilla elevadora, consignación, ficha de datos de seguridad.",
+    "Prohibido slang de un solo país: troca, plática, casquillo, patín hidráulico, reflejante (MX); zorra, matafuego, autoelevador, barbijo (AR); grúa horquilla, mantención (CL); malogrado (PE); espejuelos (Caribe).",
+    "Terminología anclada a materiales oficiales de OSHA en español cuando existen: bloqueo y etiquetado (LOTO), espacio confinado, arnés, andamio, persona competente, EPP, protección contra caídas, montacargas, resbalones/tropiezos/caídas.",
+    "Nunca suavizar lenguaje de seguridad: sin diminutivos, sin condicionales ('debería'), sin cortesía en alarmas — 'EVACÚE', no 'por favor salga cuando pueda'.",
+    "hazard = peligro; risk = riesgo; severity = gravedad. Nunca intercambiarlos ni usar 'severidad'.",
+    "PPE → EPP siempre; 'respirador' nunca 'mascarilla'; 'casi accidente' nunca 'no pasó nada'.",
+    "Los acrónimos de doNotTranslate se conservan; expanda en español solo la primera vez: 'bloqueo y etiquetado (LOTO)', 'hoja de datos de seguridad (SDS)'.",
+    "Plataforma agnóstica de industria (directiva del dueño): vocabulario general de lugar de trabajo (planta, bodega, taller, patio, sitio), nunca marco exclusivo de construcción; 'cuadrilla' para crew — 'equipo' queda reservado para máquinas.",
+    "Números como en los medidores y en OSHA-es: punto decimal (19.5 %); símbolos O₂, CO, H₂S, LEL sin traducir.",
+    "Textos de alarma en MAYÚSCULAS permanecen en mayúsculas: EVACÚE, DETENGA EL TRABAJO, NO ENTRE, NO OPERE, FUERA DE SERVICIO, NO USE.",
+    "Un solo término mandatado por concepto en toda la interfaz; los sinónimos regionales aceptados viven solo en notas o capacitación oral, nunca en la UI."
+  ],
+  "doNotTranslate": [
+    "Sage EHS (brand)",
+    "Sage (assistant/product name)",
+    "Equipment QR Hub (legacy brand string)",
+    "OSHA",
+    "Cal/OSHA",
+    "NIOSH, ANSI, NFPA, ASTM, ISO (organization names)",
+    "Regulatory citations / regRef strings verbatim (e.g. 29 CFR 1910.147, 1910.146, 1910.178, 1926.501, T8 CCR §3203, NFPA 51B, ANSI Z358.1)",
+    "QR (the letters stay in 'código QR')",
+    "Equipment IDs, makes, model and serial numbers (e.g. FL-04, itemNumber values, Toyota 8FBE20, S/N)",
+    "Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, EHS, LEL, IDLH, SCBA, MEWP, SRL, PFAS, PM, DRI, IIPP",
+    "Gas symbols and chemical formulas: O₂, CO, H₂S, CO₂, ppm",
+    "N/A (expand once as 'no aplica', keep the glyph)",
+    "911 (emergency number)",
+    "Units as printed on devices/labels: %, °F/°C, psi, kN, lb/kg"
+  ],
+  "entries": [
+    {
+      "en": "Personal protective equipment (PPE)",
+      "es": "equipo de protección personal (EPP)",
+      "note": "OSHA-es pub 3151 official term. Banner 'PPE REQUIRED' renders 'SE REQUIERE EPP'. Expand once, then use EPP.",
+      "forbidden": [
+        "EPI (Iberian: equipo de protección individual)",
+        "PPE (untranslated in Spanish copy)"
+      ]
+    },
+    {
+      "en": "Hard hat",
+      "es": "casco de seguridad",
+      "note": "OSHA-es 'casco de protección/seguridad' (29 CFR 1910.135); DESIGN.md anchor hard hat→casco. Short 'casco' OK in space-tight checklist rows.",
+      "forbidden": [
+        "gorra (bump cap — not impact-rated, unsafe downgrade)",
+        "sombrero"
+      ]
+    },
+    {
+      "en": "Safety glasses",
+      "es": "lentes de seguridad",
+      "note": "OSHA-es materials alternate gafas/anteojos; 'lentes de seguridad' is the pan-LatAm shop-floor term. One mandated term per concept.",
+      "forbidden": [
+        "gafas (Iberian-leaning)",
+        "anteojos (Southern Cone regional)",
+        "espejuelos (Caribbean)",
+        "lentes (alone = ordinary eyeglasses)"
+      ]
+    },
+    {
+      "en": "Face shield",
+      "es": "protector facial",
+      "note": "OSHA-es PPE materials. Welding shield is 'careta de soldar' (see Welding PPE entry).",
+      "forbidden": [
+        "máscara (suggests respirator — unsafe confusion)",
+        "pantalla facial (Iberian; pantalla = screen)"
+      ]
+    },
+    {
+      "en": "Hearing protection",
+      "es": "protección auditiva",
+      "note": "OSHA-es 1910.95 hearing conservation. Hazard 'Noise' = 'ruido'. Name tapones/orejeras only when the specific type matters.",
+      "forbidden": [
+        "cascos (Spain: earmuffs — collides with hard hat)",
+        "audífonos (headphones/hearing aids)",
+        "tapones (one type only, not the category)"
+      ]
+    },
+    {
+      "en": "Hi-vis vest",
+      "es": "chaleco de alta visibilidad",
+      "note": "ANSI/ISEA 107 class references stay as-is. 'Alta visibilidad' understood by all nationalities.",
+      "forbidden": [
+        "chaleco reflejante (Mexicanism 'reflejante')",
+        "chaleco fluorescente (a property, not the rating)"
+      ]
+    },
+    {
+      "en": "Steel/composite-toe boots",
+      "es": "botas con punta de acero o compuesta",
+      "note": "OSHA-es protective footwear (1910.136, ASTM F2413). 'Punta' is the neutral term for the toe cap.",
+      "forbidden": [
+        "botas con casquillo (Mexicanism)",
+        "zapatos (vague, no protection implied)"
+      ]
+    },
+    {
+      "en": "Cut-resistant gloves",
+      "es": "guantes resistentes a cortes",
+      "note": "Plain 6th-grade phrasing; ANSI cut levels (A1–A9) stay untranslated.",
+      "forbidden": [
+        "guantes a prueba de cortes (overclaim — no glove is cut-proof)",
+        "guantes de carnaza (Mexicanism, one leather type)"
+      ]
+    },
+    {
+      "en": "Welding PPE (jacket, gloves, shield)",
+      "es": "EPP de soldadura (ropa protectora, guantes y careta)",
+      "note": "'Careta de soldar' = welding helmet/shield, the pan-LatAm term. 'Ropa protectora' is garment-agnostic: every jacket word is single-country (chamarra MX, campera AR, casaca PE) and 'chaqueta' is vulgar slang in Mexico. Covers candidates welding gloves + welding jacket/shield.",
+      "forbidden": [
+        "chaqueta (vulgar slang in MX — breaks regional neutrality and register)",
+        "chamarra (Mexicanism)",
+        "máscara de soldar (use careta)",
+        "lentes oscuros (sunglasses are NOT welding protection — unsafe)"
+      ]
+    },
+    {
+      "en": "Respirator",
+      "es": "respirador",
+      "note": "OSHA-es 1910.134 'protección respiratoria; respiradores'. A respirator is certified PPE; a surgical mask is not.",
+      "forbidden": [
+        "mascarilla (surgical mask — dangerous downgrade)",
+        "cubrebocas (Mexicanism, not PPE)",
+        "barbijo (Argentinism)",
+        "tapabocas (Colombia/Venezuela)",
+        "máscara (ambiguous)"
+      ]
+    },
+    {
+      "en": "Fall-arrest harness (full-body)",
+      "es": "arnés de cuerpo entero",
+      "note": "OSHA-es anchor 'arnés'; only a full-body harness may arrest a fall (1926.502).",
+      "forbidden": [
+        "cinturón de seguridad (body belt — prohibited for fall arrest since 1998; also reads as seatbelt)",
+        "faja (back-support belt)"
+      ]
+    },
+    {
+      "en": "Personal fall arrest system (PFAS: harness + lanyard/SRL + anchor)",
+      "es": "sistema personal de detención de caídas",
+      "note": "OSHA-es official (1926.502). In this app PFAS = fall arrest, never the chemical family; keep the acronym only next to the Spanish expansion.",
+      "forbidden": [
+        "sistema anticaídas (vague)",
+        "cinturón (see harness entry)"
+      ]
+    },
+    {
+      "en": "Lanyard / self-retracting lifeline (SRL)",
+      "es": "eslinga de seguridad / línea de vida autorretráctil (SRL)",
+      "note": "OSHA-es materials use 'cuerda/cinta de seguridad (lanyard)'; field variants abound, UI standardizes 'eslinga'. Keep SRL acronym after expansion.",
+      "forbidden": [
+        "soga (improvised rope — unsafe connotation)",
+        "cuerda (alone)",
+        "cabo de vida (regional)"
+      ]
+    },
+    {
+      "en": "SCBA (self-contained breathing apparatus)",
+      "es": "equipo de respiración autónoma (SCBA)",
+      "note": "NIOSH/OSHA-es 'aparato/equipo de respiración autónoma'. SCBA supplies breathing AIR.",
+      "forbidden": [
+        "tanque de oxígeno (SCBA uses air, not oxygen — dangerous myth)",
+        "máscara de oxígeno"
+      ]
+    },
+    {
+      "en": "Hazard",
+      "es": "peligro",
+      "note": "OSHA/ISO distinction: hazard = source of harm; risk = probability x severity. Never interchange (JhaForm, HazardTable).",
+      "forbidden": [
+        "riesgo (that is 'risk')",
+        "amenaza (security register)"
+      ]
+    },
+    {
+      "en": "Risk",
+      "es": "riesgo",
+      "note": "Counterpart of 'peligro'; used in 'nivel de riesgo', 'riesgo residual'.",
+      "forbidden": [
+        "peligro (that is 'hazard')"
+      ]
+    },
+    {
+      "en": "Working at height",
+      "es": "trabajo en altura",
+      "note": "OSHA-es fall-protection materials. Safety-agnostic platform: state no single trigger height in copy (varies 4 ft/6 ft by sector).",
+      "forbidden": [
+        "trabajo en las alturas (poetic)",
+        "trabajos verticales (rope-access specialty only)"
+      ]
+    },
+    {
+      "en": "Falling / dropped objects",
+      "es": "caída de objetos",
+      "note": "Standard signage form ('riesgo de caída de objetos').",
+      "forbidden": [
+        "objetos cayendo (gerund calque)",
+        "cosas que caen (vague)"
+      ]
+    },
+    {
+      "en": "Pinch / crush points",
+      "es": "puntos de pellizco y aplastamiento",
+      "note": "OSHA-es machine-safety materials use 'puntos de pellizco'; 'aplastamiento' covers crush.",
+      "forbidden": [
+        "machucones (Mexican colloquialism)",
+        "puntos de pinza"
+      ]
+    },
+    {
+      "en": "Overhead loads / lifting",
+      "es": "cargas suspendidas / izaje",
+      "note": "'Izaje' is the pan-LatAm rigging term. Instruction form: 'Nunca se pare debajo de una carga suspendida.'",
+      "forbidden": [
+        "cargas aéreas (reads as air freight)",
+        "levantamiento (manual lifting — different hazard)"
+      ]
+    },
+    {
+      "en": "Electrical / energized parts",
+      "es": "partes energizadas",
+      "note": "OSHA-es electrical materials. 'Partes vivas' (live parts) appears in electrical codes — accepted synonym in notes, UI standardizes 'energizadas'.",
+      "forbidden": [
+        "con luz (slang for energized — dangerous)",
+        "cables pelados (only one specific case)"
+      ]
+    },
+    {
+      "en": "Hot work / fire",
+      "es": "trabajo en caliente / incendio",
+      "note": "OSHA-es 1910.252 / NFPA 51B-es official term. 'Incendio' keeps the plain fire hazard (flammable storage, battery charging) visible in the hazard list — the platform is safety-agnostic, not hot-work-only.",
+      "forbidden": [
+        "trabajo caliente (missing 'en' — calque)",
+        "trabajo caluroso (hot weather, not hot work)"
+      ]
+    },
+    {
+      "en": "Confined space",
+      "es": "espacio confinado",
+      "note": "OSHA-es official (1910.146; pub 3138-es 'Espacios confinados que requieren permiso'). Mandated anchor term.",
+      "forbidden": [
+        "espacio cerrado (understates — not every closed space is confined)",
+        "área confinada",
+        "lugar estrecho"
+      ]
+    },
+    {
+      "en": "Manual handling / ergonomics",
+      "es": "manejo manual de cargas / ergonomía",
+      "note": "'Manejo manual de cargas' is the LatAm regulatory phrasing (e.g. MX NOM-036).",
+      "forbidden": [
+        "manipulación manual (Iberian/INSST register)",
+        "cargar cosas (vague)"
+      ]
+    },
+    {
+      "en": "Slips, trips & falls",
+      "es": "resbalones, tropiezos y caídas",
+      "note": "OSHA-es standard triad in walking-working-surfaces materials.",
+      "forbidden": [
+        "resbaladas",
+        "traspiés (literary register)"
+      ]
+    },
+    {
+      "en": "Noise",
+      "es": "ruido",
+      "note": "Hazard-table row; pairs with 'protección auditiva' (1910.95).",
+      "forbidden": [
+        "sonido (alone, as the hazard label — understates the hazard; OK inside 'prueba de sonido')"
+      ]
+    },
+    {
+      "en": "Silica / dust / fumes",
+      "es": "sílice / polvo / humos",
+      "note": "OSHA-es 'sílice cristalina respirable' (1926.1153/1910.1053). Welding fumes = 'humos de soldadura'. Fumes are NOT 'vapores'.",
+      "forbidden": [
+        "vapores (false friend: vapors ≠ fumes)",
+        "polvillo (diminutive softening)"
+      ]
+    },
+    {
+      "en": "Heat illness",
+      "es": "enfermedad por calor",
+      "note": "OSHA-es heat campaign 'Agua. Sombra. Descansos.' uses 'enfermedades por calor'. 'Golpe de calor' = heat stroke, the emergency subtype only.",
+      "forbidden": [
+        "insolación (sunstroke only)",
+        "calor (alone)"
+      ]
+    },
+    {
+      "en": "Pressurized systems",
+      "es": "sistemas a presión",
+      "note": "Plain form; covers hydraulic, pneumatic, steam. Release energy before work (see LOTO).",
+      "forbidden": [
+        "sistemas de presión (ambiguous)"
+      ]
+    },
+    {
+      "en": "Sharp edges / cuts",
+      "es": "bordes filosos / cortes",
+      "note": "'Filoso' is pan-LatAm (RAE marks it Am.); 'cortante' acceptable in prose.",
+      "forbidden": [
+        "punzocortantes (medical sharps register — needles)"
+      ]
+    },
+    {
+      "en": "Public / vehicle interface",
+      "es": "interacción con público y vehículos",
+      "note": "PTP hazard row; plain phrasing for pedestrian/traffic exposure.",
+      "forbidden": [
+        "interfaz (software false friend)"
+      ]
+    },
+    {
+      "en": "Engulfment",
+      "es": "atrapamiento e inmersión en material a granel",
+      "note": "OSHA's Spanish grain-hazard materials use 'atrapamientos/inmersiones'; OSHA-es confined-space definitions render engulf as 'envolver/sumergir a un entrante'; MX NOM-033-STPS-2015 says 'sumersión o inmersión'; Colombia Res. 0491/2020 'sepultar, sumergir, envolver o atrapar'. Plain gloss: 'quedar sepultado por material a granel'.",
+      "forbidden": [
+        "engullimiento ('engullir' = gulp down food; derived noun is rare — crews may not recognize this fatal hazard)",
+        "ahogamiento (drowning — different)",
+        "hundimiento"
+      ]
+    },
+    {
+      "en": "Suspension trauma",
+      "es": "trauma por suspensión",
+      "note": "Post-fall hanging in harness; rescue within minutes. Synonym crews may know: 'síndrome del arnés'.",
+      "forbidden": [
+        "shock de suspensión (anglicism)"
+      ]
+    },
+    {
+      "en": "Arc flash",
+      "es": "arco eléctrico",
+      "note": "NFPA 70E-es uses 'relámpago de arco' — accepted synonym. Arc-flash PPE = 'EPP contra arco eléctrico', includes 'ropa resistente a las llamas' (FR clothing).",
+      "forbidden": [
+        "flamazo (Mexican slang)",
+        "destello (alone)",
+        "arco voltaico (dated)"
+      ]
+    },
+    {
+      "en": "Immediately Dangerous to Life or Health (IDLH)",
+      "es": "inmediatamente peligroso para la vida o la salud (IDLH)",
+      "note": "NIOSH-es official expansion; keep IDLH acronym (atmo-check pairs it with SCBA/EVACUATE).",
+      "forbidden": [
+        "IPVS (EU acronym — meters and docs here say IDLH)"
+      ]
+    },
+    {
+      "en": "Near-miss",
+      "es": "casi accidente",
+      "note": "OSHA-es materials use casi/cuasi accidente; plain form chosen for 6th-grade level. Reporting must feel safe.",
+      "forbidden": [
+        "cuasi accidente (bureaucratic)",
+        "conato (Iberian/technical)",
+        "no pasó nada (dismissive — kills reporting)"
+      ]
+    },
+    {
+      "en": "Lockout/Tagout (LOTO)",
+      "es": "bloqueo y etiquetado (LOTO)",
+      "note": "OSHA-es 1910.147 'Control de energía peligrosa (bloqueo/etiquetado)'. Mandated anchor. Expand on first use, then LOTO.",
+      "forbidden": [
+        "candadeo (Mexicanism)",
+        "consignación (Spain/EU term)",
+        "cierre y etiquetado",
+        "tarjeteo"
+      ]
+    },
+    {
+      "en": "De-energize",
+      "es": "desenergizar",
+      "note": "OSHA-es LOTO materials. Instruction form 'desenergice'. Switching off is not isolating stored energy.",
+      "forbidden": [
+        "apagar (turn off only — leaves stored energy, unsafe)",
+        "cortar la luz (colloquial)"
+      ]
+    },
+    {
+      "en": "Tag \"DO NOT USE\" (tag out defective equipment)",
+      "es": "etiquete \"NO USE\"",
+      "note": "Usted imperative throughout: 'etiquete' for the action; tag text 'NO USE' keeps the same imperative register as NO OPERE / NO ENTRE, caps preserved. Pairs with 'FUERA DE SERVICIO' status.",
+      "forbidden": [
+        "NO USAR (infinitive — caps prohibitions use usted imperative, like NO OPERE)",
+        "NO SIRVE (colloquial)",
+        "márcalo (tú form)"
+      ]
+    },
+    {
+      "en": "Fire watch",
+      "es": "vigía de incendios",
+      "note": "OSHA-es welding pubs use 'vigilante de incendios' — accepted synonym; UI standardizes the full 'vigía de incendios', never bare 'vigía' (collides with the confined-space attendant when both roles are on the same job). Watch continues ≥30 min after hot work (NFPA 51B).",
+      "forbidden": [
+        "vigía (bare — ambiguous with the confined-space attendant role)",
+        "bombero (firefighter — wrong role expectation)",
+        "guardia de fuego (calque)"
+      ]
+    },
+    {
+      "en": "Atmospheric testing",
+      "es": "prueba atmosférica",
+      "note": "OSHA-es 1910.146: test before entry, in order O₂ → flammables → toxics.",
+      "forbidden": [
+        "prueba de aire (vague)",
+        "test atmosférico (anglicism 'test')"
+      ]
+    },
+    {
+      "en": "Continuous monitoring",
+      "es": "monitoreo continuo",
+      "note": "'Monitoreo' is the LatAm form (confined-space form field).",
+      "forbidden": [
+        "monitorización (Iberian)",
+        "chequeo constante (casual)"
+      ]
+    },
+    {
+      "en": "Toolbox talk",
+      "es": "charla de seguridad",
+      "note": "No official OSHA-es equivalent; 'charla de seguridad (de 5 minutos)' is the pan-LatAm industry standard.",
+      "forbidden": [
+        "plática de seguridad (Mexicanism 'plática')",
+        "charla de caja de herramientas (literal calque)",
+        "capacitación (formal training ≠ talk)"
+      ]
+    },
+    {
+      "en": "Crew sign-on / sign-off",
+      "es": "firma de aceptación del plan (cuadrilla) / firma de aprobación",
+      "note": "Sign-on = the crew signs that they read and accept the plan's hazards and controls; sign-off = approving signature (visto bueno), e.g. 'Awaiting EHS manager sign-off' → 'en espera de la firma de aprobación del gerente de EHS'. Never 'ingreso': in field Spanish it means physically entering a site or confined space ('permiso de ingreso') and misreads as the entrant/entry record.",
+      "forbidden": [
+        "firma de ingreso (reads as an entry/attendance record — dangerous role confusion with the confined-space entry log)",
+        "firma de enterado (acknowledged-only — downgrades approval, unsafe)",
+        "pase de lista (roll call)"
+      ]
+    },
+    {
+      "en": "Rescue plan",
+      "es": "plan de rescate",
+      "note": "OSHA-es 1910.146(k): plan non-entry retrieval first. 'Call 911' alone is not a rescue plan.",
+      "forbidden": [
+        "plan de salvamento (maritime/Iberian)",
+        "llamar al 911 (as the entire plan)"
+      ]
+    },
+    {
+      "en": "Pre-Trip Inspection",
+      "es": "inspección previa al uso",
+      "note": "OSHA-es forklifts: examine 'antes de cada turno' (1910.178(q)(7)). Hour-meter field = 'lectura del horómetro' (never 'odómetro' = distance).",
+      "forbidden": [
+        "inspección pre-viaje (calque — equipment, not a trip)",
+        "chequeo rápido (softening)"
+      ]
+    },
+    {
+      "en": "Ring test",
+      "es": "prueba de sonido",
+      "note": "Abrasive/grinding wheels (1910.215): tap the wheel and listen BEFORE mounting — a clear ring = sound wheel; a dull thud = cracked wheel, do not mount it. Named for the sound: 'anillo' has no acoustic sense in Spanish, so the calque loses the instruction.",
+      "forbidden": [
+        "prueba de anillo (false-friend calque — anillo is only a ring-shaped object)",
+        "prueba del aro (same calque)"
+      ]
+    },
+    {
+      "en": "Machine guarding",
+      "es": "resguardo de máquinas",
+      "note": "OSHA-es 1910.212 'resguardos'. 'Guardas' is an accepted field synonym; UI uses resguardo. 'Machine Guarding Required' → 'Se requiere resguardo de máquinas'.",
+      "forbidden": [
+        "protectores (vague)",
+        "tapas"
+      ]
+    },
+    {
+      "en": "Control measure",
+      "es": "medida de control",
+      "note": "HazardTable/JHA column. Hierarchy of controls = 'jerarquía de controles'.",
+      "forbidden": [
+        "mitigación (jargon)",
+        "precaución (vague)"
+      ]
+    },
+    {
+      "en": "Close out permit",
+      "es": "cerrar el permiso",
+      "note": "Permit lifecycle end; status Closed = 'cerrado'.",
+      "forbidden": [
+        "cerrar sesión (log out — UI collision)",
+        "clausurar",
+        "finiquitar (payroll term)"
+      ]
+    },
+    {
+      "en": "Stop work / right to refuse unsafe work",
+      "es": "detenga el trabajo / derecho a rechazar trabajo inseguro",
+      "note": "OSHA-es workers'-rights materials. Anyone may stop work; keep it imperative and unconditional.",
+      "forbidden": [
+        "paro (= strike/unemployment)",
+        "huelga",
+        "pare si puede (softening)"
+      ]
+    },
+    {
+      "en": "Emergency muster point",
+      "es": "punto de reunión",
+      "note": "Emergency action plan term (1910.38-es). One mandated term for signage consistency.",
+      "forbidden": [
+        "punto de encuentro (social register — keep one term)",
+        "zona de conteo"
+      ]
+    },
+    {
+      "en": "Preventive maintenance (PM)",
+      "es": "mantenimiento preventivo (PM)",
+      "note": "Keep PM acronym after expansion. 'PM Responsible Individual (DRI)' = 'responsable directo del mantenimiento preventivo (DRI)'.",
+      "forbidden": [
+        "mantención (Chileanism)",
+        "servicio (alone, for PM — vague; OK inside 'FUERA DE SERVICIO')"
+      ]
+    },
+    {
+      "en": "First aid / eyewash",
+      "es": "primeros auxilios / estación lavaojos",
+      "note": "OSHA-es 1910.151; eyewash per ANSI Z358.1 'estación lavaojos'.",
+      "forbidden": [
+        "curaciones (Mexican colloquialism)",
+        "botiquín (the kit, not the capability)"
+      ]
+    },
+    {
+      "en": "Fall protection",
+      "es": "protección contra caídas",
+      "note": "OSHA-es official title (1926.501).",
+      "forbidden": [
+        "protección de caídas (calque)",
+        "anticaídas (alone)"
+      ]
+    },
+    {
+      "en": "Anchor point",
+      "es": "punto de anclaje",
+      "note": "OSHA-es fall-protection materials; 5,000 lb (22.2 kN) per worker or engineered anchor.",
+      "forbidden": [
+        "punto de amarre (mooring/rigging)",
+        "ancla"
+      ]
+    },
+    {
+      "en": "Root cause analysis",
+      "es": "análisis de causa raíz",
+      "note": "Incident form. No-blame framing: analyze causes, never culprits — protects reporting culture.",
+      "forbidden": [
+        "búsqueda de culpables (blame framing — kills reporting)"
+      ]
+    },
+    {
+      "en": "Corrective actions to prevent recurrence",
+      "es": "acciones correctivas para evitar que se repita",
+      "note": "Plain 6th-grade phrasing of 'prevent recurrence'.",
+      "forbidden": [
+        "medidas disciplinarias (punishment ≠ correction)",
+        "castigos"
+      ]
+    },
+    {
+      "en": "Hot Work Permit",
+      "es": "permiso de trabajo en caliente",
+      "note": "Builds on OSHA-es 'trabajo en caliente'; title case per UI style.",
+      "forbidden": [
+        "permiso de fuego"
+      ]
+    },
+    {
+      "en": "Work-at-Height Permit",
+      "es": "permiso de trabajo en altura",
+      "note": "Builds on 'trabajo en altura'.",
+      "forbidden": [
+        "permiso de altura (ambiguous)"
+      ]
+    },
+    {
+      "en": "Confined Space Entry Permit",
+      "es": "permiso de entrada a espacio confinado",
+      "note": "OSHA-es 1910.146 entry permit; 'entrada' is the official term for entry.",
+      "forbidden": [
+        "permiso de espacio cerrado"
+      ]
+    },
+    {
+      "en": "Permit-required confined space",
+      "es": "espacio confinado que requiere permiso",
+      "note": "OSHA pub 3138-es exact title. Determination step: 'determine si el espacio requiere permiso'.",
+      "forbidden": [
+        "espacio con permiso (ambiguous)"
+      ]
+    },
+    {
+      "en": "Pre-entry checklist",
+      "es": "lista de verificación previa a la entrada",
+      "note": "Checklist = 'lista de verificación' app-wide (inspections, permits).",
+      "forbidden": [
+        "checklist (anglicism)",
+        "lista de chequeo (regional anglicism)"
+      ]
+    },
+    {
+      "en": "Pre-Task Plan (PTP)",
+      "es": "plan previo a la tarea (PTP)",
+      "note": "Daily crew-signature document. No OSHA-es equivalent; keep PTP code after expansion.",
+      "forbidden": [
+        "plan pre-tarea (calque)",
+        "planificación (vague)"
+      ]
+    },
+    {
+      "en": "Job Hazard Analysis (JHA)",
+      "es": "análisis de peligros en el trabajo (JHA)",
+      "note": "OSHA 3071-es official title 'Análisis de peligros en el trabajo' — the 'en el' form is the mandated anchor. Crews may say AST/ATS (análisis de trabajo seguro) — oral synonym only. 'Hazard assessment' = 'evaluación de peligros'.",
+      "forbidden": [
+        "análisis de peligros del trabajo (deviates from the OSHA 3071-es official form)",
+        "análisis de riesgos laborales (Spain PRL register)",
+        "AST (in UI — keep JHA)"
+      ]
+    },
+    {
+      "en": "Incident / Near-Miss Report",
+      "es": "reporte de incidente / casi accidente",
+      "note": "'Reporte' is pan-LatAm (RAE Am.). Must sound routine, not punitive.",
+      "forbidden": [
+        "denuncia (legal/police — deters reporting)",
+        "parte de accidente (Iberian)",
+        "acta"
+      ]
+    },
+    {
+      "en": "Validity window",
+      "es": "periodo de validez",
+      "note": "Permit timer (HotWorkPermitForm); plain time phrasing.",
+      "forbidden": [
+        "ventana de validez (calque)"
+      ]
+    },
+    {
+      "en": "Scope of work",
+      "es": "alcance del trabajo",
+      "note": "PTP/permit field.",
+      "forbidden": [
+        "ámbito (abstract/Iberian register)"
+      ]
+    },
+    {
+      "en": "EHS Review",
+      "es": "revisión de EHS",
+      "note": "EHS stays untranslated (brand acronym, doNotTranslate). Crews may know HSE/SSOMA — never substitute.",
+      "forbidden": [
+        "revisión de SSOMA",
+        "revisión de HSE"
+      ]
+    },
+    {
+      "en": "Competent person",
+      "es": "persona competente",
+      "note": "OSHA-es official (1926.32(f)): identifies hazards AND has authority to correct. Legally distinct from 'persona calificada' (qualified person).",
+      "forbidden": [
+        "persona calificada (different OSHA role)",
+        "persona capacitada (only trained)",
+        "cualificado (Iberian)"
+      ]
+    },
+    {
+      "en": "Qualified technician",
+      "es": "técnico calificado",
+      "note": "LatAm 'calificado'. Trained (capacitado) is not the same as qualified.",
+      "forbidden": [
+        "cualificado (Iberian)",
+        "capacitado (trained ≠ qualified)"
+      ]
+    },
+    {
+      "en": "Authorized operator",
+      "es": "operador autorizado",
+      "note": "Forklift/MEWP operator certified for that equipment.",
+      "forbidden": [
+        "chofer (road drivers only)",
+        "operario (generic laborer)"
+      ]
+    },
+    {
+      "en": "Entry supervisor",
+      "es": "supervisor de entrada",
+      "note": "OSHA 3138-es role. Plain 'supervisor' translates unchanged as 'supervisor'.",
+      "forbidden": [
+        "encargado (vague)",
+        "jefe"
+      ]
+    },
+    {
+      "en": "Attendant (confined space)",
+      "es": "vigía de espacio confinado",
+      "note": "OSHA 3138-es uses 'asistente' — accepted synonym; UI standardizes 'vigía de espacio confinado' to avoid reading as 'assistant' and to distinguish from 'vigía de incendios' (fire watch) when both roles work the same job. Short form 'vigía' only inside unambiguous confined-space-only screens. The vigía never leaves the opening.",
+      "forbidden": [
+        "vigía (bare, outside confined-space-only screens — collides with fire watch)",
+        "ayudante (downgrades the duty — unsafe)",
+        "acompañante"
+      ]
+    },
+    {
+      "en": "Entrant",
+      "es": "entrante autorizado",
+      "note": "OSHA 3138-es 'entrante autorizado'; short form 'entrante' where space-tight.",
+      "forbidden": [
+        "ingresante (Southern Cone academic)",
+        "el que entra"
+      ]
+    },
+    {
+      "en": "Safety officer",
+      "es": "responsable de seguridad",
+      "note": "Safety ≠ security: bare 'seguridad' reads as guards. Use the full phrase.",
+      "forbidden": [
+        "oficial de seguridad (anglicism; oficial = uniformed rank)",
+        "prevencionista (Southern Cone jargon)",
+        "seguridad (alone = security guard)"
+      ]
+    },
+    {
+      "en": "Crew",
+      "es": "cuadrilla",
+      "note": "Pan-LatAm work crew. In this app 'equipo' is reserved for equipment/machines — never use it for people.",
+      "forbidden": [
+        "equipo (collides with equipment)",
+        "brigada (emergency brigade)",
+        "personal (vague)"
+      ]
+    },
+    {
+      "en": "Work order",
+      "es": "orden de trabajo",
+      "note": "Maintenance document (WorkOrderCard).",
+      "forbidden": [
+        "orden de servicio (different document in several countries)",
+        "ticket (anglicism)"
+      ]
+    },
+    {
+      "en": "Injury & Illness Prevention Program (IIPP)",
+      "es": "Programa de Prevención de Lesiones y Enfermedades (IIPP)",
+      "note": "Cal/OSHA official Spanish (T8 CCR §3203). Keep IIPP acronym.",
+      "forbidden": [
+        "plan de prevención de riesgos laborales (Spain PRL)"
+      ]
+    },
+    {
+      "en": "Safety Data Sheet (SDS)",
+      "es": "hoja de datos de seguridad (SDS)",
+      "note": "OSHA HazCom 1910.1200-es official. 'SDS Library' → 'biblioteca de SDS'. SDS acronym kept (GHS).",
+      "forbidden": [
+        "MSDS (obsolete pre-GHS)",
+        "ficha de datos de seguridad (EU/Spain FDS)"
+      ]
+    },
+    {
+      "en": "Forklift / powered industrial truck",
+      "es": "montacargas",
+      "note": "OSHA-es topic page 'Montacargas' (1910.178); category label 'vehículos industriales motorizados (montacargas)'. 'Electric Sit-Down Forklift' → 'montacargas eléctrico de operador sentado'. In a few countries montacargas = freight elevator — context and photos disambiguate, matching OSHA-es usage.",
+      "forbidden": [
+        "autoelevador (Argentinism)",
+        "grúa horquilla (Chileanism)",
+        "yale (Caribbean brand-as-generic)",
+        "troca (Spanglish)",
+        "carretilla elevadora (Iberian)"
+      ]
+    },
+    {
+      "en": "Walkie pallet jack",
+      "es": "transpaleta eléctrica de operador a pie",
+      "note": "Manual version = 'transpaleta manual'. 'Transpaleta' is understood region-wide.",
+      "forbidden": [
+        "zorra (Argentinism)",
+        "patín hidráulico (Mexicanism)"
+      ]
+    },
+    {
+      "en": "Aerial work platform (MEWP)",
+      "es": "plataforma de trabajo aéreo (MEWP)",
+      "note": "ANSI/ISO Spanish standards say PEMP, but UI keeps MEWP to match training records and labels; expand in Spanish on first use.",
+      "forbidden": [
+        "PEMP (inconsistent with UI acronym)",
+        "canastilla (MX — the basket only)",
+        "manlift (anglicism)"
+      ]
+    },
+    {
+      "en": "Scissor lift",
+      "es": "elevador de tijera",
+      "note": "DESIGN.md OSHA-es anchor (scissor lift→elevador de tijera). 'Plataforma de tijera' accepted synonym in notes.",
+      "forbidden": [
+        "tijera (alone)",
+        "Genie (brand as generic)"
+      ]
+    },
+    {
+      "en": "Fire extinguisher",
+      "es": "extintor",
+      "note": "OSHA-es 1910.157 'extintores portátiles'. 'Extinguidor' (MX) is fine orally; UI standardizes extintor.",
+      "forbidden": [
+        "matafuego (Argentinism)",
+        "extinguidor (in UI — one-term consistency)"
+      ]
+    },
+    {
+      "en": "Compressed gas cylinder",
+      "es": "cilindro de gas comprimido",
+      "note": "OSHA-es 1910.101. Chain upright, cap on when not in use.",
+      "forbidden": [
+        "bombona (Iberian/Venezuelan)",
+        "garrafa (Southern Cone LPG)",
+        "tanque (stationary tank)"
+      ]
+    },
+    {
+      "en": "Guardrails",
+      "es": "barandas de protección",
+      "note": "OSHA-es fall-protection pubs alternate barandas/barandales; 'barandal' (MX) fine orally, UI uses barandas.",
+      "forbidden": [
+        "barandilla (Iberian)",
+        "pasamanos (handrail ≠ guardrail — unsafe)",
+        "quitamiedos (Iberian road term)"
+      ]
+    },
+    {
+      "en": "Scaffold",
+      "es": "andamio",
+      "note": "OSHA-es 1926.451 'andamios'. Mandated anchor term.",
+      "forbidden": [
+        "andamiaje (abstract noun)",
+        "tarima (stage platform)"
+      ]
+    },
+    {
+      "en": "Stationary machine tools",
+      "es": "máquinas herramienta fijas",
+      "note": "Equipment category label (equipment.ts); pairs with 'resguardo de máquinas'.",
+      "forbidden": [
+        "máquinas fijas (vague)"
+      ]
+    },
+    {
+      "en": "Permit status: Active / Closed / Revoked / Expired",
+      "es": "estado del permiso: activo / cerrado / revocado / vencido",
+      "note": "'Vencido' is the pan-LatAm word for expired documents/permits.",
+      "forbidden": [
+        "caducado (Iberian)",
+        "expirado (anglicism)",
+        "anulado (voided ≠ revoked)"
+      ]
+    },
+    {
+      "en": "Review status: Pending Review / Approved / Needs Revision / Recalled",
+      "es": "pendiente de revisión / aprobado / requiere correcciones / retirado",
+      "note": "'Needs Revision' means changes requested — 'requiere correcciones' avoids the false friend 'revisión' (re-inspection). Recalled (by submitter) = 'retirado'.",
+      "forbidden": [
+        "necesita revisión (false friend — sounds like inspection)",
+        "rechazado (harsher than Needs Revision)",
+        "devuelto"
+      ]
+    },
+    {
+      "en": "Equipment status: Active / Retired / Pending Repair",
+      "es": "activo / dado de baja / reparación pendiente",
+      "note": "'Dado de baja' = removed from the asset register; keeps 'retirado' reserved for recalled submissions.",
+      "forbidden": [
+        "jubilado (people only)",
+        "en reparación (implies work already started)"
+      ]
+    },
+    {
+      "en": "Out of Service",
+      "es": "FUERA DE SERVICIO",
+      "note": "Caps on tags and banners; pairs with the 'NO USE' tag.",
+      "forbidden": [
+        "descompuesto (Mexicanism)",
+        "malogrado (Peruvianism)",
+        "no sirve (casual)"
+      ]
+    },
+    {
+      "en": "Overdue",
+      "es": "atrasado",
+      "note": "Work orders/inspections past due. Keep distinct from 'vencido' (expired).",
+      "forbidden": [
+        "vencido (means expired — status collision)",
+        "tarde"
+      ]
+    },
+    {
+      "en": "All Clear",
+      "es": "todo en orden",
+      "note": "Inspection result banner (PreTripInspection).",
+      "forbidden": [
+        "sin novedad (military register)",
+        "OK"
+      ]
+    },
+    {
+      "en": "Pass / Fail / N/A",
+      "es": "cumple / no cumple / N/A",
+      "note": "Item-level inspection results; N/A expands once as 'no aplica', glyph 'N/A' kept.",
+      "forbidden": [
+        "aprobado / reprobado (school register)",
+        "OK / mal"
+      ]
+    },
+    {
+      "en": "Safety-critical",
+      "es": "crítico para la seguridad",
+      "note": "Inspection item flag; a failed safety-critical item forces DO NOT OPERATE.",
+      "forbidden": [
+        "de seguridad crítica (calque)"
+      ]
+    },
+    {
+      "en": "CRITICAL FAIL — DO NOT OPERATE",
+      "es": "FALLA CRÍTICA — NO OPERE",
+      "note": "'Falla' is the LatAm noun. Standalone 'Do not operate' = 'NO OPERE' (usted imperative, caps preserved).",
+      "forbidden": [
+        "fallo (Iberian)",
+        "error crítico (software register)",
+        "no operar (infinitive — instructions use usted imperative)"
+      ]
+    },
+    {
+      "en": "Risk level: Critical / High / Medium / Low",
+      "es": "nivel de riesgo: crítico / alto / medio / bajo",
+      "note": "JHA/PTP risk matrix labels (RISK_LABELS map).",
+      "forbidden": [
+        "mediano (size, not level)",
+        "severo (anglicism)"
+      ]
+    },
+    {
+      "en": "Residual risk (after controls)",
+      "es": "riesgo residual (después de los controles)",
+      "note": "JHA column: the risk left AFTER controls are applied.",
+      "forbidden": [
+        "riesgo aceptable (an acceptance decision, not the leftover risk)"
+      ]
+    },
+    {
+      "en": "Severity",
+      "es": "gravedad",
+      "note": "Incident field; OSHA-es materials use 'gravedad'.",
+      "forbidden": [
+        "severidad (anglicism)"
+      ]
+    },
+    {
+      "en": "Atmospheric readings: O₂ % (19.5–23.5), LEL % (<10), CO, H₂S",
+      "es": "lecturas atmosféricas: % de O₂ (19.5–23.5), % de LEL (<10), CO, H₂S",
+      "note": "Decimal POINT as on gas meters and OSHA-es (19.5 %). LEL = 'límite inferior de explosividad' — expand once, keep LEL (meter display). Flammable exceedance = 'atmósfera explosiva'.",
+      "forbidden": [
+        "19,5 (decimal comma)",
+        "LIE / LII (meters show LEL)",
+        "oxígeno suficiente (vague)"
+      ]
+    },
+    {
+      "en": "EVACUATE",
+      "es": "EVACÚE",
+      "note": "Atmo-check alarm state. Usted imperative, caps preserved, no courtesy words.",
+      "forbidden": [
+        "evacúa (tú)",
+        "evacuad (vosotros)",
+        "salga cuando pueda (softening)"
+      ]
+    },
+    {
+      "en": "STOP",
+      "es": "DETENGA EL TRABAJO",
+      "note": "Atmo/work-stop alarm state. Usted imperative, caps. Always render the full form: bare 'ALTO' also means 'high' and can be misread as a HIGH gas reading or the risk level 'alto' on the same screen. If a short attention word is kept, only as 'ALTO — DETENGA EL TRABAJO', never bare 'ALTO' adjacent to gas readings or risk-level labels. 'PARE' is the South-American road-sign variant — oral only.",
+      "forbidden": [
+        "ALTO (bare — also means 'high'; misread as a gas/risk-level label under stress)",
+        "STOP (untranslated)",
+        "para (tú)",
+        "espere (softening)"
+      ]
+    },
+    {
+      "en": "DO NOT ENTER",
+      "es": "NO ENTRE",
+      "note": "Confined-space gate state (atmo-check). Usted imperative, caps.",
+      "forbidden": [
+        "no entres (tú)",
+        "no entréis (vosotros)",
+        "evite entrar (softening)"
+      ]
+    },
+    {
+      "en": "SCAN BEFORE OPERATING",
+      "es": "ESCANEE ANTES DE OPERAR",
+      "note": "QR label print line; 'QR' stays untranslated; printed labels are bilingual EN/ES per DESIGN.md.",
+      "forbidden": [
+        "escanea (tú)",
+        "escanead (vosotros)"
+      ]
+    },
+    {
+      "en": "Issue Permit",
+      "es": "Emitir permiso",
+      "note": "Buttons use infinitive (es-419 UI convention); instructions use usted imperative. Role 'Issuer' = 'emisor del permiso'.",
+      "forbidden": [
+        "Publicar (software false friend)",
+        "Dar permiso (casual = grant permission)"
+      ]
+    },
+    {
+      "en": "Submit for EHS Review",
+      "es": "Enviar a revisión de EHS",
+      "note": "Submit = 'enviar' app-wide.",
+      "forbidden": [
+        "Someter (false friend/archaic)",
+        "Subir (upload)"
+      ]
+    },
+    {
+      "en": "Recall submission",
+      "es": "Retirar el envío",
+      "note": "Recall = take back for edits; keep 'revocar' reserved for permit revocation.",
+      "forbidden": [
+        "Recordar (false friend: remember)",
+        "Revocar (reserved for permits)"
+      ]
+    },
+    {
+      "en": "Start Inspection / Submit Inspection",
+      "es": "Iniciar inspección / Enviar inspección",
+      "note": "One verb per action app-wide: iniciar, enviar.",
+      "forbidden": [
+        "Comenzar / Empezar (verb inconsistency)",
+        "Someter"
+      ]
+    },
+    {
+      "en": "Approve / Deny",
+      "es": "Aprobar / Rechazar",
+      "note": "Review action buttons (review/action page).",
+      "forbidden": [
+        "Denegar (formal/Iberian-leaning)",
+        "Negar"
+      ]
+    }
+  ]
+}
