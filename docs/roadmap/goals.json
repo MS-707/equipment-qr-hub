@@ -601,7 +601,7 @@
     "spanish": {
       "key": "spanish",
       "name": "Spanish Language Support",
-      "score": 4,
+      "score": 5,
       "initialScore": 0,
       "verifiedScore": null,
       "auditSummary": "Added 2026-07-06 by owner request. Architecture chosen by a 9-agent design tournament (3 forensics readers on the reverted WI-2 attempt, 3 designers, 3 judges): revive-and-gate won 2/3 lenses (avg 85.7 vs 80.7 content-first, 68.3 library-grade) with grafts absorbed from both losers. Full spec: docs/i18n/DESIGN.md.",
@@ -647,9 +647,11 @@
           "id": "ES-5",
           "criterion": "Translation pipeline + cluster 1 dark: surface-mined glossary (owner packet pending or signed) with 5-lens adversarial review evidence committed; 3-round cap + blocked-keys manifest enforced; shell/nav/auth/offline/errors/dashboard converted and translated with the toggle still absent.",
           "verify": "docs/i18n/glossary.json + review/*.json exist with zero FAIL entries covering every cluster-1 key; blocked-keys.json within size cap; es-leakage.spec green on cluster-1 routes; grep setLocale src/components/UserMenu.tsx returns nothing (no toggle).",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md",
-          "autonomyNote": "Glossary/namespace sign-off is asynchronous (mark.starr counter-signs packets); it gates only the (beta) label, never this criterion."
+          "met": true,
+          "evidence": "glossary.json (114 entries, 3 review rounds) + review/*.json cover 152/152 cluster-1 keys, zero unaccounted FAILs (3 terminal failures routed to blocked-keys.json, within cap, pipeline-rules tests enforce); es-leakage.spec 4/4 green on prod build; setLocale absent from UserMenu (no toggle)",
+          "autonomyNote": "Glossary/namespace sign-off is asynchronous (mark.starr counter-signs packets); it gates only the (beta) label, never this criterion.",
+          "verifiedBy": "verify-criteria workflow wf_4d0344d2-087",
+          "verifiedAtIteration": 23
         },
         {
           "id": "ES-6",
@@ -1506,14 +1508,14 @@
       "criteria": [
         "ES-5"
       ],
-      "status": "in_progress",
+      "status": "done",
       "tasks": [
         {
           "id": "ES-M2-T1",
           "description": "Author docs/i18n/glossary.json (~100 term pairs MINED FROM THE ACTUAL APP SURFACE — src/data/*, safety components: fire watch, tie-off, guardrail, lockout/tagout etc. — mapped to mandated neutral-LatAm Spanish — workplace-safety-general vocabulary with strong construction/industrial coverage, NOT construction-only (owner directive 2026-07-07); register rules: usted, imperative, <=6th-grade reading; forbidden regionalisms/Iberian forms; do-not-translate list: regRefs, OSHA/Cal-OSHA, brand, model numbers) via generation agent + 5-lens adversarial review; write docs/i18n/review/glossary.json evidence; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json — owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M2-T2",
@@ -1527,7 +1529,7 @@
           "description": "Translate cluster-1 es.json per pipeline; commit docs/i18n/review/{common,nav,user,dashboard,sync,update,confirm}.json with zero FAILs; empty the pending-translation manifest.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M2-T4",
@@ -1541,7 +1543,7 @@
           "description": "Widen eslint override glob to the converted files; add playwright/es-leakage.spec.ts (addInitScript sage-locale-v2='es') covering /, /safety, error and offline pages + en-pin.spec.ts protecting DM-10's English assertions.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest catalog tests green with zero es placeholders and full parity; docs/i18n/review/*.json exist, cover every cluster-1 key, contain zero FAIL; docs/i18n/signoff.json has a dated glossary packet entry (pending or sign",
-          "status": "in_progress"
+          "status": "done"
         },
         {
           "id": "ES-M2-T6",
@@ -2284,6 +2286,20 @@
       "milestone": "ES-M2",
       "event": "owner-pause-cron",
       "details": "Session-limit pause; one-shot cron resumes /loop /goal next in ~4h. State: cluster-1 conversion DONE (15 surfaces, dark-invariance 16 tests + en-pin.spec), PIPELINE.md + blocked-keys mechanism DONE, ratchet live on 12 files. PENDING: T1 glossary (workflow wx07pykii was in flight — if results were not banked to docs/i18n/glossary.json before shutdown, relaunch the es-glossary workflow), T3 translation + review evidence + empty pending manifest, es-leakage.spec, then verify ES-5. Gates green at last push."
+    },
+    {
+      "iteration": 23,
+      "date": "2026-07-16",
+      "milestone": "ES-M2",
+      "tasksDone": [
+        "ES-M2-T1..T7"
+      ],
+      "gates": "lint ✓ tsc ✓ vitest 814 ✓ build ✓ playwright 16/16 (CI retry policy) ✓",
+      "verified": [
+        "ES-5"
+      ],
+      "refuted": [],
+      "notes": "spanish 4→5. Pipeline proven end-to-end: glossary (111→114 entries, 3 adversarial rounds incl. spend-limit crash recovery via resumeFromRunId), translation (43 agents, 3 batches, 149/152 translated, 3 blocked per termination rule, 4 sweep unifications), evidence on disk, leakage+kill-switch e2e. Known flake: /equipment a11y under full-suite contention (passes solo/retry) — pre-existing SW-settle issue, watch in ES-M6 sweep. Next: ES-M3 safety forms + data lookasides + record.locale stamping."
     }
   ],
   "sessionWindow": null
