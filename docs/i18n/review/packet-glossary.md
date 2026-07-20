@@ -1,10 +1,10 @@
 # Glossary sign-off packet — Sage EHS Spanish terminology
 
-**Status:** awaiting owner counter-signature · **Entries:** 111 · **es-values sha256:** `69a5c1c021ce9946033d50ba88ce4abcf73d747fd5f0331ec3ca07519180f92c`
+**Status:** awaiting owner counter-signature · **Entries:** 114 · **es-values sha256:** `7c1fd05a4b9b1a1980c3ae5855c39d2788848072bcdfef02f765b825b59fcb89`
 
 Counter-sign by setting `status: "signed"`, `signedBy`, `signedDate` on the glossary packet in `docs/i18n/signoff.json` (or ask Claude to do it on your word). Signing gates ONLY the '(beta)' label removal — the pipeline keeps moving either way.
 
-Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rounds).
+Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rounds, 25 total lens verdicts).
 
 | English | Español (mandated) | Never use |
 |---|---|---|
@@ -20,7 +20,7 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 | Respirator | **respirador** | mascarilla (surgical mask — dangerous downgrade); cubrebocas (Mexicanism, not PPE); barbij |
 | Fall-arrest harness (full-body) | **arnés de cuerpo entero** | cinturón de seguridad (body belt — prohibited for fall arrest since 1998; also reads as se |
 | Personal fall arrest system (PFAS: harness + lanyard/SRL + anchor) | **sistema personal de detención de caídas** | sistema anticaídas (vague); cinturón (see harness entry) |
-| Lanyard / self-retracting lifeline (SRL) | **eslinga de seguridad / línea de vida autorretráctil (SRL)** | soga (improvised rope — unsafe connotation); cuerda (alone); cabo de vida (regional) |
+| Lanyard / self-retracting lifeline (SRL) | **eslinga de seguridad / línea de vida autorretráctil (SRL)** | soga (improvised rope — unsafe connotation); cuerda (alone); cabo de vida (regional); esli |
 | SCBA (self-contained breathing apparatus) | **equipo de respiración autónoma (SCBA)** | tanque de oxígeno (SCBA uses air, not oxygen — dangerous myth); máscara de oxígeno |
 | Hazard | **peligro** | riesgo (that is 'risk'); amenaza (security register) |
 | Risk | **riesgo** | peligro (that is 'hazard') |
@@ -39,7 +39,7 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 | Pressurized systems | **sistemas a presión** | sistemas de presión (ambiguous) |
 | Sharp edges / cuts | **bordes filosos / cortes** | punzocortantes (medical sharps register — needles) |
 | Public / vehicle interface | **interacción con público y vehículos** | interfaz (software false friend) |
-| Engulfment | **atrapamiento e inmersión en material a granel** | engullimiento ('engullir' = gulp down food; derived noun is rare — crews may not recognize |
+| Engulfment | **inmersión o sepultamiento en líquidos o material a granel** | engullimiento (not a regulatory term); atrapamiento (that is configuration entrapment — di |
 | Suspension trauma | **trauma por suspensión** | shock de suspensión (anglicism) |
 | Arc flash | **arco eléctrico** | flamazo (Mexican slang); destello (alone); arco voltaico (dated) |
 | Immediately Dangerous to Life or Health (IDLH) | **inmediatamente peligroso para la vida o la salud (IDLH)** | IPVS (EU acronym — meters and docs here say IDLH) |
@@ -84,7 +84,7 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 | Attendant (confined space) | **vigía de espacio confinado** | vigía (bare, outside confined-space-only screens — collides with fire watch); ayudante (do |
 | Entrant | **entrante autorizado** | ingresante (Southern Cone academic); el que entra |
 | Safety officer | **responsable de seguridad** | oficial de seguridad (anglicism; oficial = uniformed rank); prevencionista (Southern Cone  |
-| Crew | **cuadrilla** | equipo (collides with equipment); brigada (emergency brigade); personal (vague) |
+| Crew | **cuadrilla** | personal (alone, for people — vague; OK as the adjective inside 'equipo de protección pers |
 | Work order | **orden de trabajo** | orden de servicio (different document in several countries); ticket (anglicism) |
 | Injury & Illness Prevention Program (IIPP) | **Programa de Prevención de Lesiones y Enfermedades (IIPP)** | plan de prevención de riesgos laborales (Spain PRL) |
 | Safety Data Sheet (SDS) | **hoja de datos de seguridad (SDS)** | MSDS (obsolete pre-GHS); ficha de datos de seguridad (EU/Spain FDS) |
@@ -98,12 +98,12 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 | Scaffold | **andamio** | andamiaje (abstract noun); tarima (stage platform) |
 | Stationary machine tools | **máquinas herramienta fijas** | máquinas fijas (vague) |
 | Permit status: Active / Closed / Revoked / Expired | **estado del permiso: activo / cerrado / revocado / vencido** | caducado (Iberian); expirado (anglicism); anulado (voided ≠ revoked) |
-| Review status: Pending Review / Approved / Needs Revision / Recalled | **pendiente de revisión / aprobado / requiere correcciones / retirado** | necesita revisión (false friend — sounds like inspection); rechazado (harsher than Needs R |
+| Review status: Pending Review / Approved / Needs Revision / Recalled | **pendiente de revisión / aprobado / requiere correcciones / retirado** | rechazado (as the Needs Revision status label — harsher than requested changes; the Deny a |
 | Equipment status: Active / Retired / Pending Repair | **activo / dado de baja / reparación pendiente** | jubilado (people only); en reparación (implies work already started) |
 | Out of Service | **FUERA DE SERVICIO** | descompuesto (Mexicanism); malogrado (Peruvianism); no sirve (casual) |
 | Overdue | **atrasado** | vencido (means expired — status collision); tarde |
 | All Clear | **todo en orden** | sin novedad (military register); OK |
-| Pass / Fail / N/A | **cumple / no cumple / N/A** | aprobado / reprobado (school register); OK / mal |
+| Pass / Fail / N/A | **cumple / no cumple / N/A** | aprobado / reprobado (school register, as inspection item results only — 'aprobado' remain |
 | Safety-critical | **crítico para la seguridad** | de seguridad crítica (calque) |
 | CRITICAL FAIL — DO NOT OPERATE | **FALLA CRÍTICA — NO OPERE** | fallo (Iberian); error crítico (software register); no operar (infinitive — instructions u |
 | Risk level: Critical / High / Medium / Low | **nivel de riesgo: crítico / alto / medio / bajo** | mediano (size, not level); severo (anglicism) |
@@ -119,6 +119,9 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 | Recall submission | **Retirar el envío** | Recordar (false friend: remember); Revocar (reserved for permits) |
 | Start Inspection / Submit Inspection | **Iniciar inspección / Enviar inspección** | Comenzar / Empezar (verb inconsistency); Someter |
 | Approve / Deny | **Aprobar / Rechazar** | Denegar (formal/Iberian-leaning); Negar |
+| Entrapment (confined space configuration) | **atrapamiento por la forma del espacio** | atrapado (past participle as hazard label); confinamiento (that is the space, not the haza |
+| Powered industrial trucks / mobile plant | **vehículos industriales motorizados (montacargas) y equipo móvil** | planta móvil (false friend — 'planta' reads as factory/plant building); montacargas alone  |
+| Hot work types: Welding / Cutting / Grinding / Brazing / Soldering / Torch (chips) | **soldadura (por arco/autógena) / corte / esmerilado / soldadura fuerte / soldadura blanda (estañado) / soplete** | soldadura (bare, as the label for more than one chip in the same list) |
 
 ## Do not translate
 
@@ -131,11 +134,13 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 - Regulatory citations / regRef strings verbatim (e.g. 29 CFR 1910.147, 1910.146, 1910.178, 1926.501, T8 CCR §3203, NFPA 51B, ANSI Z358.1)
 - QR (the letters stay in 'código QR')
 - Equipment IDs, makes, model and serial numbers (e.g. FL-04, itemNumber values, Toyota 8FBE20, S/N)
-- Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, EHS, LEL, IDLH, SCBA, MEWP, SRL, PFAS, PM, DRI, IIPP
+- Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, LEL, IDLH, SCBA, MEWP, SRL, PM, DRI, IIPP
 - Gas symbols and chemical formulas: O₂, CO, H₂S, CO₂, ppm
 - N/A (expand once as 'no aplica', keep the glyph)
 - 911 (emergency number)
 - Units as printed on devices/labels: %, °F/°C, psi, kN, lb/kg
+- EHS (functional brand acronym — never expand, never substitute HSE/SSOMA)
+- PFAS (fall arrest only in this app — never bare: always paired with its Spanish expansion 'sistema personal de detención de caídas', see entry)
 
 ## Register rules
 
@@ -150,7 +155,7 @@ Adversarial review evidence: `docs/i18n/review/glossary.json` (5 lenses × 3 rou
 - hazard = peligro; risk = riesgo; severity = gravedad. Nunca intercambiarlos ni usar 'severidad'.
 - PPE → EPP siempre; 'respirador' nunca 'mascarilla'; 'casi accidente' nunca 'no pasó nada'.
 - Los acrónimos de doNotTranslate se conservan; expanda en español solo la primera vez: 'bloqueo y etiquetado (LOTO)', 'hoja de datos de seguridad (SDS)'.
-- Plataforma agnóstica de industria (directiva del dueño): vocabulario general de lugar de trabajo (planta, bodega, taller, patio, sitio), nunca marco exclusivo de construcción; 'cuadrilla' para crew — 'equipo' queda reservado para máquinas.
+- Plataforma agnóstica de industria (directiva del dueño): vocabulario general de lugar de trabajo (planta, almacén, taller, patio, sitio), nunca marco exclusivo de construcción; 'cuadrilla' para crew — 'equipo' queda reservado para máquinas.
 - Números como en los medidores y en OSHA-es: punto decimal (19.5 %); símbolos O₂, CO, H₂S, LEL sin traducir.
 - Textos de alarma en MAYÚSCULAS permanecen en mayúsculas: EVACÚE, DETENGA EL TRABAJO, NO ENTRE, NO OPERE, FUERA DE SERVICIO, NO USE.
 - Un solo término mandatado por concepto en toda la interfaz; los sinónimos regionales aceptados viven solo en notas o capacitación oral, nunca en la UI.

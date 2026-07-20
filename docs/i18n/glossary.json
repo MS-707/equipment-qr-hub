@@ -12,7 +12,7 @@
     "hazard = peligro; risk = riesgo; severity = gravedad. Nunca intercambiarlos ni usar 'severidad'.",
     "PPE → EPP siempre; 'respirador' nunca 'mascarilla'; 'casi accidente' nunca 'no pasó nada'.",
     "Los acrónimos de doNotTranslate se conservan; expanda en español solo la primera vez: 'bloqueo y etiquetado (LOTO)', 'hoja de datos de seguridad (SDS)'.",
-    "Plataforma agnóstica de industria (directiva del dueño): vocabulario general de lugar de trabajo (planta, bodega, taller, patio, sitio), nunca marco exclusivo de construcción; 'cuadrilla' para crew — 'equipo' queda reservado para máquinas.",
+    "Plataforma agnóstica de industria (directiva del dueño): vocabulario general de lugar de trabajo (planta, almacén, taller, patio, sitio), nunca marco exclusivo de construcción; 'cuadrilla' para crew — 'equipo' queda reservado para máquinas.",
     "Números como en los medidores y en OSHA-es: punto decimal (19.5 %); símbolos O₂, CO, H₂S, LEL sin traducir.",
     "Textos de alarma en MAYÚSCULAS permanecen en mayúsculas: EVACÚE, DETENGA EL TRABAJO, NO ENTRE, NO OPERE, FUERA DE SERVICIO, NO USE.",
     "Un solo término mandatado por concepto en toda la interfaz; los sinónimos regionales aceptados viven solo en notas o capacitación oral, nunca en la UI."
@@ -27,11 +27,13 @@
     "Regulatory citations / regRef strings verbatim (e.g. 29 CFR 1910.147, 1910.146, 1910.178, 1926.501, T8 CCR §3203, NFPA 51B, ANSI Z358.1)",
     "QR (the letters stay in 'código QR')",
     "Equipment IDs, makes, model and serial numbers (e.g. FL-04, itemNumber values, Toyota 8FBE20, S/N)",
-    "Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, EHS, LEL, IDLH, SCBA, MEWP, SRL, PFAS, PM, DRI, IIPP",
+    "Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, LEL, IDLH, SCBA, MEWP, SRL, PM, DRI, IIPP",
     "Gas symbols and chemical formulas: O₂, CO, H₂S, CO₂, ppm",
     "N/A (expand once as 'no aplica', keep the glyph)",
     "911 (emergency number)",
-    "Units as printed on devices/labels: %, °F/°C, psi, kN, lb/kg"
+    "Units as printed on devices/labels: %, °F/°C, psi, kN, lb/kg",
+    "EHS (functional brand acronym — never expand, never substitute HSE/SSOMA)",
+    "PFAS (fall arrest only in this app — never bare: always paired with its Spanish expansion 'sistema personal de detención de caídas', see entry)"
   ],
   "entries": [
     {
@@ -153,11 +155,12 @@
     {
       "en": "Lanyard / self-retracting lifeline (SRL)",
       "es": "eslinga de seguridad / línea de vida autorretráctil (SRL)",
-      "note": "OSHA-es materials use 'cuerda/cinta de seguridad (lanyard)'; field variants abound, UI standardizes 'eslinga'. Keep SRL acronym after expansion.",
+      "note": "OSHA-es materials use 'cuerda/cinta de seguridad (lanyard)'; field variants abound. UI standardizes the FULL 'eslinga de seguridad' — never bare 'eslinga', which reads as a load-rated lifting/rigging sling. Keep SRL acronym after expansion.",
       "forbidden": [
         "soga (improvised rope — unsafe connotation)",
         "cuerda (alone)",
-        "cabo de vida (regional)"
+        "cabo de vida (regional)",
+        "eslinga (bare — reads as a load-rated rigging/lifting sling, never person-rated fall protection)"
       ]
     },
     {
@@ -288,7 +291,7 @@
     {
       "en": "Heat illness",
       "es": "enfermedad por calor",
-      "note": "OSHA-es heat campaign 'Agua. Sombra. Descansos.' uses 'enfermedades por calor'. 'Golpe de calor' = heat stroke, the emergency subtype only.",
+      "note": "OSHA-es heat campaign 'Agua. Descanso. Sombra.' uses 'enfermedades por calor'. 'Golpe de calor' = heat stroke, the emergency subtype only.",
       "forbidden": [
         "insolación (sunstroke only)",
         "calor (alone)"
@@ -320,12 +323,11 @@
     },
     {
       "en": "Engulfment",
-      "es": "atrapamiento e inmersión en material a granel",
-      "note": "OSHA's Spanish grain-hazard materials use 'atrapamientos/inmersiones'; OSHA-es confined-space definitions render engulf as 'envolver/sumergir a un entrante'; MX NOM-033-STPS-2015 says 'sumersión o inmersión'; Colombia Res. 0491/2020 'sepultar, sumergir, envolver o atrapar'. Plain gloss: 'quedar sepultado por material a granel'.",
+      "es": "inmersión o sepultamiento en líquidos o material a granel",
+      "note": "Confined-space hazard (1910.146): being surrounded/buried by liquids or flowable solids (grain, sand). Plain gloss for crews: 'quedar sepultado o sumergido'. 'Atrapamiento' is reserved for configuration entrapment — see that entry.",
       "forbidden": [
-        "engullimiento ('engullir' = gulp down food; derived noun is rare — crews may not recognize this fatal hazard)",
-        "ahogamiento (drowning — different)",
-        "hundimiento"
+        "engullimiento (not a regulatory term)",
+        "atrapamiento (that is configuration entrapment — different rescue plan)"
       ]
     },
     {
@@ -658,7 +660,7 @@
     {
       "en": "EHS Review",
       "es": "revisión de EHS",
-      "note": "EHS stays untranslated (brand acronym, doNotTranslate). Crews may know HSE/SSOMA — never substitute.",
+      "note": "EHS never expands and never substitutes to HSE/SSOMA (functional brand acronym — see doNotTranslate). Crews may know HSE/SSOMA — never substitute.",
       "forbidden": [
         "revisión de SSOMA",
         "revisión de HSE"
@@ -735,9 +737,9 @@
       "es": "cuadrilla",
       "note": "Pan-LatAm work crew. In this app 'equipo' is reserved for equipment/machines — never use it for people.",
       "forbidden": [
+        "personal (alone, for people — vague; OK as the adjective inside 'equipo de protección personal' and 'sistema personal de detención de caídas')",
         "equipo (collides with equipment)",
-        "brigada (emergency brigade)",
-        "personal (vague)"
+        "brigada (emergency brigade)"
       ]
     },
     {
@@ -867,9 +869,9 @@
       "es": "pendiente de revisión / aprobado / requiere correcciones / retirado",
       "note": "'Needs Revision' means changes requested — 'requiere correcciones' avoids the false friend 'revisión' (re-inspection). Recalled (by submitter) = 'retirado'.",
       "forbidden": [
-        "necesita revisión (false friend — sounds like inspection)",
-        "rechazado (harsher than Needs Revision)",
-        "devuelto"
+        "rechazado (as the Needs Revision status label — harsher than requested changes; the Deny action button 'Rechazar' is a different concept, see Approve / Deny; timeline note 'Rejected:' renders 'Rechazado:')",
+        "devuelto (as the bare status label; OK in prose such as 'devuelto por EHS para correcciones' when translating 'returned by EHS')",
+        "necesita revisión (false friend — sounds like inspection)"
       ]
     },
     {
@@ -914,7 +916,7 @@
       "es": "cumple / no cumple / N/A",
       "note": "Item-level inspection results; N/A expands once as 'no aplica', glyph 'N/A' kept.",
       "forbidden": [
-        "aprobado / reprobado (school register)",
+        "aprobado / reprobado (school register, as inspection item results only — 'aprobado' remains the mandated Approved review status and 'Aprobar' the Approve button)",
         "OK / mal"
       ]
     },
@@ -1050,10 +1052,36 @@
     {
       "en": "Approve / Deny",
       "es": "Aprobar / Rechazar",
-      "note": "Review action buttons (review/action page).",
+      "note": "Review action buttons (review/action page). Deny ('Rechazar') sets the record to 'requiere correcciones' — see Review status; the status label itself never renders 'rechazado'.",
       "forbidden": [
         "Denegar (formal/Iberian-leaning)",
         "Negar"
+      ]
+    },
+    {
+      "en": "Entrapment (confined space configuration)",
+      "es": "atrapamiento por la forma del espacio",
+      "note": "1910.146 hazard: inwardly converging walls / downward-sloping floors that trap or asphyxiate. Owns 'atrapamiento' so Engulfment ('inmersión o sepultamiento...') stays distinct — the two hazards have different rescue plans.",
+      "forbidden": [
+        "atrapado (past participle as hazard label)",
+        "confinamiento (that is the space, not the hazard)"
+      ]
+    },
+    {
+      "en": "Powered industrial trucks / mobile plant",
+      "es": "vehículos industriales motorizados (montacargas) y equipo móvil",
+      "note": "Matches the PTP hazard row verbatim (src/data/safety-checklists.ts). 'Equipo móvil' covers the mobile-plant half; 'equipo' is reserved for machines in this glossary.",
+      "forbidden": [
+        "planta móvil (false friend — 'planta' reads as factory/plant building)",
+        "montacargas alone (drops the mobile-plant half)"
+      ]
+    },
+    {
+      "en": "Hot work types: Welding / Cutting / Grinding / Brazing / Soldering / Torch (chips)",
+      "es": "soldadura (por arco/autógena) / corte / esmerilado / soldadura fuerte / soldadura blanda (estañado) / soplete",
+      "note": "HOT_WORK_TYPES multiselect chips render together — Welding, Brazing and Soldering must stay distinct on one screen: 'soldadura (por arco/autógena)', 'soldadura fuerte', 'soldadura blanda (estañado)'.",
+      "forbidden": [
+        "soldadura (bare, as the label for more than one chip in the same list)"
       ]
     }
   ]

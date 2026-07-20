@@ -146,6 +146,120 @@
         }
       ],
       "note": "fix applied after this round; final independent verification recorded in round 3 below"
+    },
+    {
+      "round": 3,
+      "verdicts": {
+        "failures": [
+          {
+            "en": "Heat illness",
+            "reason": "Misquoted OSHA-es anchor: the note cites the heat campaign as 'Agua. Sombra. Descansos.' — the OSHA Heat Illness Prevention Campaign slogan is 'Water. Rest. Shade.', officially rendered 'Agua. Descanso. Sombra.' (singular, and Rest before Shade). The es value 'enfermedad por calor' is correct and industry-standard, but a verbatim-wrong anchor quote in the terminology ground-truth document fails anchor verification: translators copying the note's slogan onto worker-facing heat materials would print a corrupted version of the official campaign wording, and the glossary's authority rests on its anchors being checkable.",
+            "suggestion": "es stays 'enfermedad por calor'; correct the note's anchor quote to: OSHA-es heat campaign 'Agua. Descanso. Sombra.' uses 'enfermedades por calor'.",
+            "lens": "OSHA-es terminology accuracy"
+          },
+          {
+            "en": "Review status: Pending Review / Approved / Needs Revision / Recalled",
+            "reason": "Missed instance of the exact scoping-defect class round 2 fixed for 'sonido' and 'servicio': the forbidden terms 'rechazado (harsher than Needs Revision)' and 'devuelto' are unscoped, yet (a) the Approve/Deny entry mandates 'Rechazar' for the Deny button — the very action that produces this 'rejected' status (safety-types.ts:345 maps rejected→'Needs Revision'), (b) the worker-visible record timeline note renders 'Rejected: …' (safety-records.ts:776), and (c) HEAD banner copy reads 'record needs revision — returned by EHS' (en.json:125). A generator translating those real surfaces must either use a forbidden lexeme or invent unsanctioned phrasing, and a glossary-consistency scan flags the mandated 'Rechazar' against this entry's forbidden list.",
+            "suggestion": "es stays 'pendiente de revisión / aprobado / requiere correcciones / retirado'; scope the forbidden items per the round-2 convention: \"rechazado (as the status label — the Deny action button 'Rechazar' is a different concept, see Approve/Deny entry; timeline note 'Rejected:' renders 'Rechazado:')\" and \"devuelto (as the bare status label; OK in prose such as 'devuelto por EHS para correcciones' when translating 'returned by EHS')\".",
+            "lens": "OSHA-es terminology accuracy"
+          },
+          {
+            "en": "Approve / Deny",
+            "reason": "Cross-entry contradiction on a single UI flow, verified against the app: the Deny action ('Rechazar') is what puts a record into the state the Review-status entry mandates as 'requiere correcciones' and explicitly forbids rendering as 'rechazado (harsher than Needs Revision)' (src/lib/safety-records.ts markReviewRejected → reviewStatus 'rejected'; src/lib/safety-types.ts:345 labels it 'Needs Revision'; src/app/safety/review/action/page.tsx confirms Deny → 'This record needs revision.'). So the worker presses 'Rechazar' and gets a status whose own glossary rationale says the rechaz- framing is too harsh — the two entries' notes disagree with each other, and the forbidden lexeme lacks the '(alone)/(as the status label)' scoping convention the round-2 fixes established for 'sonido' and 'servicio'. The trap is tightened by the same entry's unscoped forbidden 'devuelto' while the app's dashboard banner reads '… need revision — returned by EHS' (src/messages/en.json:125), leaving a translator no compliant rendering of 'returned'. Both prior rounds missed this because each entry passes in isolation.",
+            "suggestion": "Reconcile the pair explicitly. Either (a) keep 'Aprobar / Rechazar' and scope both sides: Review-status forbidden becomes \"rechazado (as the status label — the Deny action button stays 'Rechazar'; the resulting status renders 'requiere correcciones')\" plus a cross-reference in the Approve/Deny note ('Deny sets the record to requiere correcciones — see Review status'), and scope 'devuelto' for the dashboard banner ('returned by EHS' → 'devuelto por EHS' permitted in that banner only); or (b) align the action with the changes-requested semantics the product already uses ('returned by EHS'), e.g. 'Aprobar / Pedir correcciones', and keep 'rechazado' fully forbidden. Do not leave the mandate and the prohibition pointing at the same transition unscoped.",
+            "lens": "Register: usted, imperative, ≤6th-grade — embedded tag/banner texts and notes agree with the register rule and with EACH OTHER"
+          },
+          {
+            "en": "EHS Review",
+            "reason": "Stale/incorrect cross-reference between doNotTranslate and the entry note: doNotTranslate line 'Kept acronyms — expand in Spanish once, then keep: LOTO, JHA, PTP, SDS, EHS, …' orders a one-time Spanish expansion of EHS, but the EHS Review entry's note says 'EHS stays untranslated (brand acronym, doNotTranslate)' and supplies no expansion — while the brand line in doNotTranslate is 'Sage EHS (brand)', not bare EHS. Every other acronym in the expand-once list has a mandated Spanish expansion somewhere in the glossary (bloqueo y etiquetado/LOTO, análisis de peligros en el trabajo/JHA, plan previo a la tarea/PTP, hoja de datos de seguridad/SDS, límite inferior de explosividad/LEL, inmediatamente peligroso para la vida o la salud/IDLH, equipo de respiración autónoma/SCBA, plataforma de trabajo aéreo/MEWP, línea de vida autorretráctil/SRL, sistema personal de detención de caídas/PFAS, mantenimiento preventivo/PM, responsable directo del mantenimiento preventivo/DRI, Programa de Prevención de Lesiones y Enfermedades/IIPP); EHS alone has none. A translator following line 30 must invent an expansion the entry implicitly forbids; following the entry violates line 30.",
+            "suggestion": "Pick one policy and state it in both places: move EHS out of the expand-once list into the brand group (e.g. 'EHS (functional brand acronym — never expand, never substitute HSE/SSOMA)'), or mandate a single Spanish expansion in the entry (e.g. 'medio ambiente, salud y seguridad (EHS)' on first use) and keep it in the expand-once list. The entry note's citation of doNotTranslate must match what the list actually says.",
+            "lens": "Register: usted, imperative, ≤6th-grade — embedded tag/banner texts and notes agree with the register rule and with EACH OTHER"
+          },
+          {
+            "en": "Pass / Fail / N/A",
+            "reason": "Forbidden list contradicts another entry's mandated term without the glossary's own scoping convention — the exact defect class the round-2 fixes established and corrected for 'sonido' (vs 'prueba de sonido') and 'servicio' (vs 'FUERA DE SERVICIO') but missed here: 'aprobado / reprobado (school register)' is forbidden unscoped, while the Review-status entry mandates 'aprobado' for Approved. Same word, same part of speech, same UI domain (result/status labels that can appear on the same record screen), so a forbidden-lexeme consistency scan — or a literal reader — flags the mandated review status as violating the inspection entry. No safety drift ('cumple / no cumple' is correct for item results), purely an internal forbidden-vs-mandated collision left behind by the corrections.",
+            "suggestion": "es stays 'cumple / no cumple / N/A'; scope the forbidden entry per the established convention: \"aprobado / reprobado (school register, as inspection item results — 'aprobado' remains the mandated Review status Approved)\".",
+            "lens": "Register: usted, imperative, ≤6th-grade — embedded tag/banner texts and notes agree with the register rule and with EACH OTHER"
+          },
+          {
+            "en": "registerRules[14] — safety-agnostic workplace vocabulary rule ('planta, bodega, taller, patio, sitio')",
+            "reason": "Country-divergent term embedded in the binding rules themselves, missed because prior regional-lens passes scanned only the 111 entries (round 2 verdict: passCount 111, entries only). 'Bodega' means warehouse in MX/CL/CO/Central America, but in Peru it is a neighborhood grocery store, in Argentina/Uruguay a winery (warehouse there = 'depósito'), in Cuba a ration store, and in US-Caribbean usage a corner store. The rule mandates this vocabulary for all workplace-general Spanish copy, so warehouse screens written per the rule will misread as 'store/winery' to Southern-Cone, Peruvian and Caribbean crews — the exact divergence class rules 8-9 ban and rule 18 ('one mandated term per concept; regional synonyms live only in notes') exists to prevent. No safety-meaning drift (location noun, not an instruction, hazard, or alarm), but it fails regional neutrality inside a binding rule and is mirrored uncorrected in the sign-off packet (docs/i18n/review/packet-glossary.md line 153).",
+            "suggestion": "In registerRules[14] replace 'bodega' with 'almacén' — the pan-regional professional logistics/warehousing register (WMS = 'gestión de almacenes' across all countries) and the term OSHA-es warehousing materials use — or the fully neutral 'área de almacenamiento'; if 'bodega' is kept at all, demote it to a note as a MX/CL/CO regional synonym per rule 18. Apply the same edit to the packet copy of the rule.",
+            "lens": "Regional neutrality: Iberian forms, country slang, divergent LatAm meanings — entries, register rules, notes, and forbidden lists"
+          },
+          {
+            "en": "Pass / Fail / N/A",
+            "reason": "Forbidden list contradicts two other entries' mandated terms without the scoping convention the round-2 fixes established: 'aprobado / reprobado (school register)' bans 'aprobado', yet 'aprobado' is the mandated rendering of the Approved review status ('pendiente de revisión / aprobado / requiere correcciones / retirado') and 'Aprobar' is the mandated Approve button. The glossary's own convention — applied in round 2 to 'sonido (…OK inside prueba de sonido)' and 'servicio (…OK inside FUERA DE SERVICIO)' — requires such forbidden items to state the scoped exception; this identical case (forbidden lexeme mandated verbatim elsewhere) was missed. A forbidden-lexeme consistency gate, or a literal translator, flags the mandated Approved status as violating this entry.",
+            "suggestion": "es stays 'cumple / no cumple / N/A'; scope the forbidden item to \"aprobado / reprobado (school register — for item-level results only; 'aprobado' remains the mandated Approved review status and 'Aprobar' the Approve button)\"",
+            "lens": "internal-consistency (final adversarial verification: one en concept = one es term; forbidden lists vs mandated terms of other entries; notes vs superseded terms; doNotTranslate overlap)"
+          },
+          {
+            "en": "Review status: Pending Review / Approved / Needs Revision / Recalled",
+            "reason": "Forbidden list contradicts a mandated term of another entry with no scoped exception in either direction: this entry forbids 'rechazado (harsher than Needs Revision)', while the Approve / Deny entry mandates 'Rechazar' as the Deny button. Same lexeme, forbidden in one entry and mandated two entries later — and in the app the Deny action ('Rechazar') is precisely what lands a submission in 'requiere correcciones', so a translator reading the ban has no way to know the verb form is mandated. The round-2 fixes resolved this exact defect class for sonido/servicio but missed this cross-inflection instance.",
+            "suggestion": "es unchanged; scope the forbidden item to \"rechazado (as the Needs Revision status — harsher than requested changes; the Deny action button 'Rechazar' is unaffected, see Approve / Deny)\"",
+            "lens": "internal-consistency (final adversarial verification: one en concept = one es term; forbidden lists vs mandated terms of other entries; notes vs superseded terms; doNotTranslate overlap)"
+          },
+          {
+            "en": "Personal fall arrest system (PFAS: harness + lanyard/SRL + anchor)",
+            "reason": "Stale companion reference left behind by a correction — the same defect class as the round-2 'NO USAR' note bug. The doNotTranslate line 'Kept acronyms — expand in Spanish once, then keep: … PFAS …' (reinforced by registerRule 14) instructs translators to use bare 'PFAS' after first expansion, but the corrected entry note mandates the stricter opposite: 'keep the acronym only next to the Spanish expansion' because in this app PFAS must never read as the chemical family. The entry was tightened without updating the blanket doNotTranslate rule, so the two binding sections now give contradictory instructions; following doNotTranslate produces bare 'PFAS' strings that, on a platform with an SDS library and chemical hazards, are ambiguous with per-/polyfluoroalkyl substances — a safety-comprehension regression the entry's own note exists to prevent.",
+            "suggestion": "In doNotTranslate, carve out the exception: '…SCBA, MEWP, SRL, PM, DRI, IIPP' plus a separate item 'PFAS (fall arrest only — never bare: always paired with its Spanish expansion sistema personal de detención de caídas, see entry)'; leave the entry note as-is",
+            "lens": "internal-consistency (final adversarial verification: one en concept = one es term; forbidden lists vs mandated terms of other entries; notes vs superseded terms; doNotTranslate overlap)"
+          },
+          {
+            "en": "Crew",
+            "reason": "Forbidden item 'personal (vague)' lacks the '(alone …; OK inside …)' scoping the glossary's round-2 fixes made the standard for forbidden words that legitimately occur inside other entries' mandated terms: 'personal' appears verbatim in the mandated 'equipo de protección personal (EPP)' and 'sistema personal de detención de caídas'. The sibling forbidden 'equipo' is covered by an explicit scoped exception (the note states 'equipo is reserved for equipment/machines'), but nothing anywhere scopes 'personal', so a forbidden-lexeme scan flags the glossary's two highest-frequency PPE/fall-protection terms as violations of this entry.",
+            "suggestion": "es stays 'cuadrilla'; scope the forbidden item to \"personal (alone, for people — vague; OK as the adjective inside 'equipo de protección personal' and 'sistema personal de detención de caídas')\"",
+            "lens": "internal-consistency (final adversarial verification: one en concept = one es term; forbidden lists vs mandated terms of other entries; notes vs superseded terms; doNotTranslate overlap)"
+          },
+          {
+            "en": "Engulfment",
+            "reason": "The round-2 correction introduced a new same-screen collision and dropped a meaning half. (a) Collision: the corrected term 'atrapamiento e inmersión en material a granel' now leads with 'atrapamiento' — but the app's confined-space form renders 'Engulfment' and 'Configuration / entrapment' as adjacent chips in the SAME ChipMultiSelect (src/data/safety-checklists.ts:166, ConfinedSpaceForm.tsx:369), and CONFINED_SPACE_HAZARDS is translate-at-insertion data governed by this glossary (docs/i18n/DESIGN.md). 'Configuration / entrapment' has no glossary entry, and its natural OSHA-es rendering IS 'atrapamiento' (1910.146 configuration hazard: 'quedar atrapado por paredes convergentes'). Two distinct fatal confined-space hazards now share one head noun in one multiselect — the exact collision class the glossary itself treats as disqualifying (vigía, cascos, equipo). (b) Dropped half: 1910.146 engulfment covers capture by 'a liquid or finely divided (flowable) solid'; 'material a granel' back-translates as bulk (granular) material only, and the forbidden 'ahogamiento (drowning — different)' further steers translators away from the liquid reading — so water/sewage/sludge inflow, a dominant confined-space killer, loses its hazard chip meaning.",
+            "suggestion": "Re-term engulfment without the colliding head noun and with the liquid half restored — e.g. 'inmersión o sepultamiento en líquidos o material a granel' (plain gloss 'quedar sepultado o sumergido') — and ADD a 'Configuration / entrapment' entry that owns 'atrapamiento' (e.g. 'atrapamiento por la forma interna del espacio (paredes convergentes)'), with mutual cross-notes so the two chips can never render with the same head word.",
+            "lens": "Safety accuracy (final adversarial verification): back-translation for semantic drift, dropped meaning halves, stress-misreadable ambiguity in alarm states / prohibition tags / atmospheric terms, plus hunt for collisions and stale cross-references introduced or missed by the two prior fix rounds"
+          },
+          {
+            "en": "Lanyard / self-retracting lifeline (SRL)",
+            "reason": "Note contradicts the mandated term and blesses a dangerous bare form: the es value is the qualified 'eslinga de seguridad', but the note says \"UI standardizes 'eslinga'\" — bare. Bare 'eslinga' is the universal LatAm/OSHA-es word for a load-rated LIFTING/rigging sling, and rigging copy exists on this same platform (PTP control measure 'Certified rigging; never under suspended loads', src/data/safety-checklists.ts:48, translated under this glossary; hazard row 'cargas suspendidas / izaje'). A person-rated fall-arrest lanyard and a load-rated lifting sling sharing the bare noun is a life-critical gear confusion, structurally identical to the bare-'vigía' collision the round-1 fix eliminated — the fixes scoped vigía, sonido, and servicio but missed this one. A translator following the note verbatim prints bare 'eslinga' in fall-protection UI.",
+            "suggestion": "Keep es 'eslinga de seguridad / línea de vida autorretráctil (SRL)'; fix the note to standardize the FULL 'eslinga de seguridad' (never bare 'eslinga'), and add to forbidden: 'eslinga (bare — reads as a load-rated lifting/rigging sling, never person-rated fall protection)'.",
+            "lens": "Safety accuracy (final adversarial verification): back-translation for semantic drift, dropped meaning halves, stress-misreadable ambiguity in alarm states / prohibition tags / atmospheric terms, plus hunt for collisions and stale cross-references introduced or missed by the two prior fix rounds"
+          },
+          {
+            "en": "Forklift / powered industrial truck",
+            "reason": "Stale surface anchor with a dropped meaning half: the entry key doesn't match the actual PTP hazard row, which reads 'Powered industrial trucks / mobile plant' (src/data/safety-checklists.ts:49 — PTP_HAZARD_LIBRARY is translate-at-insertion data under this glossary). Every other PTP hazard row (15 of 16) has an exact-key glossary entry — this is the one row the mining/fixes missed, and it is the same dropped-slash-half defect class as the round-1 'Hot work / fire' FAIL. The uncovered '/ mobile plant' half invites the false-friend calque 'planta móvil', which back-translates as 'mobile factory/plant building' and hides the struck-by mobile-equipment hazard from Spanish-reading crews.",
+            "suggestion": "Add an entry keyed to the actual row 'Powered industrial trucks / mobile plant' → 'vehículos industriales motorizados (montacargas) y equipo móvil' (reuses the existing category label from this entry's own note; 'equipo' is legitimate here since it is reserved for machines). Forbid 'planta móvil (false friend — reads as mobile factory)'.",
+            "lens": "Safety accuracy (final adversarial verification): back-translation for semantic drift, dropped meaning halves, stress-misreadable ambiguity in alarm states / prohibition tags / atmospheric terms, plus hunt for collisions and stale cross-references introduced or missed by the two prior fix rounds"
+          },
+          {
+            "en": "Hot work types: Welding / Brazing / Soldering (HOT_WORK_TYPES chips)",
+            "reason": "Missed collision on a glossary-governed surface: HOT_WORK_TYPES renders 'Welding', 'Cutting', 'Grinding', 'Brazing', 'Soldering', 'Torch' as chips in one multiselect (src/data/safety-checklists.ts:165; translate-at-insertion per docs/i18n/DESIGN.md), and the glossary mandates no terms for them. Welding, brazing, and soldering ALL default to 'soldadura' in Spanish, so three distinct hot-work processes collapse into near-identical chip labels — the permit record loses which process was authorized (arc UV/slag vs high-temp brazing vs low-temp lead/flux soldering carry different fire-watch and fume expectations). Ambiguity inside a single selection list is exactly the misread-under-stress class this glossary exists to preempt, and neither fix round touched it.",
+            "suggestion": "Add mandated disambiguated terms: Welding → 'soldadura (por arco/autógena)', Brazing → 'soldadura fuerte', Soldering → 'soldadura blanda (estañado)', Cutting → 'corte', Grinding → 'esmerilado', Torch → 'soplete'; forbid bare 'soldadura' as the label for more than one chip in the same list.",
+            "lens": "Safety accuracy (final adversarial verification): back-translation for semantic drift, dropped meaning halves, stress-misreadable ambiguity in alarm states / prohibition tags / atmospheric terms, plus hunt for collisions and stale cross-references introduced or missed by the two prior fix rounds"
+          }
+        ],
+        "passCounts": [
+          {
+            "lens": "OSHA-es terminology accuracy",
+            "passCount": 109
+          },
+          {
+            "lens": "Register: usted, imperative, ≤6th-grade — embedded tag/banner texts and notes agree with the register rule and with EACH OTHER",
+            "passCount": 108
+          },
+          {
+            "lens": "Regional neutrality: Iberian forms, country slang, divergent LatAm meanings — entries, register rules, notes, and forbidden lists",
+            "passCount": 111
+          },
+          {
+            "lens": "internal-consistency (final adversarial verification: one en concept = one es term; forbidden lists vs mandated terms of other entries; notes vs superseded terms; doNotTranslate overlap)",
+            "passCount": 107
+          },
+          {
+            "lens": "Safety accuracy (final adversarial verification): back-translation for semantic drift, dropped meaning halves, stress-misreadable ambiguity in alarm states / prohibition tags / atmospheric terms, plus hunt for collisions and stale cross-references introduced or missed by the two prior fix rounds",
+            "passCount": 108
+          }
+        ]
+      },
+      "note": "Independent final verification (wf_61dc8099-328): 14 failures, all applied surgically in the same commit — 11 note/scoping consistency, 3 safety-grade (Engulfment collision+dropped liquid half, bare eslinga, hot-work chip disambiguation). es values otherwise unchanged across rounds."
     }
   ],
   "workflowRuns": [

@@ -5,7 +5,7 @@
       "packet": "glossary",
       "artifact": "docs/i18n/glossary.json",
       "reviewPacket": "docs/i18n/review/packet-glossary.md",
-      "sha256esValues": "69a5c1c021ce9946033d50ba88ce4abcf73d747fd5f0331ec3ca07519180f92c",
+      "sha256esValues": "7c1fd05a4b9b1a1980c3ae5855c39d2788848072bcdfef02f765b825b59fcb89",
       "status": "pending",
       "generated": "2026-07-16",
       "signedBy": null,
