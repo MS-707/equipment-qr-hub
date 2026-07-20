@@ -11,14 +11,18 @@ import { readFileSync } from 'node:fs'
 import en from '@/messages/en.json'
 import es from '@/messages/es.json'
 import pendingManifest from '../../../docs/i18n/pending-translation.json'
+import identicalManifest from '../../../docs/i18n/intentionally-identical.json'
+import blockedManifest from '../../../docs/i18n/blocked-keys.json'
 
 type Tree = { [k: string]: string | Tree }
 
 const PLURAL_CATEGORIES = new Set(['zero', 'one', 'two', 'few', 'many', 'other'])
 
-// es values that legitimately equal English (cognates, brand terms). Grows
-// only with justification during ES-M2+ review; never a dumping ground.
-const INTENTIONALLY_IDENTICAL: string[] = []
+// es values that legitimately equal English: pipeline-declared cognates/brand
+// labels, plus blocked keys whose termination fallback IS the English source
+// (docs/i18n/PIPELINE.md — enforced separately by i18n-pipeline-rules).
+const INTENTIONALLY_IDENTICAL: string[] = identicalManifest.keys
+const BLOCKED_KEYS: string[] = blockedManifest.blocked.map((b: { key: string }) => b.key)
 
 function flatten(tree: Tree, prefix = ''): Record<string, string> {
   const out: Record<string, string> = {}
@@ -109,18 +113,27 @@ describe('plural-variant parity', () => {
 })
 
 describe('pending-translation manifest (dark-phase discipline)', () => {
-  const pending = new Set(pendingManifest.pending)
+  const pending = new Set<string>(pendingManifest.pending)
 
   it('every manifest entry is a real catalog key', () => {
     const ghosts = Array.from(pending).filter((k) => !(k in flatEn))
     expect(ghosts).toEqual([])
   })
 
-  it('every untranslated es value (=== en) is explicitly declared pending or intentionally identical', () => {
+  it('every untranslated es value (=== en) is explicitly declared pending, intentionally identical, or blocked', () => {
     const undeclared = Object.keys(flatEs).filter(
-      (k) => flatEs[k] === flatEn[k] && !pending.has(k) && !INTENTIONALLY_IDENTICAL.includes(k)
+      (k) =>
+        flatEs[k] === flatEn[k] &&
+        !pending.has(k) &&
+        !INTENTIONALLY_IDENTICAL.includes(k) &&
+        !BLOCKED_KEYS.includes(k)
     )
     expect(undeclared).toEqual([])
+  })
+
+  it('declared manifests never overlap (a key is pending XOR identical XOR blocked)', () => {
+    const all = Array.from(pending).concat(INTENTIONALLY_IDENTICAL, BLOCKED_KEYS)
+    expect(all.length).toBe(new Set(all).size)
   })
 
   it('every pending entry is still untranslated (translated keys must leave the manifest)', () => {

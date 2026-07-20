@@ -1,0 +1,81 @@
+{
+  "namespace": "common",
+  "workflowRun": "wf_7e2a8e6d-80a",
+  "batch": "batch-a",
+  "rounds": 3,
+  "finalVerdicts": [
+    {
+      "lens": "Glossary compliance: every glossary-listed en term renders with its mandated es term; no forbidden variants anywhere",
+      "failures": 0
+    },
+    {
+      "lens": "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons",
+      "failures": 2
+    },
+    {
+      "lens": "Regional neutrality: no Iberian forms, no country slang, no terms with divergent LatAm meanings",
+      "failures": 0
+    },
+    {
+      "lens": "Mechanics: {var} sets identical to English per key; .one/.other plural pairs complete and grammatical; no truncated or empty values; punctuation/casing consistent with English intent",
+      "failures": 0
+    },
+    {
+      "lens": "Safety accuracy (blind back-translation diff: negation flips, dropped conditions, softened imperatives, ambiguity under stress)",
+      "failures": 0
+    }
+  ],
+  "consistencySweepApplied": [],
+  "blocked": [
+    {
+      "key": "common.dismiss",
+      "reason": "\"Entendido\" violates the binding register rule that buttons and menus use the infinitive (es-419 convention; imperative is reserved for instructions/alarms). It is a past participle meaning \"Understood\", and its only consumer is the close button on sync toasts (src/components/SyncToast.tsx:61, aria-label) — including persistent sync-failure toasts — so it mislabels a dismiss action as an acknowledgment of the failure.",
+      "failedLens": "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons"
+    }
+  ],
+  "values": {
+    "common.back": "Atrás",
+    "common.next": "Siguiente",
+    "common.save": "Guardar",
+    "common.submit": "Enviar",
+    "common.cancel": "Cancelar",
+    "common.close": "Cerrar",
+    "common.delete": "Eliminar",
+    "common.retry": "Reintentar",
+    "common.done": "Listo",
+    "common.dismiss": "Dismiss",
+    "common.apply": "Aplicar",
+    "common.skip": "Omitir",
+    "common.reset": "Restablecer",
+    "common.print": "Imprimir",
+    "common.share": "Compartir",
+    "common.copy": "Copiar",
+    "common.search": "Buscar",
+    "common.loading": "Cargando...",
+    "common.saving": "Guardando...",
+    "common.syncing": "Sincronizando...",
+    "common.syncAll": "Sincronizar todo",
+    "common.required": "Obligatorio",
+    "common.optional": "Opcional",
+    "common.sameDay": "Mismo día",
+    "common.yes": "Sí",
+    "common.no": "No",
+    "common.none": "Ninguno",
+    "common.or": "o",
+    "common.and": "y",
+    "common.offline": "Sin conexión",
+    "common.tapToStart": "Toque para iniciar",
+    "common.tapToRenew": "Toque para renovar",
+    "common.viewAll": "Ver todo",
+    "common.viewRecord": "Ver registro",
+    "common.backHome": "Volver al inicio",
+    "common.savedLocally": "Guardado en este dispositivo. Se sincronizará automáticamente cuando vuelva la conexión.",
+    "common.saveFailed": "No se pudo guardar:",
+    "common.storageFull": "El almacenamiento del dispositivo está lleno. Libere espacio o sincronice los registros pendientes antes de continuar.",
+    "common.draftRestored": "Borrador restaurado",
+    "common.justNow": "ahora mismo",
+    "common.mAgo": "hace {n} min",
+    "common.hAgo": "hace {n} h",
+    "common.dAgo": "hace {n} d"
+  }
+}

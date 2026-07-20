@@ -1,0 +1,34 @@
+{
+  "namespace": "confirm",
+  "workflowRun": "wf_7e2a8e6d-80a",
+  "batch": "batch-c",
+  "rounds": 3,
+  "finalVerdicts": [
+    {
+      "lens": "Glossary compliance: every glossary-listed en term renders with its mandated es term; no forbidden variants anywhere",
+      "failures": 0
+    },
+    {
+      "lens": "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons",
+      "failures": 1
+    },
+    {
+      "lens": "Regional neutrality: no Iberian forms, no country slang, no terms with divergent LatAm meanings",
+      "failures": 0
+    },
+    {
+      "lens": "Mechanics: {var} parity per key, plural pair completeness/grammar, truncation/empties, punctuation & casing vs English intent",
+      "failures": 0
+    },
+    {
+      "lens": "Safety accuracy (blind back-translation diff: negation flips, dropped conditions, softened imperatives, stress ambiguity)",
+      "failures": 0
+    }
+  ],
+  "consistencySweepApplied": [],
+  "blocked": [],
+  "values": {
+    "confirm.confirm": "Confirmar",
+    "confirm.cancel": "Cancelar"
+  }
+}

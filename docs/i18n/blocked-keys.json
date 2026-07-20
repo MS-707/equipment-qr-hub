@@ -1,4 +1,38 @@
 {
   "note": "Keys that failed 5-lens review 3 times (docs/i18n/PIPELINE.md). Their es value is the exact English source. Each entry must EITHER suppress its namespace OR appear justified in e2e/es-leakage-allowlist.json — the i18n-pipeline-rules vitest enforces the exclusive-or and the size cap (20).",
-  "blocked": []
+  "blocked": [
+    {
+      "key": "common.dismiss",
+      "namespace": "common",
+      "reason": "\"Entendido\" violates the binding register rule that buttons and menus use the infinitive (es-419 convention; imperative is reserved for instructions/alarms). It is a past participle meaning \"Understood\", and its only consumer is the close button on sync toasts (src/components/SyncToast.tsx:61, aria-label) — including persistent sync-failure toasts — so it mislabels a dismiss action as an acknowledgment of the failure.",
+      "failedLenses": [
+        "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons"
+      ],
+      "rounds": 3,
+      "date": "2026-07-16",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "user.deleteConfirmBody",
+      "namespace": "user",
+      "reason": "Minor reading-level deviation: the first sentence is 17 words, over the mandated ~15-word cap, and \"de forma permanente\" plus \"no se ven afectados\" are heavier constructions than the <=6th-grade rule targets. Comprehension matters here because this confirm gates permanent deletion of safety records.",
+      "failedLenses": [
+        "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons"
+      ],
+      "rounds": 3,
+      "date": "2026-07-16",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "offline.body",
+      "namespace": "offline",
+      "reason": "Violates the binding registerRule 'una acción por frase' (<=6th-grade rule, docs/i18n/glossary.json registerRules): the final sentence chains two imperative actions — 'Conéctese a la red e intente de nuevo.' Instructions must carry one action per sentence. Minor severity: usted imperative and vocabulary are otherwise correct.",
+      "failedLenses": [
+        "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons"
+      ],
+      "rounds": 3,
+      "date": "2026-07-16",
+      "path": "allowlisted-leakage"
+    }
+  ]
 }

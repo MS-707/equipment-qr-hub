@@ -1,10 +1,37 @@
 {
   "note": "English sentinels ALLOWED on Spanish screens, each with a justification. Sources: do-not-translate brand/acronym terms, and blocked keys taking the documented-leakage path (docs/i18n/PIPELINE.md). Size-capped at 25 by the i18n-pipeline-rules vitest.",
   "allowed": [
-    { "text": "Sage", "reason": "brand — do-not-translate" },
-    { "text": "EHS", "reason": "industry acronym used by Spanish-speaking crews; part of brand lockup" },
-    { "text": "SDS", "reason": "acronym on safety data sheet binders in US workplaces regardless of language" },
-    { "text": "QR", "reason": "universal acronym" },
-    { "text": "PTP", "reason": "record-type acronym stamped on records and QR labels" }
+    {
+      "text": "Sage",
+      "reason": "brand — do-not-translate"
+    },
+    {
+      "text": "EHS",
+      "reason": "industry acronym used by Spanish-speaking crews; part of brand lockup"
+    },
+    {
+      "text": "SDS",
+      "reason": "acronym on safety data sheet binders in US workplaces regardless of language"
+    },
+    {
+      "text": "QR",
+      "reason": "universal acronym"
+    },
+    {
+      "text": "PTP",
+      "reason": "record-type acronym stamped on records and QR labels"
+    },
+    {
+      "text": "Dismiss",
+      "reason": "blocked key common.dismiss (register: infinitive-for-buttons unresolved in 3 rounds) — documented leakage per PIPELINE.md"
+    },
+    {
+      "text": "This permanently removes all safety records",
+      "reason": "blocked key user.deleteConfirmBody (reading-level cap unresolved in 3 rounds) — documented leakage"
+    },
+    {
+      "text": "This page hasn't been cached yet",
+      "reason": "blocked key offline.body (una-acción-por-frase rule unresolved in 3 rounds) — documented leakage"
+    }
   ]
 }

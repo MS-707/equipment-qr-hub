@@ -1,0 +1,11 @@
+{
+  "note": "Keys whose CORRECT Spanish equals the English (cognates, brand, acronym labels) — declared by the translation pipeline, distinct from pending or blocked.",
+  "keys": [
+    "common.no",
+    "nav.qrLabels.label",
+    "nav.sds.label",
+    "user.auto",
+    "user.english",
+    "user.spanish"
+  ]
+}

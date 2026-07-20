@@ -1,0 +1,64 @@
+{
+  "namespace": "dashboard",
+  "workflowRun": "wf_7e2a8e6d-80a",
+  "batch": "batch-b",
+  "rounds": 1,
+  "finalVerdicts": [
+    {
+      "lens": "Glossary compliance: every glossary-listed en term renders with its mandated es term; no forbidden variants anywhere",
+      "failures": 0
+    },
+    {
+      "lens": "Register: usted, imperative for instructions, <=6th-grade reading level, phone-screen concision for labels/buttons",
+      "failures": 0
+    },
+    {
+      "lens": "Regional neutrality: no Iberian forms, no country slang, no terms with divergent LatAm meanings",
+      "failures": 0
+    },
+    {
+      "lens": "Mechanics",
+      "failures": 0
+    },
+    {
+      "lens": "safety-accuracy (blind back-translation diff: negation flips, dropped conditions, softened imperatives, stress ambiguity)",
+      "failures": 0
+    }
+  ],
+  "consistencySweepApplied": [
+    "dashboard.openNow"
+  ],
+  "blocked": [],
+  "values": {
+    "dashboard.greeting": "Hola, {name}",
+    "dashboard.homeTitle": "Inicio",
+    "dashboard.todaysPtp": "PTP de hoy",
+    "dashboard.active": "Activo",
+    "dashboard.expired": "Vencido",
+    "dashboard.notStarted": "Sin iniciar",
+    "dashboard.crewSigned": "Firmas de la cuadrilla: {count}",
+    "dashboard.activePermits": "Permisos activos",
+    "dashboard.openNow": "activos ahora",
+    "dashboard.incidents": "Incidentes",
+    "dashboard.last7days": "últimos 7 días",
+    "dashboard.quickActions": "Acciones rápidas",
+    "dashboard.recentActivity": "Actividad reciente",
+    "dashboard.viewHistory": "Ver historial",
+    "dashboard.startPtp": "Iniciar PTP",
+    "dashboard.jobHazardAnalysis": "Análisis de peligros en el trabajo",
+    "dashboard.workAtHeight": "Trabajo en altura",
+    "dashboard.hotWork": "Trabajo en caliente",
+    "dashboard.confinedSpace": "Espacio confinado",
+    "dashboard.reportIncident": "Reportar incidente",
+    "dashboard.sdsBinder": "Biblioteca de SDS",
+    "dashboard.preTripInspection": "Inspección previa al uso",
+    "dashboard.needsRevision.one": "1 registro requiere correcciones — devuelto por EHS",
+    "dashboard.needsRevision.other": "{count} registros requieren correcciones — devueltos por EHS",
+    "dashboard.approvedByEhs.one": "1 registro aprobado por EHS",
+    "dashboard.approvedByEhs.other": "{count} registros aprobados por EHS",
+    "dashboard.pendingSync.one": "1 registro pendiente de sincronizar",
+    "dashboard.pendingSync.other": "{count} registros pendientes de sincronizar",
+    "dashboard.emptyTitle": "Todo listo",
+    "dashboard.emptySub": "Aún no hay registros de seguridad. Inicie su día con un plan previo a la tarea (PTP)."
+  }
+}

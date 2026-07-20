@@ -105,11 +105,9 @@ describe("plurals via Intl.PluralRules (kills the '(s)' hack)", () => {
   })
 
   it('uses the locale plural rules when Spanish is active', () => {
-    // es values are English fallbacks until ES-M2 lands translations; the
-    // selection machinery (PluralRules('es')) is what this pins.
     const t = getT('es')
-    expect(t('sync.recordsSynced', { count: 1 })).toBe('1 record synced')
-    expect(t('sync.recordsSynced', { count: 2 })).toBe('2 records synced')
+    expect(t('sync.recordsSynced', { count: 1 })).toBe('1 registro sincronizado')
+    expect(t('sync.recordsSynced', { count: 2 })).toBe('2 registros sincronizados')
   })
 
   it('non-plural keys ignore a count var gracefully', () => {

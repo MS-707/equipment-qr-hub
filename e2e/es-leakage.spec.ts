@@ -49,8 +49,10 @@ test.describe('es leakage — cluster 1', () => {
     await expect(page.getByText(es.dashboard.quickActions)).toBeVisible()
     await expect(page.getByText(es.dashboard.recentActivity)).toBeVisible()
     await expect(page.getByRole('link', { name: es.dashboard.reportIncident })).toBeVisible()
-    // Mobile tab bar labels come from nav.*.label
-    await expect(page.getByText(es.nav.preTrip.label).first()).toBeVisible()
+    // Mobile tab bar labels come from nav.*.label — scope to the tab bar
+    // (the desktop nav renders the same words inside hidden md:inline spans).
+    const tabBar = page.getByRole('navigation', { name: es.nav.tabBarAria })
+    await expect(tabBar.getByText(es.nav.preTrip.label)).toBeVisible()
     for (const leaked of ['Quick actions', 'Recent activity', 'Report Incident', 'Job Hazard Analysis']) {
       await expect(page.getByText(leaked, { exact: true })).toHaveCount(0)
     }
@@ -63,6 +65,16 @@ test.describe('es leakage — cluster 1', () => {
     await expect(page.getByText(es.common.backHome)).toBeVisible()
     await expect(page.getByText('Page not found')).toHaveCount(0)
   })
+
+})
+
+test.describe('kill switch (SW blocked so route mocks reach the page fetch)', () => {
+  // The Serwist SW proxies /api/i18n through NetworkOnly; page.route cannot
+  // intercept SW-mediated fetches, so this test isolates the PROVIDER's
+  // reaction by blocking SW registration. The NetworkOnly matcher itself is
+  // pinned by sw-i18n-invariants.test.ts.
+  test.use({ serviceWorkers: 'block' })
+  test.skip(!TRANSLATED, 'es catalog still mirrors English (pre-translation dark phase)')
 
   test('kill switch off forces English despite a stored es preference (one KV write, no deploy)', async ({ page }) => {
     await page.addInitScript(seedEs.script)
