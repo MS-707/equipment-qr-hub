@@ -1,26 +1,4 @@
 {
   "note": "Keys whose es value is the English fallback pending translation (must be EMPTY by end of ES-M2). A key here never ships user-visible Spanish.",
-  "pending": [
-    "atmo.withinLimits",
-    "atmo.o2Idlh",
-    "atmo.o2DangerLow",
-    "atmo.o2DangerHigh",
-    "atmo.o2WarnLow",
-    "atmo.o2WarnHigh",
-    "atmo.lelIdlh",
-    "atmo.lelDanger",
-    "atmo.lelWarn",
-    "atmo.coIdlh",
-    "atmo.coDanger",
-    "atmo.coWarn",
-    "atmo.h2sIdlh",
-    "atmo.h2sDanger",
-    "atmo.h2sWarn",
-    "atmo.recMultiple",
-    "atmo.recEnriched",
-    "atmo.recH2sZero",
-    "atmo.recCoZero",
-    "atmo.recLelEnriched",
-    "atmo.recLowO2H2s"
-  ]
+  "pending": []
 }

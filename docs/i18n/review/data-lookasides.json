@@ -1,0 +1,41 @@
+{
+  "artifact": "src/messages/data/*.es.json + es.json atmo namespace",
+  "workflowRun": "wf_b104a4e2-579 (resumed after spend-limit crash; generators cache-replayed)",
+  "batches": [
+    {
+      "batch": "data-a",
+      "rounds": 2,
+      "blocked": []
+    },
+    {
+      "batch": "data-b",
+      "rounds": 1,
+      "blocked": []
+    }
+  ],
+  "consistencySweepApplied": [
+    "ef-tires/sl-tires locked to 'llantas' (+ glossary entry)",
+    "atmo gas symbols normalized to O₂/H₂S",
+    "h-ladder aligned to 'Escaleras de mano'"
+  ],
+  "sweepRaw": {
+    "lens": "cross-batch consistency (one en concept → one es term across data-a, data-b, shipped src/messages/es.json + src/messages/data/*, and docs/i18n/glossary.json; checklist category style; atmo-vs-permit vocabulary)",
+    "failures": [
+      {
+        "key": "data-a.items.ef-tires, data-a.items.sl-tires",
+        "reason": "Batch data-a renders 'Tires' as 'Neumáticos', but the already-shipped lookaside catalog (src/messages/data/inspections.es.json, committed in ES-M3 ad748a3) renders the same two keys as 'Llantas — condición y presión' / 'Llantas en buen estado'. One en concept currently maps to two es terms depending on which artifact wins, and the glossary has no Tires entry to arbitrate, so nothing prevents the drift recurring in future batches.",
+        "suggestion": "Pick one term and apply it everywhere, then add a glossary entry to lock it. Recommend keeping 'llantas' (matches the shipped commit and OSHA-es forklift inspection materials aimed at the US workforce): change data-a ef-tires to 'Llantas — condición y presión' and sl-tires to 'Llantas en buen estado', and add glossary entry {en: 'Tires', es: 'llantas', forbidden: ['neumáticos (in UI — one-term consistency)', 'gomas (Caribbean)', 'cauchos (Venezuelan)']}. If the team prefers 'neumáticos' instead, update the committed inspections.es.json in the same change — never ship both."
+      },
+      {
+        "key": "data-b.atmo.o2Idlh, o2DangerLow, o2DangerHigh, o2WarnLow, o2WarnHigh, h2sIdlh, h2sDanger, h2sWarn, recH2sZero, recLowO2H2s",
+        "reason": "Atmo guidance writes the gas symbols as plain 'O2' and 'H2S', while the confined-space permit checklist rows rendered in the same entry flow (data-b permitItems cs-o2 'O₂ 19.5–23.5%', cs-toxic 'CO / H₂S dentro de los límites') use the subscript forms — and the glossary canonicalizes the subscript forms in both registerRules ('símbolos O₂, CO, H₂S, LEL sin traducir') and doNotTranslate ('O₂, CO, H₂S, CO₂, ppm'). Same gas, two renderings, side by side on the screen a worker reads under alarm stress. The batch is verbatim-faithful to en.json (whose atmo block also says 'O2 at {reading}%'), so the root inconsistency is upstream, but shipping data-b as-is propagates it into Spanish.",
+        "suggestion": "Normalize the es atmo strings to 'O₂' and 'H₂S' to match the checklist rows and the glossary's canonical symbol set (e.g. 'O₂ en {reading}% es inmediatamente peligroso...'), keeping {reading}, ppm, %, and all thresholds untouched; file a matching upstream fix for en.json atmo so en and es render the same symbols. If the owner rules that source-verbatim wins over glossary symbol canon, record that exception in glossary.json so the next batch doesn't flip it back."
+      },
+      {
+        "key": "data-b.permitItems.h-ladder vs data-b.options.Ladder",
+        "reason": "Within the same Work-at-Height permit, the access-method chip translates 'Ladder' as 'Escalera de mano' but checklist item h-ladder translates 'Ladders/scaffold inspected...' as 'Escaleras y andamio inspeccionados...'. Bare 'escaleras' also means stairs/staircase in every LatAm variety, so the checklist row a worker checks after picking the 'Escalera de mano' chip both drops the mandated disambiguator and splits one concept into two forms on one screen.",
+        "suggestion": "Align h-ladder to the chip's term: 'Escaleras de mano y andamio inspeccionados, asegurados y con la capacidad de carga correcta' (stays phone-row concise). Optionally add a glossary entry {en: 'Ladder (portable)', es: 'escalera de mano', forbidden: ['escalera (bare — also reads as stairs)']} to hold the pairing across future batches."
+      }
+    ]
+  }
+}

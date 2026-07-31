@@ -1083,6 +1083,15 @@
       "forbidden": [
         "soldadura (bare, as the label for more than one chip in the same list)"
       ]
+    },
+    {
+      "en": "Tires",
+      "es": "llantas",
+      "note": "Locked by the data consistency sweep: OSHA-es powered-industrial-truck inspection materials use 'llantas'; pan-LatAm understood on the shop floor even where 'neumáticos' is formal.",
+      "forbidden": [
+        "neumáticos (formal register — inconsistent with shipped checklist rows)",
+        "gomas (Caribbean regionalism)"
+      ]
     }
   ]
 }
