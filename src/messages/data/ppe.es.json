@@ -1,0 +1,13 @@
+{
+  "hard-hat": "Casco de seguridad",
+  "safety-glasses": "Lentes de seguridad",
+  "face-shield": "Protector facial",
+  "hearing": "Protección auditiva",
+  "hi-vis": "Chaleco de alta visibilidad",
+  "boots": "Botas con punta de acero o compuesta",
+  "cut-gloves": "Guantes resistentes a cortes",
+  "welding-ppe": "EPP de soldadura (ropa protectora/careta)",
+  "respirator": "Respirador (especifique)",
+  "harness": "Arnés de cuerpo entero",
+  "arc-flash": "EPP contra arco eléctrico"
+}

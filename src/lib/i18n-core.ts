@@ -83,6 +83,12 @@ export function getStoredT(): TFunction {
   return getT(getStoredLocale(), getStoredFlags())
 }
 
+/** The locale the worker is actually SEEING right now (preference gated by
+ *  the kill switch). This is what gets stamped onto records at signing. */
+export function currentEffectiveLocale(): Locale {
+  return effectiveLocale(getStoredLocale(), getStoredFlags())
+}
+
 /** Non-hook translator for lib code (date labels, share text). */
 export function getT(locale: Locale, flags: I18nFlags = DEFAULT_FLAGS): TFunction {
   const effective = effectiveLocale(locale, flags)

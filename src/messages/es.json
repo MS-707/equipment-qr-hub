@@ -196,5 +196,28 @@
       "one": "Se apartó 1 registro de seguridad de otra versión de la aplicación. No se eliminó nada. Se recuperará en una próxima actualización. Avise a su responsable de seguridad.",
       "other": "Se apartaron {count} registros de seguridad de otra versión de la aplicación. No se eliminó nada. Se recuperarán en una próxima actualización. Avise a su responsable de seguridad."
     }
+  },
+  "atmo": {
+    "withinLimits": "Within safe limits",
+    "o2Idlh": "O2 at {reading}% is Immediately Dangerous to Life — EVACUATE, emergency rescue only with SCBA",
+    "o2DangerLow": "O2 at {reading}% is dangerously low — DO NOT ENTER, ventilate immediately",
+    "o2DangerHigh": "O2 at {reading}% is dangerously elevated — DO NOT ENTER, oxygen-enriched atmosphere increases fire/explosion risk",
+    "o2WarnLow": "O2 at {reading}% is below the safe minimum of 19.5% — increase ventilation and retest",
+    "o2WarnHigh": "O2 at {reading}% exceeds the safe maximum of 23.5% — identify oxygen source, ventilate and retest",
+    "lelIdlh": "LEL at {reading}% is Immediately Dangerous to Life — EVACUATE, explosive atmosphere, emergency rescue only with SCBA",
+    "lelDanger": "LEL at {reading}% is dangerously elevated — DO NOT ENTER, ventilate immediately",
+    "lelWarn": "LEL at {reading}% exceeds the safe limit of 10% — increase ventilation and retest",
+    "coIdlh": "CO at {reading} ppm is Immediately Dangerous to Life — EVACUATE, emergency rescue only with SCBA",
+    "coDanger": "CO at {reading} ppm exceeds the NIOSH REL of 35 ppm — DO NOT ENTER, ventilate immediately",
+    "coWarn": "CO at {reading} ppm exceeds the action level of 25 ppm — increase ventilation and retest before entry",
+    "h2sIdlh": "H2S at {reading} ppm is Immediately Dangerous to Life — EVACUATE, emergency rescue only with SCBA",
+    "h2sDanger": "H2S at {reading} ppm is dangerously elevated — DO NOT ENTER, ventilate immediately",
+    "h2sWarn": "H2S at {reading} ppm exceeds the safe limit of 10 ppm — increase ventilation and retest",
+    "recMultiple": "Multiple elevated readings suggest active atmospheric hazard — do not enter",
+    "recEnriched": "Enriched oxygen atmosphere — fire/explosion risk, remove all ignition sources",
+    "recH2sZero": "Chemical hazard listed but H2S is 0 — verify sensor calibration",
+    "recCoZero": "Chemical hazard listed but CO is 0 — verify sensor calibration",
+    "recLelEnriched": "Flammable gas detected in oxygen-enriched atmosphere — extreme explosion risk",
+    "recLowO2H2s": "Low oxygen with H2S present — toxic gas may be displacing oxygen, do not enter without SCBA"
   }
 }

@@ -181,6 +181,8 @@ export interface InspectionRecord {
    *  keyed `${id}:__signature__` — records stay lean like photos). Optional
    *  for records created before signatures existed. */
   hasSignature?: boolean
+  /** UI language the operator saw at signing (ES-6); absent on legacy records. */
+  locale?: 'en' | 'es'
 }
 
 export const INSPECTION_CATEGORIES: EquipmentCategory[] = [

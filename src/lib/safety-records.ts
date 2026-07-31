@@ -27,6 +27,7 @@ import type {
 } from '@/lib/safety-types'
 import { isPermit, isJHA } from '@/lib/safety-types'
 import { getCurrentIdentity } from '@/lib/identity'
+import { currentEffectiveLocale } from '@/lib/i18n-core'
 import { partitionSafetyRecords, type InvalidRecordEntry } from '@/lib/schemas'
 
 const STORAGE_KEY = 'eqr-safety-records'
@@ -423,6 +424,9 @@ export function getOpenSafetyCount(): number {
 // ── Creates ───────────────────────────────────────────────────
 
 function createBase<T extends SafetyRecord>(record: T): T {
+  // Stamp the language the worker saw at creation (ES-6) — one point covers
+  // every record type; explicit input (e.g. a restored draft) wins.
+  if (!record.locale) record.locale = currentEffectiveLocale()
   const all = readAll()
   all.push(record)
   writeAll(all)

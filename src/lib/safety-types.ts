@@ -68,6 +68,10 @@ export interface SafetyRecordBase {
   reviewerEmail?: string | null
   reviewNote?: string
   reviewDecidedAt?: string
+  /** UI language the worker saw when the record was created/signed (ES-6).
+   *  Records render in THEIR language, not the viewer's — the legal artifact
+   *  re-renders in the language the crew signed. Absent on legacy records. */
+  locale?: 'en' | 'es'
 }
 
 export interface PermitCheckItem {

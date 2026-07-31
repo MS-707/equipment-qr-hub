@@ -10,6 +10,7 @@ import { getAllItems } from '@/data/inspection-checklists'
 import { createWorkOrder } from '@/lib/work-orders'
 import { updateEquipmentStatus, getEquipmentById } from '@/lib/equipment'
 import { cryptoRandomId } from '@/lib/safety-records'
+import { currentEffectiveLocale } from '@/lib/i18n-core'
 
 const STORAGE_KEY = 'eqr-inspections'
 const STORAGE_KEY_BACKUP = 'eqr-inspections-backup'
@@ -293,6 +294,9 @@ export function submitInspection(
     syncStatus: 'pending',
     notionPageId: null,
     hasSignature: !!data.signatureDataUrl,
+    // Language the operator saw at signing (ES-6) — records render in their
+    // own language, not the viewer's.
+    locale: currentEffectiveLocale(),
   }
 
   const all = readAll()
