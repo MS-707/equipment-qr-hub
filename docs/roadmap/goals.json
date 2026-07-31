@@ -2307,6 +2307,18 @@
       "milestone": "ES-M3",
       "event": "spend-limit-pause",
       "details": "Lib layer done (T2 lookasides+mapEs, T4 locale stamping+13 tests, atmo conversion). es-translate-data workflow: BOTH generators completed and banked; 9/10 review lenses + sweep died on org spend limit — translations are UNREVIEWED, render nowhere, atmo staged in review/atmo.pending.json. ON RESUME: re-run the 5-lens review via resumeFromRunId wf_b104a4e2-579 (generators replay cached), apply verdict fixes, apply atmo to es.json + clear pending manifest, THEN T1 component conversion, T5 evidence+packet, T6 leakage extension, verify ES-6."
+    },
+    {
+      "iteration": 25,
+      "date": "2026-07-16",
+      "milestone": "ES-M3",
+      "tasksDone": [
+        "shared-component tranche of ES-M3-T1 (10 components); T2/T4 done previously; data review complete (0 blocked)"
+      ],
+      "gates": "lint ✓ tsc ✓ vitest 837 ✓ build ✓ playwright 16/16 ✓",
+      "verified": [],
+      "refuted": [],
+      "notes": "Remaining for ES-M3: the three giant forms (PreTaskPlanForm, JhaForm, IncidentReportForm) + three permit forms + FormStepper labels at call sites (T1 rest), validation messages in forms (T3 rest), forms/permits/hazard/signature namespace translation via pipeline, T5 evidence+packet+hash-anchor vitest, T6 leakage extension to form routes, then verify ES-6."
     }
   ],
   "sessionWindow": null
