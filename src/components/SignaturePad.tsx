@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Eraser, Maximize2, X } from 'lucide-react'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 interface SignaturePadProps {
   onChange: (dataUrl: string | null, isEmpty: boolean) => void
@@ -21,6 +22,7 @@ export default function SignaturePad({
   penColor = '#FFFFFF',
   signerName,
 }: SignaturePadProps) {
+  const t = useT()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const drawing = useRef(false)
@@ -323,7 +325,7 @@ export default function SignaturePad({
         className="relative bg-mytra-input border border-mytra-border rounded-lg overflow-hidden"
         style={{ height }}
         role="img"
-        aria-label="Signature pad — draw your signature with finger or stylus"
+        aria-label={t('signature.padAria', undefined, 'Signature pad — draw your signature with finger or stylus')}
       >
         <canvas
           ref={canvasRef}
@@ -336,7 +338,7 @@ export default function SignaturePad({
         />
         {isEmpty && (
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-fg-4">
-            Sign here — finger or stylus
+            {t('signature.signHere', undefined, 'Sign here — finger or stylus')}
           </span>
         )}
         <button
@@ -345,7 +347,7 @@ export default function SignaturePad({
           className="absolute top-2 right-2 p-1.5 rounded-md text-fg-3 hover:text-fg
                      hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px]
                      flex items-center justify-center"
-          aria-label="Expand signature pad"
+          aria-label={t('signature.expandAria', undefined, 'Expand signature pad')}
         >
           <Maximize2 className="w-4 h-4" />
         </button>
@@ -357,7 +359,7 @@ export default function SignaturePad({
           className="no-print mt-2 inline-flex items-center gap-1 text-xs
                      text-fg-3 hover:text-fg transition-colors min-h-[44px] px-2 -ml-2"
         >
-          <Eraser className="w-3 h-3" /> Clear signature
+          <Eraser className="w-3 h-3" /> {t('signature.clearSignature', undefined, 'Clear signature')}
         </button>
       )}
 
@@ -371,7 +373,7 @@ export default function SignaturePad({
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <div>
               <h2 className="text-sm font-semibold text-fg">
-                {signerName ? `Signature — ${signerName}` : 'Signature'}
+                {signerName ? t('signature.signatureFor', { name: signerName }) : t('signature.signatureLabel', undefined, 'Signature')}
               </h2>
             </div>
             <button
@@ -380,7 +382,7 @@ export default function SignaturePad({
               className="p-1.5 rounded-md text-fg-3 hover:text-fg
                          hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px]
                          flex items-center justify-center"
-              aria-label="Close without saving"
+              aria-label={t('signature.closeNoSave', undefined, 'Close without saving')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -402,7 +404,7 @@ export default function SignaturePad({
             />
             {expandedIsEmpty && (
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-fg-4">
-                Sign here — finger or stylus
+                {t('signature.signHere', undefined, 'Sign here — finger or stylus')}
               </span>
             )}
           </div>
@@ -416,14 +418,14 @@ export default function SignaturePad({
                          hover:text-fg hover:bg-mytra-card-hover transition-colors
                          inline-flex items-center justify-center gap-1.5"
             >
-              <Eraser className="w-4 h-4" /> Clear
+              <Eraser className="w-4 h-4" /> {t('signature.clear', undefined, 'Clear')}
             </button>
             <button
               type="button"
               onClick={saveExpanded}
               className={`${btnPrimaryCls} flex-1 py-2.5 text-sm font-medium min-h-[44px]`}
             >
-              Save
+              {t('common.save', undefined, 'Save')}
             </button>
           </div>
         </div>

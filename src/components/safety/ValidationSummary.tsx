@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react'
 import { AlertCircle, X } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 
 export interface ValidationError {
   label: string
@@ -15,6 +16,7 @@ export interface ValidationSummaryProps {
 }
 
 export default function ValidationSummary({ errors, show, onDismiss }: ValidationSummaryProps) {
+  const t = useT()
   useEffect(() => {
     if (errors.length === 0) onDismiss()
   }, [errors.length, onDismiss])
@@ -36,14 +38,14 @@ export default function ValidationSummary({ errors, show, onDismiss }: Validatio
         <div className="flex items-center gap-2 text-warn">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span className="text-sm font-semibold">
-            {errors.length} {errors.length === 1 ? 'item needs' : 'items need'} attention
+            {t('forms.needsAttention', { count: errors.length })}
           </span>
         </div>
         <button
           type="button"
           onClick={onDismiss}
           className="p-1.5 rounded-md text-fg-3 hover:text-fg-2 hover:bg-warn/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-          aria-label="Dismiss"
+          aria-label={t('common.dismiss', undefined, 'Dismiss')}
         >
           <X className="w-4 h-4" />
         </button>

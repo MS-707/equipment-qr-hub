@@ -5,6 +5,8 @@ import { Check, AlertTriangle, MessageSquarePlus } from 'lucide-react'
 import type { PermitCheckItem } from '@/lib/safety-types'
 import { haptic } from '@/lib/haptic'
 import { btnSelectedCls } from '@/lib/form-styles'
+import { useLocale, useT } from '@/lib/i18n'
+import { permitCategory, permitItemLabel } from '@/lib/i18n-data'
 
 interface PermitChecklistProps {
   items: PermitCheckItem[]
@@ -17,6 +19,8 @@ export function criticalRemaining(items: PermitCheckItem[]): number {
 }
 
 export default function PermitChecklist({ items, onChange }: PermitChecklistProps) {
+  const t = useT()
+  const { locale } = useLocale()
   const [openNotes, setOpenNotes] = useState<Set<string>>(
     () => new Set(items.filter((i) => i.notes).map((i) => i.id))
   )
@@ -43,12 +47,15 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
     <div className="space-y-4">
       {categories.map((category) => (
         <div key={category}>
-          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">{category}</h4>
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2 px-1">{permitCategory(locale, category)}</h4>
           <div className="space-y-2">
             {items
               .filter((i) => i.category === category)
               .map((item) => {
                 const notesOpen = openNotes.has(item.id)
+                // Render-time id lookup: permit items are stored on the
+                // record in English; the viewer sees their own locale.
+                const label = permitItemLabel(locale, item.id, item.label)
                 return (
                   <div key={item.id} className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3">
                     <div className="flex items-start gap-3">
@@ -56,7 +63,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="button"
                         onClick={() => set(item.id, { checked: !item.checked })}
                         aria-pressed={item.checked}
-                        aria-label={`${item.checked ? 'Uncheck' : 'Check'}: ${item.label}`}
+                        aria-label={item.checked ? t('permits.uncheckAria', { label }) : t('permits.checkAria', { label })}
                         className={`shrink-0 mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                           item.checked
                             ? `${btnSelectedCls} border-mytra-purple`
@@ -71,11 +78,11 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         onClick={() => set(item.id, { checked: !item.checked })}
                         className="flex-1 text-left min-w-0 cursor-pointer select-none"
                       >
-                        <span className="text-sm text-fg leading-snug">{item.label}</span>
+                        <span className="text-sm text-fg leading-snug">{label}</span>
                         {item.critical && (
                           <span className="ml-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded align-middle">
                             <AlertTriangle className="w-2.5 h-2.5" />
-                            Required
+                            {t('common.required', undefined, 'Required')}
                           </span>
                         )}
                       </div>
@@ -83,7 +90,7 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                       <button
                         type="button"
                         onClick={() => toggleNotes(item.id)}
-                        aria-label="Add note"
+                        aria-label={t('permits.noteAria', undefined, 'Add note')}
                         className={`shrink-0 w-11 h-11 flex items-center justify-center rounded-lg border transition-colors ${
                           notesOpen || item.notes
                             ? 'bg-mytra-purple/10 border-mytra-purple/40 text-mytra-purple'
@@ -99,8 +106,8 @@ export default function PermitChecklist({ items, onChange }: PermitChecklistProp
                         type="text"
                         value={item.notes}
                         onChange={(e) => set(item.id, { notes: e.target.value })}
-                        aria-label={`Note for: ${item.label}`}
-                        placeholder="Site-specific note (optional)"
+                        aria-label={t('permits.noteFor', { label })}
+                        placeholder={t('permits.notePlaceholder', undefined, 'Site-specific note (optional)')}
                         className="mt-2 w-full bg-mytra-input border border-mytra-border rounded-lg py-2 px-3
                                    text-sm text-fg placeholder:text-fg-4
                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple animate-fadeIn"

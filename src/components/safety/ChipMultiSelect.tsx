@@ -1,5 +1,7 @@
 'use client'
 import { btnSelectedCls } from '@/lib/form-styles'
+import { useLocale } from '@/lib/i18n'
+import { optionLabel } from '@/lib/i18n-data'
 
 interface ChipMultiSelectProps {
   options: string[]
@@ -7,7 +9,13 @@ interface ChipMultiSelectProps {
   onChange: (value: string[]) => void
 }
 
+/**
+ * Values stay the canonical English source strings (records translate at
+ * insertion time via mapEs); only the chip LABEL renders in the viewer's
+ * locale (ES-6).
+ */
 export default function ChipMultiSelect({ options, selected, onChange }: ChipMultiSelectProps) {
+  const { locale } = useLocale()
   function toggle(o: string) {
     onChange(selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o])
   }
@@ -27,7 +35,7 @@ export default function ChipMultiSelect({ options, selected, onChange }: ChipMul
                 : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg hover:border-mytra-purple/50'
             }`}
           >
-            {o}
+            {optionLabel(locale, o)}
           </button>
         )
       })}

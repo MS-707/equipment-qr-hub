@@ -2,6 +2,8 @@
 
 import { PPE_OPTIONS } from '@/data/safety-checklists'
 import { btnSelectedCls } from '@/lib/form-styles'
+import { useLocale } from '@/lib/i18n'
+import { ppeOptionLabel } from '@/lib/i18n-data'
 
 interface PPESelectorProps {
   selected: string[]
@@ -9,6 +11,7 @@ interface PPESelectorProps {
 }
 
 export default function PPESelector({ selected, onChange }: PPESelectorProps) {
+  const { locale } = useLocale()
   function toggle(id: string) {
     onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id])
   }
@@ -29,7 +32,7 @@ export default function PPESelector({ selected, onChange }: PPESelectorProps) {
                 : 'bg-mytra-bg text-fg-2 border-mytra-border hover:text-fg hover:border-mytra-purple/50'
             }`}
           >
-            {p.label}
+            {ppeOptionLabel(locale, p.id, p.label)}
           </button>
         )
       })}

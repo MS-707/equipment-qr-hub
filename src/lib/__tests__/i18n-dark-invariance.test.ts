@@ -40,6 +40,16 @@ const CONVERTED_FILES = [
   'src/app/not-found.tsx',
   'src/app/~offline/page.tsx',
   'src/lib/safety-sync.ts',
+  'src/components/safety/ChipMultiSelect.tsx',
+  'src/components/safety/PPESelector.tsx',
+  'src/components/safety/HazardTable.tsx',
+  'src/components/safety/PermitChecklist.tsx',
+  'src/components/safety/PermitTimer.tsx',
+  'src/components/safety/PermitStatusBadge.tsx',
+  'src/components/safety/FormSuccess.tsx',
+  'src/components/safety/ValidationSummary.tsx',
+  'src/components/safety/CrewSignatureBlock.tsx',
+  'src/components/SignaturePad.tsx',
 ]
 
 // t('key', undefined|{...}, 'literal') / t('key', undefined, "literal")

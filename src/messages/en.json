@@ -219,5 +219,74 @@
     "recCoZero": "Chemical hazard listed but CO is 0 — verify sensor calibration",
     "recLelEnriched": "Flammable gas detected in oxygen-enriched atmosphere — extreme explosion risk",
     "recLowO2H2s": "Low oxygen with H2S present — toxic gas may be displacing oxygen, do not enter without SCBA"
+  },
+  "forms": {
+    "newDefault": "New",
+    "submittingReview": "Submitting for EHS review…",
+    "submittedReview": "Submitted for EHS review",
+    "reviewFailed": "Could not submit for EHS review (offline or server issue). The record is saved on this device.",
+    "submittingReviewBtn": "Submitting for review…",
+    "submitReviewBtn": "Submit for EHS Review",
+    "submittedReviewNotify": "Submitted for EHS review — your manager will be notified",
+    "viewPrint": "View / Print",
+    "needsAttention": {
+      "one": "1 item needs attention",
+      "other": "{count} items need attention"
+    }
+  },
+  "permits": {
+    "status": {
+      "active": "Active",
+      "closed": "Closed",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "timerExpired": "EXPIRED — close out permit",
+    "timerLeftSoon": "{time} left — close out soon",
+    "timerExpiresIn": "Expires in {time}",
+    "checkAria": "Check: {label}",
+    "uncheckAria": "Uncheck: {label}",
+    "noteAria": "Add note",
+    "noteFor": "Note for: {label}",
+    "notePlaceholder": "Site-specific note (optional)"
+  },
+  "hazard": {
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "placeholder": "Hazard",
+    "controlPlaceholder": "Control measure",
+    "removeAria": "Remove hazard",
+    "addHazard": "Add hazard",
+    "empty": "No hazards yet — tap a common hazard above to add it, or use “+ Add hazard” for a custom entry.",
+    "riskAria": "Risk level",
+    "viaSage": "✨ via Sage — review before signing"
+  },
+  "signature": {
+    "consent": "By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.",
+    "name": "Name",
+    "namePlaceholder": "Crew member name",
+    "roleOptional": "Role (optional)",
+    "signatureLabel": "Signature",
+    "signatureFor": "Signature — {name}",
+    "saveSignature": "Save signature",
+    "addSignature": "Add signature",
+    "removeAria": "Remove signature",
+    "removeTitle": "Remove signature?",
+    "removeBody": "{name} will need to sign again if removed.",
+    "remove": "Remove",
+    "signedAt": "signed {time}",
+    "markAs": "Mark as {role}",
+    "supervisor": "Supervisor",
+    "sigAlt": "{name} signature",
+    "signHere": "Sign here — finger or stylus",
+    "padAria": "Signature pad — draw your signature with finger or stylus",
+    "expandAria": "Expand signature pad",
+    "closeNoSave": "Close without saving",
+    "clearSignature": "Clear signature",
+    "clear": "Clear"
   }
 }

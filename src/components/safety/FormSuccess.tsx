@@ -6,6 +6,7 @@ import { CheckCircle2, WifiOff, Send, Loader2, AlertTriangle } from 'lucide-reac
 import { haptic } from '@/lib/haptic'
 import type { ReviewSubmitState } from '@/lib/review-submit'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 interface FormSuccessProps {
   id: string
@@ -23,7 +24,9 @@ interface FormSuccessProps {
   onRetryReview?: () => void
 }
 
-export default function FormSuccess({ id, title, message, onNew, newLabel = 'New', offline, onSubmitForReview, reviewAutoSubmitted, onRetryReview }: FormSuccessProps) {
+export default function FormSuccess({ id, title, message, onNew, newLabel, offline, onSubmitForReview, reviewAutoSubmitted, onRetryReview }: FormSuccessProps) {
+  const t = useT()
+  const newText = newLabel ?? t('forms.newDefault', undefined, 'New')
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewDone, setReviewDone] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -55,21 +58,21 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
       {offline && (
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
           <WifiOff className="w-4 h-4 text-warn shrink-0" />
-          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+          <p className="text-xs text-warn">{t('common.savedLocally', undefined, 'Saved locally. Will sync automatically when connection returns.')}</p>
         </div>
       )}
 
       {reviewAutoSubmitted === 'pending' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5" role="status">
           <Loader2 className="w-4 h-4 text-mytra-purple shrink-0 animate-spin" />
-          <p className="text-xs text-mytra-purple">Submitting for EHS review…</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittingReview', undefined, 'Submitting for EHS review…')}</p>
         </div>
       )}
 
       {reviewAutoSubmitted === 'submitted' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Submitted for EHS review</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittedReview', undefined, 'Submitted for EHS review')}</p>
         </div>
       )}
 
@@ -77,7 +80,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5" role="alert">
           <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
           <p className="text-sm text-warn-strong flex-1">
-            Could not submit for EHS review (offline or server issue). The record is saved on this device.
+            {t('forms.reviewFailed', undefined, 'Could not submit for EHS review (offline or server issue). The record is saved on this device.')}
           </p>
           {onRetryReview && (
             <button
@@ -85,7 +88,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
               onClick={onRetryReview}
               className="shrink-0 min-h-[44px] px-3 rounded-lg text-sm font-semibold text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
             >
-              Retry
+              {t('common.retry', undefined, 'Retry')}
             </button>
           )}
         </div>
@@ -102,9 +105,9 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
                      disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {reviewSubmitting ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Submitting for review…</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> {t('forms.submittingReviewBtn', undefined, 'Submitting for review…')}</>
           ) : (
-            <><Send className="w-4 h-4" /> Submit for EHS Review</>
+            <><Send className="w-4 h-4" /> {t('forms.submitReviewBtn', undefined, 'Submit for EHS Review')}</>
           )}
         </button>
       )}
@@ -112,7 +115,7 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
       {reviewDone && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Submitted for EHS review — your manager will be notified</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittedReviewNotify', undefined, 'Submitted for EHS review — your manager will be notified')}</p>
         </div>
       )}
 
@@ -120,17 +123,17 @@ export default function FormSuccess({ id, title, message, onNew, newLabel = 'New
         href={`/safety/record/${id}`}
         className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
-        View / Print
+        {t('forms.viewPrint', undefined, 'View / Print')}
       </Link>
       <button
         type="button"
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        {newLabel}
+        {newText}
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
-        Back to Home
+        {t('common.backHome', undefined, 'Back to Home')}
       </Link>
     </div>
   )

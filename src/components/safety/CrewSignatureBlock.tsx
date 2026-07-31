@@ -9,6 +9,7 @@ import { newSignature } from '@/lib/safety-records'
 import { getCrewRoster, crewRoles, rememberCrewMember } from '@/data/crew'
 import { haptic } from '@/lib/haptic'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 export interface SignatureData {
   signatures: CrewSignature[]
@@ -35,8 +36,10 @@ export default function CrewSignatureBlock({
   roleOptions = crewRoles,
   supervisorId,
   onSupervisorChange,
-  supervisorLabel = 'Supervisor',
+  supervisorLabel,
 }: CrewSignatureBlockProps) {
+  const t = useT()
+  const supervisorText = supervisorLabel ?? t('signature.supervisor', undefined, 'Supervisor')
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
@@ -86,21 +89,21 @@ export default function CrewSignatureBlock({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={value.blobs[s.id]}
-                  alt={`${s.name} signature`}
+                  alt={t('signature.sigAlt', { name: s.name })}
                   className="w-16 h-10 object-contain bg-mytra-input rounded border border-mytra-border shrink-0"
                 />
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-fg truncate">{s.name}</p>
                 <p className="text-xs text-fg-3">
-                  {s.role ? `${s.role} · ` : ''}signed {formatTime(s.signedAt)}
+                  {s.role ? `${s.role} · ` : ''}{t('signature.signedAt', { time: formatTime(s.signedAt) })}
                 </p>
               </div>
               {onSupervisorChange && (
                 <button
                   type="button"
                   onClick={() => onSupervisorChange(supervisorId === s.id ? null : s.id)}
-                  title={`Mark as ${supervisorLabel.toLowerCase()}`}
+                  title={t('signature.markAs', { role: supervisorText.toLowerCase() })}
                   aria-pressed={supervisorId === s.id}
                   className={`shrink-0 inline-flex items-center gap-1 text-xs px-3 py-2 rounded border transition-colors min-h-[44px] min-w-[44px] ${
                     supervisorId === s.id
@@ -109,13 +112,13 @@ export default function CrewSignatureBlock({
                   }`}
                 >
                   <Star className="w-3 h-3" />
-                  {supervisorLabel}
+                  {supervisorText}
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => setPendingRemove(s)}
-                aria-label="Remove signature"
+                aria-label={t('signature.removeAria', undefined, 'Remove signature')}
                 className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-mytra-bg border border-mytra-border text-fg-3 hover:text-danger transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -127,11 +130,13 @@ export default function CrewSignatureBlock({
 
       {adding ? (
         <div className="bg-mytra-card shadow-card border border-mytra-border rounded-card p-3 space-y-3 animate-fadeIn">
+          {/* LG-6: the defaultEn literal below is legally load-bearing — the
+              sw-i18n-invariants vitest greps this exact English text. */}
           <p className="text-xs text-fg-3 leading-relaxed">
-            By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.
+            {t('signature.consent', undefined, 'By signing below, you acknowledge this safety plan and consent to your digital signature being stored on this device for recordkeeping purposes.')}
           </p>
           <div>
-            <label className="block text-xs text-fg-2 mb-1">Name</label>
+            <label className="block text-xs text-fg-2 mb-1">{t('signature.name', undefined, 'Name')}</label>
             <input
               type="text"
               list="crew-roster"
@@ -140,7 +145,7 @@ export default function CrewSignatureBlock({
               onChange={(e) => handleNameChange(e.target.value)}
               autoCapitalize="words"
               enterKeyHint="next"
-              placeholder="Crew member name"
+              placeholder={t('signature.namePlaceholder', undefined, 'Crew member name')}
               className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                          text-sm text-fg placeholder:text-fg-4
                          focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
@@ -152,7 +157,7 @@ export default function CrewSignatureBlock({
             </datalist>
           </div>
           <div>
-            <label className="block text-xs text-fg-2 mb-1">Role (optional)</label>
+            <label className="block text-xs text-fg-2 mb-1">{t('signature.roleOptional', undefined, 'Role (optional)')}</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -168,7 +173,7 @@ export default function CrewSignatureBlock({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-fg-2 mb-1">Signature</label>
+            <label className="block text-xs text-fg-2 mb-1">{t('signature.signatureLabel', undefined, 'Signature')}</label>
             <SignaturePad onChange={(url) => setDataUrl(url)} />
           </div>
           <div className="flex gap-2">
@@ -178,7 +183,7 @@ export default function CrewSignatureBlock({
               disabled={!name.trim() || !dataUrl}
               className={`${btnPrimaryCls} flex-1 py-2.5 min-h-[44px] text-sm font-semibold`}
             >
-              Save signature
+              {t('signature.saveSignature', undefined, 'Save signature')}
             </button>
             <button
               type="button"
@@ -186,7 +191,7 @@ export default function CrewSignatureBlock({
               className="px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-mytra-bg border border-mytra-border
                          text-fg-2 hover:text-fg transition-colors"
             >
-              Cancel
+              {t('common.cancel', undefined, 'Cancel')}
             </button>
           </div>
         </div>
@@ -198,19 +203,19 @@ export default function CrewSignatureBlock({
                      bg-mytra-bg border border-dashed border-mytra-border text-fg-2
                      hover:text-fg hover:border-mytra-purple/50 transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add signature
+          <Plus className="w-4 h-4" /> {t('signature.addSignature', undefined, 'Add signature')}
         </button>
       )}
 
       <ConfirmDialog
         open={pendingRemove !== null}
-        title="Remove signature?"
+        title={t('signature.removeTitle', undefined, 'Remove signature?')}
         message={
           pendingRemove
-            ? `${pendingRemove.name} will need to sign again if removed.`
+            ? t('signature.removeBody', { name: pendingRemove.name })
             : ''
         }
-        confirmLabel="Remove"
+        confirmLabel={t('signature.remove', undefined, 'Remove')}
         variant="danger"
         onConfirm={() => {
           if (pendingRemove) remove(pendingRemove.id)
