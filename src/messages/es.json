@@ -640,7 +640,7 @@
     "stepTaskAria": "Step {n} task or activity",
     "removeStepAria": "Remove step {n}",
     "stepLabel": "Step {n}",
-    "hazardsLabel": "Hazard(s) identified",
+    "hazardsLabel": "Hazards identified",
     "hazardsPlaceholder": "One hazard per line",
     "riskLevelLabel": "Risk level",
     "controlsLabel": "Controls / mitigations",

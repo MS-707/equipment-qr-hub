@@ -481,7 +481,7 @@ export default function JhaForm() {
               <div className="pl-8 space-y-3 animate-fadeIn">
                 <div>
                   <label className={labelCls}>
-                    Hazard(s) identified
+                    Hazards identified
                     {step.source === 'sage' && <span className="text-mytra-purple ml-1">✨ Sage</span>}
                   </label>
                   <textarea
