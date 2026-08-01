@@ -21,8 +21,10 @@ import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 export default function HotWorkPermitForm() {
+  const t = useT()
   const win = defaultValidityWindow(8)
   const [projectName, setProjectName] = useState('')
   const [location, setLocation] = useState('')
@@ -96,31 +98,31 @@ export default function HotWorkPermitForm() {
   const activeStepId = useActiveStep(stepIds)
 
   const steps: FormStep[] = useMemo(() => [
-    { id: 'details', label: 'Details', complete: workDescription.trim().length > 0 && location.trim().length > 0 },
-    { id: 'hot-work-type', label: 'Hot Work Type', complete: hotWorkTypes.length > 0 },
-    { id: 'fire-watch', label: 'Fire Watch', complete: fireWatchOk },
-    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
-    { id: 'validity', label: 'Validity', complete: validWindowOk },
-    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && issuerId !== null },
-  ], [workDescription, location, hotWorkTypes, fireWatchOk, critLeft, validWindowOk, sigData.signatures.length, issuerId])
+    { id: 'details', label: t('permits.hotWork.stepDetails', undefined, 'Details'), complete: workDescription.trim().length > 0 && location.trim().length > 0 },
+    { id: 'hot-work-type', label: t('permits.hotWork.stepType', undefined, 'Hot Work Type'), complete: hotWorkTypes.length > 0 },
+    { id: 'fire-watch', label: t('permits.hotWork.stepFireWatch', undefined, 'Fire Watch'), complete: fireWatchOk },
+    { id: 'checklist', label: t('permits.hotWork.stepChecklist', undefined, 'Checklist'), complete: critLeft === 0 },
+    { id: 'validity', label: t('permits.hotWork.stepValidity', undefined, 'Validity'), complete: validWindowOk },
+    { id: 'signatures', label: t('permits.hotWork.stepSignatures', undefined, 'Signatures'), complete: sigData.signatures.length >= 1 && issuerId !== null },
+  ], [t, workDescription, location, hotWorkTypes, fireWatchOk, critLeft, validWindowOk, sigData.signatures.length, issuerId])
 
   const validationErrors: ValidationError[] = useMemo(() => {
     const errs: ValidationError[] = []
-    if (!workDescription.trim()) errs.push({ label: 'Work description is required', fieldId: 'hw-description' })
-    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'hw-location' })
-    if (hotWorkTypes.length === 0) errs.push({ label: 'Select at least one hot work type', fieldId: 'hot-work-type-section' })
-    if (critLeft > 0) errs.push({ label: `${critLeft} required checklist item${critLeft === 1 ? '' : 's'} remaining`, fieldId: 'checklist-section' })
-    if (!fireWatchOk) errs.push({ label: 'Fire watch person must be assigned', fieldId: 'hw-fire-watch' })
-    if (sigData.signatures.length === 0) errs.push({ label: 'At least one worker must sign on', fieldId: 'signatures-section' })
-    if (issuerId === null && sigData.signatures.length > 0) errs.push({ label: 'Designate an issuer', fieldId: 'signatures-section' })
+    if (!workDescription.trim()) errs.push({ label: t('permits.hotWork.errDescriptionRequired', undefined, 'Work description is required'), fieldId: 'hw-description' })
+    if (!location.trim()) errs.push({ label: t('permits.hotWork.errLocationRequired', undefined, 'Location is required'), fieldId: 'hw-location' })
+    if (hotWorkTypes.length === 0) errs.push({ label: t('permits.hotWork.errTypeRequired', undefined, 'Select at least one hot work type'), fieldId: 'hot-work-type-section' })
+    if (critLeft > 0) errs.push({ label: t('permits.hotWork.errChecklistRemaining', { count: critLeft, critLeft }), fieldId: 'checklist-section' })
+    if (!fireWatchOk) errs.push({ label: t('permits.hotWork.errFireWatchRequired', undefined, 'Fire watch person must be assigned'), fieldId: 'hw-fire-watch' })
+    if (sigData.signatures.length === 0) errs.push({ label: t('permits.hotWork.errWorkerSignature', undefined, 'At least one worker must sign on'), fieldId: 'signatures-section' })
+    if (issuerId === null && sigData.signatures.length > 0) errs.push({ label: t('permits.hotWork.errIssuerRequired', undefined, 'Designate an issuer'), fieldId: 'signatures-section' })
     if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
-      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'hw-valid-from' })
+      errs.push({ label: t('permits.hotWork.errInvalidDates', undefined, 'Enter valid dates for "Valid from" and "Valid until"'), fieldId: 'hw-valid-from' })
     else if (validFromMs < Date.now() - 5 * 60 * 1000)
-      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'hw-valid-from' })
+      errs.push({ label: t('permits.hotWork.errValidFromPast', undefined, '"Valid from" cannot be in the past'), fieldId: 'hw-valid-from' })
     else if ((validUntilMs - validFromMs) < 30 * 60 * 1000)
-      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'hw-valid-until' })
+      errs.push({ label: t('permits.hotWork.errMinDuration', undefined, 'Permit must be valid for at least 30 minutes'), fieldId: 'hw-valid-until' })
     return errs
-  }, [workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk, validFromMs, validUntilMs])
+  }, [t, workDescription, location, hotWorkTypes, critLeft, fireWatchOk, sigData.signatures.length, issuerId, validWindowOk, validFromMs, validUntilMs])
 
   const submitGuard = useRef(false)
   function submit() {
@@ -149,7 +151,7 @@ export default function HotWorkPermitForm() {
         issuerSignatureId: issuerId,
       })
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('permits.hotWork.saveFailedStorage', undefined, 'Failed to save record — device storage may be full.'))
       return
     }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
@@ -194,10 +196,10 @@ export default function HotWorkPermitForm() {
     return (
       <FormSuccess
         id={submittedId}
-        title="Permit Issued"
-        message="Hot Work permit is active, logged as"
+        title={t('permits.hotWork.successTitle', undefined, 'Permit Issued')}
+        message={t('permits.hotWork.successMessage', undefined, 'Hot Work permit is active, logged as')}
         onNew={reset}
-        newLabel="Start new permit"
+        newLabel={t('permits.hotWork.startNewPermit', undefined, 'Start new permit')}
         offline={wasOffline}
         reviewAutoSubmitted={reviewState}
         onRetryReview={() => {
@@ -214,10 +216,10 @@ export default function HotWorkPermitForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
@@ -225,41 +227,41 @@ export default function HotWorkPermitForm() {
       <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Hot Work Permit</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('permits.hotWork.title', undefined, 'Hot Work Permit')}</h3>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hw-project" className={labelCls}>Project / Structure</label>
-            <input id="hw-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
-            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
+            <label htmlFor="hw-project" className={labelCls}>{t('permits.hotWork.projectLabel', undefined, 'Project / Structure')}</label>
+            <input id="hw-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t('permits.hotWork.projectPlaceholder', undefined, 'e.g. Tower B steel erection')} className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label={t('permits.hotWork.lastUsed', undefined, 'Last')} value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label htmlFor="hw-location" className={labelCls}>Location / Area</label>
-            <input id="hw-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
-            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
+            <label htmlFor="hw-location" className={labelCls}>{t('permits.hotWork.locationLabel', undefined, 'Location / Area')}</label>
+            <input id="hw-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('permits.hotWork.locationPlaceholder', undefined, 'Level / grid')} className={inputCls} />
+            {lastCtx.location && <LastUsedChip label={t('permits.hotWork.lastUsed', undefined, 'Last')} value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label htmlFor="hw-description" className={labelCls}>Work description</label>
-          <textarea id="hw-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the hot work to be performed" className={textareaCls} />
+          <label htmlFor="hw-description" className={labelCls}>{t('permits.hotWork.descriptionLabel', undefined, 'Work description')}</label>
+          <textarea id="hw-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder={t('permits.hotWork.descriptionPlaceholder', undefined, 'Describe the hot work to be performed')} className={textareaCls} />
         </div>
       </div>
 
       <section id="hot-work-type-section" data-step="hot-work-type" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Type of hot work</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('permits.hotWork.typeHeading', undefined, 'Type of hot work')}</h4>
         <ChipMultiSelect options={HOT_WORK_TYPES} selected={hotWorkTypes} onChange={setHotWorkTypes} />
       </section>
 
       <div data-step="fire-watch" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Fire watch & suppression</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.hotWork.fireWatchHeading', undefined, 'Fire watch & suppression')}</h4>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={fireWatchRequired} onChange={() => setFireWatchRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-          Fire watch required
+          {t('permits.hotWork.fireWatchRequired', undefined, 'Fire watch required')}
         </label>
         {fireWatchRequired && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="hw-fire-watch" className={labelCls}>Fire watch assigned</label>
+              <label htmlFor="hw-fire-watch" className={labelCls}>{t('permits.hotWork.fireWatchAssignedLabel', undefined, 'Fire watch assigned')}</label>
               <input
                 id="hw-fire-watch"
                 type="text"
@@ -267,62 +269,62 @@ export default function HotWorkPermitForm() {
                 maxLength={100}
                 onChange={(e) => setFireWatchName(e.target.value)}
                 autoCapitalize="words"
-                placeholder="Name"
+                placeholder={t('permits.hotWork.fireWatchNamePlaceholder', undefined, 'Name')}
                 className={`${inputCls} ${!fireWatchName.trim() ? 'border-warn/60' : ''}`}
               />
             </div>
             <div>
-              <label htmlFor="hw-post-duration" className={labelCls}>Post-work monitoring (min)</label>
+              <label htmlFor="hw-post-duration" className={labelCls}>{t('permits.hotWork.postDurationLabel', undefined, 'Post-work monitoring (min)')}</label>
               <input id="hw-post-duration" type="text" inputMode="numeric" value={postDuration} onChange={(e) => setPostDuration(parseInt(e.target.value) || 0)} className={`${inputCls} ${postDuration < 60 ? 'border-warn/60' : ''}`} />
               {postDuration < 60 && (
-                <p className="text-xs text-warn mt-0.5">NFPA 51B requires minimum 60-minute fire watch</p>
+                <p className="text-xs text-warn mt-0.5">{t('permits.hotWork.nfpaFireWatchWarning', undefined, 'NFPA 51B requires minimum 60-minute fire watch')}</p>
               )}
             </div>
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hw-extinguisher-loc" className={labelCls}>Extinguisher location</label>
-            <input id="hw-extinguisher-loc" type="text" maxLength={200} value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} placeholder="Nearest station / bay" className={inputCls} />
+            <label htmlFor="hw-extinguisher-loc" className={labelCls}>{t('permits.hotWork.extinguisherLocationLabel', undefined, 'Extinguisher location')}</label>
+            <input id="hw-extinguisher-loc" type="text" maxLength={200} value={extinguisherLocation} onChange={(e) => setExtinguisherLocation(e.target.value)} placeholder={t('permits.hotWork.extinguisherLocationPlaceholder', undefined, 'Nearest station / bay')} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="hw-extinguisher-type" className={labelCls}>Extinguisher type</label>
-            <input id="hw-extinguisher-type" type="text" maxLength={100} value={extinguisherType} onChange={(e) => setExtinguisherType(e.target.value)} placeholder="ABC / CO₂" className={inputCls} />
+            <label htmlFor="hw-extinguisher-type" className={labelCls}>{t('permits.hotWork.extinguisherTypeLabel', undefined, 'Extinguisher type')}</label>
+            <input id="hw-extinguisher-type" type="text" maxLength={100} value={extinguisherType} onChange={(e) => setExtinguisherType(e.target.value)} placeholder={t('permits.hotWork.extinguisherTypePlaceholder', undefined, 'ABC / CO₂')} className={inputCls} />
           </div>
         </div>
         <div>
-          <label htmlFor="hw-sprinkler" className={labelCls}>Sprinkler status</label>
-          <input id="hw-sprinkler" type="text" maxLength={100} value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder="In service / impaired / N/A" className={inputCls} />
+          <label htmlFor="hw-sprinkler" className={labelCls}>{t('permits.hotWork.sprinklerStatusLabel', undefined, 'Sprinkler status')}</label>
+          <input id="hw-sprinkler" type="text" maxLength={100} value={sprinklerStatus} onChange={(e) => setSprinklerStatus(e.target.value)} placeholder={t('permits.hotWork.sprinklerStatusPlaceholder', undefined, 'In service / impaired / N/A')} className={inputCls} />
         </div>
         <label className="flex items-center gap-2 text-sm text-fg-2">
           <input type="checkbox" checked={gasTestRequired} onChange={() => setGasTestRequired((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-          Atmosphere / gas test required
+          {t('permits.hotWork.gasTestRequired', undefined, 'Atmosphere / gas test required')}
         </label>
         {gasTestRequired && (
           <div>
-            <label htmlFor="hw-gas-notes" className={`${labelCls} sr-only`}>Gas test notes</label>
-            <input id="hw-gas-notes" type="text" maxLength={500} value={gasTestNotes} onChange={(e) => setGasTestNotes(e.target.value)} placeholder="LEL reading / notes" className={inputCls} />
+            <label htmlFor="hw-gas-notes" className={`${labelCls} sr-only`}>{t('permits.hotWork.gasTestNotesLabel', undefined, 'Gas test notes')}</label>
+            <input id="hw-gas-notes" type="text" maxLength={500} value={gasTestNotes} onChange={(e) => setGasTestNotes(e.target.value)} placeholder={t('permits.hotWork.gasTestNotesPlaceholder', undefined, 'LEL reading / notes')} className={inputCls} />
           </div>
         )}
       </div>
 
       <section id="checklist-section" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
-          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.hotWork.checklistHeading', undefined, 'Pre-issue checklist')}</h4>
+          {critLeft > 0 && <span className="text-xs text-warn">{t('permits.hotWork.requiredLeft', { critLeft }, '{critLeft} required left')}</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
       <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.hotWork.validityHeading', undefined, 'Validity window')}</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hw-valid-from" className={labelCls}>Valid from</label>
+            <label htmlFor="hw-valid-from" className={labelCls}>{t('permits.hotWork.validFromLabel', undefined, 'Valid from')}</label>
             <input id="hw-valid-from" type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="hw-valid-until" className={labelCls}>Valid until</label>
+            <label htmlFor="hw-valid-until" className={labelCls}>{t('permits.hotWork.validUntilLabel', undefined, 'Valid until')}</label>
             <input
               id="hw-valid-until"
               type="datetime-local"
@@ -335,20 +337,20 @@ export default function HotWorkPermitForm() {
       </div>
 
       <section id="signatures-section" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
-        <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the issuer.</p>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">{t('permits.hotWork.signaturesHeading', undefined, 'Crew sign-on')}</h4>
+        <p className="text-xs text-fg-2 mb-3">{t('permits.hotWork.signaturesHint', undefined, 'Each worker confirms understanding. Designate the issuer.')}</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}
           supervisorId={issuerId}
           onSupervisorChange={setIssuerId}
-          supervisorLabel="Issuer"
+          supervisorLabel={t('permits.hotWork.issuerLabel', undefined, 'Issuer')}
         />
       </section>
 
       {saveError && (
         <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-          <span className="font-semibold shrink-0">Save failed:</span>
+          <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
           <span>{saveError}</span>
         </div>
       )}
@@ -361,27 +363,27 @@ export default function HotWorkPermitForm() {
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {!workDescription.trim() || !location.trim()
-            ? 'Describe the work and location'
+            ? t('permits.hotWork.ctaDescribe', undefined, 'Describe the work and location')
             : hotWorkTypes.length === 0
-              ? 'Select hot work type'
+              ? t('permits.hotWork.ctaSelectType', undefined, 'Select hot work type')
               : critLeft > 0
-                ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                ? t('permits.hotWork.ctaCompleteItems', { count: critLeft, critLeft })
                 : !fireWatchOk
-                  ? 'Assign a fire watch'
+                  ? t('permits.hotWork.ctaAssignFireWatch', undefined, 'Assign a fire watch')
                   : sigData.signatures.length === 0
-                    ? 'Workers must sign on'
+                    ? t('permits.hotWork.ctaWorkersSign', undefined, 'Workers must sign on')
                     : issuerId === null
-                      ? 'Designate the issuer'
+                      ? t('permits.hotWork.ctaDesignateIssuer', undefined, 'Designate the issuer')
                       : !validWindowOk
-                        ? 'Fix validity window'
-                        : 'Issue Permit'}
+                        ? t('permits.hotWork.ctaFixValidity', undefined, 'Fix validity window')
+                        : t('permits.hotWork.issuePermit', undefined, 'Issue Permit')}
         </button>
       </div>
       <ConfirmDialog
         open={confirmOpen}
-        title="Issue hot work permit?"
-        message={`This will activate a live permit for "${location || 'this location'}". Make sure all checklist items and fire watch are verified.`}
-        confirmLabel="Issue Permit"
+        title={t('permits.hotWork.confirmTitle', undefined, 'Issue hot work permit?')}
+        message={t('permits.hotWork.confirmMessage', { location: location || t('permits.hotWork.confirmLocationFallback', undefined, 'this location') })}
+        confirmLabel={t('permits.hotWork.issuePermit', undefined, 'Issue Permit')}
         onConfirm={() => { setConfirmOpen(false); submit() }}
         onCancel={() => setConfirmOpen(false)}
       />

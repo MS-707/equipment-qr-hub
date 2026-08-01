@@ -32,6 +32,7 @@ import PPESelector from './PPESelector'
 import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
 import { haptic } from '@/lib/haptic'
 import { localToday } from '@/lib/datetime'
+import { useT } from '@/lib/i18n'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 
@@ -68,6 +69,7 @@ function blankStep(): JhaStep {
 }
 
 export default function JhaForm() {
+  const t = useT()
   const [jobTitle, setJobTitle] = useState('')
   const [dateOfAnalysis, setDateOfAnalysis] = useState(todayStr())
   const [validUntil, setValidUntil] = useState('')
@@ -132,7 +134,7 @@ export default function JhaForm() {
 
     try {
       if (file.size > 3 * 1024 * 1024) {
-        setDocError('File too large — keep it under 3 MB.')
+        setDocError(t('jha.errFileTooLarge', undefined, 'File too large — keep it under 3 MB.'))
         setDocLoading(false)
         return
       }
@@ -147,7 +149,7 @@ export default function JhaForm() {
       } else {
         const text = await file.text()
         if (text.trim().length < 20) {
-          setDocError('Document appears empty or too short to extract steps from.')
+          setDocError(t('jha.errDocEmpty', undefined, 'Document appears empty or too short to extract steps from.'))
           setDocLoading(false)
           return
         }
@@ -164,8 +166,8 @@ export default function JhaForm() {
       })
       clearTimeout(timer)
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Failed to parse document' }))
-        setDocError(data.error || 'Failed to parse document')
+        const data = await res.json().catch(() => ({ error: t('jha.errParseFailed', undefined, 'Failed to parse document') }))
+        setDocError(data.error || t('jha.errParseFailed', undefined, 'Failed to parse document'))
         return
       }
       const data = await res.json()
@@ -198,8 +200,8 @@ export default function JhaForm() {
     } catch (err) {
       setDocError(
         err instanceof DOMException && err.name === 'AbortError'
-          ? 'Request timed out — try a smaller document'
-          : 'Network error — check your connection'
+          ? t('jha.errTimeoutSmallerDoc', undefined, 'Request timed out — try a smaller document')
+          : t('jha.errNetwork', undefined, 'Network error — check your connection')
       )
     } finally {
       setDocLoading(false)
@@ -224,8 +226,8 @@ export default function JhaForm() {
       })
       clearTimeout(timer)
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Request failed' }))
-        setSageError(data.error ?? `Request failed (${res.status})`)
+        const data = await res.json().catch(() => ({ error: t('jha.errRequestFailed', undefined, 'Request failed') }))
+        setSageError(data.error ?? t('jha.errRequestFailedStatus', { status: res.status }, 'Request failed ({status})'))
         return
       }
       const data = await res.json()
@@ -255,8 +257,8 @@ export default function JhaForm() {
     } catch (err) {
       setSageError(
         err instanceof DOMException && err.name === 'AbortError'
-          ? 'Request timed out — try again'
-          : 'Network error — check your connection'
+          ? t('jha.errTimeoutRetry', undefined, 'Request timed out — try again')
+          : t('jha.errNetwork', undefined, 'Network error — check your connection')
       )
     } finally {
       setSageLoading(false)
@@ -286,7 +288,7 @@ export default function JhaForm() {
       })
     } catch (e) {
       submitGuard.current = false
-      setSaveError(e instanceof Error ? e.message : 'Failed to save — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('jha.errSaveFailed', undefined, 'Failed to save — device storage may be full.'))
       return
     }
     void trySyncRecord(record.id)
@@ -321,10 +323,10 @@ export default function JhaForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
@@ -334,13 +336,11 @@ export default function JhaForm() {
         <div className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card space-y-3">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-mytra-purple" />
-            <h3 className="text-sm font-semibold text-fg">Import from document</h3>
-            <span className="text-xs bg-mytra-purple/15 text-mytra-purple px-1.5 py-0.5 rounded font-medium">Optional</span>
+            <h3 className="text-sm font-semibold text-fg">{t('jha.importTitle', undefined, 'Import from document')}</h3>
+            <span className="text-xs bg-mytra-purple/15 text-mytra-purple px-1.5 py-0.5 rounded font-medium">{t('common.optional', undefined, 'Optional')}</span>
           </div>
           <p className="text-xs text-fg-3">
-            Upload a task plan, method statement, or scope of work and Sage will extract the steps
-            (advisory only — not a substitute for a competent safety assessment),
-            hazards, and controls to pre-fill your JHA.
+            {t('jha.importDesc', undefined, 'Upload a task plan, method statement, or scope of work and Sage will extract the steps (advisory only — not a substitute for a competent safety assessment), hazards, and controls to pre-fill your JHA.')}
           </p>
           <input
             ref={fileInputRef}
@@ -356,12 +356,12 @@ export default function JhaForm() {
           {docName && !docLoading && !docError && (
             <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2 animate-fadeIn">
               <FileText className="w-4 h-4 text-ok shrink-0" />
-              <p className="text-xs text-ok flex-1 truncate">Imported from {docName}</p>
+              <p className="text-xs text-ok flex-1 truncate">{t('jha.importedFrom', { docName }, 'Imported from {docName}')}</p>
               <button
                 type="button"
                 onClick={() => setDocName(null)}
                 className="text-ok/60 hover:text-ok"
-                aria-label="Dismiss"
+                aria-label={t('common.dismiss', undefined, 'Dismiss')}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -382,13 +382,13 @@ export default function JhaForm() {
                        disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {docLoading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Sage is reading your document…</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {t('jha.sageReadingDoc', undefined, 'Sage is reading your document…')}</>
             ) : (
-              <><Upload className="w-4 h-4" /> Upload a document</>
+              <><Upload className="w-4 h-4" /> {t('jha.uploadDocument', undefined, 'Upload a document')}</>
             )}
           </button>
           <p className="text-xs text-fg-4 text-center">
-            Supports .txt, .md, .csv, and .pdf (up to 3MB)
+            {t('jha.uploadSupports', undefined, 'Supports .txt, .md, .csv, and .pdf (up to 3MB)')}
           </p>
         </div>
       )}
@@ -397,41 +397,41 @@ export default function JhaForm() {
       <div data-tour-module="jha-info" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ListChecks className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Job / Task Information</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('jha.infoTitle', undefined, 'Job / Task Information')}</h3>
         </div>
         <div>
-          <label htmlFor="jha-title" className={labelCls}>Job / Task title</label>
-          <input id="jha-title" type="text" maxLength={200} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g. Install conveyor drive unit on Line 3" className={inputCls} />
+          <label htmlFor="jha-title" className={labelCls}>{t('jha.jobTitleLabel', undefined, 'Job / Task title')}</label>
+          <input id="jha-title" type="text" maxLength={200} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder={t('jha.jobTitlePlaceholder', undefined, 'e.g. Install conveyor drive unit on Line 3')} className={inputCls} />
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label htmlFor="jha-date" className={labelCls}>Date of analysis</label>
+            <label htmlFor="jha-date" className={labelCls}>{t('jha.dateOfAnalysisLabel', undefined, 'Date of analysis')}</label>
             <input id="jha-date" type="date" value={dateOfAnalysis} onChange={(e) => { setDateOfAnalysis(e.target.value); if (validUntil && e.target.value > validUntil) setValidUntil('') }} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="jha-valid-until" className={labelCls}>Valid through</label>
+            <label htmlFor="jha-valid-until" className={labelCls}>{t('jha.validThroughLabel', undefined, 'Valid through')}</label>
             <input id="jha-valid-until" type="date" value={validUntil} min={dateOfAnalysis} max={dateOfAnalysis ? (() => { const d = new Date(dateOfAnalysis + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="jha-dept" className={labelCls}>Department / Team</label>
-            <input id="jha-dept" type="text" maxLength={120} value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="e.g. Field Install" className={inputCls} />
+            <label htmlFor="jha-dept" className={labelCls}>{t('jha.departmentLabel', undefined, 'Department / Team')}</label>
+            <input id="jha-dept" type="text" maxLength={120} value={department} onChange={(e) => setDepartment(e.target.value)} placeholder={t('jha.departmentPlaceholder', undefined, 'e.g. Field Install')} className={inputCls} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="jha-location" className={labelCls}>Location / Area</label>
-            <input id="jha-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bay 4, grid C2" className={inputCls} />
+            <label htmlFor="jha-location" className={labelCls}>{t('jha.locationLabel', undefined, 'Location / Area')}</label>
+            <input id="jha-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('jha.locationPlaceholder', undefined, 'e.g. Bay 4, grid C2')} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="jha-ref" className={labelCls}>Reference doc (WO, drawing #)</label>
-            <input id="jha-ref" type="text" maxLength={120} value={referenceDoc} onChange={(e) => setReferenceDoc(e.target.value)} placeholder="Optional" className={inputCls} />
+            <label htmlFor="jha-ref" className={labelCls}>{t('jha.referenceDocLabel', undefined, 'Reference doc (WO, drawing #)')}</label>
+            <input id="jha-ref" type="text" maxLength={120} value={referenceDoc} onChange={(e) => setReferenceDoc(e.target.value)} placeholder={t('common.optional', undefined, 'Optional')} className={inputCls} />
           </div>
         </div>
       </div>
 
       {/* PPE */}
       <section className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">PPE Required</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('jha.ppeRequired', undefined, 'PPE Required')}</h4>
         <PPESelector selected={ppe} onChange={setPpe} />
       </section>
 
@@ -441,12 +441,11 @@ export default function JhaForm() {
       {/* Task steps */}
       <section data-tour-module="jha-steps" className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Task Steps</h4>
-          <span className="text-xs text-fg-4">{filledSteps.length} step{filledSteps.length === 1 ? '' : 's'}</span>
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('jha.taskSteps', undefined, 'Task Steps')}</h4>
+          <span className="text-xs text-fg-4">{t('jha.stepCount', { count: filledSteps.length })}</span>
         </div>
         <p className="text-xs text-fg-4 px-1">
-          Break the job into the order you&apos;ll actually do it. List each step first — then let Sage
-          help identify the hazards and controls for every step.
+          {t('jha.stepsIntro')}
         </p>
 
         {steps.map((step, i) => (
@@ -461,15 +460,15 @@ export default function JhaForm() {
                   maxLength={300}
                   value={step.taskActivity}
                   onChange={(e) => updateStep(step.id, { taskActivity: e.target.value })}
-                  placeholder={`Step ${i + 1} — what is done in this part of the job?`}
-                  aria-label={`Step ${i + 1} task or activity`}
+                  placeholder={t('jha.stepPlaceholder', { n: i + 1 }, 'Step {n} — what is done in this part of the job?')}
+                  aria-label={t('jha.stepTaskAria', { n: i + 1 }, 'Step {n} task or activity')}
                   className={textareaCls}
                 />
               </div>
               <button
                 type="button"
                 onClick={() => removeStep(step.id)}
-                aria-label={`Remove step ${i + 1}`}
+                aria-label={t('jha.removeStepAria', { n: i + 1 }, 'Remove step {n}')}
                 className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg text-fg-4 hover:text-danger hover:bg-danger/10 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -481,7 +480,8 @@ export default function JhaForm() {
               <div className="pl-8 space-y-3 animate-fadeIn">
                 <div>
                   <label className={labelCls}>
-                    Hazards identified
+                    {t('jha.hazardsLabel', undefined, 'Hazards identified')}
+                    {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
                     {step.source === 'sage' && <span className="text-mytra-purple ml-1">✨ Sage</span>}
                   </label>
                   <textarea
@@ -489,39 +489,39 @@ export default function JhaForm() {
                     maxLength={600}
                     value={step.hazards}
                     onChange={(e) => updateStep(step.id, { hazards: e.target.value, source: 'manual' })}
-                    placeholder="One hazard per line"
+                    placeholder={t('jha.hazardsPlaceholder', undefined, 'One hazard per line')}
                     className={textareaCls}
                   />
                 </div>
                 <div>
-                  <span className={labelCls}>Risk level</span>
+                  <span className={labelCls}>{t('jha.riskLevelLabel', undefined, 'Risk level')}</span>
                   <RiskPillRow
                     before={step.riskLevel}
                     after={step.residualRiskLevel ?? 'low'}
                     onBeforeChange={(lvl) => updateStep(step.id, { riskLevel: lvl })}
                     onAfterChange={(lvl) => updateStep(step.id, { residualRiskLevel: lvl })}
-                    stepLabel={`Step ${i + 1}`}
+                    stepLabel={t('jha.stepLabel', { n: i + 1 }, 'Step {n}')}
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Controls / mitigations</label>
+                  <label className={labelCls}>{t('jha.controlsLabel', undefined, 'Controls / mitigations')}</label>
                   <textarea
                     rows={2}
                     maxLength={600}
                     value={step.controls}
                     onChange={(e) => updateStep(step.id, { controls: e.target.value, source: 'manual' })}
-                    placeholder="Specific controls to reduce risk"
+                    placeholder={t('jha.controlsPlaceholder', undefined, 'Specific controls to reduce risk')}
                     className={textareaCls}
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Responsible (DRI)</label>
+                  <label className={labelCls}>{t('jha.responsibleLabel', undefined, 'Responsible (DRI)')}</label>
                   <input
                     type="text"
                     maxLength={120}
                     value={step.responsible}
                     onChange={(e) => updateStep(step.id, { responsible: e.target.value })}
-                    placeholder="Who owns this control?"
+                    placeholder={t('jha.responsiblePlaceholder', undefined, 'Who owns this control?')}
                     className={inputCls}
                   />
                 </div>
@@ -533,7 +533,7 @@ export default function JhaForm() {
                 className="ml-8 inline-flex items-center gap-1.5 text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors py-1 min-h-[44px]"
               >
                 <Plus className="w-3 h-3" />
-                Add hazards &amp; controls
+                {t('jha.addHazardsControls', undefined, 'Add hazards & controls')}
               </button>
             )}
           </div>
@@ -545,7 +545,7 @@ export default function JhaForm() {
           className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium
                      bg-mytra-card border border-mytra-border text-fg-2 hover:text-fg hover:bg-mytra-card-hover transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add step
+          <Plus className="w-4 h-4" /> {t('jha.addStep', undefined, 'Add step')}
         </button>
 
         {/* Sage analysis */}
@@ -561,19 +561,18 @@ export default function JhaForm() {
                          disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {sageLoading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Sage is analyzing each step…</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> {t('jha.sageAnalyzing', undefined, 'Sage is analyzing each step…')}</>
               ) : (
-                <><Sparkles className="w-4 h-4" /> Ask Sage to analyze steps</>
+                <><Sparkles className="w-4 h-4" /> {t('jha.askSage', undefined, 'Ask Sage to analyze steps')}</>
               )}
             </button>
             {!canAskSage && !sageLoading && (
-              <p className="text-xs text-fg-4 mt-1 text-center">List at least one task step first</p>
+              <p className="text-xs text-fg-4 mt-1 text-center">{t('jha.listStepFirst', undefined, 'List at least one task step first')}</p>
             )}
             {sageError && <p className="text-xs text-danger mt-1 text-center">{sageError}</p>}
             {filledSteps.some((s) => s.source === 'sage') && (
               <p className="text-xs text-fg-4 mt-2 text-center">
-                AI analysis is a starting point — review and edit before submitting for EHS review.
-                AI suggestions are advisory and not a substitute for a competent safety assessment.
+                {t('jha.aiAdvisory', undefined, 'AI analysis is a starting point — review and edit before submitting for EHS review. AI suggestions are advisory and not a substitute for a competent safety assessment.')}
               </p>
             )}
           </div>
@@ -582,20 +581,20 @@ export default function JhaForm() {
 
       {/* Additional notes */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Special Conditions / Notes</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('jha.notesTitle', undefined, 'Special Conditions / Notes')}</h4>
         <textarea
           rows={2}
           maxLength={2000}
           value={additionalNotes}
           onChange={(e) => setAdditionalNotes(e.target.value)}
-          placeholder="Context from any meetings, special conditions, etc."
+          placeholder={t('jha.notesPlaceholder', undefined, 'Context from any meetings, special conditions, etc.')}
           className={textareaCls}
         />
       </section>
 
       {saveError && (
         <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-          <span className="font-semibold shrink-0">Save failed:</span>
+          <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
           <span>{saveError}</span>
         </div>
       )}
@@ -607,7 +606,7 @@ export default function JhaForm() {
           disabled={!canSubmit}
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
-          {canSubmit ? 'Save Job Hazard Analysis' : 'Enter a job title and at least one step'}
+          {canSubmit ? t('jha.saveJha', undefined, 'Save Job Hazard Analysis') : t('jha.submitDisabledHint', undefined, 'Enter a job title and at least one step')}
         </button>
       </div>
     </div>
@@ -627,29 +626,30 @@ function RiskPillRow({
   onAfterChange: (lvl: RiskLevel) => void
   stepLabel: string
 }) {
+  const t = useT()
   const [openPicker, setOpenPicker] = useState<'before' | 'after' | null>(null)
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <RiskPill
-          label="Before"
+          label={t('jha.riskBefore', undefined, 'Before')}
           value={before}
           open={openPicker === 'before'}
           onToggle={() => setOpenPicker(openPicker === 'before' ? null : 'before')}
-          ariaLabel={`${stepLabel} risk before controls`}
+          ariaLabel={t('jha.riskBeforeAria', { stepLabel }, '{stepLabel} risk before controls')}
         />
         <span className="text-fg-4 text-xs">→</span>
         <RiskPill
-          label="After"
+          label={t('jha.riskAfter', undefined, 'After')}
           value={after}
           open={openPicker === 'after'}
           onToggle={() => setOpenPicker(openPicker === 'after' ? null : 'after')}
-          ariaLabel={`${stepLabel} residual risk after controls`}
+          ariaLabel={t('jha.residualRiskAfterAria', { stepLabel }, '{stepLabel} residual risk after controls')}
         />
       </div>
       {openPicker && (
-        <div className="flex gap-1.5 animate-fadeIn" role="radiogroup" aria-label={openPicker === 'before' ? `${stepLabel} risk before controls` : `${stepLabel} risk after controls`}>
+        <div className="flex gap-1.5 animate-fadeIn" role="radiogroup" aria-label={openPicker === 'before' ? t('jha.riskBeforeAria', { stepLabel }, '{stepLabel} risk before controls') : t('jha.riskAfterAria', { stepLabel }, '{stepLabel} risk after controls')}>
           {RISK_ORDER.map((lvl) => {
             const current = openPicker === 'before' ? before : after
             const on = current === lvl
@@ -671,7 +671,7 @@ function RiskPillRow({
                     : undefined
                 }
               >
-                {RISK_LABELS[lvl]}
+                {t(`hazard.risk.${lvl}` as Parameters<typeof t>[0], undefined, RISK_LABELS[lvl])}
               </button>
             )
           })}
@@ -694,6 +694,7 @@ function RiskPill({
   onToggle: () => void
   ariaLabel: string
 }) {
+  const t = useT()
   return (
     <button
       type="button"
@@ -709,7 +710,7 @@ function RiskPill({
       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: RISK_COLORS[value] }} />
       <span className="text-xs text-fg-3">{label}:</span>
       <span className="text-xs font-semibold" style={{ color: RISK_COLORS[value] }}>
-        {RISK_LABELS[value]}
+        {t(`hazard.risk.${value}` as Parameters<typeof t>[0], undefined, RISK_LABELS[value])}
       </span>
       <ChevronDown className={`w-3 h-3 text-fg-4 ml-auto transition-transform ${open ? 'rotate-180' : ''}`} />
     </button>
@@ -718,6 +719,8 @@ function RiskPill({
 
 const SEVERITY = ['Negligible', 'Minor', 'Moderate', 'Major', 'Catastrophic'] as const
 const LIKELIHOOD = ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'] as const
+const SEVERITY_KEYS = ['jha.severityNegligible', 'jha.severityMinor', 'jha.severityModerate', 'jha.severityMajor', 'jha.severityCatastrophic'] as const
+const LIKELIHOOD_KEYS = ['jha.likelihoodRare', 'jha.likelihoodUnlikely', 'jha.likelihoodPossible', 'jha.likelihoodLikely', 'jha.likelihoodAlmostCertain'] as const
 
 function matrixLevel(s: number, l: number): RiskLevel {
   const score = (s + 1) * (l + 1)
@@ -728,6 +731,7 @@ function matrixLevel(s: number, l: number): RiskLevel {
 }
 
 function RiskMatrixGuide() {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <div className="bg-mytra-card border border-mytra-border rounded-card shadow-card overflow-hidden">
@@ -738,31 +742,29 @@ function RiskMatrixGuide() {
       >
         <span className="flex items-center gap-2">
           <Info className="w-4 h-4 text-mytra-purple" />
-          Risk Matrix Guide
+          {t('jha.riskMatrixGuide', undefined, 'Risk Matrix Guide')}
         </span>
         <ChevronDown className={`w-4 h-4 text-fg-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="px-4 pb-4 animate-fadeIn space-y-3">
           <p className="text-xs text-fg-3">
-            Rate risk by multiplying <strong>Severity</strong> (how bad) by <strong>Likelihood</strong> (how
-            probable). Rate <em>before</em> controls to show inherent risk, then <em>after</em> controls to show
-            residual risk.
+            {t('jha.matrixIntro')}
           </p>
           <div className="overflow-x-auto -mx-1 px-1">
             <table className="w-full text-xs border-collapse min-w-[320px]">
               <thead>
                 <tr>
                   <th className="p-1.5 text-left text-fg-4 font-normal" />
-                  {SEVERITY.map((s) => (
-                    <th key={s} className="p-1.5 text-center text-fg-3 font-medium">{s}</th>
+                  {SEVERITY.map((s, si) => (
+                    <th key={s} className="p-1.5 text-center text-fg-3 font-medium">{t(SEVERITY_KEYS[si], undefined, s)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {LIKELIHOOD.map((l, li) => (
                   <tr key={l}>
-                    <td className="p-1.5 text-fg-3 font-medium whitespace-nowrap">{l}</td>
+                    <td className="p-1.5 text-fg-3 font-medium whitespace-nowrap">{t(LIKELIHOOD_KEYS[li], undefined, l)}</td>
                     {SEVERITY.map((_, si) => {
                       const level = matrixLevel(si, li)
                       return (
@@ -795,7 +797,7 @@ function RiskMatrixGuide() {
                 }}
               >
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: RISK_COLORS[lvl] }} />
-                {RISK_LABELS[lvl]}
+                {t(`hazard.risk.${lvl}` as Parameters<typeof t>[0], undefined, RISK_LABELS[lvl])}
                 {lvl === 'low' && ' (1–4)'}
                 {lvl === 'medium' && ' (5–9)'}
                 {lvl === 'high' && ' (10–15)'}
@@ -810,6 +812,7 @@ function RiskMatrixGuide() {
 }
 
 function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: string; stepCount: number; wasOffline: boolean; onNew: () => void }) {
+  const t = useT()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const ehsEnabled = isReviewEnabled()
   const [reviewState, setReviewState] = useState<ReviewSubmitState | null>(null)
@@ -831,42 +834,52 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
     <div className="animate-fadeIn space-y-4">
       <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">JHA Saved</h3>
+        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">{t('jha.doneTitle', undefined, 'JHA Saved')}</h3>
         <p className="text-sm text-ok">
-          {stepCount} step{stepCount === 1 ? '' : 's'} analyzed. Recorded as{' '}
-          <span className="font-mono text-fg">{submittedId}</span>.
+          {(() => {
+            // {id} is rendered as a styled span — split the localized message
+            // around a sentinel so the markup survives translation.
+            const [pre, post] = t('jha.doneSummary', { count: stepCount, id: '\u0000' }).split('\u0000')
+            return (
+              <>
+                {pre}
+                <span className="font-mono text-fg">{submittedId}</span>
+                {post}
+              </>
+            )
+          })()}
         </p>
       </div>
       {wasOffline && (
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
           <WifiOff className="w-4 h-4 text-warn shrink-0" />
-          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+          <p className="text-xs text-warn">{t('common.savedLocally', undefined, 'Saved locally. Will sync automatically when connection returns.')}</p>
         </div>
       )}
       {reviewState === 'pending' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5" role="status">
           <Loader2 className="w-4 h-4 text-mytra-purple shrink-0 animate-spin" />
-          <p className="text-xs text-mytra-purple">Submitting for EHS review…</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittingReview', undefined, 'Submitting for EHS review…')}</p>
         </div>
       )}
       {reviewState === 'submitted' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Submitted for EHS review</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittedReview', undefined, 'Submitted for EHS review')}</p>
         </div>
       )}
       {reviewState === 'failed' && (
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5" role="alert">
           <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
           <p className="text-sm text-warn-strong flex-1">
-            Could not submit for EHS review (offline or server issue). The JHA is saved on this device.
+            {t('jha.reviewFailedJha')}
           </p>
           <button
             type="button"
             onClick={retryReview}
             className="shrink-0 min-h-[44px] px-3 rounded-lg text-sm font-semibold text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
           >
-            Retry
+            {t('common.retry', undefined, 'Retry')}
           </button>
         </div>
       )}
@@ -874,17 +887,17 @@ function JhaDone({ submittedId, stepCount, wasOffline, onNew }: { submittedId: s
         href={`/safety/record/${submittedId}`}
         className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
-        View / Print
+        {t('forms.viewPrint', undefined, 'View / Print')}
       </Link>
       <button
         type="button"
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        Start new JHA
+        {t('jha.startNewJha', undefined, 'Start new JHA')}
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
-        Back to Home
+        {t('common.backHome', undefined, 'Back to Home')}
       </Link>
     </div>
   )

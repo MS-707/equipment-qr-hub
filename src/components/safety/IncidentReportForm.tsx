@@ -17,6 +17,8 @@ import SignaturePad from '@/components/SignaturePad'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls, btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 import { getOfflineAnalysis } from '@/lib/incident-patterns'
+import { useT } from '@/lib/i18n'
+import type { MessageKey } from '@/lib/i18n-keys'
 
 const SAGE_ENABLED = process.env.NEXT_PUBLIC_AI_ASSIST === '1'
 
@@ -35,6 +37,14 @@ interface AnalysisCorrectiveAction {
 interface AnalysisResult {
   rootCauses: AnalysisRootCause[]
   correctiveActions: AnalysisCorrectiveAction[]
+}
+
+const CATEGORY_KEYS: Record<string, MessageKey> = {
+  equipment: 'incident.categoryEquipment',
+  process: 'incident.categoryProcess',
+  training: 'incident.categoryTraining',
+  environment: 'incident.categoryEnvironment',
+  management: 'incident.categoryManagement',
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -57,6 +67,14 @@ const CONTROL_LEVEL_LABELS: Record<string, string> = {
   ppe: 'PPE',
 }
 
+const CONTROL_LEVEL_KEYS: Record<string, MessageKey> = {
+  elimination: 'incident.controlElimination',
+  substitution: 'incident.controlSubstitution',
+  engineering: 'incident.controlEngineering',
+  administrative: 'incident.controlAdministrative',
+  ppe: 'incident.controlPpe',
+}
+
 const CONTROL_LEVEL_COLORS: Record<string, string> = {
   elimination: 'bg-hue-green/10 text-hue-green',
   substitution: 'bg-hue-teal/10 text-hue-teal',
@@ -71,15 +89,29 @@ const PRIORITY_COLORS: Record<string, string> = {
   'long-term': 'bg-mytra-purple/10 text-mytra-purple',
 }
 
-const TYPES: { value: IncidentType; label: string }[] = [
-  { value: 'injury', label: 'Injury' },
-  { value: 'near-miss', label: 'Near-miss' },
-  { value: 'property-damage', label: 'Property' },
-  { value: 'environmental', label: 'Environmental' },
+const TYPES: { value: IncidentType; labelKey: MessageKey; label: string }[] = [
+  { value: 'injury', labelKey: 'incident.typeInjury', label: 'Injury' },
+  { value: 'near-miss', labelKey: 'incident.typeNearMiss', label: 'Near-miss' },
+  { value: 'property-damage', labelKey: 'incident.typeProperty', label: 'Property' },
+  { value: 'environmental', labelKey: 'incident.typeEnvironmental', label: 'Environmental' },
 ]
 const SEVERITIES: IncidentSeverity[] = ['minor', 'moderate', 'serious', 'critical']
 
+const SEVERITY_KEYS: Record<IncidentSeverity, MessageKey> = {
+  minor: 'incident.severityMinor',
+  moderate: 'incident.severityModerate',
+  serious: 'incident.severitySerious',
+  critical: 'incident.severityCritical',
+}
+
+const PRIORITY_KEYS: Record<string, MessageKey> = {
+  immediate: 'incident.priorityImmediate',
+  'short-term': 'incident.priorityShortTerm',
+  'long-term': 'incident.priorityLongTerm',
+}
+
 export default function IncidentReportForm() {
+  const t = useT()
   const [projectName, setProjectName] = useState('')
   const [location, setLocation] = useState('')
   const [incidentType, setIncidentType] = useState<IncidentType>('near-miss')
@@ -199,7 +231,7 @@ export default function IncidentReportForm() {
         setAnalysisResult(offline)
         setAnalysisSource('offline')
       } else {
-        setAnalysisError('Unable to analyze — check your connection and try again')
+        setAnalysisError(t('incident.analyzeFailed', undefined, 'Unable to analyze — check your connection and try again'))
       }
     } finally {
       setAnalysisLoading(false)
@@ -207,12 +239,12 @@ export default function IncidentReportForm() {
   }
 
   function adoptRootCause(text: string) {
-    const attributed = `[AI-suggested] ${text}`
+    const attributed = t('incident.aiSuggestedPrefix', { text }, '[AI-suggested] {text}')
     setRootCause((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
   }
 
   function adoptCorrectiveAction(text: string) {
-    const attributed = `[AI-suggested] ${text}`
+    const attributed = t('incident.aiSuggestedPrefix', { text }, '[AI-suggested] {text}')
     setCorrectiveActions((prev) => prev ? `${prev}\n\n${attributed}` : attributed)
   }
 
@@ -249,7 +281,7 @@ export default function IncidentReportForm() {
       })
     } catch (e) {
       submitGuard.current = false
-      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('incident.saveErrorStorage', undefined, 'Failed to save record — device storage may be full.'))
       return
     }
     if (photos.length > 0) savePhotosForRecord(record.id, photos).catch((e) => console.error('photo save failed', e))
@@ -294,10 +326,10 @@ export default function IncidentReportForm() {
     return (
       <FormSuccess
         id={submittedId}
-        title="Report Filed"
-        message="Incident report recorded as"
+        title={t('incident.successTitle', undefined, 'Report Filed')}
+        message={t('incident.successMessage', undefined, 'Incident report recorded as')}
         onNew={reset}
-        newLabel="Start new report"
+        newLabel={t('incident.startNewReport', undefined, 'Start new report')}
         offline={wasOffline}
         reviewAutoSubmitted={reviewState}
         onRetryReview={() => {
@@ -314,41 +346,41 @@ export default function IncidentReportForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Incident / Near-Miss Report</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('incident.title', undefined, 'Incident / Near-Miss Report')}</h3>
         </div>
 
         <div>
-          <label className={labelCls}>Type</label>
+          <label className={labelCls}>{t('incident.typeLabel', undefined, 'Type')}</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-            {TYPES.map((t) => (
+            {TYPES.map((ty) => (
               <button
-                key={t.value}
+                key={ty.value}
                 type="button"
-                onClick={() => setIncidentType(t.value)}
+                onClick={() => setIncidentType(ty.value)}
                 className={`text-xs font-medium py-2 rounded-lg transition-colors min-h-[44px] ${
-                  incidentType === t.value
+                  incidentType === ty.value
                     ? `${btnSelectedCls}`
                     : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                 }`}
               >
-                {t.label}
+                {t(ty.labelKey, undefined, ty.label)}
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className={labelCls}>Severity</label>
+          <label className={labelCls}>{t('incident.severityLabel', undefined, 'Severity')}</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             {SEVERITIES.map((s) => {
               const on = severity === s
@@ -364,7 +396,7 @@ export default function IncidentReportForm() {
                       : { backgroundColor: 'transparent', color: 'var(--fg-3)', borderColor: 'var(--border)' }
                   }
                 >
-                  {s}
+                  {t(SEVERITY_KEYS[s], undefined, s)}
                 </button>
               )
             })}
@@ -375,7 +407,7 @@ export default function IncidentReportForm() {
         <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-3 py-2">
           <Info className="w-4 h-4 text-mytra-purple shrink-0 mt-0.5" />
           <p className="text-xs text-mytra-purple leading-relaxed">
-            Report every incident — injury, near-miss, property, or environmental — as soon as you safely can, no matter how minor. At Mytra, reporting the small things is how we prevent the serious ones.
+            {t('incident.reportingCulture')}
           </p>
         </div>
 
@@ -383,37 +415,37 @@ export default function IncidentReportForm() {
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
             <p className="text-xs text-warn leading-relaxed">
-              This one also needs prompt escalation: notify your safety officer right away. Serious and critical events may trigger regulatory reporting — check your local requirements.
+              {t('incident.seriousEscalation')}
             </p>
           </div>
         )}
 
         <label className="flex items-center gap-2 text-sm text-fg-2 min-h-[44px] cursor-pointer">
           <input type="checkbox" checked={reportedToCalOsha} onChange={() => setReportedToCalOsha((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-          Reported to regulatory authority
+          {t('incident.reportedToAuthority', undefined, 'Reported to regulatory authority')}
         </label>
 
         {incidentType === 'injury' && (
           <div className="space-y-3 border-t border-mytra-border pt-3">
-            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Injured person</h4>
+            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.injuredPersonTitle', undefined, 'Injured person')}</h4>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="ir-name" className={labelCls}>Name</label>
-                <input id="ir-name" type="text" autoCapitalize="words" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" className={inputCls} />
+                <label htmlFor="ir-name" className={labelCls}>{t('signature.name', undefined, 'Name')}</label>
+                <input id="ir-name" type="text" autoCapitalize="words" maxLength={100} value={injuredPerson.name} onChange={(e) => setInjuredPerson((p) => ({ ...p, name: e.target.value }))} placeholder={t('incident.injuredNamePlaceholder', undefined, 'Full name')} className={inputCls} />
               </div>
               <div>
-                <label htmlFor="ir-job-title" className={labelCls}>Job title</label>
-                <input id="ir-job-title" type="text" maxLength={100} value={injuredPerson.jobTitle} onChange={(e) => setInjuredPerson((p) => ({ ...p, jobTitle: e.target.value }))} placeholder="e.g. Ironworker" className={inputCls} />
+                <label htmlFor="ir-job-title" className={labelCls}>{t('incident.jobTitleLabel', undefined, 'Job title')}</label>
+                <input id="ir-job-title" type="text" maxLength={100} value={injuredPerson.jobTitle} onChange={(e) => setInjuredPerson((p) => ({ ...p, jobTitle: e.target.value }))} placeholder={t('incident.jobTitlePlaceholder', undefined, 'e.g. Ironworker')} className={inputCls} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="ir-employer" className={labelCls}>Employer</label>
-                <input id="ir-employer" type="text" maxLength={200} value={injuredPerson.employer} onChange={(e) => setInjuredPerson((p) => ({ ...p, employer: e.target.value }))} placeholder="Company name" className={inputCls} />
+                <label htmlFor="ir-employer" className={labelCls}>{t('incident.employerLabel', undefined, 'Employer')}</label>
+                <input id="ir-employer" type="text" maxLength={200} value={injuredPerson.employer} onChange={(e) => setInjuredPerson((p) => ({ ...p, employer: e.target.value }))} placeholder={t('incident.employerPlaceholder', undefined, 'Company name')} className={inputCls} />
               </div>
               <div>
-                <label htmlFor="ir-body-part" className={labelCls}>Body part affected</label>
-                <input id="ir-body-part" type="text" maxLength={200} value={injuredPerson.bodyPartAffected} onChange={(e) => setInjuredPerson((p) => ({ ...p, bodyPartAffected: e.target.value }))} placeholder="e.g. Left hand" className={inputCls} />
+                <label htmlFor="ir-body-part" className={labelCls}>{t('incident.bodyPartLabel', undefined, 'Body part affected')}</label>
+                <input id="ir-body-part" type="text" maxLength={200} value={injuredPerson.bodyPartAffected} onChange={(e) => setInjuredPerson((p) => ({ ...p, bodyPartAffected: e.target.value }))} placeholder={t('incident.bodyPartPlaceholder', undefined, 'e.g. Left hand')} className={inputCls} />
               </div>
             </div>
           </div>
@@ -421,26 +453,26 @@ export default function IncidentReportForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="ir-project" className={labelCls}>Project / Structure</label>
-            <input id="ir-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
-            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
+            <label htmlFor="ir-project" className={labelCls}>{t('incident.projectLabel', undefined, 'Project / Structure')}</label>
+            <input id="ir-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t('incident.projectPlaceholder', undefined, 'e.g. Tower B steel erection')} className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label={t('incident.lastUsed', undefined, 'Last')} value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label htmlFor="ir-location" className={labelCls}>Location / Area</label>
-            <input id="ir-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
-            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
+            <label htmlFor="ir-location" className={labelCls}>{t('incident.locationLabel', undefined, 'Location / Area')}</label>
+            <input id="ir-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('incident.locationPlaceholder', undefined, 'Level / grid')} className={inputCls} />
+            {lastCtx.location && <LastUsedChip label={t('incident.lastUsed', undefined, 'Last')} value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label htmlFor="ir-when" className={labelCls}>When did it occur?</label>
+          <label htmlFor="ir-when" className={labelCls}>{t('incident.whenLabel', undefined, 'When did it occur?')}</label>
           <input id="ir-when" type="datetime-local" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} className={inputCls} />
         </div>
         <div>
-          <label htmlFor="ir-what" className={labelCls}>What happened?</label>
-          <textarea id="ir-what" rows={4} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the incident…" className={textareaCls} />
+          <label htmlFor="ir-what" className={labelCls}>{t('incident.whatLabel', undefined, 'What happened?')}</label>
+          <textarea id="ir-what" rows={4} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('incident.whatPlaceholder', undefined, 'Describe the incident…')} className={textareaCls} />
         </div>
         <div>
-          <label htmlFor="ir-actions" className={labelCls}>Immediate actions taken</label>
+          <label htmlFor="ir-actions" className={labelCls}>{t('incident.immediateActionsLabel', undefined, 'Immediate actions taken')}</label>
           <textarea id="ir-actions" rows={2} maxLength={2000} value={immediateActions} onChange={(e) => setImmediateActions(e.target.value)} className={textareaCls} />
         </div>
 
@@ -452,13 +484,13 @@ export default function IncidentReportForm() {
                        bg-mytra-purple-glow border border-mytra-purple/30 text-mytra-purple
                        hover:border-mytra-purple/60 transition-colors"
           >
-            <Sparkles className="w-4 h-4" /> Analyze with Sage
+            <Sparkles className="w-4 h-4" /> {t('incident.analyzeWithSage', undefined, 'Analyze with Sage')}
           </button>
         )}
 
         {analysisLoading && (
           <div className="flex items-center justify-center gap-2 py-3 text-sm text-mytra-purple">
-            <Loader2 className="w-4 h-4 animate-spin" /> Sage is analyzing...
+            <Loader2 className="w-4 h-4 animate-spin" /> {t('incident.sageAnalyzing', undefined, 'Sage is analyzing...')}
           </div>
         )}
 
@@ -473,25 +505,25 @@ export default function IncidentReportForm() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-mytra-purple" />
-                <span className="text-sm font-medium text-fg">Root Cause Analysis</span>
+                <span className="text-sm font-medium text-fg">{t('incident.rootCauseAnalysisTitle', undefined, 'Root Cause Analysis')}</span>
                 {analysisSource === 'offline' && (
-                  <span className="text-xs bg-warn/10 text-warn px-1.5 py-0.5 rounded">offline</span>
+                  <span className="text-xs bg-warn/10 text-warn px-1.5 py-0.5 rounded">{t('incident.offlineBadge', undefined, 'offline')}</span>
                 )}
               </div>
-              <button type="button" onClick={dismissAnalysis} aria-label="Dismiss analysis" className="text-fg-4 hover:text-fg-2 transition-colors w-11 h-11 -m-2 flex items-center justify-center">
+              <button type="button" onClick={dismissAnalysis} aria-label={t('incident.dismissAnalysisAria', undefined, 'Dismiss analysis')} className="text-fg-4 hover:text-fg-2 transition-colors w-11 h-11 -m-2 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {analysisResult.rootCauses.length > 0 && (
               <div className="space-y-2">
-                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Root Causes</h5>
+                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.rootCausesHeading', undefined, 'Root Causes')}</h5>
                 {analysisResult.rootCauses.map((rc, i) => (
                   <div key={i} className="bg-mytra-bg border border-mytra-border rounded-lg p-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border capitalize ${CATEGORY_COLORS[rc.category]}`}>
-                          {rc.category}
+                          {t(CATEGORY_KEYS[rc.category], undefined, rc.category)}
                         </span>
                         <span className="text-sm text-fg">{rc.cause}</span>
                       </div>
@@ -500,7 +532,7 @@ export default function IncidentReportForm() {
                         onClick={() => adoptRootCause(rc.cause)}
                         className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                       >
-                        Use this
+                        {t('incident.useThis', undefined, 'Use this')}
                       </button>
                     </div>
                     {rc.whyChain.length > 0 && (
@@ -520,7 +552,7 @@ export default function IncidentReportForm() {
 
             {analysisResult.correctiveActions.length > 0 && (
               <div className="space-y-2">
-                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Corrective Actions</h5>
+                <h5 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.correctiveActionsHeading', undefined, 'Corrective Actions')}</h5>
                 {CONTROL_LEVEL_ORDER.map((level) => {
                   const actions = analysisResult!.correctiveActions.filter((a) => a.controlLevel === level)
                   if (actions.length === 0) return null
@@ -528,7 +560,7 @@ export default function IncidentReportForm() {
                     <div key={level}>
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${CONTROL_LEVEL_COLORS[level]}`}>
-                          {CONTROL_LEVEL_LABELS[level]}
+                          {t(CONTROL_LEVEL_KEYS[level], undefined, CONTROL_LEVEL_LABELS[level])}
                         </span>
                       </div>
                       <div className="space-y-1">
@@ -537,7 +569,7 @@ export default function IncidentReportForm() {
                             <div className="min-w-0">
                               <span className="text-sm text-fg">{ca.action}</span>
                               <span className={`ml-2 inline-block text-xs font-medium px-1.5 py-0.5 rounded ${PRIORITY_COLORS[ca.priority]}`}>
-                                {ca.priority}
+                                {t(PRIORITY_KEYS[ca.priority], undefined, ca.priority)}
                               </span>
                             </div>
                             <button
@@ -545,7 +577,7 @@ export default function IncidentReportForm() {
                               onClick={() => adoptCorrectiveAction(ca.action)}
                               className="shrink-0 text-xs font-medium text-mytra-purple hover:underline whitespace-nowrap min-h-[44px] px-2 inline-flex items-center"
                             >
-                              Use this
+                              {t('incident.useThis', undefined, 'Use this')}
                             </button>
                           </div>
                         ))}
@@ -557,7 +589,7 @@ export default function IncidentReportForm() {
             )}
 
             <p className="text-xs text-fg-4 text-center">
-              AI suggestions are not a substitute for a competent incident investigation.
+              {t('incident.aiAdvisory', undefined, 'AI suggestions are not a substitute for a competent incident investigation.')}
             </p>
           </div>
         )}
@@ -565,7 +597,7 @@ export default function IncidentReportForm() {
 
       {/* Witnesses */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Witnesses</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.witnessesTitle', undefined, 'Witnesses')}</h4>
         <div className="flex gap-2">
           <input
             type="text"
@@ -580,7 +612,7 @@ export default function IncidentReportForm() {
             }}
             autoCapitalize="words"
             enterKeyHint="done"
-            placeholder="Witness name"
+            placeholder={t('incident.witnessPlaceholder', undefined, 'Witness name')}
             className={inputCls}
           />
           <button type="button" onClick={addWitness} className="shrink-0 px-3 rounded-lg bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg min-h-[44px]">
@@ -592,7 +624,7 @@ export default function IncidentReportForm() {
             {witnesses.map((w, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs bg-mytra-bg border border-mytra-border rounded-full pl-2.5 pr-1 py-1 text-fg-2">
                 {w}
-                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label="Remove witness" className="text-fg-3 hover:text-danger w-11 h-11 flex items-center justify-center -mr-1">
+                <button type="button" onClick={() => setWitnesses((arr) => arr.filter((_, j) => j !== i))} aria-label={t('incident.removeWitnessAria', undefined, 'Remove witness')} className="text-fg-3 hover:text-danger w-11 h-11 flex items-center justify-center -mr-1">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -603,17 +635,17 @@ export default function IncidentReportForm() {
 
       {/* Photos */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Photos</h4>
-        <p className="text-xs text-fg-3">Tip: capture a wide shot, a close-up, and any equipment involved</p>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.photosTitle', undefined, 'Photos')}</h4>
+        <p className="text-xs text-fg-3">{t('incident.photoTip', undefined, 'Tip: capture a wide shot, a close-up, and any equipment involved')}</p>
         <div className="flex flex-wrap gap-2">
           {photos.map((p) => (
             <div key={p.id} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.dataUrl} alt="Incident photo" className="w-20 h-20 object-cover rounded-lg border border-mytra-border" />
+              <img src={p.dataUrl} alt={t('incident.photoAlt', undefined, 'Incident photo')} className="w-20 h-20 object-cover rounded-lg border border-mytra-border" />
               <button
                 type="button"
                 onClick={() => setPhotos((arr) => arr.filter((x) => x.id !== p.id))}
-                aria-label="Remove photo"
+                aria-label={t('incident.removePhotoAria', undefined, 'Remove photo')}
                 className="absolute -top-3 -right-3 w-11 h-11 rounded-full flex items-center justify-center group"
               >
                 <span className="w-7 h-7 bg-danger rounded-full flex items-center justify-center group-hover:bg-danger/80 transition-colors">
@@ -628,7 +660,7 @@ export default function IncidentReportForm() {
             className="w-20 h-20 rounded-lg border border-dashed border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <Camera className="w-4 h-4" />
-            <span className="text-xs">Add</span>
+            <span className="text-xs">{t('incident.addPhoto', undefined, 'Add')}</span>
           </button>
         </div>
         <input
@@ -646,29 +678,28 @@ export default function IncidentReportForm() {
 
       {/* Root cause & corrective */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Analysis</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.analysisSectionTitle', undefined, 'Analysis')}</h4>
         <div>
-          <label htmlFor="ir-root-cause" className={labelCls}>Root cause analysis</label>
+          <label htmlFor="ir-root-cause" className={labelCls}>{t('incident.rootCauseLabel', undefined, 'Root cause analysis')}</label>
           <textarea id="ir-root-cause" rows={2} maxLength={2000} value={rootCause} onChange={(e) => setRootCause(e.target.value)} className={textareaCls} />
         </div>
         <div>
-          <label htmlFor="ir-corrective" className={labelCls}>Corrective actions to prevent recurrence</label>
+          <label htmlFor="ir-corrective" className={labelCls}>{t('incident.correctiveActionsLabel', undefined, 'Corrective actions to prevent recurrence')}</label>
           <textarea id="ir-corrective" rows={2} maxLength={2000} value={correctiveActions} onChange={(e) => setCorrectiveActions(e.target.value)} className={textareaCls} />
         </div>
       </section>
 
       {/* Reporter signature */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Reporter</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('incident.reporterTitle', undefined, 'Reporter')}</h4>
         <div>
-          <label htmlFor="ir-reporter-name" className={labelCls}>Name</label>
+          <label htmlFor="ir-reporter-name" className={labelCls}>{t('signature.name', undefined, 'Name')}</label>
           <input id="ir-reporter-name" type="text" maxLength={100} value={reporterName} onChange={(e) => setReporterName(e.target.value)} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Signature (optional)</label>
+          <label className={labelCls}>{t('incident.signatureOptionalLabel', undefined, 'Signature (optional)')}</label>
           <p className="text-xs text-fg-3 mb-2">
-            By signing you certify this report is accurate to the best of your knowledge.
-            Your signature is stored on this device with the report for recordkeeping.
+            {t('incident.signatureCertify', undefined, 'By signing you certify this report is accurate to the best of your knowledge. Your signature is stored on this device with the report for recordkeeping.')}
           </p>
           <SignaturePad onChange={(url) => setReporterSig(url)} />
         </div>
@@ -676,7 +707,7 @@ export default function IncidentReportForm() {
 
       {saveError && (
         <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-          <span className="font-semibold shrink-0">Save failed:</span>
+          <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
           <span>{saveError}</span>
         </div>
       )}
@@ -687,7 +718,7 @@ export default function IncidentReportForm() {
           disabled={!canSubmit}
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
-          {canSubmit ? 'File Report' : 'Describe what happened and add location'}
+          {canSubmit ? t('incident.fileReport', undefined, 'File Report') : t('incident.submitDisabledHint', undefined, 'Describe what happened and add location')}
         </button>
       </div>
     </div>

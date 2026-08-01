@@ -25,10 +25,12 @@ import ChipMultiSelect from './ChipMultiSelect'
 import CrewSignatureBlock, { type SignatureData } from './CrewSignatureBlock'
 import FormSuccess from './FormSuccess'
 import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 const PFAS = 'PFAS (harness + lanyard/SRL)'
 
 export default function HeightPermitForm() {
+  const t = useT()
   const win = defaultValidityWindow(8)
   const [projectName, setProjectName] = useState('')
   const [location, setLocation] = useState('')
@@ -94,32 +96,32 @@ export default function HeightPermitForm() {
     (!pfasSelected || rescuePlan.trim().length > 0)
 
   const steps: FormStep[] = useMemo(() => [
-    { id: 'details', label: 'Details', complete: location.trim().length > 0 && projectName.trim().length > 0 && workDescription.trim().length > 0 && workingHeight.trim().length > 0 },
-    { id: 'protection', label: 'Protection', complete: accessMethod.length > 0 && fallProtection.length > 0 && (!pfasSelected || rescuePlan.trim().length > 0) },
-    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
-    { id: 'validity', label: 'Validity', complete: validWindowOk },
-    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && issuerId !== null },
-  ], [location, projectName, workDescription, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, sigData.signatures.length, issuerId])
+    { id: 'details', label: t('permits.height.stepDetails', undefined, 'Details'), complete: location.trim().length > 0 && projectName.trim().length > 0 && workDescription.trim().length > 0 && workingHeight.trim().length > 0 },
+    { id: 'protection', label: t('permits.height.stepProtection', undefined, 'Protection'), complete: accessMethod.length > 0 && fallProtection.length > 0 && (!pfasSelected || rescuePlan.trim().length > 0) },
+    { id: 'checklist', label: t('permits.height.stepChecklist', undefined, 'Checklist'), complete: critLeft === 0 },
+    { id: 'validity', label: t('permits.height.stepValidity', undefined, 'Validity'), complete: validWindowOk },
+    { id: 'signatures', label: t('permits.height.stepSignatures', undefined, 'Signatures'), complete: sigData.signatures.length >= 1 && issuerId !== null },
+  ], [t, location, projectName, workDescription, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, sigData.signatures.length, issuerId])
 
   const validationErrors: ValidationError[] = useMemo(() => {
     const errs: ValidationError[] = []
-    if (!workDescription.trim()) errs.push({ label: 'Work description is required', fieldId: 'hp-description' })
-    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'hp-location' })
-    if (!workingHeight.trim()) errs.push({ label: 'Working height is required', fieldId: 'hp-height' })
-    if (accessMethod.length === 0) errs.push({ label: 'Select at least one access method', fieldId: 'hp-access-method' })
-    if (fallProtection.length === 0) errs.push({ label: 'Select at least one fall protection', fieldId: 'hp-fall-protection' })
-    if (pfasSelected && !rescuePlan.trim()) errs.push({ label: 'Rescue plan is required for PFAS', fieldId: 'hp-rescue' })
-    if (critLeft > 0) errs.push({ label: `${critLeft} required checklist item${critLeft === 1 ? '' : 's'} remaining`, fieldId: 'hp-checklist' })
+    if (!workDescription.trim()) errs.push({ label: t('permits.height.errWorkDescriptionRequired', undefined, 'Work description is required'), fieldId: 'hp-description' })
+    if (!location.trim()) errs.push({ label: t('permits.height.errLocationRequired', undefined, 'Location is required'), fieldId: 'hp-location' })
+    if (!workingHeight.trim()) errs.push({ label: t('permits.height.errWorkingHeightRequired', undefined, 'Working height is required'), fieldId: 'hp-height' })
+    if (accessMethod.length === 0) errs.push({ label: t('permits.height.errAccessMethodRequired', undefined, 'Select at least one access method'), fieldId: 'hp-access-method' })
+    if (fallProtection.length === 0) errs.push({ label: t('permits.height.errFallProtectionRequired', undefined, 'Select at least one fall protection'), fieldId: 'hp-fall-protection' })
+    if (pfasSelected && !rescuePlan.trim()) errs.push({ label: t('permits.height.errRescuePlanPfas', undefined, 'Rescue plan is required for PFAS'), fieldId: 'hp-rescue' })
+    if (critLeft > 0) errs.push({ label: t('permits.height.errChecklistRemaining', { count: critLeft, critLeft }), fieldId: 'hp-checklist' })
     if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
-      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'hp-valid-from' })
+      errs.push({ label: t('permits.height.errDatesInvalid', undefined, 'Enter valid dates for "Valid from" and "Valid until"'), fieldId: 'hp-valid-from' })
     else if (validFromMs < Date.now() - 5 * 60 * 1000)
-      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'hp-valid-from' })
+      errs.push({ label: t('permits.height.errValidFromPast', undefined, '"Valid from" cannot be in the past'), fieldId: 'hp-valid-from' })
     else if ((validUntilMs - validFromMs) < 30 * 60 * 1000)
-      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'hp-valid-until' })
-    if (sigData.signatures.length < 1) errs.push({ label: 'At least one worker must sign on', fieldId: 'hp-crew-signatures' })
-    if (issuerId === null) errs.push({ label: 'Designate the issuer', fieldId: 'hp-crew-signatures' })
+      errs.push({ label: t('permits.height.errMinDuration', undefined, 'Permit must be valid for at least 30 minutes'), fieldId: 'hp-valid-until' })
+    if (sigData.signatures.length < 1) errs.push({ label: t('permits.height.errWorkerSignOn', undefined, 'At least one worker must sign on'), fieldId: 'hp-crew-signatures' })
+    if (issuerId === null) errs.push({ label: t('permits.height.designateIssuer', undefined, 'Designate the issuer'), fieldId: 'hp-crew-signatures' })
     return errs
-  }, [workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, validFromMs, validUntilMs, sigData.signatures.length, issuerId])
+  }, [t, workDescription, location, workingHeight, accessMethod, fallProtection, pfasSelected, rescuePlan, critLeft, validWindowOk, validFromMs, validUntilMs, sigData.signatures.length, issuerId])
 
   const submitGuard = useRef(false)
   function submit() {
@@ -144,7 +146,7 @@ export default function HeightPermitForm() {
         issuerSignatureId: issuerId,
       })
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('permits.height.saveErrorFallback', undefined, 'Failed to save record — device storage may be full.'))
       return
     }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
@@ -185,10 +187,10 @@ export default function HeightPermitForm() {
     return (
       <FormSuccess
         id={submittedId}
-        title="Permit Issued"
-        message="Work-at-Height permit is active, logged as"
+        title={t('permits.height.successTitle', undefined, 'Permit Issued')}
+        message={t('permits.height.successMessage', undefined, 'Work-at-Height permit is active, logged as')}
         onNew={reset}
-        newLabel="Start new permit"
+        newLabel={t('permits.height.startNewPermit', undefined, 'Start new permit')}
         offline={wasOffline}
         reviewAutoSubmitted={reviewState}
         onRetryReview={() => {
@@ -205,10 +207,10 @@ export default function HeightPermitForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
@@ -217,48 +219,48 @@ export default function HeightPermitForm() {
       <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Work-at-Height Permit</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('permits.height.title', undefined, 'Work-at-Height Permit')}</h3>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hp-project" className={labelCls}>Project / Structure</label>
-            <input id="hp-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
-            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
+            <label htmlFor="hp-project" className={labelCls}>{t('permits.height.projectLabel', undefined, 'Project / Structure')}</label>
+            <input id="hp-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t('permits.height.projectPlaceholder', undefined, 'e.g. Tower B steel erection')} className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label={t('permits.height.lastUsed', undefined, 'Last')} value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label htmlFor="hp-location" className={labelCls}>Location / Area</label>
-            <input id="hp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
-            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
+            <label htmlFor="hp-location" className={labelCls}>{t('permits.height.locationLabel', undefined, 'Location / Area')}</label>
+            <input id="hp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('permits.height.locationPlaceholder', undefined, 'Level / grid')} className={inputCls} />
+            {lastCtx.location && <LastUsedChip label={t('permits.height.lastUsed', undefined, 'Last')} value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label htmlFor="hp-description" className={labelCls}>Work description</label>
-          <textarea id="hp-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work to be done at height" className={textareaCls} />
+          <label htmlFor="hp-description" className={labelCls}>{t('permits.height.workDescriptionLabel', undefined, 'Work description')}</label>
+          <textarea id="hp-description" rows={2} maxLength={2000} value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder={t('permits.height.workDescriptionPlaceholder', undefined, 'Describe the work to be done at height')} className={textareaCls} />
         </div>
         <div>
-          <label htmlFor="hp-height" className={labelCls}>Working height</label>
-          <input id="hp-height" type="text" inputMode="decimal" maxLength={50} value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder="e.g. 8 m / 26 ft" className={inputCls} />
+          <label htmlFor="hp-height" className={labelCls}>{t('permits.height.workingHeightLabel', undefined, 'Working height')}</label>
+          <input id="hp-height" type="text" inputMode="decimal" maxLength={50} value={workingHeight} onChange={(e) => setWorkingHeight(e.target.value)} placeholder={t('permits.height.workingHeightPlaceholder', undefined, 'e.g. 8 m / 26 ft')} className={inputCls} />
         </div>
       </div>
 
       <section id="hp-access-method" data-step="protection" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Access method</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('permits.height.accessMethodHeading', undefined, 'Access method')}</h4>
         <ChipMultiSelect options={HEIGHT_ACCESS_METHODS} selected={accessMethod} onChange={setAccessMethod} />
       </section>
 
       <section id="hp-fall-protection" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Fall protection</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('permits.height.fallProtectionHeading', undefined, 'Fall protection')}</h4>
         <ChipMultiSelect options={HEIGHT_FALL_PROTECTION} selected={fallProtection} onChange={setFallProtection} />
       </section>
 
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <div>
-          <label htmlFor="hp-anchor" className={labelCls}>Anchor points (location + rating)</label>
-          <input id="hp-anchor" type="text" maxLength={200} value={anchorPoints} onChange={(e) => setAnchorPoints(e.target.value)} placeholder="≥5,000 lb / engineered" className={inputCls} />
+          <label htmlFor="hp-anchor" className={labelCls}>{t('permits.height.anchorPointsLabel', undefined, 'Anchor points (location + rating)')}</label>
+          <input id="hp-anchor" type="text" maxLength={200} value={anchorPoints} onChange={(e) => setAnchorPoints(e.target.value)} placeholder={t('permits.height.anchorPointsPlaceholder', undefined, '≥5,000 lb / engineered')} className={inputCls} />
         </div>
         <div>
           <label htmlFor="hp-rescue" className={labelCls}>
-            Rescue plan {pfasSelected && <span className="text-warn">— required for PFAS</span>}
+            {t('permits.height.rescuePlanLabel', undefined, 'Rescue plan')} {pfasSelected && <span className="text-warn">{t('permits.height.rescuePlanRequiredPfas', undefined, '— required for PFAS')}</span>}
           </label>
           <textarea
             id="hp-rescue"
@@ -266,7 +268,7 @@ export default function HeightPermitForm() {
             value={rescuePlan}
             maxLength={2000}
             onChange={(e) => setRescuePlan(e.target.value)}
-            placeholder="Suspension-trauma rescue / prompt rescue means"
+            placeholder={t('permits.height.rescuePlanPlaceholder', undefined, 'Suspension-trauma rescue / prompt rescue means')}
             className={`${textareaCls} ${pfasSelected && !rescuePlan.trim() ? 'border-warn/60' : ''}`}
           />
         </div>
@@ -274,21 +276,21 @@ export default function HeightPermitForm() {
 
       <section id="hp-checklist" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-issue checklist</h4>
-          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.height.checklistHeading', undefined, 'Pre-issue checklist')}</h4>
+          {critLeft > 0 && <span className="text-xs text-warn">{t('permits.height.requiredLeft', { critLeft }, '{critLeft} required left')}</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
       <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.height.validityHeading', undefined, 'Validity window')}</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hp-valid-from" className={labelCls}>Valid from</label>
+            <label htmlFor="hp-valid-from" className={labelCls}>{t('permits.height.validFromLabel', undefined, 'Valid from')}</label>
             <input id="hp-valid-from" type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="hp-valid-until" className={labelCls}>Valid until</label>
+            <label htmlFor="hp-valid-until" className={labelCls}>{t('permits.height.validUntilLabel', undefined, 'Valid until')}</label>
             <input
               id="hp-valid-until"
               type="datetime-local"
@@ -301,20 +303,20 @@ export default function HeightPermitForm() {
       </div>
 
       <section id="hp-crew-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Crew sign-on</h4>
-        <p className="text-xs text-fg-2 mb-3">Each worker confirms understanding. Designate the competent person / issuer.</p>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">{t('permits.height.crewHeading', undefined, 'Crew sign-on')}</h4>
+        <p className="text-xs text-fg-2 mb-3">{t('permits.height.crewInstruction', undefined, 'Each worker confirms understanding. Designate the competent person / issuer.')}</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}
           supervisorId={issuerId}
           onSupervisorChange={setIssuerId}
-          supervisorLabel="Issuer"
+          supervisorLabel={t('permits.height.issuerLabel', undefined, 'Issuer')}
         />
       </section>
 
       {saveError && (
         <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-          <span className="font-semibold shrink-0">Save failed:</span>
+          <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
           <span>{saveError}</span>
         </div>
       )}
@@ -328,31 +330,31 @@ export default function HeightPermitForm() {
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {!workDescription.trim() || !location.trim()
-            ? 'Describe the work and location'
+            ? t('permits.height.ctaDescribeWork', undefined, 'Describe the work and location')
             : !workingHeight.trim()
-              ? 'Specify working height'
+              ? t('permits.height.ctaSpecifyHeight', undefined, 'Specify working height')
               : accessMethod.length === 0
-                ? 'Select access method'
+                ? t('permits.height.ctaSelectAccess', undefined, 'Select access method')
                 : fallProtection.length === 0
-                  ? 'Select fall protection'
+                  ? t('permits.height.ctaSelectFallProtection', undefined, 'Select fall protection')
                   : critLeft > 0
-                    ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                    ? t('permits.height.ctaCompleteItems', { count: critLeft, critLeft })
                     : pfasSelected && !rescuePlan.trim()
-                      ? 'Add rescue plan for PFAS'
+                      ? t('permits.height.ctaAddRescuePlan', undefined, 'Add rescue plan for PFAS')
                       : sigData.signatures.length === 0
-                        ? 'Workers must sign on'
+                        ? t('permits.height.ctaWorkersSignOn', undefined, 'Workers must sign on')
                         : issuerId === null
-                          ? 'Designate the issuer'
+                          ? t('permits.height.designateIssuer', undefined, 'Designate the issuer')
                           : !validWindowOk
-                            ? 'Fix validity window'
-                            : 'Issue Permit'}
+                            ? t('permits.height.ctaFixValidity', undefined, 'Fix validity window')
+                            : t('permits.height.issuePermit', undefined, 'Issue Permit')}
         </button>
       </div>
       <ConfirmDialog
         open={confirmOpen}
-        title="Issue work-at-height permit?"
-        message={`This will activate a live permit for "${location || 'this location'}". Make sure all checklist items are verified.`}
-        confirmLabel="Issue Permit"
+        title={t('permits.height.confirmTitle', undefined, 'Issue work-at-height permit?')}
+        message={t('permits.height.confirmMessage', { location: location || t('permits.height.thisLocationFallback', undefined, 'this location') })}
+        confirmLabel={t('permits.height.issuePermit', undefined, 'Issue Permit')}
         onConfirm={() => { setConfirmOpen(false); submit() }}
         onCancel={() => setConfirmOpen(false)}
       />

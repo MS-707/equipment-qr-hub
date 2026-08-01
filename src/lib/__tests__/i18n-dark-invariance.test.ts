@@ -50,6 +50,12 @@ const CONVERTED_FILES = [
   'src/components/safety/ValidationSummary.tsx',
   'src/components/safety/CrewSignatureBlock.tsx',
   'src/components/SignaturePad.tsx',
+  'src/components/safety/PreTaskPlanForm.tsx',
+  'src/components/safety/JhaForm.tsx',
+  'src/components/safety/IncidentReportForm.tsx',
+  'src/components/safety/HeightPermitForm.tsx',
+  'src/components/safety/HotWorkPermitForm.tsx',
+  'src/components/safety/ConfinedSpaceForm.tsx',
 ]
 
 // t('key', undefined|{...}, 'literal') / t('key', undefined, "literal")

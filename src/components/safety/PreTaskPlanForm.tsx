@@ -18,6 +18,7 @@ import { labelCls, inputCls, textareaCls, btnPrimaryCls, btnSelectedCls } from '
 import { haptic } from '@/lib/haptic'
 import { isReviewEnabled, submitForReview, type ReviewSubmitState } from '@/lib/review-submit'
 import { localToday } from '@/lib/datetime'
+import { useT } from '@/lib/i18n'
 import ValidationSummary, { type ValidationError } from './ValidationSummary'
 
 interface AuditFinding {
@@ -35,11 +36,18 @@ interface AuditResult {
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
 
+const SHIFT_KEYS = {
+  Day: 'ptp.shiftDay',
+  Swing: 'ptp.shiftSwing',
+  Night: 'ptp.shiftNight',
+} as const
+
 function todayStr(): string {
   return localToday()
 }
 
 export default function PreTaskPlanForm() {
+  const t = useT()
   const [step, setStep] = useState<'plan' | 'signon' | 'done'>('plan')
 
   const [date, setDate] = useState(todayStr())
@@ -147,14 +155,14 @@ export default function PreTaskPlanForm() {
   const canSubmit = sigData.signatures.length >= 1 && supervisorId !== null
 
   const planErrors: ValidationError[] = [
-    ...(scopeOfWork.trim().length === 0 ? [{ label: 'Scope of work', fieldId: 'ptp-scope' }] : []),
-    ...(location.trim().length === 0 ? [{ label: 'Location', fieldId: 'ptp-location' }] : []),
-    ...(musterPoint.trim().length === 0 ? [{ label: 'Muster point', fieldId: 'ptp-muster' }] : []),
+    ...(scopeOfWork.trim().length === 0 ? [{ label: t('ptp.errScopeOfWork', undefined, 'Scope of work'), fieldId: 'ptp-scope' }] : []),
+    ...(location.trim().length === 0 ? [{ label: t('ptp.errLocation', undefined, 'Location'), fieldId: 'ptp-location' }] : []),
+    ...(musterPoint.trim().length === 0 ? [{ label: t('ptp.errMusterPoint', undefined, 'Muster point'), fieldId: 'ptp-muster' }] : []),
   ]
 
   const signonErrors: ValidationError[] = [
-    ...(sigData.signatures.length < 1 ? [{ label: 'At least one crew signature', fieldId: 'crew-signatures' }] : []),
-    ...(supervisorId === null ? [{ label: 'Designate a supervisor', fieldId: 'crew-signatures' }] : []),
+    ...(sigData.signatures.length < 1 ? [{ label: t('ptp.errCrewSignature', undefined, 'At least one crew signature'), fieldId: 'crew-signatures' }] : []),
+    ...(supervisorId === null ? [{ label: t('ptp.errDesignateSupervisor', undefined, 'Designate a supervisor'), fieldId: 'crew-signatures' }] : []),
   ]
 
   function toggleHeat(key: keyof HeatIllnessPlan) {
@@ -184,8 +192,8 @@ export default function PreTaskPlanForm() {
       })
       clearTimeout(timer)
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Request failed' }))
-        setToolboxError(data.error ?? `Request failed (${res.status})`)
+        const data = await res.json().catch(() => ({ error: t('ptp.requestFailed', undefined, 'Request failed') }))
+        setToolboxError(data.error ?? t('ptp.requestFailedStatus', { status: res.status }, 'Request failed ({status})'))
         return
       }
       const data = await res.json()
@@ -197,15 +205,15 @@ export default function PreTaskPlanForm() {
           ? data.talking_points.map((p: string) => `• ${p}`).join('\n')
           : ''
         const question = data.discussion_question
-          ? `\nDiscussion: ${data.discussion_question}`
+          ? '\n' + t('ptp.discussionPrefix', { discussionQuestion: data.discussion_question }, 'Discussion: {discussionQuestion}')
           : ''
         setToolboxNotes(points + question)
       }
     } catch (err) {
       const msg =
         err instanceof DOMException && err.name === 'AbortError'
-          ? 'Request timed out — try again'
-          : 'Network error — check your connection'
+          ? t('ptp.requestTimedOut', undefined, 'Request timed out — try again')
+          : t('ptp.networkError', undefined, 'Network error — check your connection')
       setToolboxError(msg)
     } finally {
       setToolboxLoading(false)
@@ -258,8 +266,8 @@ export default function PreTaskPlanForm() {
       })
       clearTimeout(timer)
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Request failed' }))
-        setAuditError(data.error ?? `Request failed (${res.status})`)
+        const data = await res.json().catch(() => ({ error: t('ptp.requestFailed', undefined, 'Request failed') }))
+        setAuditError(data.error ?? t('ptp.requestFailedStatus', { status: res.status }, 'Request failed ({status})'))
         return
       }
       const data = await res.json()
@@ -271,8 +279,8 @@ export default function PreTaskPlanForm() {
     } catch (err) {
       const msg =
         err instanceof DOMException && err.name === 'AbortError'
-          ? 'Request timed out — try again'
-          : 'Network error — check your connection'
+          ? t('ptp.requestTimedOut', undefined, 'Request timed out — try again')
+          : t('ptp.networkError', undefined, 'Network error — check your connection')
       setAuditError(msg)
     } finally {
       setAuditing(false)
@@ -312,7 +320,7 @@ export default function PreTaskPlanForm() {
       })
     } catch (e) {
       submitGuard.current = false
-      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('ptp.saveFailedStorage', undefined, 'Failed to save record — device storage may be full.'))
       return
     }
 
@@ -359,21 +367,20 @@ export default function PreTaskPlanForm() {
           onClick={() => setStep('plan')}
           className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to plan
+          <ArrowLeft className="w-4 h-4" /> {t('ptp.backToPlan', undefined, 'Back to plan')}
         </button>
 
         <div id="crew-signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-          <h3 className="text-sm font-semibold text-fg mb-1">Crew sign-on</h3>
+          <h3 className="text-sm font-semibold text-fg mb-1">{t('ptp.crewSignonHeading', undefined, 'Crew sign-on')}</h3>
           <p className="text-xs text-fg-2 mb-3">
-            Pass the device around — each crew member signs to acknowledge the plan. Designate
-            the supervisor.
+            {t('ptp.crewSignonHelp')}
           </p>
           <CrewSignatureBlock
             value={sigData}
             onChange={setSigData}
             supervisorId={supervisorId}
             onSupervisorChange={setSupervisorId}
-            supervisorLabel="Supervisor"
+            supervisorLabel={t('signature.supervisor', undefined, 'Supervisor')}
           />
         </div>
 
@@ -389,14 +396,14 @@ export default function PreTaskPlanForm() {
                            hover:border-mytra-purple/60 transition-colors
                            disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Sparkles className="w-4 h-4" /> Audit with Sage
+                <Sparkles className="w-4 h-4" /> {t('ptp.auditWithSage', undefined, 'Audit with Sage')}
               </button>
             )}
 
             {auditing && (
               <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-4 shadow-card">
                 <div className="flex items-center justify-center gap-2 py-2 text-sm text-mytra-purple">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Sage is auditing your plan...
+                  <Loader2 className="w-4 h-4 animate-spin" /> {t('ptp.sageAuditing', undefined, 'Sage is auditing your plan...')}
                 </div>
               </div>
             )}
@@ -413,20 +420,20 @@ export default function PreTaskPlanForm() {
                 {auditResult.pass && auditResult.findings.length === 0 ? (
                   <div className="flex items-center gap-2 px-4 py-3 bg-ok/10 border-b border-ok/20">
                     <ShieldCheck className="w-5 h-5 text-ok" />
-                    <span className="text-sm font-medium text-ok">Sage: Plan looks complete</span>
+                    <span className="text-sm font-medium text-ok">{t('ptp.sagePlanComplete', undefined, 'Sage: Plan looks complete')}</span>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-2 px-4 py-3 border-b border-mytra-border">
                       <Sparkles className="w-4 h-4 text-mytra-purple" />
-                      <span className="text-sm font-medium text-fg">Sage audit</span>
+                      <span className="text-sm font-medium text-fg">{t('ptp.sageAuditHeading', undefined, 'Sage audit')}</span>
                       <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ml-auto ${
                         auditResult.overallRisk === 'critical' ? 'bg-danger/10 text-danger'
                         : auditResult.overallRisk === 'high' ? 'bg-danger/10 text-danger'
                         : auditResult.overallRisk === 'medium' ? 'bg-warn/10 text-warn'
                         : 'bg-ok/10 text-ok'
                       }`}>
-                        {auditResult.overallRisk.charAt(0).toUpperCase() + auditResult.overallRisk.slice(1)} risk
+                        {t('ptp.riskBadge', { risk: t(`hazard.risk.${auditResult.overallRisk}`) }, '{risk} risk')}
                       </span>
                     </div>
                     <div className="p-3 space-y-2">
@@ -452,7 +459,7 @@ export default function PreTaskPlanForm() {
                                     ? 'bg-danger/10 text-danger'
                                     : 'bg-warn/10 text-warn'
                                 }`}>
-                                  {f.severity === 'blocker' ? 'Blocker' : 'Warning'}
+                                  {f.severity === 'blocker' ? t('ptp.severityBlocker', undefined, 'Blocker') : t('ptp.severityWarning', undefined, 'Warning')}
                                 </span>
                                 <span className="text-xs text-fg-3">{f.category}</span>
                               </div>
@@ -464,11 +471,11 @@ export default function PreTaskPlanForm() {
                       ))}
                     </div>
                     <p className="text-xs text-fg-4 mt-2">
-                      AI findings are advisory and not a substitute for a competent safety assessment.
+                      {t('ptp.aiAdvisory', undefined, 'AI findings are advisory and not a substitute for a competent safety assessment.')}
                     </p>
                     {hasBlockers && (
                       <div className="px-4 pb-3">
-                        <p className="text-xs text-danger">Resolve blockers before submitting.</p>
+                        <p className="text-xs text-danger">{t('ptp.resolveBlockersNote', undefined, 'Resolve blockers before submitting.')}</p>
                       </div>
                     )}
                     {!hasBlockers && hasWarnings && !acknowledgedWarnings && (
@@ -478,7 +485,7 @@ export default function PreTaskPlanForm() {
                           onClick={() => setAcknowledgedWarnings(true)}
                           className="w-full py-2 rounded-lg text-xs font-medium bg-warn/10 border border-warn/20 text-warn hover:bg-warn/20 transition-colors"
                         >
-                          Acknowledge warnings and proceed
+                          {t('ptp.acknowledgeWarnings', undefined, 'Acknowledge warnings and proceed')}
                         </button>
                       </div>
                     )}
@@ -490,7 +497,7 @@ export default function PreTaskPlanForm() {
                     onClick={() => { setAuditResult(null); setAcknowledgedWarnings(false) }}
                     className="text-xs text-fg-4 hover:text-fg-2 transition-colors"
                   >
-                    Re-audit
+                    {t('ptp.reAudit', undefined, 'Re-audit')}
                   </button>
                 </div>
               </div>
@@ -500,7 +507,7 @@ export default function PreTaskPlanForm() {
 
         {saveError && (
           <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-            <span className="font-semibold shrink-0">Save failed:</span>
+            <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
             <span>{saveError}</span>
           </div>
         )}
@@ -520,12 +527,12 @@ export default function PreTaskPlanForm() {
             className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
           >
             {sigData.signatures.length === 0
-              ? 'At least one crew member must sign'
+              ? t('ptp.submitMustSign', undefined, 'At least one crew member must sign')
               : supervisorId === null
-                ? 'Designate the supervisor'
+                ? t('ptp.submitDesignateSupervisor', undefined, 'Designate the supervisor')
                 : hasBlockers
-                  ? 'Resolve blockers to submit'
-                  : 'Submit Pre-Task Plan'}
+                  ? t('ptp.submitResolveBlockers', undefined, 'Resolve blockers to submit')
+                  : t('ptp.submitPtp', undefined, 'Submit Pre-Task Plan')}
           </button>
         </div>
       </div>
@@ -539,10 +546,10 @@ export default function PreTaskPlanForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
@@ -553,8 +560,8 @@ export default function PreTaskPlanForm() {
         >
           <CheckCircle2 className="w-5 h-5 text-ok shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-ok font-medium">Active PTP{activePtp.validUntil ? ` through ${activePtp.validUntil}` : ''}</p>
-            <p className="text-xs text-ok/80 mt-0.5 truncate">{activePtp.scopeOfWork || 'View current plan'}</p>
+            <p className="text-sm text-ok font-medium">{activePtp.validUntil ? t('ptp.activePtpThrough', { validUntil: activePtp.validUntil }, 'Active PTP through {validUntil}') : t('ptp.activePtp', undefined, 'Active PTP')}</p>
+            <p className="text-xs text-ok/80 mt-0.5 truncate">{activePtp.scopeOfWork || t('ptp.viewCurrentPlan', undefined, 'View current plan')}</p>
           </div>
         </Link>
       )}
@@ -563,18 +570,18 @@ export default function PreTaskPlanForm() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-ok font-medium flex items-center gap-1.5">
               <Copy className="w-4 h-4 shrink-0" />
-              Carry forward from {prevPtp.date}
+              {t('ptp.carryForwardFrom', { date: prevPtp.date }, 'Carry forward from {date}')}
             </p>
             <p className="text-xs text-ok/80 mt-0.5 truncate">
-              {prevPtp.hazards.length} hazards, PPE, muster point & site conditions
+              {t('ptp.carryForwardSummary', { count: prevPtp.hazards.length })}
             </p>
           </div>
           <div className="flex items-center gap-1">
             <button type="button" onClick={applyCarryForward} className="text-xs font-medium text-ok bg-ok/15 hover:bg-ok/25 rounded-lg px-3 min-h-[44px] inline-flex items-center transition-colors">
-              Apply
+              {t('common.apply', undefined, 'Apply')}
             </button>
             <button type="button" onClick={() => setCarryForwardDismissed(true)} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-2 inline-flex items-center">
-              Skip
+              {t('common.skip', undefined, 'Skip')}
             </button>
           </div>
         </div>
@@ -582,21 +589,21 @@ export default function PreTaskPlanForm() {
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Pre-Task / Pre-Build Plan</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('ptp.title', undefined, 'Pre-Task / Pre-Build Plan')}</h3>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label htmlFor="ptp-date" className={labelCls}>Date</label>
+            <label htmlFor="ptp-date" className={labelCls}>{t('ptp.dateLabel', undefined, 'Date')}</label>
             <input id="ptp-date" type="date" value={date} onChange={(e) => { setDate(e.target.value); if (validUntil && e.target.value > validUntil) setValidUntil('') }} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="ptp-valid-until" className={labelCls}>Valid through</label>
-            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={date ? (() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder="Same day" />
+            <label htmlFor="ptp-valid-until" className={labelCls}>{t('ptp.validThroughLabel', undefined, 'Valid through')}</label>
+            <input id="ptp-valid-until" type="date" value={validUntil} min={date} max={date ? (() => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })() : undefined} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} placeholder={t('common.sameDay', undefined, 'Same day')} />
           </div>
           <div>
-            <label className={labelCls}>Shift</label>
-            <div className="flex gap-1.5" role="radiogroup" aria-label="Shift">
+            <label className={labelCls}>{t('ptp.shiftLabel', undefined, 'Shift')}</label>
+            <div className="flex gap-1.5" role="radiogroup" aria-label={t('ptp.shiftAria', undefined, 'Shift')}>
               {SHIFTS.map((s) => (
                 <button
                   key={s}
@@ -610,7 +617,7 @@ export default function PreTaskPlanForm() {
                       : 'bg-mytra-bg border border-mytra-border text-fg-2 hover:text-fg'
                   }`}
                 >
-                  {s}
+                  {t(SHIFT_KEYS[s], undefined, s)}
                 </button>
               ))}
             </div>
@@ -618,24 +625,24 @@ export default function PreTaskPlanForm() {
         </div>
 
         <div>
-          <label htmlFor="ptp-project" className={labelCls}>Project / Structure</label>
-          <input id="ptp-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
-          {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
+          <label htmlFor="ptp-project" className={labelCls}>{t('ptp.projectLabel', undefined, 'Project / Structure')}</label>
+          <input id="ptp-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t('ptp.projectPlaceholder', undefined, 'e.g. Tower B steel erection')} className={inputCls} />
+          {lastCtx.projectName && <LastUsedChip label={t('ptp.lastUsedLabel', undefined, 'Last')} value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
         </div>
         <div>
-          <label htmlFor="ptp-location" className={labelCls}>Location / Area</label>
-          <input id="ptp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Level 3, grid C4" className={inputCls} />
-          {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
+          <label htmlFor="ptp-location" className={labelCls}>{t('ptp.locationLabel', undefined, 'Location / Area')}</label>
+          <input id="ptp-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('ptp.locationPlaceholder', undefined, 'e.g. Level 3, grid C4')} className={inputCls} />
+          {lastCtx.location && <LastUsedChip label={t('ptp.lastUsedLabel', undefined, 'Last')} value={lastCtx.location} currentValue={location} onApply={setLocation} />}
         </div>
         <div data-tour-module="scope-of-work">
-          <label htmlFor="ptp-scope" className={labelCls}>Scope of work today</label>
-          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder="What is the team working on today?" className={textareaCls} />
+          <label htmlFor="ptp-scope" className={labelCls}>{t('ptp.scopeLabel', undefined, 'Scope of work today')}</label>
+          <textarea id="ptp-scope" rows={2} maxLength={2000} value={scopeOfWork} onChange={(e) => setScopeOfWork(e.target.value)} placeholder={t('ptp.scopePlaceholder', undefined, 'What is the team working on today?')} className={textareaCls} />
         </div>
       </div>
 
       {/* Hazards (Sage sits above the table, dormant by default) */}
       <section data-tour-module="hazard-table" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Hazards & Controls</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('ptp.hazardsControlsHeading', undefined, 'Hazards & Controls')}</h4>
         <SageAssist
           scopeOfWork={scopeOfWork}
           location={location}
@@ -648,35 +655,35 @@ export default function PreTaskPlanForm() {
 
       {/* PPE */}
       <section data-tour-module="ppe-selector" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">PPE Required</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('ptp.ppeRequiredHeading', undefined, 'PPE Required')}</h4>
         <PPESelector selected={ppe} onChange={setPpe} />
       </section>
 
       {/* Site conditions */}
       <section className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Site Conditions & Emergency</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('ptp.siteConditionsHeading', undefined, 'Site Conditions & Emergency')}</h4>
         <div>
-          <label htmlFor="ptp-muster" className={labelCls}>Emergency muster point <span className="text-danger">*</span></label>
-          <input id="ptp-muster" type="text" maxLength={200} value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} placeholder="Required" className={`${inputCls} ${!musterPoint.trim() ? 'border-warn/60' : ''}`} />
+          <label htmlFor="ptp-muster" className={labelCls}>{t('ptp.musterPointLabel', undefined, 'Emergency muster point')} <span className="text-danger">*</span></label>
+          <input id="ptp-muster" type="text" maxLength={200} value={musterPoint} onChange={(e) => setMusterPoint(e.target.value)} placeholder={t('common.required', undefined, 'Required')} className={`${inputCls} ${!musterPoint.trim() ? 'border-warn/60' : ''}`} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="ptp-hospital" className={labelCls}>Nearest hospital</label>
+            <label htmlFor="ptp-hospital" className={labelCls}>{t('ptp.nearestHospitalLabel', undefined, 'Nearest hospital')}</label>
             <input id="ptp-hospital" type="text" maxLength={200} value={hospital} onChange={(e) => setHospital(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="ptp-firstaid" className={labelCls}>First aid / eyewash</label>
+            <label htmlFor="ptp-firstaid" className={labelCls}>{t('ptp.firstAidLabel', undefined, 'First aid / eyewash')}</label>
             <input id="ptp-firstaid" type="text" maxLength={200} value={firstAid} onChange={(e) => setFirstAid(e.target.value)} className={inputCls} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="ptp-weather" className={labelCls}>Weather</label>
-            <input id="ptp-weather" type="text" maxLength={100} value={weather} onChange={(e) => setWeather(e.target.value)} placeholder="Conditions" className={inputCls} />
+            <label htmlFor="ptp-weather" className={labelCls}>{t('ptp.weatherLabel', undefined, 'Weather')}</label>
+            <input id="ptp-weather" type="text" maxLength={100} value={weather} onChange={(e) => setWeather(e.target.value)} placeholder={t('ptp.weatherPlaceholder', undefined, 'Conditions')} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="ptp-wind" className={labelCls}>Wind speed</label>
-            <input id="ptp-wind" type="text" inputMode="decimal" maxLength={50} value={wind} onChange={(e) => setWind(e.target.value)} placeholder="For MEWP / height" className={inputCls} />
+            <label htmlFor="ptp-wind" className={labelCls}>{t('ptp.windSpeedLabel', undefined, 'Wind speed')}</label>
+            <input id="ptp-wind" type="text" inputMode="decimal" maxLength={50} value={wind} onChange={(e) => setWind(e.target.value)} placeholder={t('ptp.windSpeedPlaceholder', undefined, 'For MEWP / height')} className={inputCls} />
           </div>
         </div>
       </section>
@@ -691,9 +698,9 @@ export default function PreTaskPlanForm() {
         >
           <div>
             <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-              Heat Illness Prevention
+              {t('ptp.heatHeading', undefined, 'Heat Illness Prevention')}
             </h4>
-            {!heatOpen && <p className="text-xs text-fg-4 mt-0.5">Outdoor / high-temp work — tap to expand</p>}
+            {!heatOpen && <p className="text-xs text-fg-4 mt-0.5">{t('ptp.heatCollapsedHint', undefined, 'Outdoor / high-temp work — tap to expand')}</p>}
           </div>
           {heatOpen ? <ChevronUp className="w-4 h-4 text-fg-4 shrink-0" /> : <ChevronDown className="w-4 h-4 text-fg-4 shrink-0" />}
         </button>
@@ -701,10 +708,10 @@ export default function PreTaskPlanForm() {
           <div className="px-4 pb-4 animate-fadeIn">
             <div className="grid grid-cols-2 gap-2">
               {([
-                ['water', 'Water available'],
-                ['shade', 'Shade available'],
-                ['restBreaks', 'Rest breaks'],
-                ['highHeatProcedures', 'High-heat procedures (≥95°F)'],
+                ['water', t('ptp.heatWater', undefined, 'Water available')],
+                ['shade', t('ptp.heatShade', undefined, 'Shade available')],
+                ['restBreaks', t('ptp.heatRestBreaks', undefined, 'Rest breaks')],
+                ['highHeatProcedures', t('ptp.heatHighHeatProcedures', undefined, 'High-heat procedures (≥95°F)')],
               ] as [keyof HeatIllnessPlan, string][]).map(([key, lbl]) => (
                 <label key={key} className="flex items-center gap-2 text-sm text-fg-2 min-h-[44px] cursor-pointer">
                   <input type="checkbox" checked={heat[key]} onChange={() => toggleHeat(key)} className="accent-mytra-purple w-5 h-5" />
@@ -725,16 +732,16 @@ export default function PreTaskPlanForm() {
           className="w-full flex items-center justify-between p-4 text-left hover:bg-mytra-card-hover transition-colors min-h-[44px]"
         >
           <div>
-            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Toolbox Talk</h4>
-            {!toolboxOpen && <p className="text-xs text-fg-4 mt-0.5">Optional — tap to add a safety topic</p>}
+            <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('ptp.toolboxHeading', undefined, 'Toolbox Talk')}</h4>
+            {!toolboxOpen && <p className="text-xs text-fg-4 mt-0.5">{t('ptp.toolboxCollapsedHint', undefined, 'Optional — tap to add a safety topic')}</p>}
           </div>
           {toolboxOpen ? <ChevronUp className="w-4 h-4 text-fg-4 shrink-0" /> : <ChevronDown className="w-4 h-4 text-fg-4 shrink-0" />}
         </button>
         {toolboxOpen && (
           <div className="px-4 pb-4 space-y-3 animate-fadeIn">
             <div>
-              <label htmlFor="ptp-tbt-topic" className={labelCls}>Topic</label>
-              <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder="Today's safety topic" className={inputCls} />
+              <label htmlFor="ptp-tbt-topic" className={labelCls}>{t('ptp.toolboxTopicLabel', undefined, 'Topic')}</label>
+              <input id="ptp-tbt-topic" type="text" maxLength={200} value={toolboxTopic} onChange={(e) => setToolboxTopic(e.target.value)} placeholder={t('ptp.toolboxTopicPlaceholder', undefined, "Today's safety topic")} className={inputCls} />
             </div>
             {sageEnabled && (
               <div>
@@ -749,16 +756,16 @@ export default function PreTaskPlanForm() {
                 >
                   {toolboxLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Sage is thinking…
+                      <Loader2 className="w-4 h-4 animate-spin" /> {t('ptp.sageThinking', undefined, 'Sage is thinking…')}
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" /> Generate toolbox talk
+                      <Sparkles className="w-4 h-4" /> {t('ptp.generateToolboxTalk', undefined, 'Generate toolbox talk')}
                     </>
                   )}
                 </button>
                 {!canGenerateTalk && !toolboxLoading && (
-                  <p className="text-xs text-fg-4 mt-1 text-center">Add a scope of work first</p>
+                  <p className="text-xs text-fg-4 mt-1 text-center">{t('ptp.addScopeFirst', undefined, 'Add a scope of work first')}</p>
                 )}
                 {toolboxError && (
                   <p className="text-xs text-danger mt-1 text-center">{toolboxError}</p>
@@ -766,7 +773,7 @@ export default function PreTaskPlanForm() {
               </div>
             )}
             <div>
-              <label htmlFor="ptp-tbt-notes" className={labelCls}>Discussion points</label>
+              <label htmlFor="ptp-tbt-notes" className={labelCls}>{t('ptp.toolboxDiscussionLabel', undefined, 'Discussion points')}</label>
               <textarea id="ptp-tbt-notes" rows={2} maxLength={2000} value={toolboxNotes} onChange={(e) => setToolboxNotes(e.target.value)} className={textareaCls} />
             </div>
           </div>
@@ -787,7 +794,7 @@ export default function PreTaskPlanForm() {
           }}
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
-          {canContinue ? 'Continue to crew sign-on' : 'Complete scope, location & muster point'}
+          {canContinue ? t('ptp.continueToSignon', undefined, 'Continue to crew sign-on') : t('ptp.completeRequiredFields', undefined, 'Complete scope, location & muster point')}
         </button>
       </div>
     </div>
@@ -795,6 +802,7 @@ export default function PreTaskPlanForm() {
 }
 
 function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: string; sigCount: number; wasOffline: boolean; onNew: () => void }) {
+  const t = useT()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const ehsEnabled = isReviewEnabled()
   const [reviewState, setReviewState] = useState<ReviewSubmitState | null>(null)
@@ -816,42 +824,42 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
     <div className="animate-fadeIn space-y-4">
       <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">PTP Logged</h3>
+        <h3 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">{t('ptp.doneTitle', undefined, 'PTP Logged')}</h3>
         <p className="text-sm text-ok">
-          {sigCount} crew signed on. Recorded as{' '}
+          {t('ptp.doneSigned', { count: sigCount })} {t('ptp.recordedAs', undefined, 'Recorded as')}{' '}
           <span className="font-mono text-fg">{submittedId}</span>.
         </p>
       </div>
       {wasOffline && (
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5">
           <WifiOff className="w-4 h-4 text-warn shrink-0" />
-          <p className="text-xs text-warn">Saved locally. Will sync automatically when connection returns.</p>
+          <p className="text-xs text-warn">{t('common.savedLocally', undefined, 'Saved locally. Will sync automatically when connection returns.')}</p>
         </div>
       )}
       {reviewState === 'pending' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5" role="status">
           <Loader2 className="w-4 h-4 text-mytra-purple shrink-0 animate-spin" />
-          <p className="text-xs text-mytra-purple">Submitting for EHS review…</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittingReview', undefined, 'Submitting for EHS review…')}</p>
         </div>
       )}
       {reviewState === 'submitted' && (
         <div className="flex items-center gap-2 bg-mytra-purple-glow border border-mytra-purple/20 rounded-lg px-4 py-2.5">
           <Send className="w-4 h-4 text-mytra-purple shrink-0" />
-          <p className="text-xs text-mytra-purple">Submitted for EHS review</p>
+          <p className="text-xs text-mytra-purple">{t('forms.submittedReview', undefined, 'Submitted for EHS review')}</p>
         </div>
       )}
       {reviewState === 'failed' && (
         <div className="flex items-center gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-2.5" role="alert">
           <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
           <p className="text-sm text-warn-strong flex-1">
-            Could not submit for EHS review (offline or server issue). The PTP is saved on this device.
+            {t('ptp.reviewFailedPtp')}
           </p>
           <button
             type="button"
             onClick={retryReview}
             className="shrink-0 min-h-[44px] px-3 rounded-lg text-sm font-semibold text-mytra-purple hover:bg-mytra-purple/10 transition-colors"
           >
-            Retry
+            {t('common.retry', undefined, 'Retry')}
           </button>
         </div>
       )}
@@ -859,17 +867,17 @@ function PtpDone({ submittedId, sigCount, wasOffline, onNew }: { submittedId: st
         href={`/safety/record/${submittedId}`}
         className={`${btnPrimaryCls} block w-full text-center py-3 text-sm font-semibold`}
       >
-        View / Print
+        {t('forms.viewPrint', undefined, 'View / Print')}
       </Link>
       <button
         type="button"
         onClick={onNew}
         className="w-full py-3 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover transition-colors"
       >
-        Start new PTP
+        {t('ptp.startNewPtp', undefined, 'Start new PTP')}
       </button>
       <Link href="/safety" className="block text-center text-sm text-fg-2 hover:text-fg">
-        Back to Home
+        {t('common.backHome', undefined, 'Back to Home')}
       </Link>
     </div>
   )

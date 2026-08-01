@@ -21,6 +21,7 @@ import { labelCls, inputCls, textareaCls, btnPrimaryCls } from '@/lib/form-style
 import { haptic } from '@/lib/haptic'
 import FormStepper, { useActiveStep, type FormStep } from './FormStepper'
 import ValidationSummary, { type ValidationError } from './ValidationSummary'
+import { useT } from '@/lib/i18n'
 
 function outOfRange(value: string, range: { min?: number; max?: number }): boolean {
   if (value.trim() === '') return false
@@ -32,6 +33,7 @@ function outOfRange(value: string, range: { min?: number; max?: number }): boole
 }
 
 export default function ConfinedSpaceForm() {
+  const t = useT()
   const win = defaultValidityWindow(4)
   const [projectName, setProjectName] = useState('')
   const [location, setLocation] = useState('')
@@ -159,24 +161,22 @@ export default function ConfinedSpaceForm() {
         }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Request failed' }))
-        setAiError(data.error ?? 'Request failed')
+        const data = await res.json().catch(() => ({ error: t('permits.confinedSpace.requestFailed', undefined, 'Request failed') }))
+        setAiError(data.error ?? t('permits.confinedSpace.requestFailed', undefined, 'Request failed'))
         return
       }
       const data = await res.json()
       setAiAnalysis(data.analysis)
     } catch {
-      setAiError('Network error — check your connection')
+      setAiError(t('permits.confinedSpace.networkError', undefined, 'Network error — check your connection'))
     } finally {
       setAiLoading(false)
     }
   }
 
-  function alertForGas(gasLabel: string): AtmoAlert | undefined {
+  function alertForGas(gas: string): AtmoAlert | undefined {
     if (!atmoAnalysis) return undefined
-    const gasMap: Record<string, string> = { 'O₂ %': 'O2', 'LEL %': 'LEL', 'CO ppm': 'CO', 'H₂S ppm': 'H2S' }
-    const key = gasMap[gasLabel]
-    return atmoAnalysis.alerts.find((a) => a.gas === key)
+    return atmoAnalysis.alerts.find((a) => a.gas === gas)
   }
 
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -196,37 +196,37 @@ export default function ConfinedSpaceForm() {
 
   const stepIds = ['details', 'hazards', 'atmospheric', 'rescue', 'checklist', 'validity', 'signatures'] as const
   const steps: FormStep[] = [
-    { id: 'details', label: 'Details', complete: spaceDescription.trim().length > 0 && location.trim().length > 0 },
-    { id: 'hazards', label: 'Hazards', complete: hazards.length > 0 },
-    { id: 'atmospheric', label: 'Atmo Test', complete: !atmoUnsafe && oxygen.trim() !== '' },
-    { id: 'rescue', label: 'Rescue', complete: attendantName.trim().length > 0 && rescuePlan.trim().length > 0 },
-    { id: 'checklist', label: 'Checklist', complete: critLeft === 0 },
-    { id: 'validity', label: 'Validity', complete: validWindowOk },
-    { id: 'signatures', label: 'Signatures', complete: sigData.signatures.length >= 1 && supervisorId !== null },
+    { id: 'details', label: t('permits.confinedSpace.stepDetails', undefined, 'Details'), complete: spaceDescription.trim().length > 0 && location.trim().length > 0 },
+    { id: 'hazards', label: t('permits.confinedSpace.stepHazards', undefined, 'Hazards'), complete: hazards.length > 0 },
+    { id: 'atmospheric', label: t('permits.confinedSpace.stepAtmoTest', undefined, 'Atmo Test'), complete: !atmoUnsafe && oxygen.trim() !== '' },
+    { id: 'rescue', label: t('permits.confinedSpace.stepRescue', undefined, 'Rescue'), complete: attendantName.trim().length > 0 && rescuePlan.trim().length > 0 },
+    { id: 'checklist', label: t('permits.confinedSpace.stepChecklist', undefined, 'Checklist'), complete: critLeft === 0 },
+    { id: 'validity', label: t('permits.confinedSpace.stepValidity', undefined, 'Validity'), complete: validWindowOk },
+    { id: 'signatures', label: t('permits.confinedSpace.stepSignatures', undefined, 'Signatures'), complete: sigData.signatures.length >= 1 && supervisorId !== null },
   ]
   const activeStepId = useActiveStep([...stepIds])
 
   const validationErrors = useMemo((): ValidationError[] => {
     const errs: ValidationError[] = []
-    if (!spaceDescription.trim()) errs.push({ label: 'Describe the confined space', fieldId: 'cs-space' })
-    if (!location.trim()) errs.push({ label: 'Location is required', fieldId: 'cs-location' })
-    if (hazards.length === 0) errs.push({ label: 'Identify at least one hazard', fieldId: 'cs-hazards' })
-    if (!attendantName.trim()) errs.push({ label: 'Assign an attendant', fieldId: 'cs-attendant' })
-    if (!rescuePlan.trim()) errs.push({ label: 'Add a rescue plan', fieldId: 'cs-rescue' })
-    if (atmoUnsafe) errs.push({ label: 'Atmosphere outside safe limits', fieldId: 'cs-atmo-o' })
-    if (critLeft > 0) errs.push({ label: `Complete ${critLeft} required checklist item${critLeft === 1 ? '' : 's'}`, fieldId: 'cs-checklist' })
+    if (!spaceDescription.trim()) errs.push({ label: t('permits.confinedSpace.errDescribeSpace', undefined, 'Describe the confined space'), fieldId: 'cs-space' })
+    if (!location.trim()) errs.push({ label: t('permits.confinedSpace.errLocationRequired', undefined, 'Location is required'), fieldId: 'cs-location' })
+    if (hazards.length === 0) errs.push({ label: t('permits.confinedSpace.errIdentifyHazard', undefined, 'Identify at least one hazard'), fieldId: 'cs-hazards' })
+    if (!attendantName.trim()) errs.push({ label: t('permits.confinedSpace.errAssignAttendant', undefined, 'Assign an attendant'), fieldId: 'cs-attendant' })
+    if (!rescuePlan.trim()) errs.push({ label: t('permits.confinedSpace.errAddRescuePlan', undefined, 'Add a rescue plan'), fieldId: 'cs-rescue' })
+    if (atmoUnsafe) errs.push({ label: t('permits.confinedSpace.errAtmoUnsafe', undefined, 'Atmosphere outside safe limits'), fieldId: 'cs-atmo-o' })
+    if (critLeft > 0) errs.push({ label: t('permits.confinedSpace.errCompleteChecklistItems', { count: critLeft, critLeft }), fieldId: 'cs-checklist' })
     if (Number.isNaN(validFromMs) || Number.isNaN(validUntilMs))
-      errs.push({ label: 'Enter valid dates for "Valid from" and "Valid until"', fieldId: 'cs-valid-from' })
+      errs.push({ label: t('permits.confinedSpace.errEnterValidDates', undefined, 'Enter valid dates for "Valid from" and "Valid until"'), fieldId: 'cs-valid-from' })
     else if (validFromMs < Date.now() - 5 * 60 * 1000)
-      errs.push({ label: '"Valid from" cannot be in the past', fieldId: 'cs-valid-from' })
+      errs.push({ label: t('permits.confinedSpace.errValidFromPast', undefined, '"Valid from" cannot be in the past'), fieldId: 'cs-valid-from' })
     else if (validWindowDuration < 30 * 60 * 1000)
-      errs.push({ label: 'Permit must be valid for at least 30 minutes', fieldId: 'cs-valid-until' })
+      errs.push({ label: t('permits.confinedSpace.errMinDuration', undefined, 'Permit must be valid for at least 30 minutes'), fieldId: 'cs-valid-until' })
     else if (validWindowDuration > 24 * 60 * 60 * 1000)
-      errs.push({ label: 'Confined space permit cannot exceed 24 hours', fieldId: 'cs-valid-until' })
-    if (supervisorId === null) errs.push({ label: 'Designate the entry supervisor', fieldId: 'cs-signatures' })
-    if (sigData.signatures.length === 0) errs.push({ label: 'At least one entrant must sign on', fieldId: 'cs-signatures' })
+      errs.push({ label: t('permits.confinedSpace.errMaxDuration', undefined, 'Confined space permit cannot exceed 24 hours'), fieldId: 'cs-valid-until' })
+    if (supervisorId === null) errs.push({ label: t('permits.confinedSpace.errDesignateSupervisor', undefined, 'Designate the entry supervisor'), fieldId: 'cs-signatures' })
+    if (sigData.signatures.length === 0) errs.push({ label: t('permits.confinedSpace.errEntrantMustSign', undefined, 'At least one entrant must sign on'), fieldId: 'cs-signatures' })
     return errs
-  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, validFromMs, validUntilMs, validWindowDuration, supervisorId, sigData.signatures.length])
+  }, [spaceDescription, location, hazards.length, attendantName, rescuePlan, atmoUnsafe, critLeft, validWindowOk, validFromMs, validUntilMs, validWindowDuration, supervisorId, sigData.signatures.length, t])
 
   const submitGuard = useRef(false)
   function submit() {
@@ -259,7 +259,7 @@ export default function ConfinedSpaceForm() {
         validUntil: toIso(validUntil),
       })
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Failed to save record — device storage may be full.')
+      setSaveError(e instanceof Error ? e.message : t('permits.confinedSpace.saveRecordFailed', undefined, 'Failed to save record — device storage may be full.'))
       return
     }
     const blobs = Object.entries(sigData.blobs).map(([id, dataUrl]) => ({ id, dataUrl }))
@@ -306,10 +306,10 @@ export default function ConfinedSpaceForm() {
     return (
       <FormSuccess
         id={submittedId}
-        title="Permit Issued"
-        message="Confined Space Entry permit is active, logged as"
+        title={t('permits.confinedSpace.successTitle', undefined, 'Permit Issued')}
+        message={t('permits.confinedSpace.successMessage', undefined, 'Confined Space Entry permit is active, logged as')}
         onNew={reset}
-        newLabel="Start new permit"
+        newLabel={t('permits.confinedSpace.startNewPermit', undefined, 'Start new permit')}
         offline={wasOffline}
         reviewAutoSubmitted={reviewState}
         onRetryReview={() => {
@@ -320,11 +320,11 @@ export default function ConfinedSpaceForm() {
     )
   }
 
-  const atmoFields: { label: string; value: string; set: (v: string) => void; hint: string; range: { min?: number; max?: number } }[] = [
-    { label: 'O₂ %', value: oxygen, set: setOxygen, hint: '19.5–23.5%', range: { min: 19.5, max: 23.5 } },
-    { label: 'LEL %', value: lel, set: setLel, hint: '< 10%', range: { max: 10 } },
-    { label: 'CO ppm', value: co, set: setCo, hint: '< 35 ppm', range: { max: 35 } },
-    { label: 'H₂S ppm', value: h2s, set: setH2s, hint: '< 10 ppm', range: { max: 10 } },
+  const atmoFields: { gas: string; fieldId: string; label: string; value: string; set: (v: string) => void; hint: string; range: { min?: number; max?: number } }[] = [
+    { gas: 'O2', fieldId: 'cs-atmo-o', label: t('permits.confinedSpace.gasO2Label', undefined, 'O₂ %'), value: oxygen, set: setOxygen, hint: t('permits.confinedSpace.gasO2Hint', undefined, '19.5–23.5%'), range: { min: 19.5, max: 23.5 } },
+    { gas: 'LEL', fieldId: 'cs-atmo-lel', label: t('permits.confinedSpace.gasLelLabel', undefined, 'LEL %'), value: lel, set: setLel, hint: t('permits.confinedSpace.gasLelHint', undefined, '< 10%'), range: { max: 10 } },
+    { gas: 'CO', fieldId: 'cs-atmo-co-ppm', label: t('permits.confinedSpace.gasCoLabel', undefined, 'CO ppm'), value: co, set: setCo, hint: t('permits.confinedSpace.gasCoHint', undefined, '< 35 ppm'), range: { max: 35 } },
+    { gas: 'H2S', fieldId: 'cs-atmo-h-s-ppm', label: t('permits.confinedSpace.gasH2sLabel', undefined, 'H₂S ppm'), value: h2s, set: setH2s, hint: t('permits.confinedSpace.gasH2sHint', undefined, '< 10 ppm'), range: { max: 10 } },
   ]
 
   return (
@@ -334,38 +334,38 @@ export default function ConfinedSpaceForm() {
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4" />
-            <span>Draft restored</span>
+            <span>{t('common.draftRestored', undefined, 'Draft restored')}</span>
           </div>
           <button type="button" onClick={dismissDraft} className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center">
-            Dismiss
+            {t('common.dismiss', undefined, 'Dismiss')}
           </button>
         </div>
       )}
       <div data-step="details" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-4 shadow-card">
         <div className="flex items-center gap-2">
           <PackageOpen className="w-5 h-5 text-mytra-purple" />
-          <h3 className="text-sm font-semibold text-fg">Confined Space Entry Permit</h3>
+          <h3 className="text-sm font-semibold text-fg">{t('permits.confinedSpace.title', undefined, 'Confined Space Entry Permit')}</h3>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="cs-project" className={labelCls}>Project / Structure</label>
-            <input id="cs-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Tower B steel erection" className={inputCls} />
-            {lastCtx.projectName && <LastUsedChip label="Last" value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
+            <label htmlFor="cs-project" className={labelCls}>{t('permits.confinedSpace.projectLabel', undefined, 'Project / Structure')}</label>
+            <input id="cs-project" type="text" maxLength={200} value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t('permits.confinedSpace.projectPlaceholder', undefined, 'e.g. Tower B steel erection')} className={inputCls} />
+            {lastCtx.projectName && <LastUsedChip label={t('permits.confinedSpace.lastUsedLabel', undefined, 'Last')} value={lastCtx.projectName} currentValue={projectName} onApply={setProjectName} />}
           </div>
           <div>
-            <label htmlFor="cs-location" className={labelCls}>Location / Area</label>
-            <input id="cs-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Level / grid" className={inputCls} />
-            {lastCtx.location && <LastUsedChip label="Last" value={lastCtx.location} currentValue={location} onApply={setLocation} />}
+            <label htmlFor="cs-location" className={labelCls}>{t('permits.confinedSpace.locationLabel', undefined, 'Location / Area')}</label>
+            <input id="cs-location" type="text" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('permits.confinedSpace.locationPlaceholder', undefined, 'Level / grid')} className={inputCls} />
+            {lastCtx.location && <LastUsedChip label={t('permits.confinedSpace.lastUsedLabel', undefined, 'Last')} value={lastCtx.location} currentValue={location} onApply={setLocation} />}
           </div>
         </div>
         <div>
-          <label htmlFor="cs-description" className={labelCls}>Space description</label>
-          <textarea id="cs-description" rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder="Tank / vessel / vault…" className={textareaCls} />
+          <label htmlFor="cs-description" className={labelCls}>{t('permits.confinedSpace.spaceDescriptionLabel', undefined, 'Space description')}</label>
+          <textarea id="cs-description" rows={2} maxLength={2000} value={spaceDescription} onChange={(e) => setSpaceDescription(e.target.value)} placeholder={t('permits.confinedSpace.spaceDescriptionPlaceholder', undefined, 'Tank / vessel / vault…')} className={textareaCls} />
         </div>
       </div>
 
       <section id="cs-hazards" data-step="hazards" className="space-y-2">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">Hazards present</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold px-1">{t('permits.confinedSpace.hazardsPresent', undefined, 'Hazards present')}</h4>
         <ChipMultiSelect options={CONFINED_SPACE_HAZARDS} selected={hazards} onChange={setHazards} />
       </section>
 
@@ -376,23 +376,30 @@ export default function ConfinedSpaceForm() {
           className={`sticky top-[56px] z-30 flex items-start gap-3 rounded-lg px-4 py-3 text-white font-semibold text-sm shadow-lg animate-fadeIn ${worstSeverity === 'idlh' ? 'bg-danger' : 'bg-danger/95 backdrop-blur-sm'}`}
         >
           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-          <span>{worstSeverity === 'idlh' ? 'EVACUATE' : 'STOP'} — {worstAlert.gas} {worstAlert.reading}{worstAlert.gas === 'O2' || worstAlert.gas === 'LEL' ? '%' : ' ppm'} exceeds safe limit ({worstAlert.threshold}). {worstAlert.guidance.split(' — ').slice(1).join(' — ')}</span>
+          <span>{t('permits.confinedSpace.bannerExceedsSafeLimit', {
+            action: worstSeverity === 'idlh' ? t('permits.confinedSpace.bannerEvacuate', undefined, 'EVACUATE') : t('permits.confinedSpace.bannerStop', undefined, 'STOP'),
+            gas: worstAlert.gas,
+            reading: worstAlert.reading,
+            unit: worstAlert.gas === 'O2' || worstAlert.gas === 'LEL' ? '%' : ' ppm',
+            threshold: worstAlert.threshold,
+            guidance: worstAlert.guidance.split(' — ').slice(1).join(' — '),
+          }, '{action} — {gas} {reading}{unit} exceeds safe limit ({threshold}). {guidance}')}</span>
         </div>
       )}
 
       <div data-step="atmospheric" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">
-          Atmospheric test <span className="text-fg-4 normal-case">{'·'} test O₂ → flammable → toxic</span>
+          {t('permits.confinedSpace.atmosphericTest', undefined, 'Atmospheric test')} <span className="text-fg-4 normal-case">{'·'} {t('permits.confinedSpace.atmoTestOrder', undefined, 'test O₂ → flammable → toxic')}</span>
         </h4>
         <div className="grid grid-cols-2 gap-3">
           {atmoFields.map((f) => {
-            const alert = alertForGas(f.label)
+            const alert = alertForGas(f.gas)
             const sev = alert?.severity ?? 'safe'
             const bad = sev === 'danger' || sev === 'idlh'
             const warn = sev === 'warning'
-            const fieldId = `cs-atmo-${f.label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`
+            const fieldId = f.fieldId
             return (
-              <div key={f.label}>
+              <div key={f.gas}>
                 <label htmlFor={fieldId} className={labelCls}>
                   {f.label} <span className="text-fg-4">({f.hint})</span>
                 </label>
@@ -408,7 +415,7 @@ export default function ConfinedSpaceForm() {
                 {alert && sev === 'safe' && f.value.trim() !== '' && (
                   <p className="flex items-center gap-1 text-sm text-ok-strong mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    Within limits
+                    {t('permits.confinedSpace.withinLimits', undefined, 'Within limits')}
                   </p>
                 )}
                 {alert && sev === 'warning' && (
@@ -429,22 +436,22 @@ export default function ConfinedSpaceForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="cs-tested-by" className={labelCls}>Tested by</label>
+            <label htmlFor="cs-tested-by" className={labelCls}>{t('permits.confinedSpace.testedByLabel', undefined, 'Tested by')}</label>
             <input id="cs-tested-by" type="text" maxLength={100} value={testedBy} onChange={(e) => setTestedBy(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="cs-tested-at" className={labelCls}>Tested at</label>
+            <label htmlFor="cs-tested-at" className={labelCls}>{t('permits.confinedSpace.testedAtLabel', undefined, 'Tested at')}</label>
             <input id="cs-tested-at" type="datetime-local" value={testedAt} onChange={(e) => setTestedAt(e.target.value)} className={inputCls} />
           </div>
         </div>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 text-sm text-fg-2">
             <input type="checkbox" checked={continuousMonitoring} onChange={() => setContinuousMonitoring((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-            Continuous monitoring
+            {t('permits.confinedSpace.continuousMonitoring', undefined, 'Continuous monitoring')}
           </label>
           <label className="flex items-center gap-2 text-sm text-fg-2">
             <input type="checkbox" checked={ventilationInUse} onChange={() => setVentilationInUse((v) => !v)} className="accent-mytra-purple w-5 h-5" />
-            Ventilation in use
+            {t('permits.confinedSpace.ventilationInUse', undefined, 'Ventilation in use')}
           </label>
         </div>
       </div>
@@ -465,7 +472,7 @@ export default function ConfinedSpaceForm() {
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
             <p className="text-xs text-fg-2">
-              AI analysis is advisory only and does not replace atmospheric monitoring by a competent person with calibrated instruments. Always follow your site-specific confined space entry procedures.
+              {t('permits.confinedSpace.aiAdvisory', undefined, 'AI analysis is advisory only and does not replace atmospheric monitoring by a competent person with calibrated instruments. Always follow your site-specific confined space entry procedures.')}
             </p>
           </div>
           {!aiAnalysis && !aiLoading && (
@@ -475,13 +482,13 @@ export default function ConfinedSpaceForm() {
               className="flex items-center gap-2 text-sm text-mytra-purple hover:text-mytra-purple-hover font-medium px-1 py-1 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
-              Deep analysis with Sage
+              {t('permits.confinedSpace.deepAnalysisWithSage', undefined, 'Deep analysis with Sage')}
             </button>
           )}
           {aiLoading && (
             <div className="flex items-center gap-2 text-sm text-fg-3 px-1 py-1">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Sage is analyzing cross-gas interactions...
+              {t('permits.confinedSpace.sageAnalyzing', undefined, 'Sage is analyzing cross-gas interactions...')}
             </div>
           )}
           {aiError && (
@@ -499,7 +506,7 @@ export default function ConfinedSpaceForm() {
               >
                 <span className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-mytra-purple" />
-                  Sage AI Analysis
+                  {t('permits.confinedSpace.sageAiAnalysis', undefined, 'Sage AI Analysis')}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-fg-3 transition-transform ${aiExpanded ? 'rotate-180' : ''}`} />
               </button>
@@ -508,12 +515,12 @@ export default function ConfinedSpaceForm() {
                   {aiAnalysis.alerts.filter((a) => a.severity !== 'safe').map((a, i) => (
                     <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${a.severity === 'idlh' ? 'bg-danger/10 border border-danger/20 text-danger font-semibold' : a.severity === 'danger' ? 'bg-danger/10 border border-danger/20 text-danger' : 'bg-warn/10 border border-warn/20 text-warn'}`}>
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      <span><strong>{a.gas} {a.reading}{a.gas === 'O2' || a.gas === 'LEL' ? '%' : ' ppm'}:</strong> {a.guidance}</span>
+                      <span><strong>{t('permits.confinedSpace.aiAlertLine', { gas: a.gas, reading: a.reading, unit: a.gas === 'O2' || a.gas === 'LEL' ? '%' : ' ppm', guidance: '' }, '{gas} {reading}{unit}: {guidance}').trimEnd()}</strong> {a.guidance}</span>
                     </div>
                   ))}
                   {aiAnalysis.recommendations.length > 0 && (
                     <div className="space-y-1.5 pt-1">
-                      <p className="text-xs font-semibold text-fg-3 uppercase tracking-wider">Recommendations</p>
+                      <p className="text-xs font-semibold text-fg-3 uppercase tracking-wider">{t('permits.confinedSpace.recommendations', undefined, 'Recommendations')}</p>
                       {aiAnalysis.recommendations.map((rec, i) => (
                         <div key={i} className="flex items-start gap-2 bg-mytra-purple/5 border border-mytra-purple/10 rounded-lg px-3 py-2">
                           <Info className="w-3.5 h-3.5 text-mytra-purple shrink-0 mt-0.5" />
@@ -531,7 +538,7 @@ export default function ConfinedSpaceForm() {
 
       <div data-step="rescue" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
         <div>
-          <label htmlFor="cs-attendant" className={labelCls}>Attendant (stationed outside)</label>
+          <label htmlFor="cs-attendant" className={labelCls}>{t('permits.confinedSpace.attendantLabel', undefined, 'Attendant (stationed outside)')}</label>
           <input
             id="cs-attendant"
             type="text"
@@ -539,33 +546,33 @@ export default function ConfinedSpaceForm() {
             maxLength={100}
             onChange={(e) => setAttendantName(e.target.value)}
             autoCapitalize="words"
-            placeholder="Name"
+            placeholder={t('signature.name', undefined, 'Name')}
             className={`${inputCls} ${!attendantName.trim() ? 'border-warn/60' : ''}`}
           />
         </div>
         <div>
-          <label htmlFor="cs-rescue" className={labelCls}>Rescue plan <span className="text-danger">*</span></label>
-          <textarea id="cs-rescue" rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder="Non-entry retrieval / emergency services (required)" className={`${textareaCls} ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
+          <label htmlFor="cs-rescue" className={labelCls}>{t('permits.confinedSpace.rescuePlanLabel', undefined, 'Rescue plan')} <span className="text-danger">*</span></label>
+          <textarea id="cs-rescue" rows={2} maxLength={2000} value={rescuePlan} onChange={(e) => setRescuePlan(e.target.value)} placeholder={t('permits.confinedSpace.rescuePlanPlaceholder', undefined, 'Non-entry retrieval / emergency services (required)')} className={`${textareaCls} ${!rescuePlan.trim() ? 'border-warn/60' : ''}`} />
         </div>
       </div>
 
       <section id="cs-checklist" data-step="checklist" className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Pre-entry checklist</h4>
-          {critLeft > 0 && <span className="text-xs text-warn">{critLeft} required left</span>}
+          <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.confinedSpace.preEntryChecklist', undefined, 'Pre-entry checklist')}</h4>
+          {critLeft > 0 && <span className="text-xs text-warn">{t('permits.confinedSpace.requiredLeft', { count: critLeft, critLeft })}</span>}
         </div>
         <PermitChecklist items={checklist} onChange={setChecklist} />
       </section>
 
       <div data-step="validity" className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-3 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Validity window</h4>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('permits.confinedSpace.validityWindow', undefined, 'Validity window')}</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="cs-valid-from" className={labelCls}>Valid from</label>
+            <label htmlFor="cs-valid-from" className={labelCls}>{t('permits.confinedSpace.validFromLabel', undefined, 'Valid from')}</label>
             <input id="cs-valid-from" type="datetime-local" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="cs-valid-until" className={labelCls}>Valid until</label>
+            <label htmlFor="cs-valid-until" className={labelCls}>{t('permits.confinedSpace.validUntilLabel', undefined, 'Valid until')}</label>
             <input
               id="cs-valid-until"
               type="datetime-local"
@@ -578,20 +585,20 @@ export default function ConfinedSpaceForm() {
       </div>
 
       <section id="cs-signatures" data-step="signatures" className="bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">Entrant sign-on</h4>
-        <p className="text-xs text-fg-2 mb-3">Each entrant confirms understanding. Designate the entry supervisor.</p>
+        <h4 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-1">{t('permits.confinedSpace.entrantSignOn', undefined, 'Entrant sign-on')}</h4>
+        <p className="text-xs text-fg-2 mb-3">{t('permits.confinedSpace.entrantSignOnHint', undefined, 'Each entrant confirms understanding. Designate the entry supervisor.')}</p>
         <CrewSignatureBlock
           value={sigData}
           onChange={setSigData}
           supervisorId={supervisorId}
           onSupervisorChange={setSupervisorId}
-          supervisorLabel="Entry Sup."
+          supervisorLabel={t('permits.confinedSpace.entrySupervisorShort', undefined, 'Entry Sup.')}
         />
       </section>
 
       {saveError && (
         <div className="flex items-start gap-2 bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 text-xs text-danger">
-          <span className="font-semibold shrink-0">Save failed:</span>
+          <span className="font-semibold shrink-0">{t('common.saveFailed', undefined, 'Save failed:')}</span>
           <span>{saveError}</span>
         </div>
       )}
@@ -604,31 +611,31 @@ export default function ConfinedSpaceForm() {
           className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold`}
         >
           {!spaceDescription.trim() || !location.trim()
-            ? 'Describe the space and location'
+            ? t('permits.confinedSpace.btnDescribeSpaceLocation', undefined, 'Describe the space and location')
             : hazards.length === 0
-              ? 'Identify at least one hazard'
+              ? t('permits.confinedSpace.errIdentifyHazard', undefined, 'Identify at least one hazard')
               : critLeft > 0
-                ? `Complete ${critLeft} required item${critLeft === 1 ? '' : 's'}`
+                ? t('permits.confinedSpace.btnCompleteItems', { count: critLeft, critLeft })
                 : atmoUnsafe
-                  ? 'Atmosphere outside safe limits'
+                  ? t('permits.confinedSpace.errAtmoUnsafe', undefined, 'Atmosphere outside safe limits')
                   : !attendantName.trim()
-                    ? 'Assign an attendant'
+                    ? t('permits.confinedSpace.errAssignAttendant', undefined, 'Assign an attendant')
                     : !rescuePlan.trim()
-                      ? 'Add a rescue plan'
+                      ? t('permits.confinedSpace.errAddRescuePlan', undefined, 'Add a rescue plan')
                       : sigData.signatures.length === 0
-                        ? 'Entrants must sign on'
+                        ? t('permits.confinedSpace.btnEntrantsMustSign', undefined, 'Entrants must sign on')
                         : supervisorId === null
-                          ? 'Designate the entry supervisor'
+                          ? t('permits.confinedSpace.errDesignateSupervisor', undefined, 'Designate the entry supervisor')
                           : !validWindowOk
-                            ? 'Fix validity window'
-                            : 'Issue Permit'}
+                            ? t('permits.confinedSpace.btnFixValidity', undefined, 'Fix validity window')
+                            : t('permits.confinedSpace.issuePermit', undefined, 'Issue Permit')}
         </button>
       </div>
       <ConfirmDialog
         open={confirmOpen}
-        title="Issue confined space entry permit?"
-        message={`This will activate a live permit for "${location || 'this location'}". Verify atmospheric readings and rescue plan before proceeding.`}
-        confirmLabel="Issue Permit"
+        title={t('permits.confinedSpace.confirmTitle', undefined, 'Issue confined space entry permit?')}
+        message={t('permits.confinedSpace.confirmMessage', { location: location || t('permits.confinedSpace.confirmLocationFallback', undefined, 'this location') })}
+        confirmLabel={t('permits.confinedSpace.issuePermit', undefined, 'Issue Permit')}
         onConfirm={() => { setConfirmOpen(false); submit() }}
         onCancel={() => setConfirmOpen(false)}
       />
