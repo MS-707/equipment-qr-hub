@@ -10,6 +10,7 @@ import { getCrewRoster, crewRoles, rememberCrewMember } from '@/data/crew'
 import { haptic } from '@/lib/haptic'
 import { btnPrimaryCls } from '@/lib/form-styles'
 import { useT } from '@/lib/i18n'
+import { formatTime } from '@/lib/datetime'
 
 export interface SignatureData {
   signatures: CrewSignature[]
@@ -26,9 +27,6 @@ interface CrewSignatureBlockProps {
   supervisorLabel?: string
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-}
 
 export default function CrewSignatureBlock({
   value,

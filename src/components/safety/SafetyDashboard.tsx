@@ -34,10 +34,10 @@ import PermitStatusBadge from './PermitStatusBadge'
 import { StatCardSkeleton, RecordCardSkeleton } from '@/components/Skeleton'
 import PullToRefresh from '@/components/PullToRefresh'
 import SyncQueuePanel from './SyncQueuePanel'
-import { localToday } from '@/lib/datetime'
+import { localToday, formatLongDate } from '@/lib/datetime'
 import { SDS_EXTERNAL_URL } from '@/lib/nav'
 import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
-import { useT } from '@/lib/i18n'
+import { useT, useLocale } from '@/lib/i18n'
 import type { MessageKey } from '@/lib/i18n-keys'
 
 function today(): string {
@@ -57,6 +57,7 @@ const QUICK_ACTIONS: { href: string; label: string; labelKey: MessageKey; icon: 
 
 export default function SafetyDashboard() {
   const t = useT()
+  const { locale } = useLocale()
   const [ptpStatus, setPtpStatus] = useState<PtpDateStatus>({ ptp: undefined, status: 'none' })
   const [activePermits, setActivePermits] = useState<AnyPermit[]>([])
   const [incidentCount, setIncidentCount] = useState(0)
@@ -108,7 +109,7 @@ export default function SafetyDashboard() {
           <ModuleTourButton tourId="dashboard" />
         </div>
         <p className="text-sm text-fg-2">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          {formatLongDate(new Date(), locale)}
         </p>
       </div>
 
