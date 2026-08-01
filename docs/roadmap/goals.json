@@ -1625,42 +1625,42 @@
       "criteria": [
         "ES-7"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "tasks": [
         {
           "id": "ES-M4-T1",
           "description": "Convert PreTripInspection, InspectLanding, inspections/inspect pages; render checklist item labels by id in the viewer's locale for live flow and in record.locale for saved records.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M4-T2",
           "description": "Convert RecordView, SafetyHistory, SafetyRecordCard, ReviewStatusSection/Badge, SyncQueuePanel + history/record/review pages; RecordView renders in record.locale; localize record-share.ts text and replace its hardcoded en-US dates.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M4-T3",
           "description": "Replace the 16 hardcoded en-US toLocale* call sites with a locale-aware src/lib/datetime helper (Intl.DateTimeFormat(locale)); add a non-hook getT(locale) for lib code (ptpDayLabel, record-share).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M4-T4",
           "description": "Convert EquipmentProfile, EquipmentCard, PMSchedule, PmTracker, WorkOrderBoard/Card, TrainingTracker/Info, ComplianceInfo, StatusToggle + pages; make QRLabel print static bilingual EN/ES text ('SCAN BEFORE OPERATING / ESCANEE ANTES DE OPERAR') with URLs unchanged.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M4-T5",
           "description": "Pipeline + review evidence + pending sign-off packets for inspect/record/history/review/types namespaces; widen eslint glob; extend both Playwright specs to /inspect/[id], /equipment/[id], /work-orders, /safety/history.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest",
-          "status": "pending"
+          "status": "in_progress"
         }
       ],
       "milestoneAcceptance": "es-leakage.spec green on inspection/equipment/record routes; grep -rn '/es/' src/lib/nav.ts src/app returns nothing and /inspect/[id] still uses generateStaticParams with zero client fetch (UX-7/DM-3 re-verified); vitest asserts a record saved with locale:'es' renders its checklist labels from the es lookaside while an en record renders English; QRLabel snapshot test contains both languages."
@@ -2335,6 +2335,13 @@
       ],
       "refuted": [],
       "notes": "spanish 5→6. Largest milestone of the track. Blocked keys now 8/20. Next: ES-M4 (inspections/equipment/records/history UI, locale dates, bilingual QR labels)."
+    },
+    {
+      "iteration": 27,
+      "date": "2026-07-17",
+      "milestone": "ES-M4",
+      "event": "spend-limit-pause",
+      "details": "T1-T4 done (4-group delegated conversion, all gates green incl. 17/17 e2e; locale dates live; QR label bilingual; records render in their locale — vitest-proven). T5 blocked: es-translate-m4 workflow generators completed (427 keys) but 14/15 review lenses + sweep died on org spend limit. Raw translations staged in docs/i18n/review/m4.pending.json — NOT applied to es.json (converted surfaces render live; unreviewed safety copy never ships). ON RESUME: Workflow resumeFromRunId wf_1d90d108-c43 (generators cache-replay), apply verdicts + evidence + packet digests, extend es-leakage/en-pin to inspection/equipment/record routes, verify ES-7. Then ES-M5, ES-M6, LG-M3."
     }
   ],
   "sessionWindow": null
