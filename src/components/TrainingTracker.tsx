@@ -13,6 +13,7 @@ import {
 import { getCurrentIdentity } from '@/lib/identity'
 import { formatDate } from '@/lib/datetime'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT, type TFunction } from '@/lib/i18n'
 
 interface TrainingTrackerProps {
   equipment: EquipmentItem
@@ -30,23 +31,23 @@ function parseTrainingTopics(raw: string): string[] {
  * Workers see the program name, not regulatory citations ("per 3314", "29 CFR…").
  * Display-only — the raw `topic` string stays the key for training records.
  */
-const PROGRAM_LABELS: { match: RegExp; title: string }[] = [
-  { match: /loto|lockout/i, title: 'Lockout/Tagout (LOTO)' },
-  { match: /abrasive|grinder|ring test/i, title: 'Abrasive Wheel & Grinder Safety' },
-  { match: /crane/i, title: 'Overhead Crane Operation' },
-  { match: /scissor|aerial|mewp/i, title: 'Scissor Lift / Aerial Platform' },
-  { match: /weld|hot ?work/i, title: 'Welding & Hot Work Safety' },
-  { match: /ladder/i, title: 'Ladder Safety' },
-  { match: /extinguisher/i, title: 'Fire Extinguisher Use' },
-  { match: /electrical/i, title: 'Electrical Safety Awareness' },
-  { match: /fume|solder|3d ?print/i, title: 'Soldering & Fume Awareness' },
-  { match: /machine guard/i, title: 'Machine Guarding Awareness' },
-  { match: /\bppe\b/i, title: 'PPE Use & Care' },
-  { match: /iipp|injury.*illness/i, title: 'Injury & Illness Prevention' },
+const PROGRAM_LABELS: { match: RegExp; key: Parameters<TFunction>[0]; title: string }[] = [
+  { match: /loto|lockout/i, key: 'training.programLoto', title: 'Lockout/Tagout (LOTO)' },
+  { match: /abrasive|grinder|ring test/i, key: 'training.programAbrasiveWheel', title: 'Abrasive Wheel & Grinder Safety' },
+  { match: /crane/i, key: 'training.programCrane', title: 'Overhead Crane Operation' },
+  { match: /scissor|aerial|mewp/i, key: 'training.programScissorLift', title: 'Scissor Lift / Aerial Platform' },
+  { match: /weld|hot ?work/i, key: 'training.programWelding', title: 'Welding & Hot Work Safety' },
+  { match: /ladder/i, key: 'training.programLadder', title: 'Ladder Safety' },
+  { match: /extinguisher/i, key: 'training.programExtinguisher', title: 'Fire Extinguisher Use' },
+  { match: /electrical/i, key: 'training.programElectrical', title: 'Electrical Safety Awareness' },
+  { match: /fume|solder|3d ?print/i, key: 'training.programSoldering', title: 'Soldering & Fume Awareness' },
+  { match: /machine guard/i, key: 'training.programMachineGuarding', title: 'Machine Guarding Awareness' },
+  { match: /\bppe\b/i, key: 'training.programPpe', title: 'PPE Use & Care' },
+  { match: /iipp|injury.*illness/i, key: 'training.programIipp', title: 'Injury & Illness Prevention' },
 ]
 
-function friendlyTrainingLabel(topic: string): string {
-  for (const p of PROGRAM_LABELS) if (p.match.test(topic)) return p.title
+function friendlyTrainingLabel(topic: string, t: TFunction): string {
+  for (const p of PROGRAM_LABELS) if (p.match.test(topic)) return t(p.key, undefined, p.title)
   // Fallback: strip regulatory citations and tidy whatever remains.
   const cleaned = topic
     .replace(/\bper\b[^;,]*$/i, '')
@@ -60,6 +61,7 @@ function friendlyTrainingLabel(topic: string): string {
 }
 
 export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
+  const t = useT()
   const [, setTick] = useState(0)
   const [addingTopic, setAddingTopic] = useState<string | null>(null)
   const [empName, setEmpName] = useState('')
@@ -101,7 +103,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
   if (topics.length === 0) {
     return (
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
-        <p className="text-xs text-fg-3 italic">No training requirements defined for this equipment.</p>
+        <p className="text-xs text-fg-3 italic">{t('training.noRequirements', undefined, 'No training requirements defined for this equipment.')}</p>
       </div>
     )
   }
@@ -110,7 +112,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-fg flex items-center gap-1.5">
         <GraduationCap className="w-4 h-4 text-fg-3" />
-        Required Training
+        {t('training.requiredTraining', undefined, 'Required Training')}
       </h3>
 
       <div className="space-y-2">
@@ -135,9 +137,9 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                 ) : (
                   <AlertTriangle className="w-4 h-4 text-warn shrink-0" />
                 )}
-                <span className="text-sm text-fg flex-1 min-w-0">{friendlyTrainingLabel(topic)}</span>
+                <span className="text-sm text-fg flex-1 min-w-0">{friendlyTrainingLabel(topic, t)}</span>
                 <span className="text-xs text-fg-4 shrink-0">
-                  {records.length} {records.length === 1 ? 'record' : 'records'}
+                  {t('training.recordCount', { count: records.length })}
                 </span>
               </button>
 
@@ -159,22 +161,22 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                       ))}
                       {records.length > 10 && (
                         <p className="text-xs text-fg-4 italic pt-1">
-                          Showing 10 of {records.length} records
+                          {t('training.showingRecords', { count: records.length })}
                         </p>
                       )}
                     </div>
                   ) : (
-                    <p className="text-xs text-fg-4 italic">No training records yet.</p>
+                    <p className="text-xs text-fg-4 italic">{t('training.noRecordsYet', undefined, 'No training records yet.')}</p>
                   )}
 
                   {addingTopic === topic ? (
                     <div className="space-y-2 pt-2 border-t border-mytra-border">
                       <div>
-                        <label htmlFor="train-emp-name" className="sr-only">Employee name</label>
+                        <label htmlFor="train-emp-name" className="sr-only">{t('training.employeeName', undefined, 'Employee name')}</label>
                         <input
                           id="train-emp-name"
                           type="text"
-                          placeholder="Employee name"
+                          placeholder={t('training.employeeNamePlaceholder', undefined, 'Employee name')}
                           value={empName}
                           onChange={(e) => setEmpName(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -183,11 +185,11 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         />
                       </div>
                       <div>
-                        <label htmlFor="train-emp-email" className="sr-only">Employee email</label>
+                        <label htmlFor="train-emp-email" className="sr-only">{t('training.employeeEmail', undefined, 'Employee email')}</label>
                         <input
                           id="train-emp-email"
                           type="email"
-                          placeholder="Employee email"
+                          placeholder={t('training.employeeEmailPlaceholder', undefined, 'Employee email')}
                           value={empEmail}
                           onChange={(e) => setEmpEmail(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -201,12 +203,12 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                           disabled={!empName.trim() || !validEmail}
                           className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
                         >
-                          Record Training
+                          {t('training.recordTraining', undefined, 'Record Training')}
                         </button>
                         <button
                           onClick={() => { setAddingTopic(null); setEmpName(''); setEmpEmail('') }}
                           className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-fg-3 hover:text-fg transition-colors"
-                          aria-label="Cancel"
+                          aria-label={t('common.cancel', undefined, 'Cancel')}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -219,7 +221,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                           onClick={() => handleAddSelf(topic)}
                           className="text-xs font-medium text-ok hover:text-ok/80 transition-colors"
                         >
-                          Mark myself trained
+                          {t('training.markMyselfTrained', undefined, 'Mark myself trained')}
                         </button>
                       )}
                       <button
@@ -227,7 +229,7 @@ export default function TrainingTracker({ equipment }: TrainingTrackerProps) {
                         className="inline-flex items-center gap-1 text-xs font-medium text-mytra-purple
                                    hover:text-mytra-purple-hover transition-colors"
                       >
-                        <Plus className="w-3 h-3" /> Add employee
+                        <Plus className="w-3 h-3" /> {t('training.addEmployee', undefined, 'Add employee')}
                       </button>
                     </div>
                   )}

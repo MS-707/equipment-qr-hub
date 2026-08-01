@@ -11,6 +11,7 @@ import { getEquipmentById } from '@/lib/equipment'
 import dynamic from 'next/dynamic'
 import TabNav from '@/components/TabNav'
 import StatusToggle from '@/components/StatusToggle'
+import { useT } from '@/lib/i18n'
 import ManualCard from '@/components/ManualCard'
 import PreTripInspection from '@/components/PreTripInspection'
 import AuthorizedUsers from '@/components/AuthorizedUsers'
@@ -40,6 +41,7 @@ interface EquipmentProfileProps {
 type TabId = 'pre-trip' | 'training' | 'pm-schedule' | 'compliance'
 
 export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
+  const t = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
@@ -48,11 +50,11 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
 
   const TABS = [
     ...(showPreTrip
-      ? [{ id: 'pre-trip' as TabId, label: 'Pre-Trip', icon: <ClipboardCheck className="w-4 h-4" /> }]
+      ? [{ id: 'pre-trip' as TabId, label: t('nav.preTrip.label', undefined, 'Pre-Trip'), icon: <ClipboardCheck className="w-4 h-4" /> }]
       : []),
-    { id: 'training' as TabId, label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
-    { id: 'pm-schedule' as TabId, label: 'PM Schedule', icon: <Calendar className="w-4 h-4" /> },
-    { id: 'compliance' as TabId, label: 'Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
+    { id: 'training' as TabId, label: t('equipment.tabTraining', undefined, 'Training'), icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'pm-schedule' as TabId, label: t('equipment.tabPmSchedule', undefined, 'PM Schedule'), icon: <Calendar className="w-4 h-4" /> },
+    { id: 'compliance' as TabId, label: t('equipment.tabCompliance', undefined, 'Compliance'), icon: <ShieldCheck className="w-4 h-4" /> },
   ]
 
   const TAB_IDS = TABS.map((t) => t.id)
@@ -125,7 +127,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
                      text-sm transition-colors duration-150 mb-6 min-h-[44px] py-2 -ml-2 pl-2 pr-3"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Equipment
+          {t('equipment.backToEquipment', undefined, 'Back to Equipment')}
         </Link>
 
         {/* Header */}
@@ -148,7 +150,7 @@ export default function EquipmentProfile({ equipment }: EquipmentProfileProps) {
             {requiresMachineGuarding(equipment) && (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-warn/10 text-warn">
                 <Shield className="w-3 h-3" />
-                Machine Guarding Required
+                {t('equipment.machineGuardingRequired', undefined, 'Machine Guarding Required')}
               </span>
             )}
           </div>

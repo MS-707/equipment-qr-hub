@@ -8,8 +8,10 @@ import { getAllEquipment, getCategories } from '@/lib/equipment'
 import { CATEGORY_COLORS, EquipmentCategory, requiresPreTrip } from '@/lib/types'
 import QRLabel from '@/components/QRLabel'
 import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 export default function LabelsPage() {
+  const t = useT()
   const { data: session } = useSession()
   const canAccess = session?.user?.isAdmin === true
   const [baseUrl, setBaseUrl] = useState('')
@@ -34,12 +36,12 @@ export default function LabelsPage() {
       <main id="main" className="min-h-screen bg-mytra-bg flex items-center justify-center p-4">
         <div className="bg-mytra-card border border-mytra-border rounded-card p-6 text-center max-w-sm">
           <ShieldAlert className="w-8 h-8 text-warn mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-fg">Admin Access Required</h2>
+          <h2 className="text-lg font-semibold text-fg">{t('qr.adminAccessRequired', undefined, 'Admin Access Required')}</h2>
           <p className="text-sm text-fg-3 mt-2">
-            QR label management is restricted to administrators. Contact your safety officer for access.
+            {t('qr.adminAccessBody')}
           </p>
           <Link href="/equipment" className="inline-block mt-4 text-sm text-mytra-purple hover:text-mytra-purple-hover">
-            Back to Equipment
+            {t('qr.backToEquipment', undefined, 'Back to Equipment')}
           </Link>
         </div>
       </main>
@@ -74,13 +76,13 @@ export default function LabelsPage() {
               className="inline-flex items-center gap-1.5 text-sm text-fg-3 hover:text-fg transition-colors mb-4"
             >
               <ArrowLeft size={16} />
-              Back to Equipment
+              {t('qr.backToEquipment', undefined, 'Back to Equipment')}
             </Link>
             <h1 className="text-xl font-bold text-fg">
-              QR Label Generator
+              {t('qr.title', undefined, 'QR Label Generator')}
             </h1>
             <p className="text-fg-3 mt-1">
-              Generate and print QR code labels for equipment
+              {t('qr.subtitle', undefined, 'Generate and print QR code labels for equipment')}
             </p>
           </div>
 
@@ -91,20 +93,20 @@ export default function LabelsPage() {
                 htmlFor="base-url"
                 className="block text-sm font-medium text-fg-3 mb-1.5"
               >
-                Base URL
+                {t('qr.baseUrl', undefined, 'Base URL')}
               </label>
               <input
                 id="base-url"
                 type="text"
                 value={baseUrl}
                 onChange={e => setBaseUrl(e.target.value)}
-                placeholder="https://your-domain.com"
+                placeholder={t('qr.baseUrlPlaceholder', undefined, 'https://your-domain.com')}
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-4 focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
               />
             </div>
             <div className="shrink-0">
-              <span className="block text-sm font-medium text-fg-3 mb-1.5">Label type</span>
-              <div className="inline-flex rounded-lg border border-mytra-border overflow-hidden" role="radiogroup" aria-label="Label type">
+              <span className="block text-sm font-medium text-fg-3 mb-1.5">{t('qr.labelType', undefined, 'Label type')}</span>
+              <div className="inline-flex rounded-lg border border-mytra-border overflow-hidden" role="radiogroup" aria-label={t('qr.labelType', undefined, 'Label type')}>
                 <button
                   type="button"
                   role="radio"
@@ -114,7 +116,7 @@ export default function LabelsPage() {
                     labelSet === 'equipment' ? `${btnSelectedCls}` : 'bg-mytra-bg text-fg-3 hover:text-fg'
                   }`}
                 >
-                  <QrCode size={15} /> Equipment
+                  <QrCode size={15} /> {t('nav.equipment.long', undefined, 'Equipment')}
                 </button>
                 <button
                   type="button"
@@ -125,7 +127,7 @@ export default function LabelsPage() {
                     labelSet === 'pre-trip' ? `${btnSelectedCls}` : 'bg-mytra-bg text-fg-3 hover:text-fg'
                   }`}
                 >
-                  <ClipboardCheck size={15} /> Pre-Trip
+                  <ClipboardCheck size={15} /> {t('nav.preTrip.label', undefined, 'Pre-Trip')}
                 </button>
               </div>
             </div>
@@ -134,7 +136,9 @@ export default function LabelsPage() {
               className={`${btnPrimaryCls} inline-flex items-center gap-2 font-medium text-sm px-5 py-2 min-h-[44px] shrink-0`}
             >
               <Printer size={16} />
-              {labelSet === 'pre-trip' ? 'Print Pre-Trip Labels' : 'Print All Labels'}
+              {labelSet === 'pre-trip'
+                ? t('qr.printPreTripLabels', undefined, 'Print Pre-Trip Labels')
+                : t('qr.printAllLabels', undefined, 'Print All Labels')}
             </button>
           </div>
 
@@ -142,14 +146,13 @@ export default function LabelsPage() {
           {labelSet === 'pre-trip' && (
             <section>
               <div className="flex items-center gap-3 mb-1 pl-3" style={{ borderLeft: '3px solid var(--hue-amber)' }}>
-                <h2 className="text-lg font-semibold text-fg">Pre-Trip Inspection Labels</h2>
+                <h2 className="text-lg font-semibold text-fg">{t('qr.preTripSectionTitle', undefined, 'Pre-Trip Inspection Labels')}</h2>
                 <span className="text-xs text-fg-4">
-                  {preTripEquipment.length} unit{preTripEquipment.length !== 1 ? 's' : ''}
+                  {t('qr.unitCount', { count: preTripEquipment.length })}
                 </span>
               </div>
               <p className="text-sm text-fg-3 mb-4 pl-3">
-                Mount these on forklifts and lifts — scanning opens that unit&apos;s pre-trip
-                inspection directly. Completed inspections email a signed, auditable copy to EHS.
+                {t('qr.preTripSectionBody')}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {preTripEquipment.map(item => (
@@ -182,7 +185,7 @@ export default function LabelsPage() {
                       {category}
                     </h2>
                     <span className="text-xs text-fg-4">
-                      {items.length} item{items.length !== 1 ? 's' : ''}
+                      {t('qr.itemCount', { count: items.length })}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

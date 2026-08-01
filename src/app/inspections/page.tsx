@@ -8,8 +8,10 @@ import { getAllEquipment } from '@/lib/equipment'
 import { getLastEquipmentId, getAllInspections, exportInspectionsToCsv, onInspectionChange } from '@/lib/inspections'
 import { requiresPreTrip, INSPECTION_CATEGORIES, EquipmentItem } from '@/lib/types'
 import PreTripInspection from '@/components/PreTripInspection'
+import { useT } from '@/lib/i18n'
 
 export default function InspectionsPage() {
+  const t = useT()
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
   const [inspectionCount, setInspectionCount] = useState(0)
@@ -63,6 +65,10 @@ export default function InspectionsPage() {
 
   const selectedEquipment = inspectableUnits.find((e) => e.itemNumber === selectedId)
 
+  // Rich-text interpolation: split the template around a sentinel so the
+  // styled <span> around the equipment name stays a real element.
+  const manualLinkParts = t('inspect.viewOperatorManual', { name: '\u0000' }, 'View operator manual & training info for {name}').split('\u0000')
+
   if (!mounted) return null
 
   return (
@@ -71,27 +77,27 @@ export default function InspectionsPage() {
       {/* Page header */}
       <div className="flex items-center gap-2.5 mb-6">
         <ClipboardCheck className="w-6 h-6 text-mytra-purple" />
-        <h1 className="text-xl font-bold text-fg">Pre-Trip Inspections</h1>
+        <h1 className="text-xl font-bold text-fg">{t('inspect.pageTitle', undefined, 'Pre-Trip Inspections')}</h1>
         <ModuleTourButton tourId="inspections" />
         <button
           type="button"
           onClick={handleExportCsv}
           disabled={inspectionCount === 0}
-          title={inspectionCount === 0 ? 'No inspections recorded yet' : `Export ${inspectionCount} inspection${inspectionCount === 1 ? '' : 's'} as CSV`}
-          aria-label="Export inspections as CSV"
+          title={inspectionCount === 0 ? t('inspect.noInspectionsYetTitle', undefined, 'No inspections recorded yet') : t('inspect.exportCsvTitle', { count: inspectionCount })}
+          aria-label={t('inspect.exportCsvAria', undefined, 'Export inspections as CSV')}
           className="ml-auto inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1.5
                      min-h-[44px] text-fg-3 hover:text-fg hover:bg-mytra-card-hover transition-colors
                      disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Export CSV</span>
+          <span className="hidden sm:inline">{t('inspect.exportCsv', undefined, 'Export CSV')}</span>
         </button>
       </div>
 
       {/* Equipment selector */}
       <div data-tour-module="equip-dropdown" className="mb-6">
         <label htmlFor="equipment-select" className="block text-xs text-fg-3 mb-1.5">
-          Select Equipment
+          {t('inspect.selectEquipmentLabel', undefined, 'Select Equipment')}
         </label>
         <select
           id="equipment-select"
@@ -106,8 +112,9 @@ export default function InspectionsPage() {
             <optgroup key={category} label={category}>
               {items.map((eq) => (
                 <option key={eq.itemNumber} value={eq.itemNumber}>
-                  {eq.name}
-                  {eq.status !== 'Active' ? ` (${eq.status})` : ''}
+                  {eq.status !== 'Active'
+                    ? t('inspect.equipmentOptionWithStatus', { name: eq.name, status: eq.status }, '{name} ({status})')
+                    : eq.name}
                 </option>
               ))}
             </optgroup>
@@ -125,7 +132,7 @@ export default function InspectionsPage() {
                      transition-colors"
         >
           <BookOpen className="w-4 h-4 shrink-0" />
-          <span>View operator manual & training info for <span className="text-fg font-medium">{selectedEquipment.name}</span></span>
+          <span>{manualLinkParts[0]}<span className="text-fg font-medium">{selectedEquipment.name}</span>{manualLinkParts[1]}</span>
         </Link>
       )}
 

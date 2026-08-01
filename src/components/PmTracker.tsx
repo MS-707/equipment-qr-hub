@@ -15,6 +15,8 @@ import {
 import { getCurrentIdentity } from '@/lib/identity'
 import { formatDate } from '@/lib/datetime'
 import { btnPrimaryCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
+import type { MessageKey } from '@/lib/i18n-keys'
 
 const PM_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual'] as const
 const FREQ_KEYS: Record<string, keyof EquipmentItem> = {
@@ -25,12 +27,23 @@ const FREQ_KEYS: Record<string, keyof EquipmentItem> = {
   'Semi-Annual': 'pmSemiAnnual',
   Annual: 'pmAnnual',
 }
+// Display-only mapping — the English frequency strings stay the stored/lookup
+// values (FREQ_KEYS map keys and the recordPmCompletion payload).
+const FREQ_LABEL_KEYS: Record<string, MessageKey> = {
+  Daily: 'equipment.freqDaily',
+  Weekly: 'equipment.freqWeekly',
+  Monthly: 'equipment.freqMonthly',
+  Quarterly: 'equipment.freqQuarterly',
+  'Semi-Annual': 'equipment.freqSemiAnnual',
+  Annual: 'equipment.freqAnnual',
+}
 
 interface PmTrackerProps {
   equipment: EquipmentItem
 }
 
 export default function PmTracker({ equipment }: PmTrackerProps) {
+  const t = useT()
   const [assignment, setAssignment] = useState(() => getPmAssignment(equipment.itemNumber))
   const [, setTick] = useState(0)
   const [assigning, setAssigning] = useState(false)
@@ -87,7 +100,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
         <h3 className="text-sm font-semibold text-fg flex items-center gap-1.5 mb-2">
           <User className="w-4 h-4 text-fg-3" />
-          PM Responsible Individual (DRI)
+          {t('equipment.pmDriHeading', undefined, 'PM Responsible Individual (DRI)')}
         </h3>
 
         {assignment ? (
@@ -95,14 +108,14 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
             <div>
               <p className="text-sm text-fg">{assignment.driName}</p>
               {assignment.driEmail && <p className="text-xs text-fg-3">{assignment.driEmail}</p>}
-              <p className="text-xs text-fg-4 mt-0.5">Assigned {formatDate(assignment.assignedAt)}</p>
+              <p className="text-xs text-fg-4 mt-0.5">{t('equipment.assignedDate', { date: formatDate(assignment.assignedAt) }, 'Assigned {date}')}</p>
             </div>
             {canManageDri && (
               <button
                 onClick={() => setAssigning(true)}
                 className="text-xs text-mytra-purple hover:text-mytra-purple-hover transition-colors"
               >
-                Reassign
+                {t('equipment.reassign', undefined, 'Reassign')}
               </button>
             )}
           </div>
@@ -110,13 +123,13 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
           <div>
             {assigning ? null : (
               <div className="flex items-center gap-2">
-                <p className="text-xs text-fg-3 italic flex-1">No DRI assigned</p>
+                <p className="text-xs text-fg-3 italic flex-1">{t('equipment.noDriAssigned', undefined, 'No DRI assigned')}</p>
                 {canManageDri && (
                   <button
                     onClick={() => setAssigning(true)}
                     className="text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover transition-colors"
                   >
-                    Assign DRI
+                    {t('equipment.assignDri', undefined, 'Assign DRI')}
                   </button>
                 )}
               </div>
@@ -132,16 +145,16 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                 className="w-full text-left text-xs text-fg-2 bg-mytra-bg border border-mytra-border
                            rounded-lg px-3 py-2 hover:bg-mytra-card-hover transition-colors"
               >
-                Assign myself ({identity.name})
+                {t('equipment.assignMyself', { name: identity.name }, 'Assign myself ({name})')}
               </button>
             )}
             <div>
-              <label htmlFor="dri-name" className="sr-only">DRI name</label>
+              <label htmlFor="dri-name" className="sr-only">{t('equipment.driNameLabel', undefined, 'DRI name')}</label>
               <input
                 id="dri-name"
                 type="text"
                 autoCapitalize="words"
-                placeholder="DRI name"
+                placeholder={t('equipment.driNamePlaceholder', undefined, 'DRI name')}
                 value={driName}
                 onChange={(e) => setDriName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAssign()}
@@ -150,11 +163,11 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
               />
             </div>
             <div>
-              <label htmlFor="dri-email" className="sr-only">DRI email (optional)</label>
+              <label htmlFor="dri-email" className="sr-only">{t('equipment.driEmailLabel', undefined, 'DRI email (optional)')}</label>
               <input
                 id="dri-email"
                 type="email"
-                placeholder="DRI email (optional)"
+                placeholder={t('equipment.driEmailPlaceholder', undefined, 'DRI email (optional)')}
                 value={driEmail}
                 onChange={(e) => setDriEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAssign()}
@@ -168,14 +181,14 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                 disabled={!driName.trim()}
                 className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
               >
-                Assign
+                {t('equipment.assign', undefined, 'Assign')}
               </button>
               <button
                 onClick={() => { setAssigning(false); setDriName(''); setDriEmail('') }}
                 className="px-4 py-2 text-xs font-medium text-fg-2 bg-mytra-bg border border-mytra-border
                            rounded-lg hover:text-fg transition-colors"
               >
-                Cancel
+                {t('common.cancel', undefined, 'Cancel')}
               </button>
             </div>
           </div>
@@ -184,7 +197,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
 
       {/* PM Status Grid */}
       <div className="bg-mytra-card border border-mytra-border rounded-card p-4">
-        <h3 className="text-sm font-semibold text-fg mb-3">PM Completion Status</h3>
+        <h3 className="text-sm font-semibold text-fg mb-3">{t('equipment.pmCompletionStatus', undefined, 'PM Completion Status')}</h3>
         <div className="space-y-2">
           {activeFreqs.map((freq) => {
             const latest = getLatestPmCompletion(equipment.itemNumber, freq)
@@ -202,13 +215,17 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                     <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm text-fg">{freq}</p>
+                    <p className="text-sm text-fg">{t(FREQ_LABEL_KEYS[freq], undefined, freq)}</p>
                     {latest ? (
                       <p className="text-xs text-fg-3 truncate">
-                        Last: {formatDate(latest.completedAt)} by {latest.completedBy}
+                        {t('equipment.lastCompletedBy', {
+                          date: formatDate(latest.completedAt),
+                          // 'Unknown' is stored English on the record — localize at render only
+                          name: latest.completedBy === 'Unknown' ? t('equipment.unknownUser', undefined, 'Unknown') : latest.completedBy,
+                        }, 'Last: {date} by {name}')}
                       </p>
                     ) : (
-                      <p className="text-xs text-fg-4 italic">Never completed</p>
+                      <p className="text-xs text-fg-4 italic">{t('equipment.neverCompleted', undefined, 'Never completed')}</p>
                     )}
                   </div>
                 </div>
@@ -217,7 +234,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
                   className="text-xs font-medium text-mytra-purple hover:text-mytra-purple-hover
                              hover:bg-mytra-purple/10 rounded transition-colors shrink-0 px-2 py-1"
                 >
-                  Log
+                  {t('equipment.log', undefined, 'Log')}
                 </button>
               </div>
             )
@@ -225,7 +242,7 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
         </div>
 
         {activeFreqs.length === 0 && (
-          <p className="text-xs text-fg-3 italic">No PM schedule defined for this equipment.</p>
+          <p className="text-xs text-fg-3 italic">{t('equipment.noPmScheduleDefined', undefined, 'No PM schedule defined for this equipment.')}</p>
         )}
       </div>
 
@@ -234,10 +251,13 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
         <div className="bg-mytra-card border border-mytra-purple/30 rounded-card p-4 shadow-card">
           <h4 className="text-sm font-medium text-fg mb-2 flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-mytra-purple" />
-            Log {logFreq} PM — {equipment.name}
+            {t('equipment.logPmHeading', {
+              frequency: t(FREQ_LABEL_KEYS[logFreq], undefined, logFreq),
+              name: equipment.name,
+            }, 'Log {frequency} PM — {name}')}
           </h4>
           <textarea
-            placeholder="Notes (optional)"
+            placeholder={t('equipment.notesPlaceholder', undefined, 'Notes (optional)')}
             value={logNotes}
             onChange={(e) => setLogNotes(e.target.value)}
             rows={2}
@@ -249,14 +269,14 @@ export default function PmTracker({ equipment }: PmTrackerProps) {
               onClick={handleLogCompletion}
               className={`${btnPrimaryCls} flex-1 text-xs font-medium py-2`}
             >
-              Mark Complete
+              {t('equipment.markComplete', undefined, 'Mark Complete')}
             </button>
             <button
               onClick={() => { setLogFreq(null); setLogNotes('') }}
               className="px-4 py-2 text-xs font-medium text-fg-2 bg-mytra-bg border border-mytra-border
                          rounded-lg hover:text-fg transition-colors"
             >
-              Cancel
+              {t('common.cancel', undefined, 'Cancel')}
             </button>
           </div>
         </div>

@@ -20,20 +20,17 @@ test.describe('i18n dark infra', () => {
     await expect(page.getByRole('heading', { name: /equipment/i }).first()).toBeVisible()
   })
 
-  test('a device that already chose es gets the pre-paint lang stamp but STILL sees English (dark)', async ({ page }) => {
-    // Simulates the post-ES-M6 stored preference arriving early — the infra
-    // half (lang stamp) works; the exposure half (translated copy) must not.
+  test('a device that already chose es gets the pre-paint lang stamp with NO toggle exposed', async ({ page }) => {
+    // Converted surfaces now legitimately render Spanish for a seeded es
+    // preference (es-leakage.spec owns those assertions); what stays dark
+    // until ES-M6 is the EXPOSURE: no language toggle exists anywhere, and
+    // the pre-paint stamp must land before DOMContentLoaded (no flash).
     await page.addInitScript(() => localStorage.setItem('sage-locale-v2', 'es'))
     await page.goto('/equipment', { waitUntil: 'domcontentloaded' })
-    // The inline head script runs before DOMContentLoaded — the attribute must
-    // already be es at this instant (one-shot read, no retry = no flash)…
     const preHydration = await page.locator('html').getAttribute('lang')
     expect(preHydration, 'pre-paint lang stamp must land before DOMContentLoaded').toBe('es')
-    // …and it must STAY es after hydration (provider agrees with the stamp).
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
     await expect(page.locator('main#main')).toBeVisible()
-    // Dark guarantee: copy is byte-identical English; no toggle appears.
-    await expect(page.getByRole('heading', { name: /equipment/i }).first()).toBeVisible()
     await expect(page.getByText(/Español/)).toHaveCount(0)
   })
 

@@ -5,21 +5,14 @@ import { Send, RotateCcw, CheckCircle2, AlertCircle, Clock, Loader2 } from 'luci
 import type { SafetyRecord } from '@/lib/safety-types'
 import { markSubmittedForReview, markReviewRecalled, markSynced } from '@/lib/safety-records'
 import { getCurrentIdentity } from '@/lib/identity'
+import { useT } from '@/lib/i18n'
+import { formatDateTime } from '@/lib/datetime'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
 const EHS_ENABLED = process.env.NEXT_PUBLIC_EHS_REVIEW === '1'
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
 export default function ReviewStatusSection({ record }: { record: SafetyRecord }) {
+  const t = useT()
   const [submitting, setSubmitting] = useState(false)
   const [recallOpen, setRecallOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +37,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError((data as { error?: string }).error ?? 'Submit failed — try again')
+        setError((data as { error?: string }).error ?? t('review.submitFailed', undefined, 'Submit failed — try again'))
       } else {
         const data = await res.json().catch(() => ({})) as { notionPageId?: string }
         if (data.notionPageId) {
@@ -53,7 +46,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
         markSubmittedForReview(record.id, by)
       }
     } catch {
-      setError('Offline — try again when connection returns')
+      setError(t('review.offlineTryAgain', undefined, 'Offline — try again when connection returns'))
     } finally {
       setSubmitting(false)
     }
@@ -67,7 +60,7 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
   if (!status || status === 'recalled') {
     return (
       <section className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">EHS Review</h2>
+        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">{t('review.ehsReview', undefined, 'EHS Review')}</h2>
         <button
           type="button"
           onClick={handleSubmit}
@@ -78,12 +71,12 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
                      disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {submitting ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> {t('review.submitting', undefined, 'Submitting…')}</>
           ) : (
-            <><Send className="w-4 h-4" /> Submit for EHS Review</>
+            <><Send className="w-4 h-4" /> {t('forms.submitReviewBtn', undefined, 'Submit for EHS Review')}</>
           )}
         </button>
-        <p className="text-xs text-fg-4 mt-1.5 text-center">Your EHS manager will be notified</p>
+        <p className="text-xs text-fg-4 mt-1.5 text-center">{t('review.managerNotified', undefined, 'Your EHS manager will be notified')}</p>
         {error && (
           <p className="text-xs text-warn mt-2 text-center">{error}</p>
         )}
@@ -95,27 +88,27 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
     return (
       <section className="bg-warn/5 border border-warn/20 rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
+          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('review.ehsReview', undefined, 'EHS Review')}</h2>
           <span
             className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded"
             style={{ color: 'var(--warn)', backgroundColor: 'color-mix(in srgb, var(--warn) 25%, transparent)' }}
           >
-            <Clock className="w-3 h-3" /> Pending
+            <Clock className="w-3 h-3" /> {t('sync.pending', undefined, 'Pending')}
           </span>
         </div>
-        <p className="text-xs text-fg-2">Awaiting EHS manager sign-off</p>
+        <p className="text-xs text-fg-2">{t('review.awaitingSignoff', undefined, 'Awaiting EHS manager sign-off')}</p>
         <button
           type="button"
           onClick={() => setRecallOpen(true)}
           className="no-print mt-3 inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg-2 transition-colors min-h-[44px] px-3"
         >
-          <RotateCcw className="w-3.5 h-3.5" /> Recall submission
+          <RotateCcw className="w-3.5 h-3.5" /> {t('review.recallSubmission', undefined, 'Recall submission')}
         </button>
         <ConfirmDialog
           open={recallOpen}
-          title="Recall Submission"
-          message="This will withdraw your EHS review request. You can resubmit later."
-          confirmLabel="Recall"
+          title={t('review.recallTitle', undefined, 'Recall Submission')}
+          message={t('review.recallMessage', undefined, 'This will withdraw your EHS review request. You can resubmit later.')}
+          confirmLabel={t('review.recall', undefined, 'Recall')}
           onConfirm={handleRecall}
           onCancel={() => setRecallOpen(false)}
         />
@@ -127,17 +120,17 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
     return (
       <section className="bg-ok/5 border border-ok/20 rounded-card p-4 shadow-card">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
+          <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('review.ehsReview', undefined, 'EHS Review')}</h2>
           <span
             className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded"
             style={{ color: 'var(--ok)', backgroundColor: 'color-mix(in srgb, var(--ok) 25%, transparent)' }}
           >
-            <CheckCircle2 className="w-3 h-3" /> Approved
+            <CheckCircle2 className="w-3 h-3" /> {t('review.approved', undefined, 'Approved')}
           </span>
         </div>
         <p className="text-xs text-fg-2">
-          Approved by {record.reviewerName ?? 'EHS Manager'}
-          {record.reviewDecidedAt && <> · {fmt(record.reviewDecidedAt)}</>}
+          {t('review.approvedBy', { name: record.reviewerName ?? t('review.ehsManagerFallback', undefined, 'EHS Manager') })}
+          {record.reviewDecidedAt && <> · {formatDateTime(record.reviewDecidedAt)}</>}
         </p>
         {record.reviewNote && (
           <p className="text-xs text-fg-2 mt-1 italic">&ldquo;{record.reviewNote}&rdquo;</p>
@@ -151,17 +144,17 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
       <>
         <section className="bg-danger/5 border border-danger/20 rounded-card p-4 shadow-card">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">EHS Review</h2>
+            <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{t('review.ehsReview', undefined, 'EHS Review')}</h2>
             <span
               className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded"
               style={{ color: 'var(--danger)', backgroundColor: 'color-mix(in srgb, var(--danger) 25%, transparent)' }}
             >
-              <AlertCircle className="w-3 h-3" /> Needs Revision
+              <AlertCircle className="w-3 h-3" /> {t('review.needsRevision', undefined, 'Needs Revision')}
             </span>
           </div>
           <p className="text-xs text-fg-2">
-            Reviewed by {record.reviewerName ?? 'EHS Manager'}
-            {record.reviewDecidedAt && <> · {fmt(record.reviewDecidedAt)}</>}
+            {t('review.reviewedBy', { name: record.reviewerName ?? t('review.ehsManagerFallback', undefined, 'EHS Manager') })}
+            {record.reviewDecidedAt && <> · {formatDateTime(record.reviewDecidedAt)}</>}
           </p>
           {record.reviewNote && (
             <p className="text-xs text-danger mt-1">&ldquo;{record.reviewNote}&rdquo;</p>
@@ -176,9 +169,9 @@ export default function ReviewStatusSection({ record }: { record: SafetyRecord }
                        disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Resubmitting…</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {t('review.resubmitting', undefined, 'Resubmitting…')}</>
             ) : (
-              <><Send className="w-4 h-4" /> Resubmit for EHS Review</>
+              <><Send className="w-4 h-4" /> {t('review.resubmitBtn', undefined, 'Resubmit for EHS Review')}</>
             )}
           </button>
           {error && (

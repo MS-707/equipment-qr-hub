@@ -18,6 +18,8 @@ import { updateWorkOrder, deleteWorkOrder, isOverdue } from '@/lib/work-orders'
 import { getEquipmentById } from '@/lib/equipment'
 import { haptic } from '@/lib/haptic'
 import { useSession } from 'next-auth/react'
+import { useT } from '@/lib/i18n'
+import { formatDate } from '@/lib/datetime'
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder
@@ -26,6 +28,23 @@ interface WorkOrderCardProps {
 
 const STATUS_FLOW: WorkOrderStatus[] = ['Not Started', 'In Progress', 'Complete']
 
+// Display-key maps: status / PM type are typed enum VALUES (record keys stay
+// English); only the rendered label is localized.
+const STATUS_KEY = {
+  'Not Started': 'workOrders.statusNotStarted',
+  'In Progress': 'workOrders.statusInProgress',
+  'Complete': 'workOrders.statusComplete',
+} as const
+
+const PM_TYPE_KEY = {
+  'Daily': 'workOrders.pmTypeDaily',
+  'Weekly': 'workOrders.pmTypeWeekly',
+  'Monthly': 'workOrders.pmTypeMonthly',
+  'Quarterly': 'workOrders.pmTypeQuarterly',
+  'Semi-Annual': 'workOrders.pmTypeSemiAnnual',
+  'Annual': 'workOrders.pmTypeAnnual',
+} as const
+
 const STATUS_ICONS: Record<WorkOrderStatus, typeof Circle> = {
   'Not Started': Circle,
   'In Progress': Clock,
@@ -33,6 +52,7 @@ const STATUS_ICONS: Record<WorkOrderStatus, typeof Circle> = {
 }
 
 export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProps) {
+  const t = useT()
   const [isExpanded, setIsExpanded] = useState(false)
   const [notes, setNotes] = useState(workOrder.completionNotes)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -47,8 +67,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   useEffect(() => {
     if (!copyMsg) return
-    const t = setTimeout(() => setCopyMsg(null), 2500)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setCopyMsg(null), 2500)
+    return () => clearTimeout(timer)
   }, [copyMsg])
 
   const equipment = useMemo(
@@ -86,8 +106,8 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
 
   const tasks = workOrder.tasks
     .split(';')
-    .map((t) => t.trim())
-    .filter((t) => t.length > 0)
+    .map((task) => task.trim())
+    .filter((task) => task.length > 0)
 
   return (
     <div
@@ -119,7 +139,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                   color: pmColor,
                 }}
               >
-                {workOrder.pmType} PM
+                {t('workOrders.pmBadge', { pmType: t(PM_TYPE_KEY[workOrder.pmType]) })}
               </span>
               <span className="text-xs text-fg-4 font-mono tabular-nums">
                 {workOrder.id}
@@ -127,7 +147,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
               {overdue && (
                 <span className="inline-flex items-center gap-1 text-xs text-danger font-medium">
                   <AlertTriangle className="w-3 h-3" />
-                  Overdue
+                  {t('workOrders.overdue', undefined, 'Overdue')}
                 </span>
               )}
             </div>
@@ -137,7 +157,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
           <button
             data-tour-module="wo-status"
             onClick={cycleStatus}
-            aria-label={`Status: ${workOrder.status}. Click to change.`}
+            aria-label={t('workOrders.statusToggleAria', { status: t(STATUS_KEY[workOrder.status]) })}
             className="flex items-center gap-1.5 text-xs font-medium px-4 py-2.5 rounded-full
                        transition-colors hover:opacity-80 shrink-0 min-h-[44px]"
             style={{
@@ -154,10 +174,10 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                   ? 'var(--accent)'
                   : 'var(--fg-4)',
             }}
-            title="Click to change status"
+            title={t('workOrders.statusToggleTitle', undefined, 'Click to change status')}
           >
             <StatusIcon className="w-3 h-3" />
-            {workOrder.status}
+            {t(STATUS_KEY[workOrder.status])}
           </button>
         </div>
 
@@ -165,15 +185,15 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
         <div className="flex items-center gap-3 mt-2 text-xs text-fg-4">
           {workOrder.dueDate && (
             <span className={`tabular-nums ${overdue ? 'text-danger' : ''}`}>
-              Due {workOrder.dueDate}
+              {t('workOrders.dueDate', { dueDate: formatDate(workOrder.dueDate) })}
             </span>
           )}
           {workOrder.assignedTo && (
-            <span>Assigned: {workOrder.assignedTo}</span>
+            <span>{t('workOrders.assignedTo', { assignedTo: workOrder.assignedTo })}</span>
           )}
           {workOrder.completedDate && (
             <span className="text-ok tabular-nums">
-              Completed {workOrder.completedDate}
+              {t('workOrders.completedDate', { completedDate: formatDate(workOrder.completedDate) })}
             </span>
           )}
         </div>
@@ -188,11 +208,11 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
       >
         {isExpanded ? (
           <>
-            <ChevronUp className="w-3 h-3" /> Less
+            <ChevronUp className="w-3 h-3" /> {t('workOrders.less', undefined, 'Less')}
           </>
         ) : (
           <>
-            <ChevronDown className="w-3 h-3" /> {tasks.length} tasks
+            <ChevronDown className="w-3 h-3" /> {t('workOrders.tasksCount', { count: tasks.length })}
           </>
         )}
       </button>
@@ -214,14 +234,14 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
             {/* Completion notes */}
             <div>
               <label className="text-xs text-fg-4 block mb-1">
-                Completion Notes
+                {t('workOrders.completionNotes', undefined, 'Completion Notes')}
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={saveNotes}
                 rows={2}
-                placeholder="Issues found, parts replaced, observations..."
+                placeholder={t('workOrders.completionNotesPlaceholder', undefined, 'Issues found, parts replaced, observations...')}
                 className="w-full bg-mytra-input border border-mytra-border rounded-field py-2 px-3
                            text-xs text-fg placeholder:text-fg-4 resize-none
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple"
@@ -235,17 +255,24 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
                            rounded-lg border border-mytra-border text-fg-3
                            hover:text-fg hover:bg-mytra-card-hover transition-colors min-h-[44px]"
-                title="Send to Linear (requires Linear integration)"
+                title={t('workOrders.sendToLinearTitle', undefined, 'Send to Linear (requires Linear integration)')}
                 onClick={() => {
-                  const title = `${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM`
-                  const desc = `**Work Order:** ${workOrder.id}\n**Due:** ${workOrder.dueDate || 'No date'}\n\n**Tasks:**\n${tasks.map(t => `- ${t}`).join('\n')}`
+                  const title = t('workOrders.shareTitle', {
+                    equipmentName: equipment?.name || t('workOrders.equipmentFallback', undefined, 'Equipment'),
+                    pmType: t(PM_TYPE_KEY[workOrder.pmType]),
+                  })
+                  const desc = t('workOrders.shareBody', {
+                    id: workOrder.id,
+                    dueDate: workOrder.dueDate ? formatDate(workOrder.dueDate) : t('workOrders.noDateFallback', undefined, 'No date'),
+                    tasks: tasks.map(task => `- ${task}`).join('\n'),
+                  })
                   navigator.clipboard.writeText(`${title}\n\n${desc}`)
-                    .then(() => { setCopyMsg('Copied to clipboard'); haptic('success') })
-                    .catch(() => setCopyMsg('Copy failed — please copy manually'))
+                    .then(() => { setCopyMsg(t('workOrders.copiedToClipboard', undefined, 'Copied to clipboard')); haptic('success') })
+                    .catch(() => setCopyMsg(t('workOrders.copyFailed', undefined, 'Copy failed — please copy manually')))
                 }}
               >
                 <ExternalLink className="w-3 h-3" />
-                Send to Linear
+                {t('workOrders.sendToLinear', undefined, 'Send to Linear')}
               </button>
 
               {/* Gmail dispatch placeholder */}
@@ -253,15 +280,25 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                 className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
                            rounded-lg border border-mytra-border text-fg-3
                            hover:text-fg hover:bg-mytra-card-hover transition-colors min-h-[44px]"
-                title="Email work order (requires Gmail integration)"
+                title={t('workOrders.emailTitle', undefined, 'Email work order (requires Gmail integration)')}
                 onClick={() => {
-                  const subject = `PM Work Order: ${equipment?.name || 'Equipment'} - ${workOrder.pmType} PM [${workOrder.id}]`
-                  const body = `Work Order: ${workOrder.id}\nEquipment: ${equipment?.name || 'Unknown'}\nPM Type: ${workOrder.pmType}\nDue Date: ${workOrder.dueDate || 'Not set'}\n\nTasks:\n${tasks.map(t => `• ${t}`).join('\n')}\n\n---\nSent from Sage`
+                  const subject = t('workOrders.emailSubject', {
+                    equipmentName: equipment?.name || t('workOrders.equipmentFallback', undefined, 'Equipment'),
+                    pmType: t(PM_TYPE_KEY[workOrder.pmType]),
+                    id: workOrder.id,
+                  })
+                  const body = t('workOrders.emailBody', {
+                    id: workOrder.id,
+                    equipmentName: equipment?.name || t('workOrders.unknownFallback', undefined, 'Unknown'),
+                    pmType: t(PM_TYPE_KEY[workOrder.pmType]),
+                    dueDate: workOrder.dueDate ? formatDate(workOrder.dueDate) : t('workOrders.notSetFallback', undefined, 'Not set'),
+                    tasks: tasks.map(task => `• ${task}`).join('\n'),
+                  })
                   window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`)
                 }}
               >
                 <Mail className="w-3 h-3" />
-                Email
+                {t('workOrders.email', undefined, 'Email')}
               </button>
 
               {/* Delete — admin only */}
@@ -276,7 +313,7 @@ export default function WorkOrderCard({ workOrder, onUpdate }: WorkOrderCardProp
                              }`}
                 >
                   <Trash2 className="w-3 h-3" />
-                  {confirmDelete ? 'Confirm Delete' : 'Delete'}
+                  {confirmDelete ? t('workOrders.confirmDelete', undefined, 'Confirm Delete') : t('common.delete', undefined, 'Delete')}
                 </button>
               )}
             </div>

@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import WorkOrderBoard from '@/components/WorkOrderBoard'
-import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
+import WorkOrdersHeader from '@/components/WorkOrdersHeader'
 
+// Server component — metadata strings stay English literals (UX-7/DM-3:
+// zero client fetch, no locale on the server). Visible copy is translated
+// in the client children (WorkOrdersHeader, WorkOrderBoard).
 export const metadata: Metadata = {
   title: 'Work Orders | Sage',
   description: 'PM work order tracking for shop floor equipment',
@@ -10,17 +13,7 @@ export const metadata: Metadata = {
 export default function WorkOrdersPage() {
   return (
     <main id="main" className="min-h-screen px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <header className="mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-xl font-bold text-fg">
-            Work Orders
-          </h1>
-          <ModuleTourButton tourId="work-orders" />
-        </div>
-        <p className="text-fg-4 text-sm mt-1">
-          PM work orders created from equipment profiles
-        </p>
-      </header>
+      <WorkOrdersHeader />
 
       <WorkOrderBoard />
     </main>

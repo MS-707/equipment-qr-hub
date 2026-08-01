@@ -105,7 +105,7 @@ describe('buildRecordText', () => {
   it('builds incident text with all sections', () => {
     const text = buildRecordText(baseIncident)
     expect(text).toContain('Incident / Near-Miss')
-    expect(text).toContain('near-miss')
+    expect(text).toContain('Near-Miss')
     expect(text).toContain('DESCRIPTION')
     expect(text).toContain('Load shifted')
     expect(text).toContain('IMMEDIATE ACTIONS')
@@ -131,7 +131,7 @@ describe('buildRecordText', () => {
   it('includes review status when present', () => {
     const reviewed = { ...basePtp, reviewStatus: 'approved' as const }
     const text = buildRecordText(reviewed)
-    expect(text).toContain('EHS review: approved')
+    expect(text).toContain('EHS review: Approved')
   })
 
   it('includes footer', () => {

@@ -8,7 +8,8 @@ import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import { isSyncAvailable } from '@/lib/safety-sync'
 import { haptic } from '@/lib/haptic'
-import { localToday } from '@/lib/datetime'
+import { localToday, formatMonthDay } from '@/lib/datetime'
+import { useT, type TFunction } from '@/lib/i18n'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'ptp': ClipboardList,
@@ -19,31 +20,31 @@ const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'incident-report': AlertTriangle,
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(t: TFunction, iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('common.justNow', undefined, 'just now')
+  if (mins < 60) return t('common.mAgo', { n: mins })
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
+  if (hrs < 24) return t('common.hAgo', { n: hrs })
   const days = Math.floor(hrs / 24)
-  if (days < 7) return `${days}d ago`
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  if (days < 7) return t('common.dAgo', { n: days })
+  return formatMonthDay(iso)
 }
 
-function title(r: SafetyRecord): string {
-  if (isPTP(r)) return r.scopeOfWork || 'Pre-Task Plan'
-  if (isJHA(r)) return r.jobTitle || 'Job Hazard Analysis'
+function title(t: TFunction, r: SafetyRecord): string {
+  if (isPTP(r)) return r.scopeOfWork || t('history.fallbackPtp', undefined, 'Pre-Task Plan')
+  if (isJHA(r)) return r.jobTitle || t('dashboard.jobHazardAnalysis', undefined, 'Job Hazard Analysis')
   if (isPermit(r)) {
     const p = r as AnyPermit
     if ('workDescription' in p) return p.workDescription || SAFETY_TYPE_LABELS[r.type]
     return p.spaceDescription || SAFETY_TYPE_LABELS[r.type]
   }
-  if (isIncident(r)) return r.description || 'Incident report'
-  return 'Safety record'
+  if (isIncident(r)) return r.description || t('history.fallbackIncident', undefined, 'Incident report')
+  return t('history.fallbackRecord', undefined, 'Safety record')
 }
 
-function validityBadge(record: SafetyRecord): React.ReactNode {
+function validityBadge(t: TFunction, record: SafetyRecord): React.ReactNode {
   const vu = isPTP(record)
     ? (record as PreTaskPlan).validUntil
     : isJHA(record)
@@ -55,14 +56,14 @@ function validityBadge(record: SafetyRecord): React.ReactNode {
   if (td <= vu && td >= startDate) {
     return (
       <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-ok/10 text-ok">
-        Active
+        {t('dashboard.active', undefined, 'Active')}
       </span>
     )
   }
   if (td > vu) {
     return (
       <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
-        Expired
+        {t('dashboard.expired', undefined, 'Expired')}
       </span>
     )
   }
@@ -70,6 +71,7 @@ function validityBadge(record: SafetyRecord): React.ReactNode {
 }
 
 export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
+  const t = useT()
   const Icon = TYPE_ICON[record.type]
   return (
     <Link
@@ -88,10 +90,10 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
             <span className="text-xs font-mono text-fg-3 tabular-nums">{record.id}</span>
             <span className="text-xs text-fg-4">· {SAFETY_TYPE_LABELS[record.type]}</span>
           </div>
-          <p className="text-sm text-fg truncate">{title(record)}</p>
+          <p className="text-sm text-fg truncate">{title(t, record)}</p>
           <p className="text-xs text-fg-3 truncate">
             {record.location ? `${record.location} · ` : ''}
-            {record.createdBy} · {relativeTime(record.createdAt)}
+            {record.createdBy} · {relativeTime(t, record.createdAt)}
           </p>
         </div>
         <div className="shrink-0 flex items-center gap-1.5">
@@ -99,21 +101,21 @@ export default function SafetyRecordCard({ record }: { record: SafetyRecord }) {
             record.syncStatus === 'failed' ? (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
                 <AlertCircle className="w-3 h-3" />
-                Failed
+                {t('sync.failed', undefined, 'Failed')}
               </span>
             ) : record.syncStatus === 'pending' || record.syncStatus === 'offline' ? (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
                 <RefreshCw className="w-3 h-3" />
-                Pending
+                {t('sync.pending', undefined, 'Pending')}
               </span>
             ) : record.syncStatus === 'synced' ? (
               <span className="inline-flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-ok" aria-hidden="true" title="Synced" />
-                <span className="sr-only">Synced to cloud</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-ok" aria-hidden="true" title={t('sync.synced', undefined, 'Synced')} />
+                <span className="sr-only">{t('sync.syncedToCloud', undefined, 'Synced to cloud')}</span>
               </span>
             ) : null
           )}
-          {validityBadge(record)}
+          {validityBadge(t, record)}
           {isPermit(record) && <PermitStatusBadge permit={record as AnyPermit} />}
           <ReviewStatusBadge record={record} />
         </div>

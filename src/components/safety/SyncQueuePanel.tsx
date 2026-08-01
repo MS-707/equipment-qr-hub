@@ -18,6 +18,8 @@ import { getAllSafetyRecords, onSafetyChange } from '@/lib/safety-records'
 import { retrySyncRecord, retryAllPending, getSyncAvailableAt } from '@/lib/safety-sync'
 import { SAFETY_TYPE_LABELS } from '@/lib/safety-types'
 import type { SafetyRecord, SafetyRecordType } from '@/lib/safety-types'
+import { useT, type TFunction } from '@/lib/i18n'
+import { formatMonthDay } from '@/lib/datetime'
 import { btnPrimaryCls } from '@/lib/form-styles'
 
 const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
@@ -29,16 +31,16 @@ const TYPE_ICON: Record<SafetyRecordType, typeof ClipboardList> = {
   'incident-report': AlertTriangle,
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(t: TFunction, iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('common.justNow', undefined, 'just now')
+  if (mins < 60) return t('common.mAgo', { n: mins })
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
+  if (hrs < 24) return t('common.hAgo', { n: hrs })
   const days = Math.floor(hrs / 24)
-  if (days < 7) return `${days}d ago`
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  if (days < 7) return t('common.dAgo', { n: days })
+  return formatMonthDay(iso)
 }
 
 function isPending(r: SafetyRecord): boolean {
@@ -46,6 +48,7 @@ function isPending(r: SafetyRecord): boolean {
 }
 
 export default function SyncQueuePanel() {
+  const t = useT()
   const [expanded, setExpanded] = useState(false)
   const [pending, setPending] = useState<SafetyRecord[]>([])
   const [syncing, setSyncing] = useState<Set<string>>(new Set())
@@ -118,8 +121,8 @@ export default function SyncQueuePanel() {
           <RefreshCw className="w-4 h-4 text-warn shrink-0" />
         )}
         <p className={`text-xs flex-1 tabular-nums ${syncUnavailable ? 'text-fg-3' : 'text-warn'}`}>
-          {pending.length} record{pending.length !== 1 ? 's' : ''} pending sync
-          {syncUnavailable && ` — sync unavailable, retrying in ${retryMins} min`}
+          {t('dashboard.pendingSync', { count: pending.length })}
+          {syncUnavailable && <> {t('sync.unavailableRetrying', { mins: retryMins })}</>}
         </p>
         {expanded ? (
           <ChevronUp className="w-4 h-4 text-fg-3 shrink-0" />
@@ -145,19 +148,19 @@ export default function SyncQueuePanel() {
                       <span className="text-xs font-mono text-fg-4 truncate">{r.id}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-fg-4">{relativeTime(r.createdAt)}</span>
+                      <span className="text-xs text-fg-4">{relativeTime(t, r.createdAt)}</span>
                       {r.syncStatus === 'failed' ? (
                         <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger">
-                          Failed
+                          {t('sync.failed', undefined, 'Failed')}
                         </span>
                       ) : isSyncing ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-mytra-purple/10 text-mytra-purple">
                           <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                          Syncing
+                          {t('sync.syncingBadge', undefined, 'Syncing')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn">
-                          Pending
+                          {t('sync.pending', undefined, 'Pending')}
                         </span>
                       )}
                     </div>
@@ -170,7 +173,7 @@ export default function SyncQueuePanel() {
                                disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1.5 min-h-[44px] min-w-[44px]
                                rounded-md hover:bg-mytra-purple/10 transition-colors"
                   >
-                    Retry
+                    {t('common.retry', undefined, 'Retry')}
                   </button>
                 </li>
               )
@@ -186,12 +189,12 @@ export default function SyncQueuePanel() {
               {syncingAll ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Syncing...
+                  {t('sync.syncing', undefined, 'Syncing...')}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Sync All
+                  {t('sync.syncAll', undefined, 'Sync All')}
                 </>
               )}
             </button>

@@ -18,7 +18,6 @@ import type {
 import {
   SAFETY_TYPE_LABELS,
   RISK_COLORS,
-  RISK_LABELS,
   isPTP,
   isJHA,
   isPermit,
@@ -34,9 +33,20 @@ import {
   permitDisplayStatus,
 } from '@/lib/safety-records'
 import { trySyncRecord, isSyncAvailable } from '@/lib/safety-sync'
-import { shareRecord } from '@/lib/record-share'
+import {
+  shareRecord,
+  riskLabel,
+  shiftLabel,
+  incidentSeverityLabel,
+  incidentTypeLabel,
+  reviewStatusLabel,
+  syncStatusLabel,
+} from '@/lib/record-share'
 import { getCurrentIdentity } from '@/lib/identity'
 import { ppeLabel } from '@/data/safety-checklists'
+import { useT, getT, type Locale } from '@/lib/i18n'
+import { permitItemLabel, ppeOptionLabel } from '@/lib/i18n-data'
+import { formatDateTime, formatTime } from '@/lib/datetime'
 import PermitStatusBadge from './PermitStatusBadge'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import ReviewStatusSection from './ReviewStatusSection'
@@ -62,18 +72,9 @@ function draftHasContent(draftKey: string): boolean {
   }
 }
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
 export default function RecordView({ id }: { id: string }) {
   const router = useRouter()
+  const t = useT()
   const [record, setRecord] = useState<SafetyRecord | null | undefined>(undefined)
   const [sigImages, setSigImages] = useState<Record<string, string>>({})
   const [revokeOpen, setRevokeOpen] = useState(false)
@@ -133,12 +134,16 @@ export default function RecordView({ id }: { id: string }) {
   if (record === null)
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 text-center">
-        <p className="text-sm text-fg-2">Record not found.</p>
-        <Link href="/safety/history" className="text-sm text-mytra-purple hover:underline">Back to history</Link>
+        <p className="text-sm text-fg-2">{t('record.notFound', undefined, 'Record not found.')}</p>
+        <Link href="/safety/history" className="text-sm text-mytra-purple hover:underline">{t('record.backToHistory', undefined, 'Back to history')}</Link>
       </div>
     )
 
   const r = record
+  // The record body (the signed/printed legal artifact) renders in the
+  // locale the record was signed in — NOT the viewer's (docs/i18n/DESIGN.md).
+  const recLocale: Locale = r.locale ?? 'en'
+  const rt = getT(recLocale)
   const identity = getCurrentIdentity()
 
   function handleClose(note?: string) {
@@ -229,8 +234,8 @@ export default function RecordView({ id }: { id: string }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="no-print flex items-center justify-between">
-        <Link href="/safety/history" aria-label="Back to safety history" className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
-          <ArrowLeft className="w-4 h-4" /> History
+        <Link href="/safety/history" aria-label={t('record.backToHistoryAria', undefined, 'Back to safety history')} className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg min-h-[44px]">
+          <ArrowLeft className="w-4 h-4" /> {t('record.history', undefined, 'History')}
         </Link>
         <div className="flex items-center gap-3">
           {r.syncStatus !== 'synced' && (
@@ -245,8 +250,8 @@ export default function RecordView({ id }: { id: string }) {
               className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover disabled:opacity-50"
             >
               {syncing
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…</>
-                : <><RefreshCw className="w-3.5 h-3.5" /> Retry sync</>}
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('record.syncing', undefined, 'Syncing…')}</>
+                : <><RefreshCw className="w-3.5 h-3.5" /> {t('record.retrySync', undefined, 'Retry sync')}</>}
             </button>
           )}
           <button
@@ -257,10 +262,10 @@ export default function RecordView({ id }: { id: string }) {
             className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover disabled:opacity-50"
           >
             {sharing
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sharing…</>
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('record.sharing', undefined, 'Sharing…')}</>
               : shared
-                ? <><Check className="w-3.5 h-3.5 text-ok" /> Shared</>
-                : <><Share2 className="w-3.5 h-3.5" /> Share</>}
+                ? <><Check className="w-3.5 h-3.5 text-ok" /> {t('record.shared', undefined, 'Shared')}</>
+                : <><Share2 className="w-3.5 h-3.5" /> {t('common.share', undefined, 'Share')}</>}
           </button>
           <button
             type="button"
@@ -274,7 +279,7 @@ export default function RecordView({ id }: { id: string }) {
             }}
             className="inline-flex items-center gap-1.5 text-sm text-fg-2 bg-mytra-card border border-mytra-border rounded-lg px-3 py-2 min-h-[44px] hover:bg-mytra-card-hover"
           >
-            <Printer className="w-3.5 h-3.5" /> Print
+            <Printer className="w-3.5 h-3.5" /> {t('common.print', undefined, 'Print')}
           </button>
         </div>
       </div>
@@ -286,12 +291,12 @@ export default function RecordView({ id }: { id: string }) {
           <span style={{ fontSize: '10pt' }}>{r.id}</span>
         </div>
         <dl className="print-doc-meta">
-          <div><dt>Project / Build</dt><dd>{r.projectName || '—'}</dd></div>
-          <div><dt>Location / Area</dt><dd>{r.location || '—'}</dd></div>
-          {isPTP(r) && <div><dt>Date</dt><dd>{r.date} · {r.shift} shift</dd></div>}
-          <div><dt>Prepared by</dt><dd>{r.createdBy}</dd></div>
-          <div><dt>Created</dt><dd>{fmt(r.createdAt)}</dd></div>
-          {r.reviewStatus && <div><dt>EHS review</dt><dd>{r.reviewStatus}</dd></div>}
+          <div><dt>{rt('record.projectBuild', undefined, 'Project / Build')}</dt><dd>{r.projectName || '—'}</dd></div>
+          <div><dt>{rt('record.locationArea', undefined, 'Location / Area')}</dt><dd>{r.location || '—'}</dd></div>
+          {isPTP(r) && <div><dt>{rt('record.date', undefined, 'Date')}</dt><dd>{rt('record.dateShiftValue', { date: r.date, shift: shiftLabel(rt, r.shift) })}</dd></div>}
+          <div><dt>{rt('record.preparedBy', undefined, 'Prepared by')}</dt><dd>{r.createdBy}</dd></div>
+          <div><dt>{rt('record.created', undefined, 'Created')}</dt><dd>{formatDateTime(r.createdAt, recLocale)}</dd></div>
+          {r.reviewStatus && <div><dt>{rt('record.ehsReview', undefined, 'EHS review')}</dt><dd>{reviewStatusLabel(rt, r.reviewStatus)}</dd></div>}
         </dl>
       </div>
 
@@ -306,12 +311,12 @@ export default function RecordView({ id }: { id: string }) {
         </div>
         <h1 className="text-xl font-semibold text-fg mt-1">{SAFETY_TYPE_LABELS[r.type]}</h1>
         <dl className="grid grid-cols-2 gap-2 mt-3 text-sm">
-          <Field label="Project" value={r.projectName} />
-          <Field label="Location" value={r.location} />
-          <Field label="Created by" value={r.createdBy} />
-          <Field label="Created" value={fmt(r.createdAt)} />
-          <Field label="Sync" value={r.syncStatus} />
-          {r.notionPageId && <Field label="Notion" value="synced" />}
+          <Field label={rt('record.project', undefined, 'Project')} value={r.projectName} />
+          <Field label={rt('record.location', undefined, 'Location')} value={r.location} />
+          <Field label={rt('record.createdBy', undefined, 'Created by')} value={r.createdBy} />
+          <Field label={rt('record.created', undefined, 'Created')} value={formatDateTime(r.createdAt, recLocale)} />
+          <Field label={rt('record.sync', undefined, 'Sync')} value={syncStatusLabel(rt, r.syncStatus)} />
+          {r.notionPageId && <Field label="Notion" value={rt('record.syncedValue', undefined, 'synced')} />}
         </dl>
       </div>
 
@@ -332,14 +337,14 @@ export default function RecordView({ id }: { id: string }) {
             onClick={() => setCloseOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-card border border-mytra-border text-fg hover:bg-mytra-card-hover"
           >
-            <XCircle className="w-4 h-4" /> Close permit
+            <XCircle className="w-4 h-4" /> {t('record.closePermit', undefined, 'Close permit')}
           </button>
           <button
             type="button"
             onClick={() => setRevokeOpen(true)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-danger/10 border border-danger/30 text-danger hover:bg-danger/20"
           >
-            <Ban className="w-4 h-4" /> Revoke
+            <Ban className="w-4 h-4" /> {t('record.revoke', undefined, 'Revoke')}
           </button>
         </div>
       )}
@@ -349,33 +354,33 @@ export default function RecordView({ id }: { id: string }) {
           onClick={handleReissue}
           className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
         >
-          <Copy className="w-4 h-4" /> Reissue as new permit
+          <Copy className="w-4 h-4" /> {t('record.reissueAsNewPermit', undefined, 'Reissue as new permit')}
         </button>
       )}
       <ConfirmDialog
         open={closeOpen}
-        title="Close Permit"
-        message="Mark this permit as closed. The date and time will be recorded."
-        confirmLabel="Close permit"
-        inputPrompt="Closing note (optional)"
+        title={t('record.closePermitTitle', undefined, 'Close Permit')}
+        message={t('record.closePermitMessage', undefined, 'Mark this permit as closed. The date and time will be recorded.')}
+        confirmLabel={t('record.closePermit', undefined, 'Close permit')}
+        inputPrompt={t('record.closingNotePrompt', undefined, 'Closing note (optional)')}
         onConfirm={handleClose}
         onCancel={() => setCloseOpen(false)}
       />
       <ConfirmDialog
         open={revokeOpen}
-        title="Revoke Permit"
-        message="This action is recorded with a timestamp and cannot be undone."
-        confirmLabel="Revoke"
+        title={t('record.revokePermitTitle', undefined, 'Revoke Permit')}
+        message={t('record.revokePermitMessage', undefined, 'This action is recorded with a timestamp and cannot be undone.')}
+        confirmLabel={t('record.revoke', undefined, 'Revoke')}
         variant="danger"
-        inputPrompt="Reason for revoking this permit"
+        inputPrompt={t('record.revokeReasonPrompt', undefined, 'Reason for revoking this permit')}
         onConfirm={handleRevoke}
         onCancel={() => setRevokeOpen(false)}
       />
       <ConfirmDialog
         open={pendingReissue !== null}
-        title="Replace draft in progress?"
-        message="You have an unsaved permit of this type in progress. Reissuing will replace it with a copy of this permit."
-        confirmLabel="Replace & reissue"
+        title={t('record.replaceDraftTitle', undefined, 'Replace draft in progress?')}
+        message={t('record.replaceDraftMessage', undefined, 'You have an unsaved permit of this type in progress. Reissuing will replace it with a copy of this permit.')}
+        confirmLabel={t('record.replaceReissue', undefined, 'Replace & reissue')}
         variant="danger"
         onConfirm={() => {
           if (pendingReissue) writeDraftAndGo(pendingReissue.draftKey, pendingReissue.draft, pendingReissue.formPath)
@@ -387,30 +392,33 @@ export default function RecordView({ id }: { id: string }) {
       {/* Print-only authorization block (matches template Section 5/7) */}
       <div className="print-only">
         <p style={{ fontSize: '8.5pt', marginBottom: '4px' }}>
-          By signing, each party confirms they have reviewed this record, understand the identified
-          hazards and controls, and agree the work may proceed under the conditions described.
+          {rt('record.printAuthorizationStatement')}
         </p>
         <div className="print-sig-row">
-          <div className="print-sig-line">{isPTP(r) ? 'Build Lead' : 'Prepared By'} — Printed Name &amp; Signature</div>
-          <div className="print-sig-line">Title / Role</div>
-          <div className="print-sig-line">Date</div>
+          <div className="print-sig-line">
+            {isPTP(r)
+              ? rt('record.sigLineBuildLead', undefined, 'Build Lead — Printed Name & Signature')
+              : rt('record.sigLinePreparedBy', undefined, 'Prepared By — Printed Name & Signature')}
+          </div>
+          <div className="print-sig-line">{rt('record.sigLineTitleRole', undefined, 'Title / Role')}</div>
+          <div className="print-sig-line">{rt('record.date', undefined, 'Date')}</div>
         </div>
         <div className="print-sig-row">
-          <div className="print-sig-line">Mytra Representative / EHS — Printed Name &amp; Signature</div>
-          <div className="print-sig-line">Title / Role</div>
-          <div className="print-sig-line">Date</div>
+          <div className="print-sig-line">{rt('record.sigLineMytraRep', undefined, 'Mytra Representative / EHS — Printed Name & Signature')}</div>
+          <div className="print-sig-line">{rt('record.sigLineTitleRole', undefined, 'Title / Role')}</div>
+          <div className="print-sig-line">{rt('record.date', undefined, 'Date')}</div>
         </div>
       </div>
 
       {/* History */}
       <section className="no-print bg-mytra-card border border-mytra-border rounded-card p-4 shadow-card">
-        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">History</h2>
+        <h2 className="text-xs uppercase tracking-wider text-fg-3 font-semibold mb-2">{t('record.history', undefined, 'History')}</h2>
         <ul className="space-y-1.5">
           {r.events.filter((e) => isSyncAvailable() || e.action !== 'sync-failed').map((e, i) => (
             <li key={i} className="text-xs text-fg-2 flex items-start gap-2">
               <span className="text-mytra-purple font-medium uppercase shrink-0">{e.action}</span>
               <span>
-                {e.by} · {fmt(e.at)}
+                {e.by} · {formatDateTime(e.at, recLocale)}
                 {e.note ? ` — ${e.note}` : ''}
               </span>
             </li>
@@ -430,20 +438,21 @@ function Field({ label, value }: { label: string; value: string }) {
   )
 }
 
-function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record<string, string> }) {
-  if (sigs.length === 0) return <p className="text-xs text-fg-4">No signatures.</p>
+function SignatureGrid({ sigs, images, locale }: { sigs: CrewSignature[]; images: Record<string, string>; locale: Locale }) {
+  const rt = getT(locale)
+  if (sigs.length === 0) return <p className="text-xs text-fg-4">{rt('record.noSignatures', undefined, 'No signatures.')}</p>
   return (
     <div className="grid grid-cols-2 gap-2">
       {sigs.map((s) => (
         <div key={s.id} className="bg-mytra-input border border-mytra-border rounded-lg p-2">
           {images[s.id] ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={images[s.id]} alt={`${s.name} signature`} className="w-full h-12 object-contain" />
+            <img src={images[s.id]} alt={rt('signature.sigAlt', { name: s.name })} className="w-full h-12 object-contain" />
           ) : (
-            <div className="h-12 flex items-center justify-center text-xs text-fg-4">signature on device</div>
+            <div className="h-12 flex items-center justify-center text-xs text-fg-4">{rt('record.signatureOnDevice', undefined, 'signature on device')}</div>
           )}
           <p className="text-xs text-fg mt-1 truncate">{s.name}</p>
-          <p className="text-xs text-fg-3">{s.role ? `${s.role} · ` : ''}{new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+          <p className="text-xs text-fg-3">{s.role ? `${s.role} · ` : ''}{formatTime(s.signedAt, locale)}</p>
         </div>
       ))}
     </div>
@@ -451,31 +460,38 @@ function SignatureGrid({ sigs, images }: { sigs: CrewSignature[]; images: Record
 }
 
 function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<string, string> }) {
+  const locale: Locale = ptp.locale ?? 'en'
+  const rt = getT(locale)
+  const multiDay = Boolean(ptp.validUntil && ptp.validUntil !== ptp.date)
   return (
     <>
-      <Section title="Scope of work">
+      <Section title={rt('record.scopeOfWork', undefined, 'Scope of work')}>
         <p className="text-sm text-fg-2">{ptp.scopeOfWork || '—'}</p>
         <p className="text-xs text-fg-3 mt-1">
-          {ptp.date}{ptp.validUntil && ptp.validUntil !== ptp.date ? ` through ${ptp.validUntil}` : ''} · {ptp.shift} shift
+          {rt('record.dateShiftValue', {
+            date: multiDay ? rt('record.dateRangeThrough', { start: ptp.date, end: ptp.validUntil! }) : ptp.date,
+            shift: shiftLabel(rt, ptp.shift),
+          })}
         </p>
       </Section>
-      {ptp.validUntil && ptp.validUntil !== ptp.date && (
+      {multiDay && (
         <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
           <p className="text-xs text-mytra-purple">
-            This plan covers multiple days. Crew should verbally re-confirm hazards and controls each morning before work begins.
+            {rt('record.multiDayPtpNotice')}
           </p>
         </div>
       )}
 
-      <Section title="Hazards & controls">
+      <Section title={rt('record.hazardsControls', undefined, 'Hazards & controls')}>
         {ptp.hazards.length === 0 ? (
-          <p className="text-xs text-fg-4">None recorded.</p>
+          <p className="text-xs text-fg-4">{rt('record.noneRecorded', undefined, 'None recorded.')}</p>
         ) : (
           <ul className="space-y-2">
             {ptp.hazards.map((h) => (
               <li key={h.id} className="text-sm">
                 <span className="text-fg">{h.description}</span>
-                <span className="text-xs text-fg-3 ml-1">({h.riskLevel})</span>
+                <span className="text-xs text-fg-3 ml-1">({riskLabel(rt, h.riskLevel)})</span>
+                {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
                 {h.source === 'sage' && <span className="text-xs text-mytra-purple ml-1">✨ Sage</span>}
                 <p className="text-xs text-fg-2">{h.controlMeasure}</p>
               </li>
@@ -485,11 +501,11 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
       </Section>
 
       {ptp.ppeRequired.length > 0 && (
-        <Section title="PPE required">
+        <Section title={rt('record.ppeRequired', undefined, 'PPE required')}>
           <div className="flex flex-wrap gap-1.5">
             {ptp.ppeRequired.map((id) => (
               <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">
-                {ppeLabel(id)}
+                {ppeOptionLabel(locale, id, ppeLabel(id))}
               </span>
             ))}
           </div>
@@ -497,84 +513,87 @@ function PtpBody({ ptp, sigImages }: { ptp: PreTaskPlan; sigImages: Record<strin
       )}
 
       {(ptp.emergencyMusterPoint || ptp.nearestHospital || ptp.firstAidEyewashLocation || ptp.weatherNotes || ptp.windSpeed) && (
-        <Section title="Site conditions & emergency">
+        <Section title={rt('record.siteConditionsEmergency', undefined, 'Site conditions & emergency')}>
           <dl className="grid grid-cols-2 gap-2 text-sm">
-            {ptp.emergencyMusterPoint && <Field label="Muster point" value={ptp.emergencyMusterPoint} />}
-            {ptp.nearestHospital && <Field label="Nearest hospital" value={ptp.nearestHospital} />}
-            {ptp.firstAidEyewashLocation && <Field label="First aid / eyewash" value={ptp.firstAidEyewashLocation} />}
-            {ptp.weatherNotes && <Field label="Weather" value={ptp.weatherNotes} />}
-            {ptp.windSpeed && <Field label="Wind speed" value={ptp.windSpeed} />}
+            {ptp.emergencyMusterPoint && <Field label={rt('record.musterPoint', undefined, 'Muster point')} value={ptp.emergencyMusterPoint} />}
+            {ptp.nearestHospital && <Field label={rt('ptp.nearestHospitalLabel', undefined, 'Nearest hospital')} value={ptp.nearestHospital} />}
+            {ptp.firstAidEyewashLocation && <Field label={rt('ptp.firstAidLabel', undefined, 'First aid / eyewash')} value={ptp.firstAidEyewashLocation} />}
+            {ptp.weatherNotes && <Field label={rt('ptp.weatherLabel', undefined, 'Weather')} value={ptp.weatherNotes} />}
+            {ptp.windSpeed && <Field label={rt('ptp.windSpeedLabel', undefined, 'Wind speed')} value={ptp.windSpeed} />}
           </dl>
         </Section>
       )}
 
       {Object.values(ptp.heatIllnessPlan).some(Boolean) && (
-        <Section title="Heat illness prevention">
+        <Section title={rt('record.heatIllnessPrevention', undefined, 'Heat illness prevention')}>
           <div className="flex flex-wrap gap-2">
-            {ptp.heatIllnessPlan.water && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Water available</span>}
-            {ptp.heatIllnessPlan.shade && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Shade available</span>}
-            {ptp.heatIllnessPlan.restBreaks && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">Rest breaks</span>}
-            {ptp.heatIllnessPlan.highHeatProcedures && <span className="text-xs px-2 py-1 rounded-full bg-warn/10 border border-warn/20 text-warn">High-heat procedures</span>}
+            {ptp.heatIllnessPlan.water && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">{rt('ptp.heatWater', undefined, 'Water available')}</span>}
+            {ptp.heatIllnessPlan.shade && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">{rt('ptp.heatShade', undefined, 'Shade available')}</span>}
+            {ptp.heatIllnessPlan.restBreaks && <span className="text-xs px-2 py-1 rounded-full bg-ok/10 border border-ok/20 text-ok">{rt('ptp.heatRestBreaks', undefined, 'Rest breaks')}</span>}
+            {ptp.heatIllnessPlan.highHeatProcedures && <span className="text-xs px-2 py-1 rounded-full bg-warn/10 border border-warn/20 text-warn">{rt('record.highHeatProcedures', undefined, 'High-heat procedures')}</span>}
           </div>
         </Section>
       )}
 
       {(ptp.toolboxTalkTopic || ptp.toolboxTalkNotes) && (
-        <Section title="Toolbox talk">
+        <Section title={rt('record.toolboxTalk', undefined, 'Toolbox talk')}>
           <p className="text-sm text-fg">{ptp.toolboxTalkTopic}</p>
           {ptp.toolboxTalkNotes && <p className="text-xs text-fg-2 mt-0.5">{ptp.toolboxTalkNotes}</p>}
         </Section>
       )}
 
-      <Section title={`Crew sign-on (${ptp.crewSignatures.length})`}>
-        <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} />
+      <Section title={rt('record.crewSignOnCount', { count: ptp.crewSignatures.length })}>
+        <SignatureGrid sigs={ptp.crewSignatures} images={sigImages} locale={locale} />
       </Section>
     </>
   )
 }
 
 function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
+  const locale: Locale = jha.locale ?? 'en'
+  const rt = getT(locale)
+  const multiDay = Boolean(jha.validUntil && jha.validUntil !== jha.dateOfAnalysis)
   return (
     <>
-      <Section title="Job / task">
+      <Section title={rt('record.jobTask', undefined, 'Job / task')}>
         <p className="text-sm text-fg">{jha.jobTitle || '—'}</p>
         <dl className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Field label="Date of analysis" value={jha.validUntil && jha.validUntil !== jha.dateOfAnalysis ? `${jha.dateOfAnalysis} through ${jha.validUntil}` : jha.dateOfAnalysis} />
-          {jha.department && <Field label="Department / Team" value={jha.department} />}
-          {jha.referenceDoc && <Field label="Reference doc" value={jha.referenceDoc} />}
+          <Field label={rt('jha.dateOfAnalysisLabel', undefined, 'Date of analysis')} value={multiDay ? rt('record.dateRangeThrough', { start: jha.dateOfAnalysis, end: jha.validUntil! }) : jha.dateOfAnalysis} />
+          {jha.department && <Field label={rt('jha.departmentLabel', undefined, 'Department / Team')} value={jha.department} />}
+          {jha.referenceDoc && <Field label={rt('record.referenceDoc', undefined, 'Reference doc')} value={jha.referenceDoc} />}
         </dl>
       </Section>
-      {jha.validUntil && jha.validUntil !== jha.dateOfAnalysis && (
+      {multiDay && (
         <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-3">
           <p className="text-xs text-mytra-purple">
-            This JHA covers multiple days. Review hazards and controls daily as site conditions may change.
+            {rt('record.multiDayJhaNotice')}
           </p>
         </div>
       )}
 
       {jha.ppeRequired.length > 0 && (
-        <Section title="PPE required">
+        <Section title={rt('record.ppeRequired', undefined, 'PPE required')}>
           <div className="flex flex-wrap gap-1.5">
             {jha.ppeRequired.map((id) => (
               <span key={id} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">
-                {ppeLabel(id)}
+                {ppeOptionLabel(locale, id, ppeLabel(id))}
               </span>
             ))}
           </div>
         </Section>
       )}
 
-      <Section title={`Hazard analysis (${jha.steps.length} steps)`}>
+      <Section title={rt('record.hazardAnalysisSteps', { count: jha.steps.length })}>
         <ol className="space-y-3">
           {jha.steps.map((s, i) => (
             <li key={s.id} className="border-l-2 border-mytra-border pl-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold text-fg-3">Step {i + 1}</span>
+                <span className="text-xs font-semibold text-fg-3">{rt('jha.stepLabel', { n: i + 1 })}</span>
                 <span
                   className="text-xs font-semibold px-1.5 py-0.5 rounded"
                   style={{ color: RISK_COLORS[s.riskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.riskLevel]} 12%, transparent)` }}
                 >
-                  {RISK_LABELS[s.riskLevel]}
+                  {riskLabel(rt, s.riskLevel)}
                 </span>
                 {s.residualRiskLevel && (
                   <span className="text-xs text-fg-4">→</span>
@@ -584,24 +603,25 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
                     className="text-xs font-semibold px-1.5 py-0.5 rounded"
                     style={{ color: RISK_COLORS[s.residualRiskLevel], backgroundColor: `color-mix(in srgb, ${RISK_COLORS[s.residualRiskLevel]} 12%, transparent)` }}
                   >
-                    {RISK_LABELS[s.residualRiskLevel]}
+                    {riskLabel(rt, s.residualRiskLevel)}
                   </span>
                 )}
+                {/* eslint-disable-next-line no-restricted-syntax -- brand, do-not-translate */}
                 {s.source === 'sage' && <span className="text-xs text-mytra-purple">✨ Sage</span>}
               </div>
               <p className="text-sm text-fg mt-1">{s.taskActivity}</p>
               {s.hazards && (
                 <p className="text-xs text-fg-2 mt-1 whitespace-pre-line">
-                  <span className="text-fg-3 uppercase tracking-wider">Hazards: </span>{s.hazards}
+                  <span className="text-fg-3 uppercase tracking-wider">{rt('record.hazardsPrefix', undefined, 'Hazards:')} </span>{s.hazards}
                 </p>
               )}
               {s.controls && (
                 <p className="text-xs text-fg-2 mt-0.5 whitespace-pre-line">
-                  <span className="text-fg-3 uppercase tracking-wider">Controls: </span>{s.controls}
+                  <span className="text-fg-3 uppercase tracking-wider">{rt('record.controlsPrefix', undefined, 'Controls:')} </span>{s.controls}
                 </p>
               )}
               {s.responsible && (
-                <p className="text-xs text-fg-3 mt-0.5">Responsible: {s.responsible}</p>
+                <p className="text-xs text-fg-3 mt-0.5">{rt('record.responsible', { responsible: s.responsible })}</p>
               )}
             </li>
           ))}
@@ -609,7 +629,7 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
       </Section>
 
       {jha.additionalNotes && (
-        <Section title="Special conditions / notes">
+        <Section title={rt('record.specialConditionsNotes', undefined, 'Special conditions / notes')}>
           <p className="text-sm text-fg-2 whitespace-pre-line">{jha.additionalNotes}</p>
         </Section>
       )}
@@ -618,16 +638,18 @@ function JhaBody({ jha }: { jha: JobHazardAnalysis }) {
 }
 
 function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Record<string, string> }) {
+  const locale: Locale = permit.locale ?? 'en'
+  const rt = getT(locale)
   const workers = 'workers' in permit ? permit.workers : []
   const entrants = 'entrants' in permit ? (permit as { entrants?: CrewSignature[] }).entrants ?? [] : []
   const sigs = [...workers, ...entrants]
   return (
     <>
-      <Section title="Permit details">
+      <Section title={rt('record.permitDetails', undefined, 'Permit details')}>
         <dl className="grid grid-cols-2 gap-2 text-sm">
-          <Field label="Valid from" value={fmt(permit.validFrom)} />
-          <Field label="Valid until" value={fmt(permit.validUntil)} />
-          {'workDescription' in permit && <Field label="Work" value={(permit as { workDescription: string }).workDescription} />}
+          <Field label={rt('permits.height.validFromLabel', undefined, 'Valid from')} value={formatDateTime(permit.validFrom, locale)} />
+          <Field label={rt('permits.height.validUntilLabel', undefined, 'Valid until')} value={formatDateTime(permit.validUntil, locale)} />
+          {'workDescription' in permit && <Field label={rt('record.work', undefined, 'Work')} value={(permit as { workDescription: string }).workDescription} />}
         </dl>
       </Section>
 
@@ -635,36 +657,38 @@ function PermitBody({ permit, sigImages }: { permit: AnyPermit; sigImages: Recor
       {permit.type === 'hot-work-permit' && <HotWorkDetails permit={permit as HotWorkPermit} />}
       {permit.type === 'confined-space-permit' && <ConfinedSpaceDetails permit={permit as ConfinedSpacePermit} />}
 
-      <Section title="Checklist">
+      <Section title={rt('record.checklist', undefined, 'Checklist')}>
         <ul className="space-y-1">
           {permit.checklist.map((c) => (
             <li key={c.id} className="text-xs flex items-start gap-2">
               <span className={c.checked ? 'text-ok' : 'text-fg-4'}>{c.checked ? '✓' : '○'}</span>
               <span className={c.checked ? 'text-fg-2' : 'text-fg-3'}>
-                {c.label}
+                {permitItemLabel(locale, c.id, c.label)}
                 {c.notes ? ` — ${c.notes}` : ''}
               </span>
             </li>
           ))}
         </ul>
       </Section>
-      <Section title={`Crew sign-on (${sigs.length})`}>
-        <SignatureGrid sigs={sigs} images={sigImages} />
+      <Section title={rt('record.crewSignOnCount', { count: sigs.length })}>
+        <SignatureGrid sigs={sigs} images={sigImages} locale={locale} />
       </Section>
     </>
   )
 }
 
 function HeightDetails({ permit }: { permit: HeightPermit }) {
+  const locale: Locale = permit.locale ?? 'en'
+  const rt = getT(locale)
   return (
-    <Section title="Height work details">
+    <Section title={rt('record.heightWorkDetails', undefined, 'Height work details')}>
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        {permit.workingHeight && <Field label="Working height" value={permit.workingHeight} />}
-        {permit.anchorPoints && <Field label="Anchor points" value={permit.anchorPoints} />}
+        {permit.workingHeight && <Field label={rt('permits.height.workingHeightLabel', undefined, 'Working height')} value={permit.workingHeight} />}
+        {permit.anchorPoints && <Field label={rt('record.anchorPoints', undefined, 'Anchor points')} value={permit.anchorPoints} />}
       </dl>
       {permit.accessMethod.length > 0 && (
         <div className="mt-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Access method</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.height.accessMethodHeading', undefined, 'Access method')}</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {permit.accessMethod.map((m) => (
               <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
@@ -674,7 +698,7 @@ function HeightDetails({ permit }: { permit: HeightPermit }) {
       )}
       {permit.fallProtection.length > 0 && (
         <div className="mt-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Fall protection</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.height.fallProtectionHeading', undefined, 'Fall protection')}</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {permit.fallProtection.map((m) => (
               <span key={m} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{m}</span>
@@ -684,7 +708,7 @@ function HeightDetails({ permit }: { permit: HeightPermit }) {
       )}
       {permit.rescuePlan && (
         <div className="mt-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.height.rescuePlanLabel', undefined, 'Rescue plan')}</dt>
           <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
         </div>
       )}
@@ -693,28 +717,35 @@ function HeightDetails({ permit }: { permit: HeightPermit }) {
 }
 
 function HotWorkDetails({ permit }: { permit: HotWorkPermit }) {
+  const locale: Locale = permit.locale ?? 'en'
+  const rt = getT(locale)
   return (
-    <Section title="Hot work details">
+    <Section title={rt('record.hotWorkDetails', undefined, 'Hot work details')}>
       {permit.hotWorkTypes.length > 0 && (
         <div className="mb-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Type of work</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('record.typeOfWork', undefined, 'Type of work')}</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {permit.hotWorkTypes.map((t) => (
-              <span key={t} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{t}</span>
+            {permit.hotWorkTypes.map((w) => (
+              <span key={w} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{w}</span>
             ))}
           </div>
         </div>
       )}
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <Field label="Fire watch" value={permit.fireWatchRequired ? `Yes — ${permit.fireWatchName || 'unassigned'}` : 'No'} />
-        {permit.fireWatchRequired && <Field label="Post-work monitoring" value={`${permit.fireWatchPostDurationMin} min`} />}
-        {permit.extinguisherLocation && <Field label="Extinguisher" value={`${permit.extinguisherType} at ${permit.extinguisherLocation}`} />}
-        {permit.sprinklerStatus && <Field label="Sprinkler status" value={permit.sprinklerStatus} />}
+        <Field
+          label={rt('record.fireWatch', undefined, 'Fire watch')}
+          value={permit.fireWatchRequired
+            ? rt('record.yesAssigned', { name: permit.fireWatchName || rt('record.unassigned', undefined, 'unassigned') })
+            : rt('common.no', undefined, 'No')}
+        />
+        {permit.fireWatchRequired && <Field label={rt('record.postWorkMonitoring', undefined, 'Post-work monitoring')} value={rt('record.minutesValue', { min: permit.fireWatchPostDurationMin })} />}
+        {permit.extinguisherLocation && <Field label={rt('record.extinguisher', undefined, 'Extinguisher')} value={rt('record.extinguisherAt', { type: permit.extinguisherType, location: permit.extinguisherLocation })} />}
+        {permit.sprinklerStatus && <Field label={rt('permits.hotWork.sprinklerStatusLabel', undefined, 'Sprinkler status')} value={permit.sprinklerStatus} />}
       </dl>
       {permit.gasTestRequired && (
         <div className="mt-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Atmosphere test</dt>
-          <dd className="text-sm text-fg-2 mt-0.5">{permit.gasTestNotes || 'Required — no notes'}</dd>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('record.atmosphereTest', undefined, 'Atmosphere test')}</dt>
+          <dd className="text-sm text-fg-2 mt-0.5">{permit.gasTestNotes || rt('record.requiredNoNotes', undefined, 'Required — no notes')}</dd>
         </div>
       )}
     </Section>
@@ -722,18 +753,20 @@ function HotWorkDetails({ permit }: { permit: HotWorkPermit }) {
 }
 
 function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
+  const locale: Locale = permit.locale ?? 'en'
+  const rt = getT(locale)
   const atmo = permit.atmospheric
   return (
-    <Section title="Confined space details">
+    <Section title={rt('record.confinedSpaceDetails', undefined, 'Confined space details')}>
       {permit.spaceDescription && (
         <div className="mb-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Space description</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.confinedSpace.spaceDescriptionLabel', undefined, 'Space description')}</dt>
           <dd className="text-sm text-fg-2 mt-0.5">{permit.spaceDescription}</dd>
         </div>
       )}
       {permit.hazards.length > 0 && (
         <div className="mb-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Hazards present</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.confinedSpace.hazardsPresent', undefined, 'Hazards present')}</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {permit.hazards.map((h) => (
               <span key={h} className="text-xs px-2 py-1 rounded-full bg-mytra-bg border border-mytra-border text-fg-2">{h}</span>
@@ -742,21 +775,21 @@ function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
         </div>
       )}
       <dl className="grid grid-cols-2 gap-2 text-sm mb-2 tabular-nums">
-        <Field label="O₂ %" value={atmo.oxygenPct || '—'} />
-        <Field label="LEL %" value={atmo.lelPct || '—'} />
-        <Field label="CO ppm" value={atmo.coPpm || '—'} />
-        <Field label="H₂S ppm" value={atmo.h2sPpm || '—'} />
-        {atmo.testedBy && <Field label="Tested by" value={atmo.testedBy} />}
-        {atmo.testedAt && <Field label="Tested at" value={fmt(atmo.testedAt)} />}
+        <Field label={rt('permits.confinedSpace.gasO2Label', undefined, 'O₂ %')} value={atmo.oxygenPct || '—'} />
+        <Field label={rt('permits.confinedSpace.gasLelLabel', undefined, 'LEL %')} value={atmo.lelPct || '—'} />
+        <Field label={rt('permits.confinedSpace.gasCoLabel', undefined, 'CO ppm')} value={atmo.coPpm || '—'} />
+        <Field label={rt('permits.confinedSpace.gasH2sLabel', undefined, 'H₂S ppm')} value={atmo.h2sPpm || '—'} />
+        {atmo.testedBy && <Field label={rt('permits.confinedSpace.testedByLabel', undefined, 'Tested by')} value={atmo.testedBy} />}
+        {atmo.testedAt && <Field label={rt('permits.confinedSpace.testedAtLabel', undefined, 'Tested at')} value={formatDateTime(atmo.testedAt, locale)} />}
       </dl>
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <Field label="Attendant" value={permit.attendantName || '—'} />
-        <Field label="Continuous monitoring" value={permit.continuousMonitoring ? 'Yes' : 'No'} />
-        <Field label="Ventilation" value={permit.ventilationInUse ? 'In use' : 'No'} />
+        <Field label={rt('record.attendant', undefined, 'Attendant')} value={permit.attendantName || '—'} />
+        <Field label={rt('permits.confinedSpace.continuousMonitoring', undefined, 'Continuous monitoring')} value={permit.continuousMonitoring ? rt('common.yes', undefined, 'Yes') : rt('common.no', undefined, 'No')} />
+        <Field label={rt('record.ventilation', undefined, 'Ventilation')} value={permit.ventilationInUse ? rt('record.inUse', undefined, 'In use') : rt('common.no', undefined, 'No')} />
       </dl>
       {permit.rescuePlan && (
         <div className="mt-2">
-          <dt className="text-xs uppercase tracking-wider text-fg-3">Rescue plan</dt>
+          <dt className="text-xs uppercase tracking-wider text-fg-3">{rt('permits.confinedSpace.rescuePlanLabel', undefined, 'Rescue plan')}</dt>
           <dd className="text-sm text-fg-2 mt-0.5">{permit.rescuePlan}</dd>
         </div>
       )}
@@ -765,56 +798,58 @@ function ConfinedSpaceDetails({ permit }: { permit: ConfinedSpacePermit }) {
 }
 
 function IncidentBody({ incident, images }: { incident: IncidentReport; images: Record<string, string> }) {
+  const locale: Locale = incident.locale ?? 'en'
+  const rt = getT(locale)
   return (
     <>
-      <Section title="Incident">
+      <Section title={rt('record.incident', undefined, 'Incident')}>
         <div className="flex items-center gap-2 mb-2">
           <span
             className="text-xs font-semibold uppercase px-2 py-0.5 rounded"
             style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity], backgroundColor: `color-mix(in srgb, ${INCIDENT_SEVERITY_COLORS[incident.severity]} 10%, transparent)` }}
           >
-            {incident.severity}
+            {incidentSeverityLabel(rt, incident.severity)}
           </span>
-          <span className="text-xs text-fg-2">{incident.incidentType}</span>
-          <span className="text-xs text-fg-3">· {fmt(incident.occurredAt)}</span>
+          <span className="text-xs text-fg-2">{incidentTypeLabel(rt, incident.incidentType)}</span>
+          <span className="text-xs text-fg-3">· {formatDateTime(incident.occurredAt, locale)}</span>
         </div>
         <p className="text-sm text-fg-2">{incident.description}</p>
         {incident.immediateActions && (
           <p className="text-xs text-fg-2 mt-2">
-            <span className="text-fg-3">Immediate actions: </span>
+            <span className="text-fg-3">{rt('record.immediateActionsPrefix', undefined, 'Immediate actions:')} </span>
             {incident.immediateActions}
           </p>
         )}
         {incident.witnesses.length > 0 && (
           <p className="text-xs text-fg-2 mt-1">
-            <span className="text-fg-3">Witnesses: </span>
+            <span className="text-fg-3">{rt('record.witnessesPrefix', undefined, 'Witnesses:')} </span>
             {incident.witnesses.join(', ')}
           </p>
         )}
         {incident.reportedToCalOsha && (
-          <p className="text-xs text-warn mt-1">Reported to authorities</p>
+          <p className="text-xs text-warn mt-1">{rt('record.reportedToAuthorities', undefined, 'Reported to authorities')}</p>
         )}
         {incident.injuredPerson && (
           <div className="mt-3 pt-3 border-t border-mytra-border space-y-1">
-            <p className="text-xs uppercase tracking-wider text-fg-3 font-semibold">Injured person</p>
+            <p className="text-xs uppercase tracking-wider text-fg-3 font-semibold">{rt('incident.injuredPersonTitle', undefined, 'Injured person')}</p>
             <p className="text-sm text-fg-2">{incident.injuredPerson.name}</p>
-            {incident.injuredPerson.jobTitle && <p className="text-xs text-fg-3">Title: {incident.injuredPerson.jobTitle}</p>}
-            {incident.injuredPerson.employer && <p className="text-xs text-fg-3">Employer: {incident.injuredPerson.employer}</p>}
-            {incident.injuredPerson.bodyPartAffected && <p className="text-xs text-fg-3">Body part: {incident.injuredPerson.bodyPartAffected}</p>}
+            {incident.injuredPerson.jobTitle && <p className="text-xs text-fg-3">{rt('record.titlePrefix', { jobTitle: incident.injuredPerson.jobTitle })}</p>}
+            {incident.injuredPerson.employer && <p className="text-xs text-fg-3">{rt('record.employerPrefix', { employer: incident.injuredPerson.employer })}</p>}
+            {incident.injuredPerson.bodyPartAffected && <p className="text-xs text-fg-3">{rt('record.bodyPartPrefix', { bodyPartAffected: incident.injuredPerson.bodyPartAffected })}</p>}
           </div>
         )}
       </Section>
 
       {incident.photoSlots.length > 0 && (
-        <Section title="Photos">
+        <Section title={rt('incident.photosTitle', undefined, 'Photos')}>
           <div className="flex flex-wrap gap-2">
             {incident.photoSlots.map((slot) =>
               images[slot] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={slot} src={images[slot]} alt="Incident photo" className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
+                <img key={slot} src={images[slot]} alt={rt('incident.photoAlt', undefined, 'Incident photo')} className="w-24 h-24 object-cover rounded-lg border border-mytra-border" />
               ) : (
                 <div key={slot} className="w-24 h-24 rounded-lg border border-mytra-border flex items-center justify-center text-xs text-fg-4">
-                  on device
+                  {rt('record.onDevice', undefined, 'on device')}
                 </div>
               )
             )}
@@ -823,17 +858,17 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
       )}
 
       {(incident.rootCause || incident.correctiveActions) && (
-        <Section title="Analysis">
+        <Section title={rt('incident.analysisSectionTitle', undefined, 'Analysis')}>
           {incident.rootCause && (
             <p className="text-sm text-fg-2">
-              <span className="text-fg-3 text-xs uppercase tracking-wider">Root cause</span>
+              <span className="text-fg-3 text-xs uppercase tracking-wider">{rt('record.rootCause', undefined, 'Root cause')}</span>
               <br />
               {incident.rootCause}
             </p>
           )}
           {incident.correctiveActions && (
             <p className="text-sm text-fg-2 mt-2">
-              <span className="text-fg-3 text-xs uppercase tracking-wider">Corrective actions</span>
+              <span className="text-fg-3 text-xs uppercase tracking-wider">{rt('record.correctiveActions', undefined, 'Corrective actions')}</span>
               <br />
               {incident.correctiveActions}
             </p>
@@ -842,10 +877,10 @@ function IncidentBody({ incident, images }: { incident: IncidentReport; images: 
       )}
 
       {incident.reporterSignatureId && images[incident.reporterSignatureId] && (
-        <Section title="Reporter">
+        <Section title={rt('incident.reporterTitle', undefined, 'Reporter')}>
           <div className="bg-mytra-input border border-mytra-border rounded-lg p-2 inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={images[incident.reporterSignatureId]} alt="Reporter signature" className="h-12 object-contain" />
+            <img src={images[incident.reporterSignatureId]} alt={rt('record.reporterSignatureAlt', undefined, 'Reporter signature')} className="h-12 object-contain" />
             <p className="text-xs text-fg mt-1">{incident.createdBy}</p>
           </div>
         </Section>

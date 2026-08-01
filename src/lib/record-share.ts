@@ -4,6 +4,10 @@
  * desktop. Teams often need to email a completed PTP or permit to a manager
  * or client rep; on iPhone the Web Share API surfaces Mail, Messages, and
  * AirDrop in one tap.
+ *
+ * i18n: the share text renders in the RECORD's signed locale (record.locale
+ * ?? 'en'), not the viewer's — the legal artifact re-renders in the language
+ * the crew signed (docs/i18n/DESIGN.md).
  */
 
 import type {
@@ -16,226 +20,320 @@ import type {
   ConfinedSpacePermit,
   IncidentReport,
   CrewSignature,
+  RiskLevel,
+  ReviewStatus,
+  IncidentSeverity,
+  IncidentType,
 } from '@/lib/safety-types'
 import {
   SAFETY_TYPE_LABELS,
-  RISK_LABELS,
   isPTP,
   isJHA,
   isPermit,
   isIncident,
 } from '@/lib/safety-types'
+import type { Shift, InspectionSyncStatus } from '@/lib/types'
 import { ppeLabel } from '@/data/safety-checklists'
+import { getT, type Locale, type TFunction } from '@/lib/i18n-core'
+import { formatDate, formatDateTime, formatTime } from '@/lib/datetime'
+import { permitItemLabel, ppeOptionLabel } from '@/lib/i18n-data'
+import type { MessageKey } from '@/lib/i18n-keys'
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+// ── Enum → catalog-key label helpers (shared with RecordView) ─
+
+const RISK_LABEL_KEY: Record<RiskLevel, MessageKey> = {
+  low: 'hazard.risk.low',
+  medium: 'hazard.risk.medium',
+  high: 'hazard.risk.high',
+  critical: 'hazard.risk.critical',
 }
 
-function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+const SHIFT_LABEL_KEY: Record<Shift, MessageKey> = {
+  Day: 'ptp.shiftDay',
+  Swing: 'ptp.shiftSwing',
+  Night: 'ptp.shiftNight',
 }
 
-function sigLines(sigs: CrewSignature[]): string[] {
-  if (sigs.length === 0) return ['  (none)']
+const SEVERITY_LABEL_KEY: Record<IncidentSeverity, MessageKey> = {
+  minor: 'incident.severityMinor',
+  moderate: 'incident.severityModerate',
+  serious: 'incident.severitySerious',
+  critical: 'incident.severityCritical',
+}
+
+const INCIDENT_TYPE_LABEL_KEY: Record<IncidentType, MessageKey> = {
+  'injury': 'incident.typeInjury',
+  'near-miss': 'incident.typeNearMiss',
+  'property-damage': 'incident.typeProperty',
+  'environmental': 'incident.typeEnvironmental',
+}
+
+const REVIEW_STATUS_LABEL_KEY: Partial<Record<ReviewStatus, MessageKey>> = {
+  submitted: 'sync.pending',
+  approved: 'review.approved',
+  rejected: 'review.needsRevision',
+}
+
+const SYNC_STATUS_LABEL_KEY: Record<InspectionSyncStatus, MessageKey> = {
+  pending: 'sync.pending',
+  synced: 'sync.synced',
+  failed: 'sync.failed',
+  offline: 'common.offline',
+}
+
+export function riskLabel(t: TFunction, level: RiskLevel): string {
+  const key = RISK_LABEL_KEY[level]
+  return key ? t(key) : level
+}
+
+export function shiftLabel(t: TFunction, shift: Shift): string {
+  const key = SHIFT_LABEL_KEY[shift]
+  return key ? t(key) : shift
+}
+
+export function incidentSeverityLabel(t: TFunction, severity: IncidentSeverity): string {
+  const key = SEVERITY_LABEL_KEY[severity]
+  return key ? t(key) : severity
+}
+
+export function incidentTypeLabel(t: TFunction, type: IncidentType): string {
+  const key = INCIDENT_TYPE_LABEL_KEY[type]
+  return key ? t(key) : type
+}
+
+export function reviewStatusLabel(t: TFunction, status: ReviewStatus): string {
+  const key = REVIEW_STATUS_LABEL_KEY[status]
+  return key ? t(key) : status
+}
+
+export function syncStatusLabel(t: TFunction, status: InspectionSyncStatus): string {
+  const key = SYNC_STATUS_LABEL_KEY[status]
+  return key ? t(key) : status
+}
+
+// ── Share-text builders ──────────────────────────────────────
+
+function sigLines(t: TFunction, locale: Locale, sigs: CrewSignature[]): string[] {
+  if (sigs.length === 0) return ['  ' + t('record.shareNone', undefined, '(none)')]
   return sigs.map((s) => {
-    const role = s.role ? ` — ${s.role}` : ''
-    const signed = s.hasSignature ? '✓ signed' : 'not signed'
-    return `  • ${s.name}${role} (${signed}, ${new Date(s.signedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })})`
+    const signedStatus = s.hasSignature
+      ? t('record.shareSigned', undefined, '✓ signed')
+      : t('record.shareNotSigned', undefined, 'not signed')
+    const line = t('record.shareSigLine', {
+      name: s.name,
+      role: s.role || '',
+      signedStatus,
+      time: formatTime(s.signedAt, locale),
+    })
+    // No role: collapse the dangling " — " left by the empty {role} slot.
+    return '  ' + (s.role ? line : line.replace(' —  (', ' ('))
   })
 }
 
-function ptpBody(p: PreTaskPlan): string[] {
+function ptpBody(t: TFunction, locale: Locale, p: PreTaskPlan): string[] {
   const lines: string[] = []
-  lines.push(`Date: ${p.date}  ·  Shift: ${p.shift}`)
+  lines.push(t('record.shareDateShift', { date: p.date, shift: shiftLabel(t, p.shift) }))
   lines.push('')
-  lines.push('SCOPE OF WORK')
-  lines.push(p.scopeOfWork || '  (none)')
+  lines.push(t('record.shareScopeOfWork', undefined, 'SCOPE OF WORK'))
+  lines.push(p.scopeOfWork || '  ' + t('record.shareNone', undefined, '(none)'))
   lines.push('')
-  lines.push('HAZARDS & CONTROLS')
+  lines.push(t('record.shareHazardsControls', undefined, 'HAZARDS & CONTROLS'))
   if (p.hazards.length === 0) {
-    lines.push('  (none recorded)')
+    lines.push('  ' + t('record.shareNoneRecorded', undefined, '(none recorded)'))
   } else {
     p.hazards.forEach((h, i) => {
-      lines.push(`  ${i + 1}. ${h.description} [${RISK_LABELS[h.riskLevel]} risk]`)
-      lines.push(`     Control: ${h.controlMeasure || '—'}`)
+      lines.push('  ' + t('record.shareHazardLine', { n: i + 1, description: h.description, risk: riskLabel(t, h.riskLevel) }))
+      lines.push('     ' + t('record.shareControlLine', { control: h.controlMeasure || '—' }))
     })
   }
   if (p.ppeRequired.length > 0) {
     lines.push('')
-    lines.push('PPE REQUIRED')
-    lines.push('  ' + p.ppeRequired.map(ppeLabel).join(', '))
+    lines.push(t('record.sharePpeRequired', undefined, 'PPE REQUIRED'))
+    lines.push('  ' + p.ppeRequired.map((id) => ppeOptionLabel(locale, id, ppeLabel(id))).join(', '))
   }
   const site = [
-    p.emergencyMusterPoint && `Muster point: ${p.emergencyMusterPoint}`,
-    p.nearestHospital && `Nearest hospital: ${p.nearestHospital}`,
-    p.firstAidEyewashLocation && `First aid / eyewash: ${p.firstAidEyewashLocation}`,
-    p.weatherNotes && `Weather: ${p.weatherNotes}`,
-    p.windSpeed && `Wind: ${p.windSpeed}`,
+    p.emergencyMusterPoint && t('record.shareMusterPoint', { value: p.emergencyMusterPoint }),
+    p.nearestHospital && t('record.shareNearestHospital', { value: p.nearestHospital }),
+    p.firstAidEyewashLocation && t('record.shareFirstAidEyewash', { value: p.firstAidEyewashLocation }),
+    p.weatherNotes && t('record.shareWeather', { value: p.weatherNotes }),
+    p.windSpeed && t('record.shareWind', { value: p.windSpeed }),
   ].filter(Boolean) as string[]
   if (site.length > 0) {
     lines.push('')
-    lines.push('SITE CONDITIONS & EMERGENCY')
+    lines.push(t('record.shareSiteConditions', undefined, 'SITE CONDITIONS & EMERGENCY'))
     site.forEach((s) => lines.push('  ' + s))
   }
   if (p.toolboxTalkTopic || p.toolboxTalkNotes) {
     lines.push('')
-    lines.push('TOOLBOX TALK')
+    lines.push(t('record.shareToolboxTalk', undefined, 'TOOLBOX TALK'))
     if (p.toolboxTalkTopic) lines.push('  ' + p.toolboxTalkTopic)
     if (p.toolboxTalkNotes) lines.push('  ' + p.toolboxTalkNotes)
   }
   lines.push('')
-  lines.push(`CREW SIGN-ON (${p.crewSignatures.length})`)
-  lines.push(...sigLines(p.crewSignatures))
+  lines.push(t('record.shareCrewSignOn', { count: p.crewSignatures.length }))
+  lines.push(...sigLines(t, locale, p.crewSignatures))
   return lines
 }
 
-function jhaBody(j: JobHazardAnalysis): string[] {
+function jhaBody(t: TFunction, locale: Locale, j: JobHazardAnalysis): string[] {
   const lines: string[] = []
-  lines.push(`Job / task: ${j.jobTitle || '—'}`)
-  lines.push(`Date of analysis: ${j.dateOfAnalysis}`)
-  if (j.department) lines.push(`Department / team: ${j.department}`)
-  if (j.referenceDoc) lines.push(`Reference doc: ${j.referenceDoc}`)
+  lines.push(t('record.shareJobTask', { jobTitle: j.jobTitle || '—' }))
+  lines.push(t('record.shareDateOfAnalysis', { date: j.dateOfAnalysis }))
+  if (j.department) lines.push(t('record.shareDepartment', { department: j.department }))
+  if (j.referenceDoc) lines.push(t('record.shareReferenceDoc', { referenceDoc: j.referenceDoc }))
   if (j.ppeRequired.length > 0) {
     lines.push('')
-    lines.push('PPE REQUIRED')
-    lines.push('  ' + j.ppeRequired.map(ppeLabel).join(', '))
+    lines.push(t('record.sharePpeRequired', undefined, 'PPE REQUIRED'))
+    lines.push('  ' + j.ppeRequired.map((id) => ppeOptionLabel(locale, id, ppeLabel(id))).join(', '))
   }
   lines.push('')
-  lines.push(`HAZARD ANALYSIS (${j.steps.length} steps)`)
+  lines.push(t('record.shareHazardAnalysis', { count: j.steps.length }))
   j.steps.forEach((s, i) => {
     lines.push('')
-    lines.push(`  Step ${i + 1} [${RISK_LABELS[s.riskLevel]} risk]: ${s.taskActivity}`)
-    if (s.hazards) lines.push(`    Hazards: ${s.hazards.replace(/\n/g, '; ')}`)
-    if (s.controls) lines.push(`    Controls: ${s.controls.replace(/\n/g, '; ')}`)
-    if (s.responsible) lines.push(`    Responsible: ${s.responsible}`)
+    lines.push('  ' + t('record.shareStepLine', { n: i + 1, risk: riskLabel(t, s.riskLevel), taskActivity: s.taskActivity }))
+    if (s.hazards) lines.push('    ' + t('record.shareHazards', { value: s.hazards.replace(/\n/g, '; ') }))
+    if (s.controls) lines.push('    ' + t('record.shareControls', { value: s.controls.replace(/\n/g, '; ') }))
+    if (s.responsible) lines.push('    ' + t('record.responsible', { responsible: s.responsible }))
   })
   if (j.additionalNotes) {
     lines.push('')
-    lines.push('ADDITIONAL NOTES')
+    lines.push(t('record.shareAdditionalNotes', undefined, 'ADDITIONAL NOTES'))
     lines.push(j.additionalNotes)
   }
   return lines
 }
 
-function permitBody(p: AnyPermit): string[] {
+function permitBody(t: TFunction, locale: Locale, p: AnyPermit): string[] {
   const lines: string[] = []
-  lines.push(`Valid: ${fmt(p.validFrom)} → ${fmt(p.validUntil)}`)
-  if ('workDescription' in p && p.workDescription) lines.push(`Work: ${(p as HeightPermit | HotWorkPermit).workDescription}`)
+  lines.push(t('record.shareValid', { from: formatDateTime(p.validFrom, locale), until: formatDateTime(p.validUntil, locale) }))
+  if ('workDescription' in p && p.workDescription) lines.push(t('record.shareWork', { workDescription: (p as HeightPermit | HotWorkPermit).workDescription }))
   lines.push('')
 
   if (p.type === 'height-permit') {
     const h = p as HeightPermit
-    if (h.workingHeight) lines.push(`Working height: ${h.workingHeight}`)
-    if (h.accessMethod.length) lines.push(`Access: ${h.accessMethod.join(', ')}`)
-    if (h.fallProtection.length) lines.push(`Fall protection: ${h.fallProtection.join(', ')}`)
-    if (h.anchorPoints) lines.push(`Anchor points: ${h.anchorPoints}`)
-    if (h.rescuePlan) lines.push(`Rescue plan: ${h.rescuePlan}`)
+    if (h.workingHeight) lines.push(t('record.shareWorkingHeight', { value: h.workingHeight }))
+    if (h.accessMethod.length) lines.push(t('record.shareAccess', { value: h.accessMethod.join(', ') }))
+    if (h.fallProtection.length) lines.push(t('record.shareFallProtection', { value: h.fallProtection.join(', ') }))
+    if (h.anchorPoints) lines.push(t('record.shareAnchorPoints', { value: h.anchorPoints }))
+    if (h.rescuePlan) lines.push(t('record.shareRescuePlan', { value: h.rescuePlan }))
   } else if (p.type === 'hot-work-permit') {
     const h = p as HotWorkPermit
-    if (h.hotWorkTypes.length) lines.push(`Type: ${h.hotWorkTypes.join(', ')}`)
-    lines.push(`Fire watch: ${h.fireWatchRequired ? `Yes — ${h.fireWatchName || 'unassigned'}` : 'No'}`)
-    if (h.fireWatchRequired) lines.push(`Post-work monitoring: ${h.fireWatchPostDurationMin} min`)
-    if (h.extinguisherLocation) lines.push(`Extinguisher: ${h.extinguisherType} at ${h.extinguisherLocation}`)
-    if (h.sprinklerStatus) lines.push(`Sprinkler status: ${h.sprinklerStatus}`)
-    if (h.gasTestRequired) lines.push(`Atmosphere test: ${h.gasTestNotes || 'required'}`)
+    if (h.hotWorkTypes.length) lines.push(t('record.shareType', { value: h.hotWorkTypes.join(', ') }))
+    lines.push(t('record.shareFireWatch', {
+      value: h.fireWatchRequired
+        ? t('record.yesAssigned', { name: h.fireWatchName || t('record.unassigned', undefined, 'unassigned') })
+        : t('common.no', undefined, 'No'),
+    }))
+    if (h.fireWatchRequired) lines.push(t('record.sharePostWorkMonitoring', { min: h.fireWatchPostDurationMin }))
+    if (h.extinguisherLocation) lines.push(t('record.shareExtinguisher', { type: h.extinguisherType, location: h.extinguisherLocation }))
+    if (h.sprinklerStatus) lines.push(t('record.shareSprinklerStatus', { value: h.sprinklerStatus }))
+    if (h.gasTestRequired) lines.push(t('record.shareAtmosphereTest', { value: h.gasTestNotes || t('record.shareRequired', undefined, 'required') }))
   } else if (p.type === 'confined-space-permit') {
     const c = p as ConfinedSpacePermit
-    if (c.spaceDescription) lines.push(`Space: ${c.spaceDescription}`)
-    if (c.hazards.length) lines.push(`Hazards: ${c.hazards.join(', ')}`)
+    if (c.spaceDescription) lines.push(t('record.shareSpace', { value: c.spaceDescription }))
+    if (c.hazards.length) lines.push(t('record.shareHazards', { value: c.hazards.join(', ') }))
     const a = c.atmospheric
-    lines.push(`Atmosphere — O₂: ${a.oxygenPct || '—'}%, LEL: ${a.lelPct || '—'}%, CO: ${a.coPpm || '—'}ppm, H₂S: ${a.h2sPpm || '—'}ppm`)
-    if (a.testedBy) lines.push(`Tested by: ${a.testedBy}${a.testedAt ? ` at ${fmt(a.testedAt)}` : ''}`)
-    lines.push(`Attendant: ${c.attendantName || '—'}`)
-    lines.push(`Continuous monitoring: ${c.continuousMonitoring ? 'Yes' : 'No'}  ·  Ventilation: ${c.ventilationInUse ? 'In use' : 'No'}`)
-    if (c.rescuePlan) lines.push(`Rescue plan: ${c.rescuePlan}`)
+    lines.push(t('record.shareAtmosphereReadings', {
+      o2: a.oxygenPct || '—',
+      lel: a.lelPct || '—',
+      co: a.coPpm || '—',
+      h2s: a.h2sPpm || '—',
+    }))
+    if (a.testedBy) {
+      lines.push(a.testedAt
+        ? t('record.shareTestedByAt', { name: a.testedBy, time: formatDateTime(a.testedAt, locale) })
+        : t('record.shareTestedBy', { name: a.testedBy }))
+    }
+    lines.push(t('record.shareAttendant', { value: c.attendantName || '—' }))
+    lines.push(t('record.shareMonitoringVentilation', {
+      monitoring: c.continuousMonitoring ? t('common.yes', undefined, 'Yes') : t('common.no', undefined, 'No'),
+      ventilation: c.ventilationInUse ? t('record.inUse', undefined, 'In use') : t('common.no', undefined, 'No'),
+    }))
+    if (c.rescuePlan) lines.push(t('record.shareRescuePlan', { value: c.rescuePlan }))
   }
 
   lines.push('')
-  lines.push('CHECKLIST')
+  lines.push(t('record.shareChecklist', undefined, 'CHECKLIST'))
   p.checklist.forEach((c) => {
-    lines.push(`  ${c.checked ? '✓' : '○'} ${c.label}${c.notes ? ` — ${c.notes}` : ''}`)
+    lines.push(`  ${c.checked ? '✓' : '○'} ${permitItemLabel(locale, c.id, c.label)}${c.notes ? ` — ${c.notes}` : ''}`)
   })
 
   const workers = 'workers' in p ? p.workers : []
   const entrants = 'entrants' in p ? (p as ConfinedSpacePermit).entrants : []
   const sigs = [...workers, ...entrants]
   lines.push('')
-  lines.push(`SIGN-ON (${sigs.length})`)
-  lines.push(...sigLines(sigs))
+  lines.push(t('record.shareSignOn', { count: sigs.length }))
+  lines.push(...sigLines(t, locale, sigs))
   return lines
 }
 
-function incidentBody(inc: IncidentReport): string[] {
+function incidentBody(t: TFunction, locale: Locale, inc: IncidentReport): string[] {
   const lines: string[] = []
-  lines.push(`Type: ${inc.incidentType}  ·  Severity: ${inc.severity}`)
-  lines.push(`Occurred: ${fmt(inc.occurredAt)}`)
+  lines.push(t('record.shareTypeSeverity', { type: incidentTypeLabel(t, inc.incidentType), severity: incidentSeverityLabel(t, inc.severity) }))
+  lines.push(t('record.shareOccurred', { time: formatDateTime(inc.occurredAt, locale) }))
   lines.push('')
-  lines.push('DESCRIPTION')
-  lines.push(inc.description || '  (none)')
+  lines.push(t('record.shareDescription', undefined, 'DESCRIPTION'))
+  lines.push(inc.description || '  ' + t('record.shareNone', undefined, '(none)'))
   if (inc.immediateActions) {
     lines.push('')
-    lines.push('IMMEDIATE ACTIONS')
+    lines.push(t('record.shareImmediateActions', undefined, 'IMMEDIATE ACTIONS'))
     lines.push(inc.immediateActions)
   }
   if (inc.witnesses.length) {
     lines.push('')
-    lines.push('WITNESSES')
+    lines.push(t('record.shareWitnesses', undefined, 'WITNESSES'))
     lines.push('  ' + inc.witnesses.join(', '))
   }
   if (inc.rootCause) {
     lines.push('')
-    lines.push('ROOT CAUSE')
+    lines.push(t('record.shareRootCause', undefined, 'ROOT CAUSE'))
     lines.push(inc.rootCause)
   }
   if (inc.correctiveActions) {
     lines.push('')
-    lines.push('CORRECTIVE ACTIONS')
+    lines.push(t('record.shareCorrectiveActions', undefined, 'CORRECTIVE ACTIONS'))
     lines.push(inc.correctiveActions)
   }
   if (inc.reportedToCalOsha) {
     lines.push('')
-    lines.push('Reported to authorities: Yes')
+    lines.push(t('record.shareReportedToAuthorities', undefined, 'Reported to authorities: Yes'))
   }
   return lines
 }
 
 /** Build a plain-text summary of a record suitable for email / messaging. */
 export function buildRecordText(r: SafetyRecord): string {
+  const locale: Locale = r.locale ?? 'en'
+  const t = getT(locale)
   const label = SAFETY_TYPE_LABELS[r.type]
   const header = [
     `${label}`,
-    `Ref: ${r.id}`,
-    `Project: ${r.projectName || '—'}`,
-    `Location: ${r.location || '—'}`,
-    `Prepared by: ${r.createdBy}`,
-    `Created: ${fmt(r.createdAt)}`,
+    t('record.shareRef', { id: r.id }),
+    t('record.shareProject', { value: r.projectName || '—' }),
+    t('record.shareLocation', { value: r.location || '—' }),
+    t('record.sharePreparedBy', { value: r.createdBy }),
+    t('record.shareCreated', { value: formatDateTime(r.createdAt, locale) }),
   ]
-  if (r.reviewStatus) header.push(`EHS review: ${r.reviewStatus}`)
+  if (r.reviewStatus) header.push(t('record.shareEhsReview', { status: reviewStatusLabel(t, r.reviewStatus) }))
 
   let body: string[] = []
   try {
-    if (isPTP(r)) body = ptpBody(r)
-    else if (isJHA(r)) body = jhaBody(r)
-    else if (isPermit(r)) body = permitBody(r as AnyPermit)
-    else if (isIncident(r)) body = incidentBody(r)
+    if (isPTP(r)) body = ptpBody(t, locale, r)
+    else if (isJHA(r)) body = jhaBody(t, locale, r)
+    else if (isPermit(r)) body = permitBody(t, locale, r as AnyPermit)
+    else if (isIncident(r)) body = incidentBody(t, locale, r)
   } catch {
-    body = ['(Record details unavailable — partial data)']
+    body = [t('record.shareDetailsUnavailable', undefined, '(Record details unavailable — partial data)')]
   }
 
-  return [...header, '', '────────────────────', '', ...body, '', '────────────────────', 'Generated by Sage EHS'].join('\n')
+  return [...header, '', '────────────────────', '', ...body, '', '────────────────────', t('record.shareGeneratedBy', undefined, 'Generated by Sage EHS')].join('\n')
 }
 
 /** Subject line for the share / email. */
 export function buildRecordSubject(r: SafetyRecord): string {
   const label = SAFETY_TYPE_LABELS[r.type]
   const proj = r.projectName ? ` — ${r.projectName}` : ''
-  const date = isPTP(r) ? ` (${fmtDate(r.createdAt)})` : ''
+  const date = isPTP(r) ? ` (${formatDate(r.createdAt, r.locale ?? 'en')})` : ''
   return `${label}${proj}${date} [${r.id}]`
 }
 

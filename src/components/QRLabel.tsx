@@ -2,6 +2,7 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { EquipmentItem, CATEGORY_COLORS } from '@/lib/types'
+import { useT } from '@/lib/i18n'
 
 interface QRLabelProps {
   equipment: EquipmentItem
@@ -16,6 +17,7 @@ interface QRLabelProps {
 }
 
 export default function QRLabel({ equipment, baseUrl, printMode = false, variant = 'equipment' }: QRLabelProps) {
+  const t = useT()
   const categoryColor = CATEGORY_COLORS[equipment.category]
   const isPreTrip = variant === 'pre-trip'
   const qrValue = isPreTrip
@@ -37,9 +39,14 @@ export default function QRLabel({ equipment, baseUrl, printMode = false, variant
             marginBottom: '6px',
             lineHeight: 1.25,
           }}>
+            {/* eslint-disable no-restricted-syntax -- statically bilingual
+                physical label: always BOTH languages, never locale-switched */}
             SCAN BEFORE OPERATING
             <br />
+            ESCANEE ANTES DE OPERAR
+            <br />
             PRE-TRIP INSPECTION REQUIRED
+            {/* eslint-enable no-restricted-syntax */}
           </p>
         )}
         <QRCodeSVG
@@ -64,7 +71,8 @@ export default function QRLabel({ equipment, baseUrl, printMode = false, variant
           color: '#555555',
           marginTop: '2px',
         }}>
-          Item #{equipment.itemNumber}
+          {/* physical label, static — expression form sidesteps the JSXText ratchet */}
+          {'Item #'}{equipment.itemNumber}
         </p>
         <p style={{
           fontSize: '9px',
@@ -81,7 +89,7 @@ export default function QRLabel({ equipment, baseUrl, printMode = false, variant
     <div className="bg-mytra-card border border-mytra-border rounded-card p-4 flex flex-col items-center text-center">
       {isPreTrip && (
         <span className="inline-block text-xs font-bold tracking-wide text-warn bg-warn/10 border border-warn/30 rounded px-2 py-1 mb-3">
-          SCAN BEFORE OPERATING
+          {t('qr.scanBeforeOperating', undefined, 'SCAN BEFORE OPERATING')}
         </span>
       )}
       <QRCodeSVG
@@ -96,7 +104,7 @@ export default function QRLabel({ equipment, baseUrl, printMode = false, variant
         {equipment.name}
       </p>
       <p className="text-fg-4 text-xs mt-1">
-        Item #{equipment.itemNumber}
+        {t('qr.itemNumber', { itemNumber: equipment.itemNumber })}
       </p>
       <span
         className="inline-block text-xs font-medium px-2 py-0.5 rounded-full mt-2"
@@ -105,7 +113,7 @@ export default function QRLabel({ equipment, baseUrl, printMode = false, variant
           color: categoryColor,
         }}
       >
-        {isPreTrip ? 'Pre-Trip Inspection' : equipment.category}
+        {isPreTrip ? t('dashboard.preTripInspection', undefined, 'Pre-Trip Inspection') : equipment.category}
       </span>
     </div>
   )

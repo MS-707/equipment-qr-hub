@@ -1102,6 +1102,7 @@
     "statusListboxAria": "Equipment status",
     "directoryTitle": "Equipment",
     "itemCount": {
+      "one": "1 item",
       "other": "{count} items"
     },
     "searchPlaceholder": "Search equipment...",
@@ -1144,7 +1145,10 @@
     "assignedTo": "Assigned: {assignedTo}",
     "completedDate": "Completed {completedDate}",
     "less": "Less",
-    "tasksCount": "{count} tasks",
+    "tasksCount": {
+      "one": "1 task",
+      "other": "{count} tasks"
+    },
     "completionNotes": "Completion Notes",
     "completionNotesPlaceholder": "Issues found, parts replaced, observations...",
     "sendToLinear": "Send to Linear",
@@ -1166,7 +1170,10 @@
   "training": {
     "requiredTraining": "Required Training",
     "noRequirements": "No training requirements defined for this equipment.",
-    "recordCount": "{count} records",
+    "recordCount": {
+      "one": "1 record",
+      "other": "{count} records"
+    },
     "showingRecords": "Showing 10 of {count} records",
     "noRecordsYet": "No training records yet.",
     "employeeName": "Employee name",
@@ -1214,8 +1221,14 @@
     "printPreTripLabels": "Print Pre-Trip Labels",
     "printAllLabels": "Print All Labels",
     "preTripSectionTitle": "Pre-Trip Inspection Labels",
-    "unitCount": "{count} units",
+    "unitCount": {
+      "one": "1 unit",
+      "other": "{count} units"
+    },
     "preTripSectionBody": "Mount these on forklifts and lifts — scanning opens that unit's pre-trip inspection directly. Completed inspections email a signed, auditable copy to EHS.",
-    "itemCount": "{count} items"
+    "itemCount": {
+      "one": "1 item",
+      "other": "{count} items"
+    }
   }
 }

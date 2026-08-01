@@ -12,10 +12,12 @@ import EquipmentCard from '@/components/EquipmentCard'
 import { EquipmentCardSkeleton } from '@/components/Skeleton'
 import ModuleTourButton from '@/components/onboarding/ModuleTourButton'
 import { btnSelectedCls } from '@/lib/form-styles'
+import { useT } from '@/lib/i18n'
 
 type FilterCategory = EquipmentCategory | 'all'
 
 export default function EquipmentDirectory() {
+  const t = useT()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all')
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
@@ -72,10 +74,10 @@ export default function EquipmentDirectory() {
       <header className="mb-6">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-xl sm:text-xl font-bold text-fg">
-            Equipment
+            {t('nav.equipment.long', undefined, 'Equipment')}
           </h1>
           <span className="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-mytra-purple/20 text-mytra-purple">
-            {allEquipment.length} items
+            {t('equipment.itemCount', { count: allEquipment.length }, '{count} items')}
           </span>
           <ModuleTourButton tourId="equipment-dir" />
         </div>
@@ -93,8 +95,8 @@ export default function EquipmentDirectory() {
           enterKeyHint="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search equipment..."
-          aria-label="Search equipment"
+          placeholder={t('equipment.searchPlaceholder', undefined, 'Search equipment...')}
+          aria-label={t('equipment.searchAria', undefined, 'Search equipment')}
           className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 pl-10 pr-10
                      text-sm text-fg placeholder:text-fg-4
                      focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
@@ -103,7 +105,7 @@ export default function EquipmentDirectory() {
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            aria-label="Clear search"
+            aria-label={t('equipment.clearSearchAria', undefined, 'Clear search')}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-fg-4 hover:text-fg
                        transition-colors p-2"
           >
@@ -125,7 +127,7 @@ export default function EquipmentDirectory() {
                 : 'bg-mytra-card border border-mytra-border text-fg-3 hover:bg-mytra-card-hover'
             }`}
         >
-          All
+          {t('equipment.filterAll', undefined, 'All')}
           <span className="ml-1.5 text-xs">{allEquipment.length}</span>
         </button>
 
@@ -175,9 +177,9 @@ export default function EquipmentDirectory() {
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Search className="text-fg-4 mb-3" size={40} />
-          <p className="text-fg-3 text-sm font-medium">No equipment found</p>
+          <p className="text-fg-3 text-sm font-medium">{t('equipment.noEquipmentFound', undefined, 'No equipment found')}</p>
           <p className="text-fg-4 text-xs mt-1">
-            Try adjusting your search or filter.
+            {t('equipment.tryAdjustingFilter', undefined, 'Try adjusting your search or filter.')}
           </p>
         </div>
       ) : selectedCategory !== 'all' || !groupedEquipment ? (

@@ -31,6 +31,11 @@ export function formatDateTime(iso: string, locale: Locale = getStoredLocale()):
   })
 }
 
+/** Month + day only (relative-time fallbacks — 'Jul 20'). */
+export function formatMonthDay(iso: string, locale: Locale = getStoredLocale()): string {
+  return new Date(iso).toLocaleDateString(DATE_LOCALE[locale], { month: 'short', day: 'numeric' })
+}
+
 /** Time-only variant (e.g. crew signature rows). */
 export function formatTime(iso: string, locale: Locale = getStoredLocale()): string {
   return new Date(iso).toLocaleTimeString(DATE_LOCALE[locale], { hour: 'numeric', minute: '2-digit' })

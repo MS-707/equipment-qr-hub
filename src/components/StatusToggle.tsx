@@ -5,8 +5,19 @@ import { useSession } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react'
 import { EquipmentStatus, EQUIPMENT_STATUS_COLORS } from '@/lib/types'
 import { updateEquipmentStatus } from '@/lib/equipment'
+import { useT } from '@/lib/i18n'
+import type { MessageKey } from '@/lib/i18n-keys'
 
 const STATUSES: EquipmentStatus[] = ['Active', 'Out of Service', 'Pending Repair', 'Retired']
+
+// Display-only mapping — the English status strings stay the stored values
+// (updateEquipmentStatus payload) and EQUIPMENT_STATUS_COLORS lookup keys.
+const STATUS_LABEL_KEYS: Record<EquipmentStatus, MessageKey> = {
+  'Active': 'equipment.statusActive',
+  'Out of Service': 'equipment.statusOutOfService',
+  'Pending Repair': 'equipment.statusPendingRepair',
+  'Retired': 'equipment.statusRetired',
+}
 
 interface StatusToggleProps {
   itemNumber: number
@@ -15,6 +26,7 @@ interface StatusToggleProps {
 }
 
 export default function StatusToggle({ itemNumber, currentStatus, onStatusChange }: StatusToggleProps) {
+  const t = useT()
   const [isOpen, setIsOpen] = useState(false)
   const { data: session } = useSession()
   const color = EQUIPMENT_STATUS_COLORS[currentStatus]
@@ -45,7 +57,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          {currentStatus}
+          {t(STATUS_LABEL_KEYS[currentStatus], undefined, currentStatus)}
           <ChevronDown className="w-3 h-3" />
         </button>
       ) : (
@@ -56,7 +68,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
             color: color,
           }}
         >
-          {currentStatus}
+          {t(STATUS_LABEL_KEYS[currentStatus], undefined, currentStatus)}
         </span>
       )}
 
@@ -67,7 +79,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
 
           <div
             role="listbox"
-            aria-label="Equipment status"
+            aria-label={t('equipment.statusListboxAria', undefined, 'Equipment status')}
             className="absolute left-0 top-full mt-1 z-50 bg-mytra-card border border-mytra-border
                        rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-slideDown origin-top"
           >
@@ -89,7 +101,7 @@ export default function StatusToggle({ itemNumber, currentStatus, onStatusChange
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: statusColor }}
                   />
-                  <span style={{ color: statusColor }}>{status}</span>
+                  <span style={{ color: statusColor }}>{t(STATUS_LABEL_KEYS[status], undefined, status)}</span>
                 </button>
               )
             })}

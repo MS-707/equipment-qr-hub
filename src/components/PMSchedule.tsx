@@ -5,20 +5,23 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem, PmType } from '@/lib/types'
 import { stripRegCitations } from '@/lib/strip-citations'
 import CreateWorkOrderButton from '@/components/CreateWorkOrderButton'
+import { useT } from '@/lib/i18n'
+import type { MessageKey } from '@/lib/i18n-keys'
 
 interface FrequencyConfig {
   key: keyof EquipmentItem
   label: string
+  labelKey: MessageKey
   pmType: PmType
 }
 
 const PM_FREQUENCIES: FrequencyConfig[] = [
-  { key: 'pmDaily', label: 'Daily PM', pmType: 'Daily' },
-  { key: 'pmWeekly', label: 'Weekly PM', pmType: 'Weekly' },
-  { key: 'pmMonthly', label: 'Monthly PM', pmType: 'Monthly' },
-  { key: 'pmQuarterly', label: 'Quarterly PM', pmType: 'Quarterly' },
-  { key: 'pmSemiAnnual', label: 'Semi-Annual PM', pmType: 'Semi-Annual' },
-  { key: 'pmAnnual', label: 'Annual PM', pmType: 'Annual' },
+  { key: 'pmDaily', label: 'Daily PM', labelKey: 'equipment.pmFreqDaily', pmType: 'Daily' },
+  { key: 'pmWeekly', label: 'Weekly PM', labelKey: 'equipment.pmFreqWeekly', pmType: 'Weekly' },
+  { key: 'pmMonthly', label: 'Monthly PM', labelKey: 'equipment.pmFreqMonthly', pmType: 'Monthly' },
+  { key: 'pmQuarterly', label: 'Quarterly PM', labelKey: 'equipment.pmFreqQuarterly', pmType: 'Quarterly' },
+  { key: 'pmSemiAnnual', label: 'Semi-Annual PM', labelKey: 'equipment.pmFreqSemiAnnual', pmType: 'Semi-Annual' },
+  { key: 'pmAnnual', label: 'Annual PM', labelKey: 'equipment.pmFreqAnnual', pmType: 'Annual' },
 ]
 
 interface PMScheduleProps {
@@ -26,6 +29,7 @@ interface PMScheduleProps {
 }
 
 export default function PMSchedule({ equipment }: PMScheduleProps) {
+  const t = useT()
   // Find the first frequency that has content, to open it by default
   const firstNonEmptyIndex = PM_FREQUENCIES.findIndex(
     (f) => (equipment[f.key] as string).trim() !== ''
@@ -66,7 +70,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
       {/* Key PM Summary */}
       {equipment.keyPmSummary.trim() !== '' && (
         <div className="bg-mytra-purple/10 border-l-4 border-mytra-purple rounded-r-lg p-4">
-          <h3 className="text-sm font-semibold text-fg mb-1">Key PM Summary</h3>
+          <h3 className="text-sm font-semibold text-fg mb-1">{t('equipment.keyPmSummary', undefined, 'Key PM Summary')}</h3>
           <p className="text-fg-2 text-sm leading-relaxed">
             {stripRegCitations(equipment.keyPmSummary)}
           </p>
@@ -93,10 +97,10 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-fg font-medium text-sm">
-                    {freq.label}
+                    {t(freq.labelKey, undefined, freq.label)}
                   </span>
                   <span className="text-xs text-fg-3 bg-mytra-bg px-2 py-0.5 rounded-full">
-                    {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+                    {t('equipment.taskCount', { count: tasks.length })}
                   </span>
                 </div>
                 {isOpen ? (
@@ -137,7 +141,7 @@ export default function PMSchedule({ equipment }: PMScheduleProps) {
 
       {activeFrequencies.length === 0 && (
         <p className="text-fg-3 text-sm">
-          No PM schedule data available for this equipment.
+          {t('equipment.noPmScheduleData', undefined, 'No PM schedule data available for this equipment.')}
         </p>
       )}
     </div>

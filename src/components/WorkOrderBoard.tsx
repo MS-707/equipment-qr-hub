@@ -11,11 +11,30 @@ import {
 import { getAllEquipment } from '@/lib/equipment'
 import WorkOrderCard from '@/components/WorkOrderCard'
 import PullToRefresh from '@/components/PullToRefresh'
+import { useT } from '@/lib/i18n'
 
 const STATUSES: WorkOrderStatus[] = ['Not Started', 'In Progress', 'Complete']
 const PM_TYPES: PmType[] = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual']
 
+// Display-key maps: status / PM type are typed enum VALUES (record keys stay
+// English); only the rendered label is localized.
+const STATUS_KEY = {
+  'Not Started': 'workOrders.statusNotStarted',
+  'In Progress': 'workOrders.statusInProgress',
+  'Complete': 'workOrders.statusComplete',
+} as const
+
+const PM_TYPE_KEY = {
+  'Daily': 'workOrders.pmTypeDaily',
+  'Weekly': 'workOrders.pmTypeWeekly',
+  'Monthly': 'workOrders.pmTypeMonthly',
+  'Quarterly': 'workOrders.pmTypeQuarterly',
+  'Semi-Annual': 'workOrders.pmTypeSemiAnnual',
+  'Annual': 'workOrders.pmTypeAnnual',
+} as const
+
 export default function WorkOrderBoard() {
+  const t = useT()
   const [refreshKey, setRefreshKey] = useState(0)
   const [filterEquipment, setFilterEquipment] = useState<number | 'all'>('all')
   const [filterPmType, setFilterPmType] = useState<PmType | 'all'>('all')
@@ -95,12 +114,12 @@ export default function WorkOrderBoard() {
           onChange={(e) =>
             setFilterEquipment(e.target.value === 'all' ? 'all' : Number(e.target.value))
           }
-          aria-label="Filter by equipment"
+          aria-label={t('workOrders.filterByEquipmentAria', undefined, 'Filter by equipment')}
           className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
                      text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                      max-w-[200px] min-h-[44px]"
         >
-          <option value="all">All Equipment</option>
+          <option value="all">{t('workOrders.allEquipment', undefined, 'All Equipment')}</option>
           {equipment.map((e) => (
             <option key={e.itemNumber} value={e.itemNumber}>
               {e.name.length > 35 ? e.name.substring(0, 35) + '...' : e.name}
@@ -113,15 +132,15 @@ export default function WorkOrderBoard() {
           onChange={(e) =>
             setFilterPmType(e.target.value === 'all' ? 'all' : (e.target.value as PmType))
           }
-          aria-label="Filter by PM type"
+          aria-label={t('workOrders.filterByPmTypeAria', undefined, 'Filter by PM type')}
           className="bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-2.5
                      text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-mytra-purple
                      min-h-[44px]"
         >
-          <option value="all">All PM Types</option>
-          {PM_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          <option value="all">{t('workOrders.allPmTypes', undefined, 'All PM Types')}</option>
+          {PM_TYPES.map((pm) => (
+            <option key={pm} value={pm}>
+              {t(PM_TYPE_KEY[pm])}
             </option>
           ))}
         </select>
@@ -137,7 +156,7 @@ export default function WorkOrderBoard() {
                        }`}
           >
             <AlertTriangle className="w-3 h-3" />
-            {overdueOrders.length} Overdue
+            {t('workOrders.overdueCount', { count: overdueOrders.length })}
           </button>
         )}
 
@@ -148,7 +167,7 @@ export default function WorkOrderBoard() {
                      hover:text-fg hover:bg-mytra-card-hover transition-colors ml-auto"
         >
           <Download className="w-3 h-3" />
-          Export CSV
+          {t('workOrders.exportCsv', undefined, 'Export CSV')}
         </button>
       </div>
 
@@ -159,10 +178,9 @@ export default function WorkOrderBoard() {
                           flex items-center justify-center mb-3">
             <Filter className="w-5 h-5 text-fg-4" />
           </div>
-          <p className="text-fg-3 text-sm font-medium">No work orders yet</p>
+          <p className="text-fg-3 text-sm font-medium">{t('workOrders.emptyTitle', undefined, 'No work orders yet')}</p>
           <p className="text-fg-4 text-xs mt-1 max-w-sm">
-            Create work orders from equipment profile pages. Go to any equipment item,
-            open the PM Schedule tab, and click &quot;+ Work Order&quot; next to a PM type.
+            {t('workOrders.emptyBody')}
           </p>
         </div>
       ) : (
@@ -176,7 +194,7 @@ export default function WorkOrderBoard() {
                 {/* Column header */}
                 <div className="flex items-center gap-2 mb-3 pl-3 border-l-[3px]"
                      style={{ borderColor: statusColor }}>
-                  <h2 className="text-sm font-semibold text-fg">{status}</h2>
+                  <h2 className="text-sm font-semibold text-fg">{t(STATUS_KEY[status])}</h2>
                   <span
                     className="text-xs font-medium px-2 py-0.5 rounded-full"
                     style={{
@@ -198,7 +216,7 @@ export default function WorkOrderBoard() {
                   {items.length === 0 && (
                     <div className="bg-mytra-card border border-dashed border-mytra-border
                                     rounded-lg p-6 text-center">
-                      <p className="text-fg-4 text-xs">No work orders</p>
+                      <p className="text-fg-4 text-xs">{t('workOrders.emptyColumn', undefined, 'No work orders')}</p>
                     </div>
                   )}
                 </div>

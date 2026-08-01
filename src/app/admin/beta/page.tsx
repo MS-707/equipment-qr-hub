@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime, formatMonthDay } from '@/lib/datetime'
 import { useState, useEffect, useCallback } from 'react'
 import { ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCw, Loader2, Users } from 'lucide-react'
 import Link from 'next/link'
@@ -144,8 +145,8 @@ function SignupCard({
       )}
 
       <p className="text-xs text-fg-4">
-        Applied {new Date(signup.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-        {signup.decidedAt && ` · Decided ${new Date(signup.decidedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+        Applied {formatDateTime(signup.createdAt)}
+        {signup.decidedAt && ` · Decided ${formatMonthDay(signup.decidedAt)}`}
       </p>
 
       {signup.status === 'pending' && (

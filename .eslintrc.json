@@ -36,7 +36,27 @@
         "src/components/safety/IncidentReportForm.tsx",
         "src/components/safety/HeightPermitForm.tsx",
         "src/components/safety/HotWorkPermitForm.tsx",
-        "src/components/safety/ConfinedSpaceForm.tsx"
+        "src/components/safety/ConfinedSpaceForm.tsx",
+        "src/components/PreTripInspection.tsx",
+        "src/components/InspectLanding.tsx",
+        "src/components/safety/RecordView.tsx",
+        "src/components/safety/SafetyHistory.tsx",
+        "src/components/safety/SafetyRecordCard.tsx",
+        "src/components/safety/ReviewStatusSection.tsx",
+        "src/components/safety/SyncQueuePanel.tsx",
+        "src/components/EquipmentProfile.tsx",
+        "src/components/EquipmentCard.tsx",
+        "src/components/PMSchedule.tsx",
+        "src/components/PmTracker.tsx",
+        "src/components/StatusToggle.tsx",
+        "src/components/WorkOrderBoard.tsx",
+        "src/components/WorkOrderCard.tsx",
+        "src/components/TrainingTracker.tsx",
+        "src/components/TrainingInfo.tsx",
+        "src/components/ComplianceInfo.tsx",
+        "src/components/QRLabel.tsx",
+        "src/components/WorkOrdersHeader.tsx",
+        "src/app/inspections/page.tsx"
       ],
       "rules": {
         "no-restricted-syntax": [

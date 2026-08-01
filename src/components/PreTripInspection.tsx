@@ -45,6 +45,9 @@ import { getAuthorization, isUserAuthorized, onShopMgmtChange } from '@/lib/shop
 import { formatDateTime } from '@/lib/datetime'
 import { btnPrimaryCls, btnSelectedCls } from '@/lib/form-styles'
 import Link from 'next/link'
+import { useLocale, useT } from '@/lib/i18n'
+import { inspectionCategory, inspectionItemLabel, inspectionTitle } from '@/lib/i18n-data'
+import type { MessageKey } from '@/lib/i18n-keys'
 
 const DRAFT_KEY_PREFIX = 'draft:inspection:'
 const DRAFT_SAVE_DELAY = 2000
@@ -52,6 +55,13 @@ const DRAFT_SAVE_DELAY = 2000
 // ── Shift options ──────────────────────────────────────────
 
 const SHIFTS: Shift[] = ['Day', 'Swing', 'Night']
+
+// Shift values are stored data (English enum) — display maps through keys.
+const SHIFT_KEYS: Record<Shift, MessageKey> = {
+  Day: 'ptp.shiftDay',
+  Swing: 'ptp.shiftSwing',
+  Night: 'ptp.shiftNight',
+}
 
 // ── ChecklistItemRow ───────────────────────────────────────
 
@@ -82,6 +92,8 @@ function ChecklistItemRow({
   onRemovePhoto,
   onCameraClick,
 }: ChecklistItemRowProps) {
+  const t = useT()
+  const { locale } = useLocale()
   const isFail = state.result === 'fail'
   const isCriticalNa = item.critical && state.result === 'na'
 
@@ -90,11 +102,11 @@ function ChecklistItemRow({
       {/* Item label and critical badge */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-start gap-2 min-w-0">
-          <span className="text-sm text-fg leading-snug">{item.label}</span>
+          <span className="text-sm text-fg leading-snug">{inspectionItemLabel(locale, item.id, item.label)}</span>
           {item.critical && (
             <span className="inline-flex items-center gap-0.5 shrink-0 text-xs font-medium text-warn bg-warn/10 px-1.5 py-0.5 rounded">
               <AlertTriangle className="w-2.5 h-2.5" />
-              Safety-critical
+              {t('inspect.safetyCritical', undefined, 'Safety-critical')}
             </span>
           )}
         </div>
@@ -111,7 +123,7 @@ function ChecklistItemRow({
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-ok/50'
           }`}
         >
-          Pass
+          {t('inspect.pass', undefined, 'Pass')}
         </button>
         <button
           type="button"
@@ -122,7 +134,7 @@ function ChecklistItemRow({
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-danger/50'
           }`}
         >
-          Fail
+          {t('inspect.fail', undefined, 'Fail')}
         </button>
         <button
           type="button"
@@ -133,7 +145,7 @@ function ChecklistItemRow({
               : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-fg-4/50'
           }`}
         >
-          N/A
+          {t('inspect.na', undefined, 'N/A')}
         </button>
       </div>
 
@@ -143,7 +155,7 @@ function ChecklistItemRow({
           <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
             <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
             <p className="text-sm text-warn-strong leading-relaxed">
-              This is a safety-critical item. You must provide a reason for marking it N/A.
+              {t('inspect.criticalNaWarning', undefined, 'This is a safety-critical item. You must provide a reason for marking it N/A.')}
             </p>
           </div>
 
@@ -170,8 +182,8 @@ function ChecklistItemRow({
               maxLength={2000}
               value={state.naJustification || ''}
               onChange={(e) => onNaJustification(e.target.value)}
-              placeholder={state.naReasonCode === 'other' ? 'Explain why this item is not applicable...' : 'Additional details (optional)...'}
-              aria-label="N/A justification"
+              placeholder={state.naReasonCode === 'other' ? t('inspect.naJustificationOtherPlaceholder', undefined, 'Explain why this item is not applicable...') : t('inspect.naJustificationOptionalPlaceholder', undefined, 'Additional details (optional)...')}
+              aria-label={t('inspect.naJustificationAria', undefined, 'N/A justification')}
               className={`w-full bg-mytra-input border rounded-lg py-2.5 px-3
                          text-sm text-fg placeholder:text-fg-4 resize-none
                          focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
@@ -189,7 +201,7 @@ function ChecklistItemRow({
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-3 py-2">
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
               <p className="text-sm text-warn-strong leading-relaxed">
-                This is a safety-critical item — flagging it will send this unit to maintenance.
+                {t('inspect.criticalFailWarning', undefined, 'This is a safety-critical item — flagging it will send this unit to maintenance.')}
               </p>
             </div>
           )}
@@ -200,8 +212,8 @@ function ChecklistItemRow({
             maxLength={2000}
             value={state.notes}
             onChange={(e) => onNotes(e.target.value)}
-            placeholder="Describe the issue..."
-            aria-label="Describe the issue"
+            placeholder={t('inspect.describeIssuePlaceholder', undefined, 'Describe the issue...')}
+            aria-label={t('inspect.describeIssueAria', undefined, 'Describe the issue')}
             className={`w-full bg-mytra-input border rounded-lg py-2.5 px-3
                        text-sm text-fg placeholder:text-fg-4 resize-none
                        focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent
@@ -215,13 +227,13 @@ function ChecklistItemRow({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={state.photo}
-                  alt="Defect photo"
+                  alt={t('inspect.defectPhotoAlt', undefined, 'Defect photo')}
                   className="w-16 h-16 object-cover rounded-lg border border-mytra-border"
                 />
                 <button
                   type="button"
                   onClick={onRemovePhoto}
-                  aria-label="Remove photo"
+                  aria-label={t('incident.removePhotoAria', undefined, 'Remove photo')}
                   className="absolute -top-3 -right-3 w-11 h-11 rounded-full
                              flex items-center justify-center transition-colors group"
                 >
@@ -239,7 +251,7 @@ function ChecklistItemRow({
                            hover:border-mytra-purple/50 transition-colors duration-150"
               >
                 <Camera className="w-4 h-4" />
-                Add Photo
+                {t('inspect.addPhoto', undefined, 'Add Photo')}
               </button>
             )}
           </div>
@@ -258,6 +270,7 @@ interface InspectionHistoryProps {
 }
 
 function InspectionHistory({ history, showHistory, onToggle }: InspectionHistoryProps) {
+  const t = useT()
   if (history.length === 0) return null
 
   return (
@@ -272,7 +285,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                    transition-colors duration-150 press-scale"
       >
         <span className="text-sm font-medium text-fg">
-          Recent Inspections ({history.length})
+          {t('inspect.recentInspections', { count: history.length }, 'Recent Inspections ({count})')}
         </span>
         {showHistory ? (
           <ChevronUp className="w-4 h-4 text-fg-3" />
@@ -293,7 +306,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                 <div className="min-w-0">
                   <p className="text-sm text-fg truncate">{record.inspectorName}</p>
                   <p className="text-xs text-fg-3">
-                    {formatDateTime(record.createdAt)} &middot; {record.shift} shift
+                    {t('inspect.historyMeta', { date: formatDateTime(record.createdAt), shift: t(SHIFT_KEYS[record.shift]) }, '{date} · {shift} shift')}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -302,22 +315,22 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                   {record.syncStatus === 'failed' ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-danger/10 text-danger shrink-0">
                       <AlertCircle className="w-3 h-3" />
-                      Sync failed
+                      {t('inspect.syncFailedBadge', undefined, 'Sync failed')}
                     </span>
                   ) : record.syncStatus === 'pending' ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-warn/10 text-warn shrink-0">
                       <RefreshCw className="w-3 h-3" />
-                      Pending
+                      {t('sync.pending', undefined, 'Pending')}
                     </span>
                   ) : record.syncStatus === 'offline' ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-mytra-bg border border-mytra-border text-fg-3 shrink-0">
                       <CloudOff className="w-3 h-3" />
-                      Offline
+                      {t('common.offline', undefined, 'Offline')}
                     </span>
                   ) : (
                     <span className="inline-flex items-center shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-ok" aria-hidden="true" />
-                      <span className="sr-only">Synced to cloud</span>
+                      <span className="sr-only">{t('sync.syncedToCloud', undefined, 'Synced to cloud')}</span>
                     </span>
                   )}
                   <span
@@ -329,7 +342,7 @@ function InspectionHistory({ history, showHistory, onToggle }: InspectionHistory
                           : 'bg-ok/15 text-ok'
                     }`}
                   >
-                    {record.hasCriticalFail ? 'Critical' : record.result === 'fail' ? 'Issues' : 'Pass'}
+                    {record.hasCriticalFail ? t('inspect.resultBadgeCritical', undefined, 'Critical') : record.result === 'fail' ? t('inspect.resultBadgeIssues', undefined, 'Issues') : t('inspect.pass', undefined, 'Pass')}
                   </span>
                 </div>
               </div>
@@ -356,6 +369,8 @@ interface PreTripInspectionProps {
 }
 
 export default function PreTripInspection({ equipment, onStatusChange, onChecklistActiveChange }: PreTripInspectionProps) {
+  const t = useT()
+  const { locale } = useLocale()
   const checklistType = getChecklistType(equipment)
   const checklist = getChecklist(checklistType)
   const isManualPalletJack = checklistType === 'manual-pallet-jack'
@@ -718,7 +733,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
       setSaveError(
         e instanceof Error
           ? e.message
-          : 'The inspection could not be saved to this device. Try again.'
+          : t('inspect.saveErrorFallback', undefined, 'The inspection could not be saved to this device. Try again.')
       )
       return
     }
@@ -790,6 +805,11 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
   // ── RENDER ───────────────────────────────────────────────
 
+  // Rich-text interpolations: split the translated template around a sentinel
+  // so the styled <span> stays a real element (same pattern as JhaForm).
+  const signingAsParts = t('inspect.signingAs', { name: '\u0000' }, 'Signing as {name}').split('\u0000')
+  const workOrderParts = t('inspect.workOrder', { id: '\u0000' }, 'Work Order: {id}').split('\u0000')
+
   return (
     <div className="space-y-4">
       {/* Draft restored notice */}
@@ -797,14 +817,14 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
         <div className="flex items-center justify-between gap-2 bg-mytra-purple/10 border border-mytra-purple/20 rounded-lg px-4 py-2.5 animate-fadeIn">
           <div className="flex items-center gap-2 text-sm text-mytra-purple">
             <RotateCcw className="w-4 h-4 shrink-0" />
-            <span>In-progress inspection restored</span>
+            <span>{t('inspect.draftRestoredNotice', undefined, 'In-progress inspection restored')}</span>
           </div>
           <button
             type="button"
             onClick={discardDraft}
             className="text-xs text-fg-3 hover:text-fg-2 min-h-[44px] px-3 inline-flex items-center shrink-0"
           >
-            Start fresh
+            {t('inspect.startFresh', undefined, 'Start fresh')}
           </button>
         </div>
       )}
@@ -816,14 +836,14 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="flex items-center gap-2 mb-1">
               <ClipboardCheck className="w-5 h-5 text-mytra-purple" />
               <h3 className="text-sm font-semibold text-fg">
-                {checklist.title} Pre-Trip Inspection
+                {t('inspect.checklistTitle', { title: inspectionTitle(locale, checklistType, checklist.title) }, '{title} Pre-Trip Inspection')}
               </h3>
             </div>
 
             {/* Inspector name */}
             <div>
               <label htmlFor="inspector-name" className="block text-xs text-fg-3 mb-1">
-                Inspector Name
+                {t('inspect.inspectorNameLabel', undefined, 'Inspector Name')}
               </label>
               <input
                 id="inspector-name"
@@ -833,7 +853,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                 maxLength={100}
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t('auth.namePlaceholder', undefined, 'Your name')}
                 required
                 aria-required="true"
                 className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
@@ -844,8 +864,8 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
 
             {/* Shift toggle */}
             <div>
-              <label className="block text-xs text-fg-3 mb-1">Shift</label>
-              <div className="flex gap-2" role="radiogroup" aria-label="Shift">
+              <label className="block text-xs text-fg-3 mb-1">{t('ptp.shiftLabel', undefined, 'Shift')}</label>
+              <div className="flex gap-2" role="radiogroup" aria-label={t('ptp.shiftAria', undefined, 'Shift')}>
                 {SHIFTS.map((s) => (
                   <button
                     key={s}
@@ -859,7 +879,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                         : 'bg-mytra-bg border border-mytra-border text-fg-3 hover:text-fg hover:border-mytra-purple/50'
                     }`}
                   >
-                    {s}
+                    {t(SHIFT_KEYS[s])}
                   </button>
                 ))}
               </div>
@@ -869,7 +889,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             {!isManualPalletJack && (
               <div>
                 <label htmlFor="hour-meter" className="block text-xs text-fg-3 mb-1">
-                  Hour Meter Reading
+                  {t('inspect.hourMeterLabel', undefined, 'Hour Meter Reading')}
                 </label>
                 <input
                   id="hour-meter"
@@ -877,7 +897,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                   inputMode="decimal"
                   value={hourMeter}
                   onChange={(e) => setHourMeter(e.target.value)}
-                  placeholder="e.g. 1234.5"
+                  placeholder={t('inspect.hourMeterPlaceholder', undefined, 'e.g. 1234.5')}
                   className="w-full bg-mytra-input border border-mytra-border rounded-lg py-2.5 px-3
                              text-sm text-fg placeholder:text-fg-4
                              focus:outline-none focus:ring-2 focus:ring-mytra-purple focus:border-transparent"
@@ -889,16 +909,16 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             {authRestricted && operatorAuthorized && (
               <div className="flex items-center gap-2 bg-ok/10 border border-ok/20 rounded-lg px-3 py-2">
                 <CheckCircle2 className="w-4 h-4 text-ok shrink-0" />
-                <p className="text-xs text-ok">Authorized operator</p>
+                <p className="text-xs text-ok">{t('inspect.authorizedOperator', undefined, 'Authorized operator')}</p>
               </div>
             )}
             {authRestricted && !operatorAuthorized && (
               <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-danger mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-danger">Not Authorized</p>
+                  <p className="text-sm font-medium text-danger">{t('inspect.notAuthorizedTitle', undefined, 'Not Authorized')}</p>
                   <p className="text-xs text-fg-2 mt-0.5">
-                    This equipment requires authorization. You are not on the authorized operator list. Contact your supervisor or EHS.
+                    {t('inspect.notAuthorizedBody')}
                   </p>
                 </div>
               </div>
@@ -912,7 +932,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               disabled={!inspectorName.trim() || !operatorAuthorized}
               className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
-              Start Inspection
+              {t('inspect.startInspection', undefined, 'Start Inspection')}
             </button>
           </div>
 
@@ -934,18 +954,18 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           <div className="bg-mytra-card border border-mytra-border rounded-card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-fg-3">
-                {answeredItems}/{totalItems} items checked
+                {t('inspect.itemsChecked', { answered: answeredItems, total: totalItems }, '{answered}/{total} items checked')}
               </span>
               {(criticalFailCount > 0 || criticalNaCount > 0) && (
                 <span className="text-xs font-medium flex items-center gap-2">
                   {criticalFailCount > 0 && (
                     <span className="text-danger">
-                      {criticalFailCount} critical {criticalFailCount === 1 ? 'fail' : 'fails'}
+                      {t('inspect.criticalFails', { count: criticalFailCount })}
                     </span>
                   )}
                   {criticalNaCount > 0 && (
                     <span className="text-warn">
-                      {criticalNaCount} critical N/A
+                      {t('inspect.criticalNaCount', { count: criticalNaCount }, '{count} critical N/A')}
                     </span>
                   )}
                 </span>
@@ -966,7 +986,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {checklist.sections.map((section) => (
             <div key={section.category}>
               <h4 className="text-xs uppercase tracking-wider text-fg-4 font-semibold mb-2 px-1">
-                {section.category}
+                {inspectionCategory(locale, section.category)}
               </h4>
               <div data-tour-module="checklist-items" className="space-y-2">
                 {section.items.map((checkItem) => {
@@ -1011,13 +1031,12 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {/* Operator sign-on — appears once every item is answered */}
           {allAnswered && (
             <div className="bg-mytra-card border border-mytra-border rounded-card p-4 space-y-2 animate-fadeIn">
-              <h4 className="text-sm font-semibold text-fg">Operator sign-on</h4>
+              <h4 className="text-sm font-semibold text-fg">{t('inspect.operatorSignOnHeading', undefined, 'Operator sign-on')}</h4>
               <p className="text-xs text-fg-2 leading-relaxed">
-                Sign with your finger to certify you performed this inspection. Your signature
-                is attached to the record and the EHS copy.
+                {t('inspect.signOnHelp')}
               </p>
               <SignaturePad onChange={(url) => setSignature(url)} />
-              <p className="text-xs text-fg-4">Signing as <span className="text-fg-2 font-medium">{inspectorName}</span></p>
+              <p className="text-xs text-fg-4">{signingAsParts[0]}<span className="text-fg-2 font-medium">{inspectorName}</span>{signingAsParts[1]}</p>
             </div>
           )}
 
@@ -1027,7 +1046,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               <div role="alert" className="flex items-start gap-2 bg-danger/10 border border-danger/30 rounded-lg px-3 py-2.5 mb-2">
                 <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
                 <p className="text-sm text-danger-strong">
-                  Inspection NOT saved: {saveError} Your answers are still here — fix the issue and submit again.
+                  {t('inspect.notSavedBanner', { error: saveError })}
                 </p>
               </div>
             )}
@@ -1038,14 +1057,14 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               className={`${btnPrimaryCls} w-full py-3 text-sm font-semibold duration-150 disabled:hover:bg-mytra-purple`}
             >
               {missingNotes.size > 0
-                ? 'Add notes to failed items'
+                ? t('inspect.addNotesToFailedItems', undefined, 'Add notes to failed items')
                 : missingNaJustification.size > 0
-                  ? 'Provide N/A justification for critical items'
+                  ? t('inspect.provideNaJustification', undefined, 'Provide N/A justification for critical items')
                   : !allAnswered
-                    ? `${remaining} item${remaining === 1 ? '' : 's'} remaining`
+                    ? t('inspect.itemsRemaining', { count: remaining })
                     : !signature
-                      ? 'Sign on to submit'
-                      : 'Submit Inspection'}
+                      ? t('inspect.signOnToSubmit', undefined, 'Sign on to submit')
+                      : t('inspect.submitInspection', undefined, 'Submit Inspection')}
             </button>
           </div>
         </div>
@@ -1058,13 +1077,13 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {submittedRecord.result === 'pass' && (
             <div className="bg-ok/10 border border-ok/20 rounded-lg p-6 text-center">
               <CheckCircle2 className="w-12 h-12 text-ok mx-auto mb-3" />
-              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">All Clear</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-ok mb-1 outline-none">{t('inspect.allClear', undefined, 'All Clear')}</h3>
               <p className="text-sm text-ok-strong">
-                You&apos;re good to go. Inspection logged.
+                {t('inspect.allClearBody', undefined, "You're good to go. Inspection logged.")}
               </p>
               {submittedRecord.criticalNaCount > 0 && (
                 <p className="text-sm text-warn-strong mt-3">
-                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
+                  {t('inspect.criticalNaFlagged', { count: submittedRecord.criticalNaCount })}
                 </p>
               )}
             </div>
@@ -1074,18 +1093,18 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {submittedRecord.result === 'fail' && !submittedRecord.hasCriticalFail && (
             <div className="bg-warn/10 border border-warn/20 rounded-lg p-6 text-center">
               <Wrench className="w-12 h-12 text-warn mx-auto mb-3" />
-              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-warn mb-1 outline-none">Issues Noted</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-warn mb-1 outline-none">{t('inspect.issuesNoted', undefined, 'Issues Noted')}</h3>
               <p className="text-sm text-warn-strong mb-3">
-                Maintenance has been notified. You may operate with caution.
+                {t('inspect.issuesNotedBody', undefined, 'Maintenance has been notified. You may operate with caution.')}
               </p>
               {submittedRecord.criticalNaCount > 0 && (
                 <p className="text-sm text-warn-strong mb-3">
-                  {submittedRecord.criticalNaCount} safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A — flagged for EHS review.
+                  {t('inspect.criticalNaFlagged', { count: submittedRecord.criticalNaCount })}
                 </p>
               )}
               {submittedRecord.workOrderId && (
                 <p className="text-xs text-fg-3">
-                  Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
+                  {workOrderParts[0]}<span className="text-fg font-mono">{submittedRecord.workOrderId}</span>{workOrderParts[1]}
                 </p>
               )}
             </div>
@@ -1095,18 +1114,18 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
           {submittedRecord.result === 'fail' && submittedRecord.hasCriticalFail && (
             <div className="bg-danger/10 border border-danger/20 rounded-lg p-6 text-center">
               <Shield className="w-12 h-12 text-danger mx-auto mb-3" />
-              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-danger mb-1 outline-none">Out of Service</h3>
+              <h3 ref={resultHeadingRef} tabIndex={-1} className="text-lg font-semibold text-danger mb-1 outline-none">{t('inspect.outOfService', undefined, 'Out of Service')}</h3>
               <p className="text-sm text-danger-strong mb-3">
-                This unit has been taken out of service for maintenance. Thanks for keeping everyone safe.
+                {t('inspect.outOfServiceBody')}
               </p>
               {submittedRecord.criticalNaCount > 0 && (
                 <p className="text-sm text-warn-strong mb-3">
-                  {submittedRecord.criticalNaCount} additional safety-critical {submittedRecord.criticalNaCount === 1 ? 'item was' : 'items were'} marked N/A.
+                  {t('inspect.additionalCriticalNa', { count: submittedRecord.criticalNaCount })}
                 </p>
               )}
               {submittedRecord.workOrderId && (
                 <p className="text-xs text-fg-3">
-                  Work Order: <span className="text-fg font-mono">{submittedRecord.workOrderId}</span>
+                  {workOrderParts[0]}<span className="text-fg font-mono">{submittedRecord.workOrderId}</span>{workOrderParts[1]}
                 </p>
               )}
             </div>
@@ -1118,8 +1137,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <Camera className="w-4 h-4 text-warn shrink-0 mt-0.5" />
               <p className="text-sm text-warn-strong">
-                Defect photos could not be saved to this device (storage may be full).
-                The inspection record itself is saved — retake photos for the work order if needed.
+                {t('inspect.photoSaveFailed')}
               </p>
             </div>
           )}
@@ -1128,22 +1146,22 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
               href={`/inspections/record/${encodeURIComponent(submittedRecord.id)}`}
               className="no-print w-full inline-flex items-center justify-center gap-1.5 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold bg-mytra-purple/10 border border-mytra-purple/30 text-mytra-purple hover:bg-mytra-purple/20 transition-colors"
             >
-              <Printer className="w-4 h-4" /> View / print signed record
+              <Printer className="w-4 h-4" /> {t('inspect.viewPrintSignedRecord', undefined, 'View / print signed record')}
             </Link>
           )}
           {notifyStatus === 'sent' && (
-            <p className="text-sm text-ok-strong text-center">EHS has been notified by email.</p>
+            <p className="text-sm text-ok-strong text-center">{t('inspect.notifySent', undefined, 'EHS has been notified by email.')}</p>
           )}
           {notifyStatus === 'skipped' && (
             <p data-notify-outcome="skipped" className="text-sm text-fg-3 text-center">
-              EHS email isn&apos;t configured — the signed record is saved on this device.
+              {t('inspect.notifySkipped', undefined, "EHS email isn't configured — the signed record is saved on this device.")}
             </p>
           )}
           {notifyStatus === 'queued' && (
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
               <p className="text-sm text-warn-strong">
-                The EHS email is queued and will send automatically when your connection returns.
+                {t('inspect.notifyQueued')}
               </p>
             </div>
           )}
@@ -1151,8 +1169,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="flex items-start gap-2 bg-mytra-purple/10 border border-mytra-purple/30 rounded-lg px-4 py-3">
               <LogIn className="w-4 h-4 text-mytra-purple shrink-0 mt-0.5" />
               <p className="text-sm text-fg">
-                The signed record is saved on this device. Sign in to send the EHS email —
-                it will send automatically once you do.
+                {t('inspect.notifySigninRequired')}
               </p>
             </div>
           )}
@@ -1160,8 +1177,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
             <div className="flex items-start gap-2 bg-warn/10 border border-warn/20 rounded-lg px-4 py-3">
               <AlertTriangle className="w-4 h-4 text-warn shrink-0 mt-0.5" />
               <p className="text-sm text-warn-strong">
-                The EHS email notification could not be sent (offline or server issue).
-                Your inspection is saved on this device — let your EHS contact know directly if this involved a safety-critical item.
+                {t('inspect.notifyFailed')}
               </p>
             </div>
           )}
@@ -1174,7 +1190,7 @@ export default function PreTripInspection({ equipment, onStatusChange, onCheckli
                        bg-mytra-card border border-mytra-border text-fg
                        hover:bg-mytra-card-hover"
           >
-            New Inspection
+            {t('inspect.newInspection', undefined, 'New Inspection')}
           </button>
         </div>
       )}

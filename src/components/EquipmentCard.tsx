@@ -6,6 +6,7 @@ import { Shield, ShieldAlert } from 'lucide-react'
 import { EquipmentItem, CATEGORY_COLORS, requiresMachineGuarding } from '@/lib/types'
 import { getAuthorization, onShopMgmtChange } from '@/lib/shop-management'
 import { haptic } from '@/lib/haptic'
+import { useT } from '@/lib/i18n'
 
 interface EquipmentCardProps {
   equipment: EquipmentItem
@@ -13,6 +14,7 @@ interface EquipmentCardProps {
 }
 
 export default function EquipmentCard({ equipment, showCategory = true }: EquipmentCardProps) {
+  const t = useT()
   const categoryColor = CATEGORY_COLORS[equipment.category]
   const hasGuarding = requiresMachineGuarding(equipment)
   const [isRestricted, setIsRestricted] = useState(false)
@@ -55,10 +57,10 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
           <span
             className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5
                        rounded-full bg-warn/10 text-warn"
-            title="Machine guarding required"
+            title={t('equipment.machineGuardingRequiredTitle', undefined, 'Machine guarding required')}
           >
             <Shield className="w-3 h-3" />
-            Guarded
+            {t('equipment.guardedBadge', undefined, 'Guarded')}
           </span>
         )}
 
@@ -69,7 +71,7 @@ export default function EquipmentCard({ equipment, showCategory = true }: Equipm
                        rounded-full bg-warn/10 text-warn"
           >
             <ShieldAlert className="w-3 h-3" />
-            Restricted
+            {t('equipment.restrictedBadge', undefined, 'Restricted')}
           </span>
         )}
       </div>

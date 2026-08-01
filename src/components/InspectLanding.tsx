@@ -6,6 +6,7 @@ import { ClipboardCheck, ChevronRight } from 'lucide-react'
 import { EquipmentItem, EquipmentStatus, EQUIPMENT_STATUS_COLORS, CATEGORY_COLORS } from '@/lib/types'
 import { getEquipmentById } from '@/lib/equipment'
 import PreTripInspection from '@/components/PreTripInspection'
+import { useT } from '@/lib/i18n'
 
 /**
  * Focused landing for QR-initiated pre-trip inspections: the scanned unit's
@@ -14,6 +15,7 @@ import PreTripInspection from '@/components/PreTripInspection'
  * who scanned wanting specs instead.
  */
 export default function InspectLanding({ equipment }: { equipment: EquipmentItem }) {
+  const t = useT()
   const [status, setStatus] = useState<EquipmentStatus>(equipment.status)
   const categoryColor = CATEGORY_COLORS[equipment.category]
   const statusColor = EQUIPMENT_STATUS_COLORS[status]
@@ -32,7 +34,7 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
               className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-mytra-purple/15 text-mytra-purple"
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
-              Pre-Trip Inspection
+              {t('dashboard.preTripInspection', undefined, 'Pre-Trip Inspection')}
             </span>
             <span
               className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full text-fg-2"
@@ -48,13 +50,13 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
             </span>
           </div>
           <h1 className="text-xl font-bold text-fg leading-tight">{equipment.name}</h1>
-          <p className="text-xs text-fg-3 mt-1">Item #{equipment.itemNumber}{equipment.location ? ` · ${equipment.location}` : ''}</p>
+          <p className="text-xs text-fg-3 mt-1">{equipment.location ? t('inspect.itemNumberWithLocation', { itemNumber: equipment.itemNumber, location: equipment.location }, 'Item #{itemNumber} · {location}') : t('inspect.itemNumber', { itemNumber: equipment.itemNumber }, 'Item #{itemNumber}')}</p>
         </div>
 
         {status === 'Out of Service' && (
           <div className="mb-5 bg-danger/10 border border-danger/30 rounded-lg px-4 py-3">
             <p className="text-sm font-semibold text-danger-strong">
-              This unit is OUT OF SERVICE. Do not operate. Contact maintenance or your supervisor.
+              {t('inspect.oosWarning')}
             </p>
           </div>
         )}
@@ -67,7 +69,7 @@ export default function InspectLanding({ equipment }: { equipment: EquipmentItem
                      bg-mytra-card border border-mytra-border text-sm text-fg-3 hover:text-fg
                      hover:bg-mytra-card-hover transition-colors"
         >
-          <span>Full equipment profile — training, PM schedule, compliance</span>
+          <span>{t('inspect.fullProfileLink', undefined, 'Full equipment profile — training, PM schedule, compliance')}</span>
           <ChevronRight className="w-4 h-4 shrink-0" />
         </Link>
       </div>
