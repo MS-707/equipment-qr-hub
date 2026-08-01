@@ -601,7 +601,7 @@
     "spanish": {
       "key": "spanish",
       "name": "Spanish Language Support",
-      "score": 5,
+      "score": 6,
       "initialScore": 0,
       "verifiedScore": null,
       "auditSummary": "Added 2026-07-06 by owner request. Architecture chosen by a 9-agent design tournament (3 forensics readers on the reverted WI-2 attempt, 3 designers, 3 judges): revive-and-gate won 2/3 lenses (avg 85.7 vs 80.7 content-first, 68.3 library-grade) with grafts absorbed from both losers. Full spec: docs/i18n/DESIGN.md.",
@@ -657,8 +657,10 @@
           "id": "ES-6",
           "criterion": "Safety forms fully converted dark: six forms + validation + atmo messages through t(); checklist/permit/hazard data translated via id-keyed lookasides and insertion-time mapEs() (no schema change); record.locale stamped at signing; LG-6/LG-8 English literals preserved via defaultEn overload + strict-equality vitest anchor.",
           "verify": "grep -n 'By signing' src/components/safety/CrewSignatureBlock.tsx still matches; lookaside orphan-id vitest green; a record saved with locale:'es' renders es labels and an en record renders English (vitest); es-leakage.spec green on all /safety form routes.",
-          "met": false,
-          "evidence": "Not started — implementation spec in docs/i18n/DESIGN.md"
+          "met": true,
+          "evidence": "CrewSignatureBlock.tsx:136 'By signing' literal pinned via defaultEn; i18n-data orphan+coverage+locale-render vitests 31/31; es-leakage 5/5 on prod build incl. all six /safety form routes; 486/491 translated + 5 blocked per termination rule with evidence and packet digests hash-anchored",
+          "verifiedBy": "verify-criteria workflow wf_2759ff9b-840",
+          "verifiedAtIteration": 26
         },
         {
           "id": "ES-7",
@@ -1569,14 +1571,14 @@
       "criteria": [
         "ES-6"
       ],
-      "status": "in_progress",
+      "status": "done",
       "tasks": [
         {
           "id": "ES-M3-T1",
           "description": "Convert PreTaskPlanForm, JhaForm, FormStepper, FormSuccess, HazardTable, ChipMultiSelect, PPESelector, CrewSignatureBlock, SignaturePad, ValidationSummary, LastUsedChip, IncidentReportForm + the three permit forms + PermitChecklist/PermitTimer/PermitStatusBadge to t(), keeping LG-6 signature-consent English literals inline via the defaultEn overload.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M3-T2",
@@ -1590,7 +1592,7 @@
           "description": "Translate all client validation messages and atmo-check.ts gas-reading messages.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
-          "status": "in_progress"
+          "status": "done"
         },
         {
           "id": "ES-M3-T4",
@@ -1604,14 +1606,14 @@
           "description": "Run pipeline + commit review evidence for ptp/jha/permits/incident/hazard/validation namespaces; generate the bilingual sign-off packet and a PENDING entry in docs/i18n/signoff.json — owner counter-signs asynchronously; sign-off gates ONLY the '(beta)' label removal, never milestone or criterion acceptance. Add the strict-equality vitest anchor: en catalog values for signature-consent and AI-disclaimer keys must === the exported English constants remaining in CrewSignatureBlock/Sage source (stronger LG-6/LG-8 guard than grep).",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "ES-M3-T6",
           "description": "Widen eslint glob; extend es-leakage.spec to /safety/ptp, /safety/jha, /safety/permits/*, /safety/incident.",
           "files": [],
           "acceptance": "Contributes to milestone acceptance: vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components",
-          "status": "pending"
+          "status": "done"
         }
       ],
       "milestoneAcceptance": "vitest green including packet-integrity test (every safety namespace has committed review evidence whose hash matches its catalog content; owner signature NOT required for acceptance); grep -n 'By signing' src/components/safety/CrewSignatureBlock.tsx still matches (LG-6 preserved); es-leakage.spec green on all safety form routes; UX-2/UX-4 verifies unaffected (grep min-h-\\[44px\\] and htmlFor counts unchanged vs pre-milestone snapshot recorded in the review evidence)."
@@ -2319,6 +2321,20 @@
       "verified": [],
       "refuted": [],
       "notes": "Remaining for ES-M3: the three giant forms (PreTaskPlanForm, JhaForm, IncidentReportForm) + three permit forms + FormStepper labels at call sites (T1 rest), validation messages in forms (T3 rest), forms/permits/hazard/signature namespace translation via pipeline, T5 evidence+packet+hash-anchor vitest, T6 leakage extension to form routes, then verify ES-6."
+    },
+    {
+      "iteration": 26,
+      "date": "2026-07-17",
+      "milestone": "ES-M3",
+      "tasksDone": [
+        "ES-M3-T1..T6 (six giant forms via delegated 6-agent conversion against frozen catalog; 491-key pipeline run, 67 agents; evidence + packet + integrity anchors; leakage extended)"
+      ],
+      "gates": "lint ✓ tsc ✓ vitest 854 ✓ build ✓ playwright 17/17 ✓",
+      "verified": [
+        "ES-6"
+      ],
+      "refuted": [],
+      "notes": "spanish 5→6. Largest milestone of the track. Blocked keys now 8/20. Next: ES-M4 (inspections/equipment/records/history UI, locale dates, bilingual QR labels)."
     }
   ],
   "sessionWindow": null
