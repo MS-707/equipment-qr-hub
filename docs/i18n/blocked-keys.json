@@ -33,6 +33,61 @@
       "rounds": 3,
       "date": "2026-07-16",
       "path": "allowlisted-leakage"
+    },
+    {
+      "key": "ptp.windSpeedPlaceholder",
+      "namespace": "ptp",
+      "reason": "Phone-row concision failure: the English placeholder is a terse 17-character hint ('For MEWP / height') inside a small numeric/text input, but the Spanish runs ~55 characters ('Para plataforma de trabajo aéreo (MEWP) / trabajo en altura'), roughly 3x the source. Input placeholders clip on phone screens, so the trailing '/ trabajo en altura' (and possibly '(MEWP)') will be truncated and unreadable, and the text vanishes as soon as the user types — a placeholder cannot carry a first-use acronym expansion.",
+      "failedLenses": [
+        "Register: usted, imperative for instructions, infinitive for buttons/menus, <=6th-grade, one action per sentence, phone-row concision"
+      ],
+      "rounds": 3,
+      "date": "2026-07-17",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "ptp.title",
+      "namespace": "ptp",
+      "reason": "English source is \"Pre-Task / Pre-Build Plan\" but the Spanish \"Plan previo a la tarea (PTP)\" drops the entire \"Pre-Build\" half of the document name. Back-translation reads only \"Pre-Task Plan\", so Spanish-speaking crews doing pre-build/assembly work are no longer told this crew-signature legal document covers their activity — a dropped scope element on a legal form title. The glossary mandates \"plan previo a la tarea (PTP)\" for the Pre-Task Plan term but does not authorize deleting the Pre-Build alternative from this source string.",
+      "failedLenses": [
+        "Safety accuracy: blind back-translation diff (ptp namespace) — dropped conditions, softened imperatives, flipped negations, weakened permit/legal meaning"
+      ],
+      "rounds": 3,
+      "date": "2026-07-17",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "jha.stepsIntro",
+      "namespace": "jha",
+      "reason": "\"Divida el trabajo en el orden real en que lo hará\" is not idiomatic: 'dividir X en Y' requires Y to be the parts (steps), not the order. As written, a 6th-grade reader parses 'divide the job into the order', a grammatically odd object that forces a re-read — the 'into steps' object present in the concept is missing. The rest of the sentence and the second sentence are fine.",
+      "failedLenses": [
+        "Register: usted, imperative for instructions, infinitive for buttons/menus, <=6th-grade, one action per sentence, phone-row concision"
+      ],
+      "rounds": 3,
+      "date": "2026-07-17",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "permits.timerLeftSoon",
+      "namespace": "permits",
+      "reason": "Number agreement breaks at the singular boundary: PermitTimer.tsx formats {time} as '${m}m', so with exactly 1 minute remaining the string renders 'Quedan 1m — cierre el permiso pronto' — plural verb 'Quedan' with a singular quantity. The English source '{time} left' is number-neutral, but the Spanish verb-first construction is not, and this key has no .one/.other plural forms to absorb the case.",
+      "failedLenses": [
+        "Mechanics: {var} sets identical per key; .one/.other pairs complete and grammatical; no empties/truncations; caps/ellipses/em-dashes consistent with English intent; doNotTranslate tokens untouched"
+      ],
+      "rounds": 3,
+      "date": "2026-07-17",
+      "path": "allowlisted-leakage"
+    },
+    {
+      "key": "permits.height.ctaAddRescuePlan",
+      "namespace": "permits",
+      "reason": "Dropped condition: English source is \"Add rescue plan for PFAS\" but the Spanish back-translates as only \"Add the rescue plan\" — the PFAS qualifier that tells the worker the rescue plan is tied to personal fall arrest use is silently dropped, while sibling strings (rescuePlanRequiredPfas, errRescuePlanPfas) retain it.",
+      "failedLenses": [
+        "Safety accuracy: blind back-translation diff (dropped conditions, softened imperatives, flipped negations, weakened permit/legal meaning)"
+      ],
+      "rounds": 3,
+      "date": "2026-07-17",
+      "path": "allowlisted-leakage"
     }
   ]
 }

@@ -32,6 +32,26 @@
     {
       "text": "This page hasn't been cached yet",
       "reason": "blocked key offline.body (una-acción-por-frase rule unresolved in 3 rounds) — documented leakage"
+    },
+    {
+      "text": "For MEWP / height",
+      "reason": "blocked key ptp.windSpeedPlaceholder (3-round cap) — documented leakage per PIPELINE.md"
+    },
+    {
+      "text": "Pre-Task / Pre-Build Plan",
+      "reason": "blocked key ptp.title (3-round cap) — documented leakage per PIPELINE.md"
+    },
+    {
+      "text": "Break the job into the order you'll actually do it. List eac",
+      "reason": "blocked key jha.stepsIntro (3-round cap) — documented leakage per PIPELINE.md"
+    },
+    {
+      "text": "{time} left — close out soon",
+      "reason": "blocked key permits.timerLeftSoon (3-round cap) — documented leakage per PIPELINE.md"
+    },
+    {
+      "text": "Add rescue plan for PFAS",
+      "reason": "blocked key permits.height.ctaAddRescuePlan (3-round cap) — documented leakage per PIPELINE.md"
     }
   ]
 }

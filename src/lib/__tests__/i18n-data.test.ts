@@ -126,6 +126,29 @@ describe('record locale stamping (ES-6)', () => {
   })
 })
 
+describe('records render labels in THEIR stored locale (ES-6)', () => {
+  it("a locale:'es' record renders Spanish labels; a locale:'en' record renders English", () => {
+    const esRecord = { locale: 'es' as const }
+    const enRecord = { locale: 'en' as const }
+    const enLabel = 'Guardrails present: top rail ~42″, midrail ~21″, toeboard where required'
+    const esRendered = permitItemLabel(esRecord.locale, 'h-guardrails', enLabel)
+    const enRendered = permitItemLabel(enRecord.locale, 'h-guardrails', enLabel)
+    expect(enRendered).toBe(enLabel)
+    expect(esRendered).not.toBe(enLabel)
+    expect(esRendered.length).toBeGreaterThan(10)
+
+    const enItem = 'No hydraulic oil or battery leaks'
+    expect(inspectionItemLabel('es', 'ef-leaks', enItem)).not.toBe(enItem)
+    expect(inspectionItemLabel('en', 'ef-leaks', enItem)).toBe(enItem)
+  })
+
+  it('legacy records without a locale stamp default to English rendering', () => {
+    const legacy: { locale?: 'en' | 'es' } = {}
+    const label = permitItemLabel(legacy.locale ?? 'en', 'cs-o2', 'O₂ 19.5–23.5%')
+    expect(label).toBe('O₂ 19.5–23.5%')
+  })
+})
+
 describe('atmo guidance through the catalog', () => {
   it('default (English) output is byte-identical to the pre-conversion literals', () => {
     const res = analyzeAtmosphere({ oxygen: 15, lel: null, co: null, h2s: null })

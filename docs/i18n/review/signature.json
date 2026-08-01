@@ -1,0 +1,32 @@
+{
+  "namespace": "signature",
+  "workflowRun": "wf_ae7b583a-4db",
+  "batch": "jha-forms-sig",
+  "rounds": 3,
+  "blocked": [],
+  "sweepApplied": [],
+  "values": {
+    "signature.consent": "Al firmar abajo, usted reconoce este plan de seguridad. También acepta que su firma digital se guarde en este dispositivo para fines de registro.",
+    "signature.name": "Nombre",
+    "signature.namePlaceholder": "Nombre del miembro de la cuadrilla",
+    "signature.roleOptional": "Rol (opcional)",
+    "signature.signatureLabel": "Firma",
+    "signature.signatureFor": "Firma — {name}",
+    "signature.saveSignature": "Guardar firma",
+    "signature.addSignature": "Agregar firma",
+    "signature.removeAria": "Quitar firma",
+    "signature.removeTitle": "¿Quitar la firma?",
+    "signature.removeBody": "Si la quita, {name} tendrá que firmar de nuevo.",
+    "signature.remove": "Quitar",
+    "signature.signedAt": "firmó {time}",
+    "signature.markAs": "Marcar como {role}",
+    "signature.supervisor": "Supervisor",
+    "signature.sigAlt": "Firma de {name}",
+    "signature.signHere": "Firme aquí — con el dedo o un lápiz óptico",
+    "signature.padAria": "Panel de firma — dibuje su firma con el dedo o un lápiz óptico",
+    "signature.expandAria": "Ampliar el panel de firma",
+    "signature.closeNoSave": "Cerrar sin guardar",
+    "signature.clearSignature": "Borrar firma",
+    "signature.clear": "Borrar"
+  }
+}

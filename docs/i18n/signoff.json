@@ -10,6 +10,25 @@
       "generated": "2026-07-16",
       "signedBy": null,
       "signedDate": null
+    },
+    {
+      "packet": "safety-forms",
+      "artifact": "src/messages/es.json namespaces: ptp, jha, incident, permits, signature, hazard, atmo, forms + src/messages/data/*.es.json",
+      "reviewPacket": "docs/i18n/review/packet-safety-forms.md",
+      "namespaceDigests": {
+        "ptp": "08cb9c1b15f589648ff962933ee7a76651eead87e384931ced23611aa2efc3ee",
+        "jha": "4af0e0f1f097e40c10b501116ed84fd9c7b373e742b1597551e00801e8e0646c",
+        "incident": "7e185d943926f47b362ddfa3f7f71ac591798572adf70842c90d21bae109f9e8",
+        "permits": "4d8814510c18011c3b6a3526240b63c1e24c9bc26457758bf21db1276d261ea9",
+        "signature": "a0e9ba3577b3c4017e70c40383554bb417b03e5fa4828474aca9a1dbeac5a43f",
+        "hazard": "b452a1718685140cda86eb4ea485cf61fd6e31401e777a50c336a1f19f018fe5",
+        "atmo": "4f2bb8bdf5c7dd0af4bc9c90d9372082b21fa488321441ec66f5a8af441fc299",
+        "forms": "6704e1991518e3884dcd7e8e5a6e290c99bda4763107abf00bbd2a9c9b22036c"
+      },
+      "status": "pending",
+      "generated": "2026-07-17",
+      "signedBy": null,
+      "signedDate": null
     }
   ]
 }

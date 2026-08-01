@@ -1,0 +1,23 @@
+{
+  "namespace": "hazard",
+  "workflowRun": "wf_ae7b583a-4db",
+  "batch": "incident-hazard",
+  "rounds": 2,
+  "blocked": [],
+  "sweepApplied": [
+    "hazard.removeAria"
+  ],
+  "values": {
+    "hazard.risk.low": "Bajo",
+    "hazard.risk.medium": "Medio",
+    "hazard.risk.high": "Alto",
+    "hazard.risk.critical": "Crítico",
+    "hazard.placeholder": "Peligro",
+    "hazard.controlPlaceholder": "Medida de control",
+    "hazard.removeAria": "Quitar peligro",
+    "hazard.addHazard": "Agregar peligro",
+    "hazard.empty": "Aún no hay peligros — toque un peligro común arriba para agregarlo, o use “+ Agregar peligro” para escribir uno propio.",
+    "hazard.riskAria": "Nivel de riesgo",
+    "hazard.viaSage": "✨ vía Sage — revise antes de firmar"
+  }
+}

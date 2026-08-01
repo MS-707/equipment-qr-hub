@@ -1,0 +1,20 @@
+{
+  "namespace": "forms",
+  "workflowRun": "wf_ae7b583a-4db",
+  "batch": "jha-forms-sig",
+  "rounds": 3,
+  "blocked": [],
+  "sweepApplied": [],
+  "values": {
+    "forms.newDefault": "Nuevo",
+    "forms.submittingReview": "Enviando a revisión de EHS…",
+    "forms.submittedReview": "Enviado a revisión de EHS",
+    "forms.reviewFailed": "No se pudo enviar a revisión de EHS (sin conexión o problema del servidor). El registro está guardado en este dispositivo.",
+    "forms.submittingReviewBtn": "Enviando a revisión…",
+    "forms.submitReviewBtn": "Enviar a revisión de EHS",
+    "forms.submittedReviewNotify": "Enviado a revisión de EHS — se notificará a su gerente",
+    "forms.viewPrint": "Ver / Imprimir",
+    "forms.needsAttention.one": "1 elemento requiere atención",
+    "forms.needsAttention.other": "{count} elementos requieren atención"
+  }
+}

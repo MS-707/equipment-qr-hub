@@ -58,6 +58,28 @@ test.describe('es leakage — cluster 1', () => {
     }
   })
 
+  test('all six safety-form routes render Spanish (ES-M3)', async ({ page }) => {
+    test.setTimeout(120_000)
+    await signInAsWorker(page)
+    await page.evaluate(() => localStorage.setItem('sage-locale-v2', 'es'))
+    // Per-route Spanish sentinel (from the live catalog / data lookasides)
+    // plus a converted-English string that must be gone.
+    const routes: Array<{ path: string; sentinel: string; leaked: string }> = [
+      { path: '/safety/ptp', sentinel: es.ptp.scopeLabel, leaked: 'Scope of work today' },
+      { path: '/safety/jha', sentinel: es.jha.ppeRequired, leaked: 'PPE Required' },
+      { path: '/safety/incident', sentinel: es.incident.locationLabel ?? es.common.required, leaked: 'Report Incident' },
+      { path: '/safety/permits/height', sentinel: 'Acceso y plataforma', leaked: 'Personal Fall Arrest' },
+      { path: '/safety/permits/hot-work', sentinel: 'Preparación del área', leaked: 'Fire Suppression & Watch' },
+      { path: '/safety/permits/confined-space', sentinel: 'Autorización y roles', leaked: 'Atmosphere (test in order)' },
+    ]
+    for (const r of routes) {
+      await page.goto(r.path, { waitUntil: 'networkidle' })
+      await expect(page.locator('html')).toHaveAttribute('lang', 'es')
+      await expect(page.getByText(r.sentinel).first()).toBeVisible({ timeout: 10_000 })
+      await expect(page.getByText(r.leaked, { exact: true })).toHaveCount(0)
+    }
+  })
+
   test('404 page renders Spanish', async ({ page }) => {
     await page.addInitScript(seedEs.script)
     await page.goto('/this-route-does-not-exist')

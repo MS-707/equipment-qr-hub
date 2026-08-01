@@ -4,6 +4,13 @@
     "common.no",
     "nav.qrLabels.label",
     "nav.sds.label",
+    "permits.confinedSpace.aiAlertLine",
+    "permits.confinedSpace.gasCoHint",
+    "permits.confinedSpace.gasH2sHint",
+    "permits.confinedSpace.gasLelHint",
+    "permits.confinedSpace.gasO2Hint",
+    "permits.hotWork.extinguisherTypePlaceholder",
+    "signature.supervisor",
     "user.auto",
     "user.english",
     "user.spanish"
