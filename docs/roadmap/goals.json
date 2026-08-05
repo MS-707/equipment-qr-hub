@@ -4,7 +4,7 @@
   "goal": "All seven dimensions verified at full score against the frozen rubrics",
   "createdAt": "2026-07-06",
   "branch": "claude/construction-safety-audits-HC6MA",
-  "iteration": 21,
+  "iteration": 22,
   "gates": [
     {
       "id": "lint",
@@ -772,7 +772,8 @@
           "met": false,
           "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
         }
-      ]
+      ],
+      "status": "in_progress"
     }
   },
   "milestones": [
@@ -1849,17 +1850,17 @@
         "KIN-1",
         "KIN-3"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "tasks": [
         {
           "id": "KIN-M0-T1",
           "description": "Add the Kin workspace skeleton to the repo: kin/worker/index.ts (the asset-serving + /api/* router recipe from the Kin skill, KIN_ASSET_MANIFEST_REF-first getManifest with a module-scope cache, '/' → /index.html), kin/kin.toml, kin/migrations/, and scripts/kin-build.mjs (esbuild the Worker to a single ES module, hash every asset with sha256, emit kin/dist/asset-manifest.json path→hash). Wire npm run kin:build and npm run kin:check into package.json. No deploy yet — this commit is the local build pipeline only.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "KIN-M0-T2",
           "description": "Provision and probe: kin_create_app({slug:'sage-ehs', name:'Sage EHS', region:'WNAM', needs_database:true}), then deploy the 10-line diagnostic probe from the Kin skill as kin/worker/probe.ts (routes /__diag/env and /__diag/zod, the latter running a real zod parse to settle the pre-bundling question the assessment flags) via kin_get_upload_url(kind:'source') + kin_deploy. Curl both probe routes on the preview URL and write the literal output into docs/kin/RUNTIME-CONTRACT.md. Flips KIN-2's probe half.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "KIN-M0-T3",
@@ -2718,6 +2719,12 @@
       "date": "2026-08-05",
       "event": "kin-track-added",
       "details": "Added the 'kin' dimension (KIN-1..KIN-10) and milestones KIN-M0, KIN-M1, KIN-M2, KIN-M3, KIN-M4, KIN-M5, designed by wf_c7cab86c-130. Scoped English-only per owner; ES-M4/M5/M6 + LG-M3 parked behind the Kin track. Model-routing policy encoded as rail 8 + a Model routing section; verify-criteria.js now routes panel judgment lenses and superficial-compliance-prone ids to fable, rescore.js runs entirely on fable. Fixed stale counts in SKILL.md (60->70 criteria, 'six dimensions'->every dimension) and rescore.js (hardcoded 6 -> DIMS.length)."
+    },
+    {
+      "iteration": 22,
+      "date": "2026-08-05",
+      "event": "KIN-M0 (partial: T1, T2) — scaffold shipped, KIN-1 REFUTED on a rubric defect",
+      "details": "Shipped KIN-M0-T1 + T2. Created Kin app sage-ehs (appId 4a1e7a91-b8bb-4415-b05f-d37fe0e91e6b, WNAM, needs_database:true). Built kin/worker/index.js (self-contained, zero imports), kin/worker/diag.js, kin/scripts/kin-{build,assets}.mjs, kin/kin.toml, kin/public/index.html; npm run kin:build / kin:check. Deployed preview v1 (probe) and v2 (shell), both source-archived. Gates: lint 0 errors, tsc clean, 875 tests / 82 files, build exit 0. RUNTIME FINDINGS (docs/kin/RUNTIME-CONTRACT.md, kin/evidence/diag-env.json): (a) npm imports are NOT resolved at deploy time — a throwaway zod-import deploy failed with CF 400 [10021] No such module \"zod\". Settles the assessment risk. Worker stays dependency-free; server-side validation must be hand-rolled; zod remains client-side only. No bundler added. (b) All nine bindings present with real methods; KIN_ASSET_MANIFEST_REF resolves (manifest_source \"ref\"). Manifests live at apps/{APP_ID}/manifests/{hash}.json, assets at apps/{APP_ID}/{hash}. (c) x-kin-app-role is NULL for the app creator — manager status and app role are orthogonal axes. A naive port of src/lib/roles.ts would grant in-app admin UI to every manager. Flagged for KIN-M4. (d) EVIDENCE PATH ESTABLISHED: app hostnames sit behind the Kin auth Worker, so curl 302s to login and cannot read app routes. kin_invoke_mcp_tool dispatches in-band with a system principal, so kin/worker/index.js exposes a hand-rolled JSON-RPC /mcp with one manager-gated diagEnv tool (createKinMcp is unusable per finding (a)). Bearer ingress verified OFF (kin_get_bearer_paths -> paths:[], enabled:false), so /mcp is not publicly reachable. Later Kin milestones verify through this path. VERIFICATION: KIN-1 REFUTED twice. wf_c3132c1c-faf refuted correctly because the artifacts were untracked at HEAD (my error — I ran the checks in the working tree; the criterion says \"committed\"). Fixed by committing 693b8d3, then re-verified. wf_2685fa05-abd at HEAD 693b8d3: 5 of 6 clauses PASS (app.json fields; env_keys incl. KIN_APP_SLUG; non-null manifest_ref; /__diag/env gated on x-kin-is-manager at kin/worker/index.js:231-235; preview returns 302 from the Kin edge, DNS resolves to Cloudflare). ONE clause FAILS. RUBRIC DEFECT — NEEDS /goal review ADJUDICATION (not changed here; rail 3): KIN-1 verify ends \"kin_get_app({slug}) must return the same appId and show a database\". kin_get_app returns {id, slug, name, description, status, visibility, region, cf_custom_domain_live, cf_custom_domain_preview, created_at, updated_at} and NO database field — for sage-ehs or for any of the 43 apps on the platform. The clause is unsatisfiable by any amount of code, so KIN-1 cannot be flipped as written. Evidence the database is real, from three independent live sources: kin_create_app returned hasDatabase:true with d1Id 43d4f5ea-f4bc-42eb-bf9c-2e114fd1d177 (live) and a8a56455-94d6-4161-9814-b19d7e1c39dc (preview); the deployed Worker reports DB_prepare:\"function\"; kin_get_schema answers (with []) rather than erroring \"this app has no backend\", which is what a needs_database:false app returns. PROPOSED FIX for /goal review: replace the kin_get_app clause with \"kin_get_schema({slug}) must answer without a no-backend error, and after KIN-M0-T3 must list the slice tables\" — checkable against a tool that actually exposes DB state. Until adjudicated, KIN-1 stays unmet and KIN-M0 stays in_progress. ALSO: ROADMAP.md had no KIN section. Added sections 29-30, including a note that the frozen criteria paths (kin/worker/index.js, kin/scripts/, kin/evidence/) differ from the KIN-M0 task prose (kin/worker/index.ts, scripts/kin-build.mjs) — the build follows the rubric, since that is what verification greps."
     }
   ],
   "sessionWindow": null
