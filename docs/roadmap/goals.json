@@ -772,7 +772,7 @@
         {
           "id": "KIN-10",
           "criterion": "Production readiness is real: the app has been promoted to live, exposes an admin-only access page where an app admin can grant and revoke the app's OWN roles (admin/ehs/worker) without a redeploy, its sharing state is documented (who can reach the app at all via Kin platform sharing, versus what they can do once inside via app roles), kin_get_health reports both a live and a preview version, the live hostname answers from the Kin edge, docs/kin/DEPLOY-LOG.md records the promoted live version with its ai_summary, and docs/kin/RUNBOOK.md documents the rollback path naming a concrete previously-published live version number plus the migration down-path.",
-          "verify": "npm test -- kin/__tests__/admin-access.test.ts green — read it to confirm (a) a caller without the app admin role gets 403 from both the grant and the revoke endpoint, (b) an admin can grant a role and the authz layer honors it on the very next request with no redeploy, (c) revoke removes it the same way, and (d) a caller cannot grant themselves a role they do not already hold; grep -rn \"admin\" kin/spa/routes/ shows the page is routed in the SPA; test -f docs/kin/SHARING.md and confirm it distinguishes Kin platform sharing (reaching the app) from app roles (what you can do inside); jq -e '.live.version and .preview.version' kin/evidence/health.json; jq -e '[.[]|select(.env==\"live\")]|length >= 1' kin/evidence/deployments.json and confirm that version number and its ai_summary appear verbatim in docs/kin/DEPLOY-LOG.md; grep -nE 'kin_rollback|restore' docs/kin/RUNBOOK.md must cite a real live version number that appears in kin/evidence/deployments.json, and the doc must reference kin/migrations/*.down.sql for schema reversal; curl -sS -o /dev/null -w '%{http_code}\n' \"$(jq -r .liveUrl kin/app.json)/\" returns 200/302/401, not 000 or 404. If kin_* MCP tools are reachable, kin_get_health({slug}) and kin_list_deployments({slug, env:\"live\"}) are authoritative and override the committed evidence files on any mismatch.",
+          "verify": "npm test -- kin/__tests__/admin-access.test.ts green — read it to confirm (a) a caller without the app admin role gets 403 from both the grant and the revoke endpoint, (b) an admin can grant a role and the authz layer honors it on the very next request with no redeploy, (c) revoke removes it the same way, and (d) a caller cannot grant themselves a role they do not already hold; grep -rn \"admin\" kin/src/routes/ shows the page is routed in the SPA; test -f docs/kin/SHARING.md and confirm it distinguishes Kin platform sharing (reaching the app) from app roles (what you can do inside); jq -e '.live.version and .preview.version' kin/evidence/health.json; jq -e '[.[]|select(.env==\"live\")]|length >= 1' kin/evidence/deployments.json and confirm that version number and its ai_summary appear verbatim in docs/kin/DEPLOY-LOG.md; grep -nE 'kin_rollback|restore' docs/kin/RUNBOOK.md must cite a real live version number that appears in kin/evidence/deployments.json, and the doc must reference kin/migrations/*.down.sql for schema reversal; curl -sS -o /dev/null -w '%{http_code}\n' \"$(jq -r .liveUrl kin/app.json)/\" returns 200/302/401, not 000 or 404. If kin_* MCP tools are reachable, kin_get_health({slug}) and kin_list_deployments({slug, env:\"live\"}) are authoritative and override the committed evidence files on any mismatch.",
           "met": false,
           "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
         }
@@ -1878,7 +1878,7 @@
         },
         {
           "id": "KIN-M0-T5",
-          "description": "Slice SPA: create kin/spa (vite + tailwind reusing tailwind.config.ts and src/app/globals.css, path alias @/ → src/ so components port without moving) with a minimal client router and exactly three screens carried across unchanged — src/components/InspectLanding.tsx, src/components/PreTripInspection.tsx, src/components/SignaturePad.tsx — plus next/link and next/navigation shims under kin/spa/shims/. Build, upload with kin_check_known_assets then kin_get_upload_url(kind:'asset') + curl, and kin_deploy with the asset_manifest and a source_manifest.",
+          "description": "Slice SPA: create kin/src (vite + tailwind reusing tailwind.config.ts and src/app/globals.css, path alias @/ → src/ so components port without moving) with a minimal client router and exactly three screens carried across unchanged — src/components/InspectLanding.tsx, src/components/PreTripInspection.tsx, src/components/SignaturePad.tsx — plus next/link and next/navigation shims under kin/src/shims/. Build, upload with kin_check_known_assets then kin_get_upload_url(kind:'asset') + curl, and kin_deploy with the asset_manifest and a source_manifest.",
           "status": "pending"
         },
         {
@@ -1957,17 +1957,17 @@
       "tasks": [
         {
           "id": "KIN-M2-T1",
-          "description": "Promote the M0 slice build into the real SPA build: kin/spa/main.tsx entry, kin/spa/index.html (with the pre-paint theme + lang inline script lifted from src/app/layout.tsx), vite config with the @/ → src/ alias, tailwind reusing tailwind.config.ts and src/app/globals.css, content-hashed output, and a build-report step that fails the build if any chunk exceeds the size budget recorded in docs/kin/BUILD.md.",
+          "description": "Promote the M0 slice build into the real SPA build: kin/src/main.tsx entry, kin/src/index.html (with the pre-paint theme + lang inline script lifted from src/app/layout.tsx), vite config with the @/ → src/ alias, tailwind reusing tailwind.config.ts and src/app/globals.css, content-hashed output, and a build-report step that fails the build if any chunk exceeds the size budget recorded in docs/kin/BUILD.md.",
           "status": "pending"
         },
         {
           "id": "KIN-M2-T2",
-          "description": "Client router: kin/spa/router.tsx with the full route table for the 23 pages, and kin/spa/shims/next-link.tsx + kin/spa/shims/next-navigation.ts (useRouter push/replace/back, usePathname, useSearchParams, useParams) aliased in the vite config so the 63 components' existing next/link and next/navigation imports resolve untouched. Add kin/__tests__/kin-route-coverage.test.ts enumerating src/app/**/page.tsx against the route table.",
+          "description": "Client router: kin/src/router.tsx with the full route table for the 23 pages, and kin/src/shims/next-link.tsx + kin/src/shims/next-navigation.ts (useRouter push/replace/back, usePathname, useSearchParams, useParams) aliased in the vite config so the 63 components' existing next/link and next/navigation imports resolve untouched. Add kin/__tests__/kin-route-coverage.test.ts enumerating src/app/**/page.tsx against the route table.",
           "status": "pending"
         },
         {
           "id": "KIN-M2-T3",
-          "description": "Port the equipment/inspection routes to kin/spa/routes/: page.tsx (home), equipment, equipment/[id], inspect/[id], inspections, inspections/record/[id], work-orders, ~offline. Strip 'use client' and metadata exports; replace generateStaticParams on /inspect/[id] with a client fetch of GET /api/equipment/:id and a Skeleton.tsx loading state. Components themselves are not edited.",
+          "description": "Port the equipment/inspection routes to kin/src/routes/: page.tsx (home), equipment, equipment/[id], inspect/[id], inspections, inspections/record/[id], work-orders, ~offline. Strip 'use client' and metadata exports; replace generateStaticParams on /inspect/[id] with a client fetch of GET /api/equipment/:id and a Skeleton.tsx loading state. Components themselves are not edited.",
           "status": "pending"
         },
         {
@@ -1977,7 +1977,7 @@
         },
         {
           "id": "KIN-M2-T5",
-          "description": "Providers: replace src/components/providers/AuthProvider.tsx (next-auth SessionProvider) with kin/spa/providers/KinIdentityProvider.tsx hydrating from GET /api/me (which echoes the x-kin-* caller), and rewrite src/components/AuthGate.tsx as an appRole gate. Theme provider, the i18n provider (src/lib/i18n.tsx) and src/components/providers/SyncProvider.tsx port unchanged; UserMenu.tsx loses the sign-out item (the platform owns the session) and keeps its locale toggle slot.",
+          "description": "Providers: replace src/components/providers/AuthProvider.tsx (next-auth SessionProvider) with kin/src/providers/KinIdentityProvider.tsx hydrating from GET /api/me (which echoes the x-kin-* caller), and rewrite src/components/AuthGate.tsx as an appRole gate. Theme provider, the i18n provider (src/lib/i18n.tsx) and src/components/providers/SyncProvider.tsx port unchanged; UserMenu.tsx loses the sign-out item (the platform owns the session) and keeps its locale toggle slot.",
           "status": "pending"
         },
         {
@@ -1992,11 +1992,11 @@
         },
         {
           "id": "KIN-M2-T8",
-          "description": "Admin access page at kin/spa/routes/admin/access.tsx, linked from the user menu for admins only: lists everyone with an app role, their role, who granted it and when; lets an admin grant/revoke admin|ehs|worker against /api/admin/roles; and states plainly on the page that adding a NEW person to the app itself is done through Kin sharing (portal), because this page governs permissions inside the app rather than who can reach it. Non-admins never see the nav entry AND get a 403 view if they deep-link, so the gate is not cosmetic. Pairs with docs/kin/SHARING.md documenting the two layers.",
+          "description": "Admin access page at kin/src/routes/admin/access.tsx, linked from the user menu for admins only: lists everyone with an app role, their role, who granted it and when; lets an admin grant/revoke admin|ehs|worker against /api/admin/roles; and states plainly on the page that adding a NEW person to the app itself is done through Kin sharing (portal), because this page governs permissions inside the app rather than who can reach it. Non-admins never see the nav entry AND get a 403 view if they deep-link, so the gate is not cosmetic. Pairs with docs/kin/SHARING.md documenting the two layers.",
           "status": "pending"
         }
       ],
-      "milestoneAcceptance": "npm run kin:build && node scripts/kin-check-imports.mjs --spa (0 next/* specifiers outside kin/spa/shims/, 0 unresolved externals) && npm test -- kin-route-coverage kin-asset-serving && KIN_PREVIEW_URL=… npx playwright test e2e/kin-routes.spec.ts — all exit 0; plus curl -sI $KIN_PREVIEW_URL/inspect/1 | head -1 shows 200, curl -sI $KIN_PREVIEW_URL/index.html | grep -qi 'cache-control: .*no-cache', and curl -s -o /dev/null -w '%{http_code}' $KIN_PREVIEW_URL/api/does-not-exist returns 404."
+      "milestoneAcceptance": "npm run kin:build && node scripts/kin-check-imports.mjs --spa (0 next/* specifiers outside kin/src/shims/, 0 unresolved externals) && npm test -- kin-route-coverage kin-asset-serving && KIN_PREVIEW_URL=… npx playwright test e2e/kin-routes.spec.ts — all exit 0; plus curl -sI $KIN_PREVIEW_URL/inspect/1 | head -1 shows 200, curl -sI $KIN_PREVIEW_URL/index.html | grep -qi 'cache-control: .*no-cache', and curl -s -o /dev/null -w '%{http_code}' $KIN_PREVIEW_URL/api/does-not-exist returns 404."
     },
     {
       "id": "KIN-M3",
@@ -2009,7 +2009,7 @@
       "tasks": [
         {
           "id": "KIN-M3-T1",
-          "description": "Hand-roll kin/spa/sw.ts replacing @serwist/next and src/app/sw.ts: precache the build's asset list, navigation fallback to /index.html then the ported ~offline route, runtime cache for GET /api/equipment, and an explicit update flow that keeps src/components/SwUpdateBanner.tsx working. Preserve every invariant pinned by src/lib/__tests__/sw-i18n-invariants.test.ts (no skipWaiting:true; the sage-theme and sage-locale-v2 stamps untouched; the old sage-locale key never re-purged) and serve it from /sw.js with no-cache headers.",
+          "description": "Hand-roll kin/src/sw.ts replacing @serwist/next and src/app/sw.ts: precache the build's asset list, navigation fallback to /index.html then the ported ~offline route, runtime cache for GET /api/equipment, and an explicit update flow that keeps src/components/SwUpdateBanner.tsx working. Preserve every invariant pinned by src/lib/__tests__/sw-i18n-invariants.test.ts (no skipWaiting:true; the sage-theme and sage-locale-v2 stamps untouched; the old sage-locale key never re-purged) and serve it from /sw.js with no-cache headers.",
           "status": "pending"
         },
         {
@@ -2101,7 +2101,7 @@
       "tasks": [
         {
           "id": "KIN-M5-T1",
-          "description": "Ship the i18n layer into the SPA: bundle src/lib/i18n-core.ts, src/lib/i18n.tsx, the generated src/lib/i18n-keys.d.ts (regenerated by scripts/gen-i18n-keys.mjs in the kin:build step), src/messages/en.json, src/messages/es.json and src/messages/data/*.es.json as static imports rather than fetches, and move the pre-paint sage-locale-v2 lang stamp from src/app/layout.tsx into kin/spa/index.html's inline head script — keeping suppressHydrationWarning semantics irrelevant (no SSR) without changing the storage key.",
+          "description": "Ship the i18n layer into the SPA: bundle src/lib/i18n-core.ts, src/lib/i18n.tsx, the generated src/lib/i18n-keys.d.ts (regenerated by scripts/gen-i18n-keys.mjs in the kin:build step), src/messages/en.json, src/messages/es.json and src/messages/data/*.es.json as static imports rather than fetches, and move the pre-paint sage-locale-v2 lang stamp from src/app/layout.tsx into kin/src/index.html's inline head script — keeping suppressHydrationWarning semantics irrelevant (no SSR) without changing the storage key.",
           "status": "pending"
         },
         {
@@ -2786,6 +2786,12 @@
         "criterion": "Production readiness is real: the app has been promoted to live, has at least two owners (a co-owner beyond mark.starr), its sharing state is documented, kin_get_health reports both a live and a preview version, the live hostname answers from the Kin edge, docs/kin/DEPLOY-LOG.md records the promoted live version with its ai_summary, and docs/kin/RUNBOOK.md documents the rollback path naming a concrete previously-published live version number plus the migration down-path.",
         "verify": "jq -e '[.[]|select(.role==\"owner\")]|length >= 2' kin/evidence/roles.json; jq -e '.live.version and .preview.version' kin/evidence/health.json; jq -e '[.[]|select(.env==\"live\")]|length >= 1' kin/evidence/deployments.json and confirm that version number and its ai_summary appear verbatim in docs/kin/DEPLOY-LOG.md; grep -nE 'kin_rollback|restore' docs/kin/RUNBOOK.md must cite a real live version number that appears in kin/evidence/deployments.json, and the doc must reference kin/migrations/*.down.sql for schema reversal; curl -sS -o /dev/null -w '%{http_code}\\n' \"$(jq -r .liveUrl kin/app.json)/\" returns 200/302/401, not 000 or 404. If kin_* MCP tools are reachable, kin_list_roles({slug}), kin_get_health({slug}) and kin_list_deployments({slug, env:\"live\"}) are authoritative and override the committed evidence files on any mismatch."
       }
+    },
+    {
+      "iteration": 23,
+      "date": "2026-08-05",
+      "event": "KIN criteria audit (wf_b32b51f0-559) + SPA-root normalization",
+      "details": "Ran an 11-agent audit diffing every KIN criterion verify-check against payload shapes and repo layouts that actually exist. Full report: docs/kin/CRITERIA-AUDIT.md. Verdicts: BROKEN 6 (KIN-4, KIN-5, KIN-6, KIN-7, KIN-8, KIN-10), AT_RISK 3 (KIN-2, KIN-3, KIN-9), CLEAN 1 (KIN-1). 9 blocker-severity clauses. ROOT CAUSE A — SPA ROOT DISAGREEMENT, now RESOLVED. Five frozen criteria (KIN-4, KIN-5, KIN-7, KIN-8, KIN-9) grep kin/src; eight milestone tasks said kin/spa. Neither directory existed, so nothing had to be reworked — this was a clean fork in the road. Resolved toward kin/src because rail 3 freezes the criteria and the criteria are what verification actually greps; task text is plan prose. Rewrote 8 task descriptions kin/spa -> kin/src. Also corrected my own slip: the KIN-10 amendment written earlier this session used kin/spa, contradicting the five frozen criteria and widening the very split this audit found. Fixed to kin/src as part of completing that amendment. ROOT CAUSE B — OBJECT-WRAPPED PAYLOADS, NOT FIXED, needs adjudication. Same class already amended out of KIN-1 and KIN-10s owner clause. Verified live this session: kin_get_schema returns {\"schema\":[...]} and kin_list_deployments returns {\"deployments\":[...]}, both object-wrapped. Criteria that jq those payloads with a bare .[] (KIN-2 via kin/evidence/schema.json, KIN-10 via kin/evidence/deployments.json) will ERROR rather than return false if the evidence file holds the tool output verbatim. PROPOSED FIX (deliberately NOT applied — rail 3, and no owner instruction covers it): keep evidence files VERBATIM tool output and unwrap in the jq (.deployments[] / .schema[]) rather than letting the runner hand-shape evidence into a flat array. Verbatim-plus-unwrap is the stronger form: if evidence can be reshaped to satisfy the check, the check proves less. THREE DECISIONS STILL OPEN for the owner, none blocking the next task (KIN-M0-T5): (1) COPY vs ALIAS for ported components — KIN-8 requires grep -c \"undefined, '\" over kin/src/components to be >0, so the 816 defaultEn call sites must physically live in the Kin tree; aliasing back to src/components cannot satisfy it, which means ~63 components get duplicated and can diverge while both apps live. (2) safety_records shape — KIN-2 reads as ten record tables, KIN-M1-T2 designs one table with a type discriminant; a real data-model choice, due when KIN-M1 runs. (3) Whether the in-band MCP tool is written into the criteria as the sanctioned evidence path for anything behind an app hostname, since every preview/live URL 302s to auth.mkin.app and bearer ingress is off. AUDIT CAVEATS recorded honestly: crypto.subtle.importKey (KIN-7 Sheets JWT) was never measured on the live runtime; schedule registration against a no-live-yet env was untested; KIN-10 was audited across commit 67af49f, which changed its text mid-run, so its BROKEN verdict partly reflects the pre-amendment wording."
     }
   ],
   "sessionWindow": null,
