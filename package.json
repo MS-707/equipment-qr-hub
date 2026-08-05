@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "kin:build": "node kin/scripts/kin-build.mjs && node kin/scripts/kin-assets.mjs",
+    "kin:check": "node kin/scripts/kin-assets.mjs --check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

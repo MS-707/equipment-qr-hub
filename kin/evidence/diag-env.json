@@ -1,0 +1,57 @@
+{
+  "_recorded": {
+    "at": "2026-08-05",
+    "iteration": 22,
+    "milestone": "KIN-M0",
+    "app": "sage-ehs",
+    "env": "preview",
+    "deploymentVersion": 1,
+    "deploymentId": "4830fa8b-de6c-4ae9-ac90-946eab4f2b93",
+    "probe": "kin/worker/diag.js",
+    "readVia": "kin_invoke_mcp_tool({slug:'sage-ehs', tool:'diagEnv', env:'preview'})",
+    "note": "Verbatim payload returned by the probe. It was NOT read over curl: every per-app hostname sits behind the Kin auth Worker, so an unauthenticated GET of /__diag/env 302s to auth.mkin.app/login. The probe's hand-rolled /mcp endpoint plus the platform's system principal is the only automated read path."
+  },
+  "env_keys": [
+    "DB",
+    "KIN",
+    "KIN_APP_ID",
+    "KIN_APP_SLUG",
+    "KIN_ASSETS",
+    "KIN_ASSET_MANIFEST",
+    "KIN_ASSET_MANIFEST_REF",
+    "KIN_ENV",
+    "STORAGE"
+  ],
+  "app_id": "4a1e7a91-b8bb-4415-b05f-d37fe0e91e6b",
+  "app_slug": "sage-ehs",
+  "kin_env": "preview",
+  "manifest_ref": "apps/4a1e7a91-b8bb-4415-b05f-d37fe0e91e6b/manifests/ad9c87f91f390287b2ba8f1c1afb97ba60015c429c259ce66bea5cdfbb469a0e.json",
+  "manifest_inline_present": true,
+  "manifest_source": "ref",
+  "manifest": {
+    "/index.html": "948c4eedaa0b7620ed8428c5fad5d2a2ab9b38a0ca36ceadc590dcc9d65c1527"
+  },
+  "binding_shapes": {
+    "DB_prepare": "function",
+    "DB_batch": "function",
+    "STORAGE_put": "function",
+    "STORAGE_get": "function",
+    "KIN_ASSETS_get": "function",
+    "KIN_getSecret": "function",
+    "KIN_scheduleTask": "function"
+  },
+  "identity_headers": {
+    "x-kin-user-id": "0f43596b-0406-47cb-bc93-4b2e9a370925",
+    "x-kin-user-email": "mark.starr@mytra.ai",
+    "x-kin-app-role": null,
+    "x-kin-is-manager": "1",
+    "x-kin-global-role": null,
+    "x-kin-app-env": "preview",
+    "x-kin-ingress": "system"
+  },
+  "runtime": {
+    "has_crypto_subtle": true,
+    "has_abort_signal_timeout": true,
+    "has_response_json": true
+  }
+}

@@ -261,6 +261,34 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
 - [x] **DS-M4-T1** Add openGraph (title, description, siteName, type) and twitter (card: summary_large_image) fields to the metadata export in src/app/layout.tsx, plus src/app/opengraph-image.tsx using next/og ImageResponse with the Sage wordmark, EHS badge, and token colors (#0A0A0A bg, #572DFF accent). Optionally a beta-specific one under src/app/beta/.
   - *Acceptance:* grep -n 'openGraph' src/app/layout.tsx returns the field; find src/app -name 'opengraph-image*' returns the file; next build emits the /opengraph-image route.
 
+### 29. KIN-M0 — Prove the shape: thin vertical slice on Kin (QR scan → pre-trip → sign → D1 → EHS email)
+*Dimension: Kin · flips: KIN-1, KIN-3 · why here: the assessment's "do not proceed until this slice works" gate — it exercises asset serving, D1, identity headers, R2 blobs and secrets at once.*
+
+> **Path note:** the frozen KIN criteria specify `kin/worker/index.js`, `kin/scripts/`,
+> `kin/evidence/` and `kin/migrations/NNNN_*.{up,down}.sql`, while the KIN-M0 task prose
+> written earlier says `kin/worker/index.ts`, `scripts/kin-build.mjs` and
+> `kin/migrations/0001_slice.sql`. The rubric is frozen and is what verification greps,
+> so the build follows the criteria paths. Recorded in `goals.json.log` at iteration 22.
+
+- [x] **KIN-M0-T1** Kin workspace skeleton + local build pipeline: `kin/worker/index.js` (asset serving via `KIN_ASSET_MANIFEST_REF` with a module-scope cache, `/` → `/index.html`, `/api/*` matched before assets), `kin/kin.toml`, `kin/scripts/kin-build.mjs`, `kin/scripts/kin-assets.mjs`, wired to `npm run kin:build` / `npm run kin:check`.
+  - *Acceptance:* `npm run kin:build` writes `kin/dist/asset-manifest.json`; `npm run kin:check` exits 0; `grep -nE "^\s*import " kin/worker/index.js` returns nothing (self-contained, no bundler needed).
+- [x] **KIN-M0-T2** Provision and probe: `kin_create_app({slug:'sage-ehs', needs_database:true, region:'WNAM'})`, deploy `kin/worker/diag.js`, record the literal binding surface in `kin/evidence/diag-env.json` and `docs/kin/RUNTIME-CONTRACT.md`, and settle the npm-import question with a throwaway `import { z } from 'zod'` deploy.
+  - *Acceptance:* `jq -e '.slug and .appId and .previewUrl and .liveUrl' kin/app.json`; `env_keys` covers all nine bindings with a non-null `manifest_ref`; preview hostname answers 302 (Kin edge, not NXDOMAIN).
+- [ ] **KIN-M0-T3** First migration: `kin_create_migration` creating `equipment` (seeded from `src/data/equipment.ts`), `inspection_records`, `inspection_items` and `signatures`, committed as paired `kin/migrations/0001_slice.{up,down}.sql`.
+- [ ] **KIN-M0-T4** Slice Worker handlers: `GET /api/equipment/:id`, `POST /api/inspections`, `GET /api/inspections/:id`, keyed on `x-kin-user-id` with 401 when absent; signature PNG to `env.STORAGE`, row stores the key only. **Validation is hand-rolled — zod cannot be imported (see RUNTIME-CONTRACT.md).**
+- [ ] **KIN-M0-T5** Slice SPA: `kin/src` (Vite + the existing `tailwind.config.ts`/`globals.css`) carrying `InspectLanding`, `PreTripInspection` and `SignaturePad` across unchanged, with `next/link` + `next/navigation` shims.
+- [ ] **KIN-M0-T6** EHS email on submit: port `src/lib/email-notify.ts` to `kin/worker/email.ts` using an inline `await env.KIN.getSecret(env.KIN_APP_ID,'RESEND_API_KEY')` under `ctx.waitUntil`, returning `'sent' | 'not-configured' | 'failed'`.
+- [ ] **KIN-M0-T7** Slice e2e + `kin/evidence/slice-smoke.json`, plus `kin/__tests__/slice-pretrip.test.ts` driving the real worker `fetch` export against a stub env.
+
+### 30. KIN-M1..KIN-M5 — data model, UI port, offline, integrations, cutover
+*Dimension: Kin · flips: KIN-2, KIN-4..KIN-10 · why here: each depends on the KIN-M0 slice proving the shape first.*
+
+- [ ] **KIN-M1** `types.ts` + `safety-types.ts` become paired D1 migrations; every record table carries `kin_user_id`.
+- [ ] **KIN-M2** The 63 components and 23 pages ship as a Vite SPA served from the asset manifest.
+- [ ] **KIN-M3** Hand-rolled service worker (no serwist), IndexedDB in front of D1, durable queue flushing to the Kin sync handler.
+- [ ] **KIN-M4** The 20 API routes become Worker handlers on `env.KIN` secrets, with `docs/kin/ROUTE-MAP.md` accounting for every one.
+- [ ] **KIN-M5** English-only re-verification, promote to live, second owner, deploy log and rollback runbook.
+
 ## Beyond the rubrics — backlog (owner decision needed to promote)
 
 The completeness critic found material workstreams outside the frozen rubrics. Impersonation hardening

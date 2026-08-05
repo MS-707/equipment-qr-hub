@@ -1,0 +1,23 @@
+{
+  "slug": "sage-ehs",
+  "name": "Sage EHS",
+  "appId": "4a1e7a91-b8bb-4415-b05f-d37fe0e91e6b",
+  "previewUrl": "https://preview-sage-ehs.mkin.app",
+  "liveUrl": "https://sage-ehs.mkin.app",
+  "region": "WNAM",
+  "needsDatabase": true,
+  "visibility": "private",
+  "createdAt": "2026-08-05",
+  "createdAtIteration": 22,
+  "d1": {
+    "live": "43d4f5ea-f4bc-42eb-bf9c-2e114fd1d177",
+    "preview": "a8a56455-94d6-4161-9814-b19d7e1c39dc"
+  },
+  "r2Bucket": "kin-app-sage-ehs-prod",
+  "workerName": "kin-app-sage-ehs-prod",
+  "bearerIngress": {
+    "enabled": false,
+    "paths": [],
+    "note": "Deliberately off. The app is cookie-auth only; the /mcp diagnostic surface is reachable solely via kin_invoke_mcp_tool's system principal or a signed-in manager."
+  }
+}

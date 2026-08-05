@@ -1,0 +1,36 @@
+# Sage EHS — Kin app descriptor.
+#
+# Kin provisions and deploys the Worker; this file is a git-tracked record of
+# what the app IS, so the repo stays the source of truth alongside the control
+# plane. It is archived with every deploy's source manifest. It is not a
+# wrangler config and Kin does not read it to provision anything.
+
+slug = "sage-ehs"
+name = "Sage EHS"
+region = "WNAM"
+app_id = "4a1e7a91-b8bb-4415-b05f-d37fe0e91e6b"
+
+# Created with needs_database = true: pre-trip inspections, permits, JHA/PTP and
+# incident reports become rows other people can see, replacing the localStorage
+# store in the Vercel app.
+needs_database = true
+
+[hostnames]
+preview = "preview-sage-ehs.mkin.app"
+live = "sage-ehs.mkin.app"
+
+[bundle]
+# The deployable Worker: a single self-contained ES module, no imports.
+entry = "kin/worker/index.js"
+
+[assets]
+# Staged into kin/dist by kin/scripts/kin-build.mjs, hashed by kin-assets.mjs.
+source = "kin/public"
+dist = "kin/dist"
+manifest = "kin/dist/asset-manifest.json"
+
+[secrets]
+# Values are entered by the owner in the Kin portal and read at runtime with
+# `await env.KIN.getSecret(env.KIN_APP_ID, 'NAME')`. Never stored in the repo.
+required = ["RESEND_API_KEY", "EHS_NOTIFY_EMAIL", "EHS_NOTIFY_FROM"]
+planned = ["ANTHROPIC_API_KEY", "NOTION_API_KEY", "SLACK_WEBHOOK_URL"]
