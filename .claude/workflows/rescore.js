@@ -1,7 +1,7 @@
 export const meta = {
   name: 'rescore',
   description: 'Re-score all roadmap dimensions against the frozen rubrics in docs/roadmap/goals.json',
-  whenToUse: 'Called by /goal review after big merges or on demand; returns per-dimension per-criterion verdicts for the caller to apply to goals.json',
+  whenToUse: 'Called by /goal review after big merges or on demand; returns per-dimension per-criterion verdicts for the caller to apply to goals.json. Runs on fable — widest blast radius in the harness with no downstream gate, since /goal review rewrites scores directly. Apply met=false verdicts immediately (fail-safe); treat met=true verdicts on a stored-false criterion as a PROPOSAL that must clear an adversarial panel before it flips.',
   phases: [{ title: 'Rescore', detail: 'one skeptic per dimension re-runs all 10 criterion checks' }],
 }
 
@@ -30,7 +30,7 @@ const DIM_RESULT = {
 }
 
 phase('Rescore')
-log('Re-scoring all 6 dimensions against frozen rubrics')
+log(`Re-scoring all ${DIMS.length} dimensions (${DIMS.length * 10} criteria) against frozen rubrics on fable`)
 
 const results = await parallel(
   DIMS.map((dim) => () =>
@@ -41,9 +41,10 @@ const results = await parallel(
 - Default skeptical: unconfirmable = met=false.
 - evidence per criterion: "path:line — observed fact" (met) or the concrete gap (unmet). Under 200 chars each.
 - notes: anything material the roadmap runner should know (regressions found, flaky checks).
+- Label each evidence string as either a REGRESSION (stored met=true, you found unmet) or UNRECORDED PROGRESS (stored met=false, you found met). Unrecorded progress is a PROPOSAL only — an adversarial panel re-verifies it before it flips, so do not soften your standard to grant one.
 
 Return ONLY structured output with all 10 criteria for dimension "${dim}".`,
-      { label: `rescore:${dim}`, phase: 'Rescore', schema: DIM_RESULT, effort: 'high' }
+      { label: `rescore:${dim}:fable`, phase: 'Rescore', schema: DIM_RESULT, effort: 'high', model: 'fable' }
     )
   )
 )

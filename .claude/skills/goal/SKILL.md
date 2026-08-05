@@ -44,6 +44,42 @@ counter-signature gates only removing the "(beta)" label from the toggle.
 7. **Report faithfully.** If a gate fails and you can't fix it inside the
    iteration, say so and leave the milestone `in_progress` — never mark done to
    keep the loop moving.
+8. **Model routing is policy, not preference.** Never pass a model to a workflow
+   or subagent ad hoc. The default is the session model; only the roles
+   enumerated in *Model routing* below run on `fable`. Adding a role to that
+   list is a rubric-grade change — it goes in `goals.json.log` with its
+   justification, same as a criterion reword.
+
+## Model routing
+
+The session model is the default. Escalate to `fable` **only where a mistake is
+terminal** — where nothing downstream re-checks the work. Blanket escalation is
+not the safe choice; it just burns budget on agents whose errors a gate would
+have caught anyway.
+
+**Runs on `fable`** (no gate above it):
+
+| Role | Why |
+| --- | --- |
+| Dimension-panel edge-case + regression lenses (votes 2 and 3) | The panel is the only thing making 10/10 mean anything. A rubber-stamp converts "unknown" into a false "verified". |
+| Any verifier for a **superficial-compliance-prone** criterion (`DS-3`, `DS-4`, `DS-6`, `BE-8`, `EN-7`) | `goals.json.verificationRule` requires pairing the grep with a behavioral check. A passing grep *is* the failure mode — both the DS-3 and DS-6 dissents found inline styles that evaded one. |
+| `rescore.js` dimension re-scorer | Widest blast radius in the harness: `/goal review` applies its verdicts directly, in both directions. |
+| Glossary / terminology-foundation authoring | Ground truth every downstream lens checks against — nothing above it to catch an error. |
+| Safety-drift review lens (blind back-translation + semantic diff) | The lens that caught the real hazards: a respirator downgraded to a surgical mask, a dropped PFAS qualifier, a bare alarm word colliding with a risk level. |
+| Platform-contract authoring: D1 migration pairs, and the Worker identity/authorization boundary | A wrong `sql_down` is a data-loss event no vitest sees; a wrong `appRole`/`isManager` check is a silent privilege bug. |
+| Rubric-change adjudication (the rail-3 exception) | The one action that moves a score without moving code. |
+
+**Inherits the session model** (a gate catches its mistakes): milestone
+implementers and per-task subagents (lint · tsc · test · build · adversarial
+verify all sit downstream); gate-repair agents (the gate is the oracle);
+string extractors and component converters (tsc on generated key types, the
+eslint ratchet, and the dark-invariance pins catch drift); translation
+generators (five review lenses downstream); the panel's literal lens (execute
+the check, report the output); documentation and report writers (a human or a
+later verifier reads them before anything acts).
+
+`verify-criteria.js` and `rescore.js` implement this themselves — call them
+with no model argument and the routing happens.
 
 ## `/goal` (no args) — Status
 
@@ -61,9 +97,11 @@ from the last log entry, and total iterations run. No side effects.
    *Completion protocol* below and END (under /loop: do not schedule another
    wakeup; state plainly that the loop is complete).
 3. **Pick work.** The first milestone in `goals.json.order` whose status is
-   `in_progress`, else the first `pending` one, skipping `blocked`. If ALL
-   remaining are blocked → summarize every blocker for the user and END the
-   loop (do not reschedule).
+   `in_progress`, else the first `pending` one, skipping `blocked` and
+   `parked`. **`parked` is a deliberate owner deferral, not a failure** — never
+   un-park a milestone on your own initiative, and never treat one as remaining
+   work in a completion check. If nothing is left but `blocked` and `parked` →
+   summarize both sets for the user and END the loop (do not reschedule).
 4. **Implement** the milestone's tasks. Sized-one-commit tasks may be committed
    individually. Follow each task's `acceptance` check as the definition of
    done. Prefer boring, test-covered implementations that match existing code
@@ -88,7 +126,9 @@ from the last log entry, and total iterations run. No side effects.
      (scriptPath, not name — the named-workflow registry can serve a stale
      cached copy; args must be a real JSON object, though the script also
      tolerates a JSON-encoded string).
-   - Fallback (no Workflow tool): one Agent-tool subagent per criterion.
+   - Fallback (no Workflow tool): one Agent-tool subagent per criterion,
+     mirroring *Model routing* by hand — the literal lens inherits; use
+     `model: 'fable'` for DS-3/DS-4/DS-6/BE-8/EN-7 and for panel votes 2-3.
    - Last resort (no subagents at all, e.g. bare CLI): verify yourself in a
      separate pass — re-run every `verify` command literally and paste the
      command + output into the log entry as evidence.
@@ -98,7 +138,10 @@ from the last log entry, and total iterations run. No side effects.
 7. **Dimension completion panel.** When a dimension's met-count first reaches
    10: run a 3-vote adversarial panel per previously-flipped criterion
    (`verify-criteria` with `votes: 3`, majority rules). Survivors →
-   `verifiedScore: 10`, dimension `done`. Refuted criteria flip back and reopen
+   `verifiedScore: 10`, dimension `done`. The panel runs 1 literal vote on the
+   session model and 2 judgment lenses on `fable` (the workflow routes this
+   itself). Record the certifying tier in `verifiedBy` — a 10/10 must be
+   auditable back to the tier that granted it. Refuted criteria flip back and reopen
    their milestone. This is the quality gate that makes 10/10 mean something.
 8. **Record.** Update goals.json: task/milestone statuses, criterion flips,
    `score` = met-count per dimension, append a `log[]` entry
@@ -121,7 +164,7 @@ from the last log entry, and total iterations run. No side effects.
 
 ## `/goal review` — Full re-score
 
-Re-score all 60 criteria against the frozen rubrics without implementing
+Re-score all 70 criteria (7 dimensions x 10) against the frozen rubrics without implementing
 anything: run `Workflow({scriptPath: ".claude/workflows/rescore.js"})`
 (fallback: one Agent-tool subagent per dimension). Apply results in BOTH directions — regressions flip
 criteria back to unmet and reopen their milestones (append `log[]` entry
@@ -136,7 +179,7 @@ proves (both directions) and push.
 
 ## Completion protocol
 
-When all six dimensions are `verifiedScore: 10`: run the full gate suite once
+When every dimension in goals.json is `verifiedScore: 10`: run the full gate suite once
 more, `/goal review` one final time as a global audit, then announce completion
 with the final scoreboard and the full iteration count, suggest the user open a
 PR (do not open it yourself), and end the loop.

@@ -692,6 +692,87 @@
           "autonomyNote": "After mark.starr counter-signs all packets in docs/i18n/signoff.json, a follow-up commit removes '(beta)'. That step is the owner's; it does not block this criterion."
         }
       ]
+    },
+    "kin": {
+      "key": "kin",
+      "name": "Kin Platform Migration",
+      "score": 0,
+      "initialScore": 0,
+      "verifiedScore": null,
+      "auditSummary": "Added 2026-08-05 by owner request. Re-create Sage EHS as a Kin app to inherit Mytra platform identity, D1, secrets, sharing and schedules. Criteria and milestones designed by a 3-agent workflow (wf_c7cab86c-130) grounded in docs/kin/MIGRATION-ASSESSMENT.md. Scoped English-only: the Spanish track is PARKED, not cancelled.",
+      "reviewNotes": "Expect /goal review to reduce ux/design/backend/enterprise/demo after the port until they are re-earned on the new stack — a fresh SPA does not inherit the Vercel app verified scores. That is the harness being honest, not a regression.",
+      "criteria": [
+        {
+          "id": "KIN-1",
+          "criterion": "Platform scaffold proven, not assumed: kin/app.json records {slug, appId, previewUrl, liveUrl} for an app created with needs_database:true; the committed diagnostic probe (kin/worker/diag.js) and its recorded response kin/evidence/diag-env.json show env_keys containing DB, STORAGE, KIN, KIN_ASSETS, KIN_APP_ID, KIN_APP_SLUG, KIN_ENV and a non-null manifest_ref field; the /__diag/env route survives in the shipped bundle kin/worker/index.js gated on x-kin-is-manager; and the preview hostname answers from the Kin edge rather than NXDOMAIN.",
+          "verify": "jq -e '.slug and .appId and .previewUrl and .liveUrl' kin/app.json; jq -e '.env_keys|index(\"DB\") and index(\"STORAGE\") and index(\"KIN\") and index(\"KIN_ASSETS\") and index(\"KIN_APP_ID\") and index(\"KIN_ENV\")' kin/evidence/diag-env.json; jq -e 'has(\"manifest_ref\")' kin/evidence/diag-env.json; grep -n \"__diag/env\" kin/worker/index.js and confirm the enclosing block checks request.headers.get('x-kin-is-manager'); curl -sS -o /dev/null -w '%{http_code}\\n' \"$(jq -r .previewUrl kin/app.json)/\" returns 200/302/401 (NOT 000 or 404). If kin_* MCP tools are reachable, kin_get_app({slug}) must return the same appId and show a database; that live result overrides the committed JSON on any disagreement.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-2",
+          "criterion": "D1 data model exists as paired, reversible migrations: every kin/migrations/NNNN_*.up.sql has a same-numbered .down.sql that is either non-empty SQL or begins literally with '-- IRREVERSIBLE:'; applying all ups then all downs against a fresh SQLite database succeeds and leaves zero app tables; the schema covers all ten committed record shapes (EquipmentItem, TrainingProgram, WorkOrder, InspectionRecord, PreTaskPlan, JobHazardAnalysis, HeightPermit, HotWorkPermit, ConfinedSpacePermit, IncidentReport) plus crew signatures and audit events; every record table carries a kin_user_id column; and kin/evidence/schema.json (from kin_get_schema) lists exactly the same table set.",
+          "verify": "test \"$(ls kin/migrations/*.up.sql|wc -l)\" = \"$(ls kin/migrations/*.down.sql|wc -l)\" and each up has its numbered down; node kin/scripts/migrate-check.mjs exits 0 (applies every up in order to an in-memory node:sqlite DB, then every down in reverse, asserting the final user-table count is 0); node kin/scripts/migrate-check.mjs --print-tables | sort must equal jq -r '.tables[].name' kin/evidence/schema.json | sort; npm test -- kin/__tests__/migrations.test.ts green, and read that file to confirm it asserts a table per record shape and a kin_user_id column on each record table (a test that only counts files does not satisfy this); grep -L 'IRREVERSIBLE' on any empty .down.sql must return nothing.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-3",
+          "criterion": "The vertical slice runs end to end on Kin primitives: a pre-trip inspection POST handler in kin/worker/index.js returns 401 when x-kin-user-id/x-kin-user-email are absent, writes a row keyed on the header user id via env.DB.prepare(...).bind(...), stores the signature blob in env.STORAGE under a per-app key prefix, and emails EHS through plain fetch using an inline await env.KIN.getSecret(env.KIN_APP_ID,'RESEND_API_KEY') — returning a structured degraded result (not a 5xx) when the secret is unset; kin/evidence/slice-smoke.json records a successful preview deployment version plus the request/response transcript for the slice.",
+          "verify": "npm test -- kin/__tests__/slice-pretrip.test.ts green; read that test to confirm it drives the real worker fetch export with a stub env and asserts all five facts: (a) no x-kin-user-id -> 401 and no DB write, (b) with headers -> 2xx and a row whose user column equals the header value, (c) STORAGE.put called with a key under the signature prefix, (d) getSecret called inline with env.KIN_APP_ID and 'RESEND_API_KEY' followed by fetch to api.resend.com, (e) getSecret -> null yields a JSON body with emailed:false and a 2xx, not a 500; grep -n 'x-kin-user-id' kin/worker/index.js returns the identity read; jq -e '.status==\"success\" and .env==\"preview\" and .version' kin/evidence/slice-smoke.json; cross-check that version against kin_list_deployments({slug, env:\"preview\"}) if MCP is reachable.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-4",
+          "criterion": "SPA build + asset pipeline are real and reproducible: npm run kin:build produces kin/dist/index.html plus content-hashed JS/CSS; kin/scripts/kin-assets.mjs generates an asset manifest of URL path -> sha256 that matches the bytes on disk; the worker resolves assets via env.KIN_ASSET_MANIFEST_REF first (module-scope cached) with the inline KIN_ASSET_MANIFEST only as fallback, rewrites '/' to '/index.html', and matches /api/* before any asset lookup; and no SPA source or worker file imports next/* or any bare npm package.",
+          "verify": "rm -rf kin/dist && npm run kin:build && ls kin/dist/index.html kin/dist/assets/*.js kin/dist/assets/*.css; node kin/scripts/kin-assets.mjs --check exits 0 (recomputes sha256sum per file and diffs against the manifest); grep -n 'KIN_ASSET_MANIFEST_REF' kin/worker/index.js hits before any KIN_ASSET_MANIFEST use and grep -n \"'/index.html'\" kin/worker/index.js hits the root rewrite; grep -rn \"from 'next\\|from \\\"next\" kin/src kin/worker returns nothing; grep -nE \"^\\s*import .* from '[^./]\" kin/worker/index.js returns nothing (self-contained bundle); npm test -- kin/__tests__/worker-assets.test.ts green, asserting /api/* wins over a same-named asset, the REF path is used when both bindings are present, and an unknown path returns 404.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-5",
+          "criterion": "Offline is re-implemented, not dropped: kin/src/sw.ts is a hand-rolled service worker (no serwist dependency in the Kin build), precaches the built app shell from the generated precache manifest, uses a NetworkOnly strategy for /api/, never calls skipWaiting unconditionally, and the IndexedDB local cache ported from src/lib/inspections.ts and src/lib/safety-sync.ts queues records offline and flushes them to the Kin worker's own sync handler; an offline e2e passes against the built SPA.",
+          "verify": "grep -rn 'serwist' kin/ returns nothing and grep -n 'serwist' package.json shows it is not a dependency of the kin:build script path; grep -nE 'skipWaiting' kin/src/sw.ts shows no unconditional skipWaiting (only inside a message/user-gated branch, or absent); grep -n 'PRECACHE\\|precache' kin/src/sw.ts hits a manifest generated by kin/scripts/kin-assets.mjs and node kin/scripts/kin-assets.mjs --check includes /sw.js at root scope; npm test -- kin/__tests__/offline-queue.test.ts green (queue survives a failed POST, dedupes on retry, flushes to the Kin sync path — read the test to confirm the sync target is the Kin handler, not /api/safety/sync on Vercel); npx playwright test e2e/kin-offline.spec.ts green against a locally served kin/dist.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-6",
+          "criterion": "The API surface is fully accounted for: docs/kin/ROUTE-MAP.md maps every one of the 20 src/app/api/**/route.ts files to a Kin worker handler path or to an explicit 'dropped: <reason>' line (next-auth passthrough being the canonical drop); a repo test enumerates the route files and fails on any unmapped path; and every ported handler rejects a missing identity header with 401 and re-implements its original authorization gate (admin routes require x-kin-app-role=admin or platform_admin; the only unauthenticated handlers are the ones the map documents as public by design).",
+          "verify": "find src/app/api -name route.ts | wc -l returns 20; comm -23 <(find src/app/api -name route.ts | sort) <(grep -oE 'src/app/api/[^ |`]*route\\.ts' docs/kin/ROUTE-MAP.md | sort -u) prints nothing; npm test -- kin/__tests__/route-parity.test.ts green (it must read the filesystem, not a hardcoded list); npm test -- kin/__tests__/worker-authz.test.ts green — read it and confirm it loops over every mapped handler asserting 401 without identity headers, plus 403 for x-kin-app-role=viewer on each admin-gated handler; grep -c 'x-kin-app-role' kin/worker/index.js is >= 1 per admin route in the map.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-7",
+          "criterion": "Integrations run on platform secrets with no SDKs and no env leakage: Anthropic, Notion, Slack, and Resend are each reached by plain fetch with an inline await env.KIN.getSecret(env.KIN_APP_ID,'NAME') (never a detached/bound env.KIN method, never process.env), every outbound call carries an abort timeout, an unset secret returns a structured 503 JSON body, and an upstream failure returns 502 — all four covered by tests.",
+          "verify": "grep -rnE 'process\\.env|@anthropic-ai/sdk|@upstash/redis|next-auth' kin/worker kin/src returns nothing; grep -nE '(const|let|var)\\s+\\w+\\s*=\\s*env\\.KIN\\.|env\\.KIN\\.[A-Za-z]+\\.(bind|call|apply)' kin/worker/index.js returns nothing (no detached RPC); grep -c 'env.KIN.getSecret(env.KIN_APP_ID' kin/worker/index.js returns >= 4 and grep -n 'getSecret' kin/worker/index.js shows ANTHROPIC, NOTION, SLACK and RESEND secret names; grep -n 'AbortSignal.timeout\\|AbortController' kin/worker/index.js hits the fetch wrapper; npm test -- kin/__tests__/integrations.test.ts green, asserting per provider: secret unset -> 503 JSON, upstream throw/500 -> 502 JSON, and that no test passes by mocking the worker's own helper away.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-8",
+          "criterion": "English-only port with the Spanish re-enable path intact and provably dead: the Kin SPA ships the i18n plumbing (i18n-core, provider, en.json, generated key types, i18n-data accessors) and all English defaultEn call sites, but the es bundle is an EMPTY object so no Spanish payload reaches the client and t() falls through to English even for a device with sage-locale-v2='es' in storage; docs/kin/I18N-REENABLE.md documents the content-restore procedure; and no Spanish content file is present in the Kin tree.",
+          "verify": "grep -n \"es\" kin/src/i18n-core.ts shows the es bundle bound to an empty object literal (not an import of es.json); test ! -f kin/src/messages/es.json && test ! -d kin/src/messages/data; npm test -- kin/__tests__/i18n-english-only.test.ts green — read it to confirm it asserts getT('es')(key) === getT('en')(key) for a sample across every namespace INCLUDING plural keys, and that the en catalog leaf-key set still matches the generated i18n-keys.d.ts; grep -c \"undefined, '\" across kin/src/components returns >0 (defaultEn pins survived the port); test -f docs/kin/I18N-REENABLE.md; npx playwright test e2e/kin-en-pin.spec.ts green against the preview URL (seed sage-locale-v2='es' in an init script and assert English copy still renders).",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-9",
+          "criterion": "The test suite comes with the port: docs/kin/TEST-CARRYOVER.md lists every file in src/lib/__tests__ (81 at the time the rubric was written) with status ported | rewritten | obsolete-<reason>, every 'ported'/'rewritten' entry names a test file that exists and runs, every 'obsolete' entry names a next-auth/Next-specific suite; the full npm test run is green with a file/test count at or above the baseline recorded in that doc; npx tsc --noEmit is clean; and no Kin source imports next, next-auth, or @serwist.",
+          "verify": "npm test (full run) exits 0; compare its reported files/tests totals against the baseline numbers in docs/kin/TEST-CARRYOVER.md — lower is a fail; npx tsc --noEmit exits 0; comm -23 <(ls src/lib/__tests__ | sort) <(grep -oE '[A-Za-z0-9._-]+\\.test\\.tsx?' docs/kin/TEST-CARRYOVER.md | sort -u) prints nothing (no unlisted suite); for each line marked ported/rewritten, ls the named target path — any missing file fails; grep -rnE \"from '(next|next-auth|@serwist)\" kin/src kin/worker kin/__tests__ returns nothing.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        },
+        {
+          "id": "KIN-10",
+          "criterion": "Production readiness is real: the app has been promoted to live, has at least two owners (a co-owner beyond mark.starr), its sharing state is documented, kin_get_health reports both a live and a preview version, the live hostname answers from the Kin edge, docs/kin/DEPLOY-LOG.md records the promoted live version with its ai_summary, and docs/kin/RUNBOOK.md documents the rollback path naming a concrete previously-published live version number plus the migration down-path.",
+          "verify": "jq -e '[.[]|select(.role==\"owner\")]|length >= 2' kin/evidence/roles.json; jq -e '.live.version and .preview.version' kin/evidence/health.json; jq -e '[.[]|select(.env==\"live\")]|length >= 1' kin/evidence/deployments.json and confirm that version number and its ai_summary appear verbatim in docs/kin/DEPLOY-LOG.md; grep -nE 'kin_rollback|restore' docs/kin/RUNBOOK.md must cite a real live version number that appears in kin/evidence/deployments.json, and the doc must reference kin/migrations/*.down.sql for schema reversal; curl -sS -o /dev/null -w '%{http_code}\\n' \"$(jq -r .liveUrl kin/app.json)/\" returns 200/302/401, not 000 or 404. If kin_* MCP tools are reachable, kin_list_roles({slug}), kin_get_health({slug}) and kin_list_deployments({slug, env:\"live\"}) are authoritative and override the committed evidence files on any mismatch.",
+          "met": false,
+          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+        }
+      ]
     }
   },
   "milestones": [
@@ -1377,7 +1458,7 @@
       "criteria": [
         "LG-10"
       ],
-      "status": "pending",
+      "status": "parked",
       "tasks": [
         {
           "id": "LG-M3-T1",
@@ -1625,7 +1706,7 @@
       "criteria": [
         "ES-7"
       ],
-      "status": "in_progress",
+      "status": "parked",
       "tasks": [
         {
           "id": "ES-M4-T1",
@@ -1672,7 +1753,7 @@
       "criteria": [
         "ES-8"
       ],
-      "status": "pending",
+      "status": "parked",
       "tasks": [
         {
           "id": "ES-M5-T1",
@@ -1720,7 +1801,7 @@
         "ES-9",
         "ES-10"
       ],
-      "status": "pending",
+      "status": "parked",
       "tasks": [
         {
           "id": "ES-M6-T1",
@@ -1759,6 +1840,287 @@
         }
       ],
       "milestoneAcceptance": "playwright es-leakage.spec green on ALL worker-facing routes and en-pin.spec green; packet-coverage vitest green (every safety namespace has audited review evidence); beta-guard vitest green; grep -n 'Español (beta)' src/components/UserMenu.tsx matches; Playwright: toggle to es persists across reload via sage-locale-v2, html[lang='es'] pre-paint, KV flag=false hides toggle and forces English on next foreground."
+    },
+    {
+      "id": "KIN-M0",
+      "dimension": "kin",
+      "title": "Prove the shape: thin vertical slice on Kin (QR scan → pre-trip → sign → D1 → EHS email)",
+      "criteria": [
+        "KIN-1",
+        "KIN-3"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M0-T1",
+          "description": "Add the Kin workspace skeleton to the repo: kin/worker/index.ts (the asset-serving + /api/* router recipe from the Kin skill, KIN_ASSET_MANIFEST_REF-first getManifest with a module-scope cache, '/' → /index.html), kin/kin.toml, kin/migrations/, and scripts/kin-build.mjs (esbuild the Worker to a single ES module, hash every asset with sha256, emit kin/dist/asset-manifest.json path→hash). Wire npm run kin:build and npm run kin:check into package.json. No deploy yet — this commit is the local build pipeline only.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T2",
+          "description": "Provision and probe: kin_create_app({slug:'sage-ehs', name:'Sage EHS', region:'WNAM', needs_database:true}), then deploy the 10-line diagnostic probe from the Kin skill as kin/worker/probe.ts (routes /__diag/env and /__diag/zod, the latter running a real zod parse to settle the pre-bundling question the assessment flags) via kin_get_upload_url(kind:'source') + kin_deploy. Curl both probe routes on the preview URL and write the literal output into docs/kin/RUNTIME-CONTRACT.md. Flips KIN-2's probe half.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T3",
+          "description": "First migration: kin_create_migration({slug:'sage-ehs', name:'0001_slice', sql_up, sql_down}) creating equipment (seeded from src/data/equipment.ts), inspection_records and inspection_items mirroring the InspectionRecord / InspectionItemResult shapes in src/lib/types.ts:151-186, plus a signatures table holding the R2 key. Paired down migration drops all four. Commit the SQL to kin/migrations/0001_slice.sql so the repo is the source of truth and kin_get_schema is the check.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T4",
+          "description": "Slice Worker handlers in kin/worker/index.ts: GET /api/equipment/:id, POST /api/inspections, GET /api/inspections/:id. Add kin/worker/identity.ts (getCaller from x-kin-user-id / x-kin-user-email / x-kin-app-role / x-kin-is-manager, 401 when the id header is absent) replacing src/lib/api-auth.ts requireSession, and inline the zod body schema ported from src/lib/inspection-notify-schema.ts. Signature PNG goes to env.STORAGE at signatures/${recordId}.png; the row stores the key, never the base64.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T5",
+          "description": "Slice SPA: create kin/spa (vite + tailwind reusing tailwind.config.ts and src/app/globals.css, path alias @/ → src/ so components port without moving) with a minimal client router and exactly three screens carried across unchanged — src/components/InspectLanding.tsx, src/components/PreTripInspection.tsx, src/components/SignaturePad.tsx — plus next/link and next/navigation shims under kin/spa/shims/. Build, upload with kin_check_known_assets then kin_get_upload_url(kind:'asset') + curl, and kin_deploy with the asset_manifest and a source_manifest.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T6",
+          "description": "EHS email on submit: port src/lib/email-notify.ts (Resend REST call, sanitizeSubject CR/LF guard, EhsEmailAttachment shape) to kin/worker/email.ts, reading the key with await env.KIN.getSecret(env.KIN_APP_ID,'RESEND_API_KEY') called inline (never detached), sent under ctx.waitUntil, with the outcome ('sent' | 'not-configured' | 'failed') returned on the POST /api/inspections response. Ask the owner to enter RESEND_API_KEY, EHS_NOTIFY_EMAIL and EHS_NOTIFY_FROM in the Kin portal.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M0-T7",
+          "description": "Slice e2e: e2e/kin-slice.spec.ts driving $KIN_PREVIEW_URL — open /inspect/1, complete the checklist, sign, submit, then assert the record reads back from GET /api/inspections/:id and the signature key resolves. Add scripts/kin-check-imports.mjs (fails on any bare import in the built bundle). Record the preview URL, deploy version and probe output in docs/kin/PHASE0-EVIDENCE.md — the assessment's 'do not proceed until this slice works' gate.",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm run kin:build && node scripts/kin-check-imports.mjs kin/dist/worker.js && KIN_PREVIEW_URL=https://preview-sage-ehs.mkin.app npx playwright test e2e/kin-slice.spec.ts --project=chromium — all exit 0; curl -s $KIN_PREVIEW_URL/__diag/env | jq -e '.env_keys|index(\"DB\") and index(\"STORAGE\") and index(\"KIN\") and index(\"KIN_ASSET_MANIFEST_REF\")'; curl -s $KIN_PREVIEW_URL/__diag/zod | jq -e '.ok==true'; the spec's created id is present in kin_get_schema/D1 (curl -s $KIN_PREVIEW_URL/api/inspections/$ID | jq -e '.record.hasSignature==true and .record.result') and its POST response had emailOutcome==\"sent\"."
+    },
+    {
+      "id": "KIN-M1",
+      "dimension": "kin",
+      "title": "Data model: types.ts + safety-types.ts become D1 migrations, identity and validation move to the platform",
+      "criteria": [
+        "KIN-2"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M1-T1",
+          "description": "kin/migrations/0002_core_records.sql (+ down): full equipment table from src/lib/types.ts EquipmentItem (all PM columns, calOsha fields, status, assetTag, lastPmDate/nextPmDue), work_orders from the WorkOrder interface, and the widened inspection_records / inspection_items from 0001 (naReasonCode, naJustification, criticalNaCount, locale, workOrderId FK, syncStatus). Register with kin_create_migration; seed equipment and training_programs from src/data/equipment.ts and src/data/training-programs.ts.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T2",
+          "description": "kin/migrations/0003_safety_records.sql (+ down): safety_records keyed by the SafetyRecordType discriminant from src/lib/safety-types.ts:15-21 with the shared SafetyRecordBase columns (createdBy, createdByEmail, location, projectName, syncStatus, review* fields, locale) plus a JSON payload column for the per-type body (PTP hazards, JHA steps, permit checklists, incident details); crew_signatures from the CrewSignature interface; audit_events as append-only rows from AuditEvent; permit status columns with 'expired' left derived, never stored, exactly as the type comment requires.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T3",
+          "description": "kin/migrations/0004_platform_tables.sql (+ down): the tables that replace Upstash — review_requests and review_tokens (from src/lib/review-store.ts and review-token.ts), i18n_flags for the es kill switch and suppressed-namespaces (replacing src/lib/kv.ts), rate_limit_counters (replacing the in-memory window in src/lib/rate-limit.ts), beta_signups, and audit_log for privileged actions (src/lib/audit-log.ts).",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T4",
+          "description": "kin/worker/schemas.ts: port the zod schemas from src/lib/safety-record-schema.ts, src/lib/inspection-notify-schema.ts and src/lib/schemas.ts into the bundled Worker (pre-bundled per KIN-2, no runtime import), and add kin/__tests__/kin-schema-parity.test.ts asserting field-by-field coverage of InspectionRecord, InspectionItemResult, SafetyRecordBase and each permit/incident body against kin/migrations/*.sql columns or the documented JSON payload keys.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T5",
+          "description": "kin/worker/identity.ts finalized plus kin/worker/authz.ts replacing src/lib/roles.ts and src/lib/api-auth.ts: canRead = appRole !== null, canWrite = appRole in {admin,member}, canAdminister = appRole==='admin' || globalRole==='platform_admin', canManageApp = isManager — deliberately not OR'd, per the Kin skill's two-axes warning. Add kin/__tests__/kin-identity.test.ts covering the 401-on-missing-header case and each axis. This is where the PR #29 login-lockout class of bug is designed out.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T6",
+          "description": "kin/worker/db/inspections.ts and kin/worker/db/safety-records.ts: re-implement the public API of src/lib/inspections.ts and src/lib/safety-records.ts (same exported function names and signatures, so ported components keep compiling) against env.DB — including the immutability rule from the safety-types.ts audit-integrity header (only audit appends, permit status transitions, and sync-state updates may mutate a record). Port the existing unit tests from src/lib/__tests__/inspections.test.ts and safety-records.test.ts to run against a D1 stub.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M1-T7",
+          "description": "Import path off localStorage: scripts/kin-import-local.mjs takes a browser-exported dump (eqr-inspections, the safety-record store, IndexedDB photo/signature blobs) and POSTs to a manager-only POST /api/import handler that writes with INSERT OR IGNORE on the client-generated ids so re-running is a no-op. This is what makes 'records other people can actually see' true for existing field data instead of only new records.",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm test -- kin-schema-parity kin-identity kin-body-validation kin-db green; node scripts/kin-migrate-check.mjs (asserts every kin/migrations/*.sql has a paired non-empty sql_down and that the file set matches kin_get_schema output recorded in docs/kin/SCHEMA.md) exits 0; grep -rn 'next-auth\\|getServerSession' kin/ returns nothing; and a live round trip: node scripts/kin-roundtrip.mjs $KIN_PREVIEW_URL exits 0 after POSTing one PTP, one hot-work permit, one confined-space permit and one incident report and asserting each GETs back field-identical (including crew signatures and the append-only events array) — plus a viewer-role request to the same POST returns 403 and a header-less request returns 401."
+    },
+    {
+      "id": "KIN-M2",
+      "dimension": "kin",
+      "title": "UI port: the 63 components and 23 pages ship as a React SPA served from R2",
+      "criteria": [
+        "KIN-4"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M2-T1",
+          "description": "Promote the M0 slice build into the real SPA build: kin/spa/main.tsx entry, kin/spa/index.html (with the pre-paint theme + lang inline script lifted from src/app/layout.tsx), vite config with the @/ → src/ alias, tailwind reusing tailwind.config.ts and src/app/globals.css, content-hashed output, and a build-report step that fails the build if any chunk exceeds the size budget recorded in docs/kin/BUILD.md.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T2",
+          "description": "Client router: kin/spa/router.tsx with the full route table for the 23 pages, and kin/spa/shims/next-link.tsx + kin/spa/shims/next-navigation.ts (useRouter push/replace/back, usePathname, useSearchParams, useParams) aliased in the vite config so the 63 components' existing next/link and next/navigation imports resolve untouched. Add kin/__tests__/kin-route-coverage.test.ts enumerating src/app/**/page.tsx against the route table.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T3",
+          "description": "Port the equipment/inspection routes to kin/spa/routes/: page.tsx (home), equipment, equipment/[id], inspect/[id], inspections, inspections/record/[id], work-orders, ~offline. Strip 'use client' and metadata exports; replace generateStaticParams on /inspect/[id] with a client fetch of GET /api/equipment/:id and a Skeleton.tsx loading state. Components themselves are not edited.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T4",
+          "description": "Port the safety routes: safety, safety/ptp, safety/jha, safety/incident, safety/permits/{hot-work,height,confined-space}, safety/history, safety/record/[id], safety/review/action — plus admin/beta, admin/labels, beta, privacy, terms. Data reads swap from the localStorage helpers to the kin/worker/db API via /api/safety/records; the safety components under src/components/safety/ port unchanged.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T5",
+          "description": "Providers: replace src/components/providers/AuthProvider.tsx (next-auth SessionProvider) with kin/spa/providers/KinIdentityProvider.tsx hydrating from GET /api/me (which echoes the x-kin-* caller), and rewrite src/components/AuthGate.tsx as an appRole gate. Theme provider, the i18n provider (src/lib/i18n.tsx) and src/components/providers/SyncProvider.tsx port unchanged; UserMenu.tsx loses the sign-out item (the platform owns the session) and keeps its locale toggle slot.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T6",
+          "description": "Harden asset serving in kin/worker/index.ts: KIN_ASSET_MANIFEST_REF-first getManifest with module-scope caching (never code against the inline binding — it disappears past ~50 files), '/' → /index.html, SPA shell fallback for unknown non-/api, non-extension paths so /inspect/42 and /safety/record/:id survive a cold reload, 404 JSON for unknown /api paths, content-types covering html/css/js/json/svg/png/webp/ico/woff2/webmanifest, immutable cache-control for hashed assets and no-cache for index.html and sw.js. Add kin/__tests__/kin-asset-serving.test.ts against a stubbed R2 with a 60-file manifest.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M2-T7",
+          "description": "e2e/kin-routes.spec.ts: navigate every route in the router table on $KIN_PREVIEW_URL, assert no console errors and no 404 network responses, deep-link-reload /inspect/1 and /safety/record/:id, and check the QR label render path (src/components/QRLabel.tsx) still produces a scannable code pointing at the mkin.app origin rather than the Vercel one.",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm run kin:build && node scripts/kin-check-imports.mjs --spa (0 next/* specifiers outside kin/spa/shims/, 0 unresolved externals) && npm test -- kin-route-coverage kin-asset-serving && KIN_PREVIEW_URL=… npx playwright test e2e/kin-routes.spec.ts — all exit 0; plus curl -sI $KIN_PREVIEW_URL/inspect/1 | head -1 shows 200, curl -sI $KIN_PREVIEW_URL/index.html | grep -qi 'cache-control: .*no-cache', and curl -s -o /dev/null -w '%{http_code}' $KIN_PREVIEW_URL/api/does-not-exist returns 404."
+    },
+    {
+      "id": "KIN-M3",
+      "dimension": "kin",
+      "title": "Offline: hand-rolled service worker, IndexedDB in front of D1, durable queued writes",
+      "criteria": [
+        "KIN-5"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M3-T1",
+          "description": "Hand-roll kin/spa/sw.ts replacing @serwist/next and src/app/sw.ts: precache the build's asset list, navigation fallback to /index.html then the ported ~offline route, runtime cache for GET /api/equipment, and an explicit update flow that keeps src/components/SwUpdateBanner.tsx working. Preserve every invariant pinned by src/lib/__tests__/sw-i18n-invariants.test.ts (no skipWaiting:true; the sage-theme and sage-locale-v2 stamps untouched; the old sage-locale key never re-purged) and serve it from /sw.js with no-cache headers.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M3-T2",
+          "description": "IndexedDB as the read cache: keep the photo/signature object store from src/lib/inspections.ts (including the awaited-transaction guarantee at :39-56 that a quota abort rejects to the caller) and add a records mirror store; reads serve from IDB first then revalidate against D1, so a dead-zone device still lists its own history.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M3-T3",
+          "description": "Repoint the sync path: adapt src/lib/safety-sync.ts so attemptSync POSTs to the Kin app's own /api/safety/records instead of /api/safety/sync, keeping the backoff, the inFlight de-dup set, the 503-means-pending-not-failed rule, and the notifySyncResult toasts; src/components/safety/SyncQueuePanel.tsx and src/components/SyncToast.tsx port unchanged.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M3-T4",
+          "description": "Blob upload path: POST /api/blobs stores signature and defect photos in env.STORAGE at ${recordId}/${slot} and returns the key; the D1 row stores keys only. Client queues blob uploads alongside the record write so an offline capture uploads its evidence on the same flush; GET /api/blobs/:key streams back with an appRole check.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M3-T5",
+          "description": "Idempotency and conflict rules: client-generated ids (cryptoRandomId from src/lib/safety-records.ts) as primary keys, INSERT OR IGNORE on record inserts, audit events appended with a dedup key, and post-sync mutations recorded as 'amended' events rather than overwrites. Add kin/__tests__/kin-idempotency.test.ts replaying the same queued write twice and asserting one row and one event.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M3-T6",
+          "description": "Port e2e/offline.spec.ts to run against the preview URL: go offline mid-inspection, complete and sign, assert the queue panel shows the pending record, go online, assert the flush and the D1 read-back, and assert the SW update banner appears after a redeploy. Document the preserved-vs-changed offline behaviors in docs/kin/OFFLINE.md.",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm test -- sw-i18n-invariants inspections safety-sync kin-idempotency green && KIN_PREVIEW_URL=… npx playwright test e2e/offline.spec.ts green; curl -sI $KIN_PREVIEW_URL/sw.js | grep -qi 'content-type: application/javascript' && curl -sI $KIN_PREVIEW_URL/sw.js | grep -qi 'cache-control: .*no-cache'; and the record id the offline spec created is readable afterwards: curl -s $KIN_PREVIEW_URL/api/inspections/$ID | jq -e '.record.id==\"'$ID'\" and .record.syncStatus==\"synced\"' with exactly one matching row (jq -e '.duplicates==0')."
+    },
+    {
+      "id": "KIN-M4",
+      "dimension": "kin",
+      "title": "Integrations: the 20 API routes become Worker handlers on env.KIN secrets",
+      "criteria": [
+        "KIN-6",
+        "KIN-7"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M4-T1",
+          "description": "Port the nine Anthropic-backed routes (safety/suggest-hazards, suggest-jha, suggest-toolbox, analyze-incident, analyze-atmosphere, audit-ptp, check-permits, parse-document, sage/triage) into kin/worker/handlers/ai.ts: plain fetch to the Anthropic API with the key from await env.KIN.getSecret(env.KIN_APP_ID,'ANTHROPIC_API_KEY') called inline, keeping the src/lib/fetch-timeout.ts timeout semantics and the response schemas from analyze-schemas.ts, suggest-schemas.ts, sage-triage-schema.ts and doc-analysis-schemas.ts, plus strip-citations.ts and hazard-critic.ts post-processing.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T2",
+          "description": "Port the review workflow (safety/review/submit, status, decide) to kin/worker/handlers/review.ts backed by the D1 tables from 0004: src/lib/review-store.ts drops @upstash/redis, review-token.ts keeps its HMAC with the secret from env.KIN.getSecret, review-poll.ts becomes a polled GET. Port src/lib/__tests__/review-token.test.ts and review-store.test.ts against the D1 stub.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T3",
+          "description": "Port notification fan-out to kin/worker/handlers/notify.ts: email-notify.ts (Resend, keeping sanitizeSubject and the attachment path) and slack-notify.ts (webhook URL from secrets), both best-effort under ctx.waitUntil with the outcome written to audit_log so a silent failure is discoverable — replacing the notify queue's silent-loss failure mode the assessment calls out.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T4",
+          "description": "Port the remaining routes: inspections/notify, safety/sync (Notion REST), beta/signup, beta/decide, i18n/status, admin/audit, admin/health — with authorization on the platform axes (admin routes on appRole==='admin' || globalRole==='platform_admin'), and delete api/auth/[...nextauth] outright, recording the deletion and its ~300 lines + 23 tests in docs/kin/API-PARITY.md.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T5",
+          "description": "D1-durable rate limiting replacing src/lib/rate-limit.ts and src/lib/kv.ts: a sliding-window counter table keyed on x-kin-user-id + route, applied to the AI routes and the beta signup route, with kin/__tests__/kin-rate-limit.test.ts porting src/lib/__tests__/rate-limit.test.ts and adding a concurrency case.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T6",
+          "description": "External ingress decision, made explicitly: the emailed reviewer-action link is the only non-cookie caller, so either narrow it to kin_set_bearer_paths({slug:'sage-ehs', paths:['/api/safety/review/decide']}) or keep the src/lib/record-share.ts signed-token path and leave the bearer allowlist empty. Write the decision, the rejected alternative, and the assessment's 'Kin has no webhook ingress yet' limitation into docs/kin/EXTERNAL-ACCESS.md.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M4-T7",
+          "description": "Parity enforcement: docs/kin/API-PARITY.md mapping each of the 20 src/app/api/**/route.ts files to its Worker handler or a documented deletion, plus kin/__tests__/kin-api-parity.test.ts that globs the Next routes and fails on any entry missing from the matrix, and scripts/kin-smoke-api.mjs which exercises every handler on a preview URL (401 without identity headers, expected status with them).",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm test -- kin-api-parity kin-rate-limit kin-review-token kin-notify green; grep -rn 'process\\.env\\|@upstash/redis\\|@anthropic-ai/sdk\\|next-auth' kin/worker returns nothing; node scripts/kin-smoke-api.mjs $KIN_PREVIEW_URL exits 0 (every handler answered, no 5xx, header-less calls 401, rate limit returns 429 on the N+1th AI call); and kin_get_bearer_paths({slug:'sage-ehs'}) returns exactly the list in docs/kin/EXTERNAL-ACCESS.md (empty counts, if that is the documented decision)."
+    },
+    {
+      "id": "KIN-M5",
+      "dimension": "kin",
+      "title": "Spanish re-verification and cutover: catalogs unchanged, leakage re-proved, promote + rollback drill",
+      "criteria": [
+        "KIN-8",
+        "KIN-9",
+        "KIN-10"
+      ],
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "KIN-M5-T1",
+          "description": "Ship the i18n layer into the SPA: bundle src/lib/i18n-core.ts, src/lib/i18n.tsx, the generated src/lib/i18n-keys.d.ts (regenerated by scripts/gen-i18n-keys.mjs in the kin:build step), src/messages/en.json, src/messages/es.json and src/messages/data/*.es.json as static imports rather than fetches, and move the pre-paint sage-locale-v2 lang stamp from src/app/layout.tsx into kin/spa/index.html's inline head script — keeping suppressHydrationWarning semantics irrelevant (no SSR) without changing the storage key.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T2",
+          "description": "Kill switch on D1: /api/i18n/status reads es-enabled and suppressed-namespaces from the i18n_flags table (replacing the Upstash-backed src/lib/kv.ts path), preserving all four rollback tiers from docs/i18n/OPERATIONS.md — global flag, per-namespace suppression, per-key retreat, fix-forward — and add the manager-only PATCH that flips them without a deploy. Update docs/i18n/OPERATIONS.md for the Kin mechanics.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T3",
+          "description": "Re-map and re-run the exposure specs: rewrite e2e/es-leakage-allowlist.json route keys from Next paths to SPA router paths, run e2e/es-leakage.spec.ts and e2e/en-pin.spec.ts against the Kin preview URL, and fix any leakage the port introduced (most likely in the shimmed router surfaces and the new SPA shell).",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T4",
+          "description": "Re-anchor packet integrity: byte-compare the ported catalogs against the pre-port HEAD, re-run src/lib/__tests__/i18n-packet-integrity.test.ts with the new anchors, and append a note to docs/i18n/signoff.json recording that the Kin port changed zero reviewed strings so the owner's asynchronous counter-signature still applies. Do not re-open review packets — the assessment's sequencing rule is that ES-M4's review lands before the port starts.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T5",
+          "description": "Promote and rollback drill: kin_promote({slug:'sage-ehs', smoke_path:'/api/health'}), verify live, then kin_rollback to the previous live version, verify the old bundle serves, then re-promote. Record every version number, ai_summary and observed behavior in docs/kin/CUTOVER.md — this is the only way to know the auto-rollback path works before it is needed.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T6",
+          "description": "CI deploys: kin_mint_deploy_token({slug:'sage-ehs', label:'github-actions', allowed_tools:[…]}) and .github/workflows/kin-deploy.yml running npm run lint, npx tsc --noEmit, npm test, npm run kin:build, then the upload → kin_deploy → (manual approval) → kin_promote sequence via the deploy token. Note in the workflow that workspace tools are deliberately unreachable from a kin_dpt_* token.",
+          "status": "pending"
+        },
+        {
+          "id": "KIN-M5-T7",
+          "description": "docs/kin/OPERATIONS.md: the cutover runbook — data import from the localStorage era via scripts/kin-import-local.mjs, the rollback ladder, secret rotation in the portal, and the three things this migration does not solve, stated plainly: no inbound webhook ingress on Kin yet, no Sentry-grade error visibility until Kin's logging phase, and the sage-ehs.mytra.ai vs sage-ehs.mkin.app hostname decision (with the external-app path flagged as platform-admin only). Include the decommission plan for the Vercel deployment.",
+          "status": "pending"
+        }
+      ],
+      "milestoneAcceptance": "npm test -- i18n-packet-integrity i18n-catalog i18n-data i18n-pipeline-rules green && git diff --stat origin/main -- src/messages docs/i18n/glossary.json docs/i18n/blocked-keys.json produces no output && KIN_URL=https://sage-ehs.mkin.app npx playwright test e2e/es-leakage.spec.ts e2e/en-pin.spec.ts green; curl -s $KIN_URL/api/health | jq -e '.ok==true' and curl -s $KIN_URL/api/i18n/status | jq -e 'has(\"esEnabled\")'; flipping the D1 flag off and re-running the es-leakage spec yields an all-English pass; and kin_list_deployments({slug:'sage-ehs', env:'live'}) shows the promote → rollback → re-promote versions recorded in docs/kin/CUTOVER.md."
     }
   ],
   "order": [
@@ -1786,10 +2148,16 @@
     "ES-M1",
     "ES-M2",
     "ES-M3",
+    "KIN-M0",
+    "KIN-M1",
+    "KIN-M2",
+    "KIN-M3",
+    "KIN-M4",
+    "KIN-M5",
+    "LG-M3",
     "ES-M4",
     "ES-M5",
-    "ES-M6",
-    "LG-M3"
+    "ES-M6"
   ],
   "orderReasons": {
     "LG-M1": "false statements in a live privacy policy (signatures, AI PII, missing processors, wrong retention) are an active legal liability and pure doc edits; fix truthfulness before anything else.",
@@ -1831,7 +2199,9 @@
     "UX-3 and DM-8 both assert the pre-trip draft persistence mechanism (debounce + pagehide flush + restore); both are met, but the re-scoring loop should treat them as one implementation so a refactor is re-verified under both ids together.",
     "DS-M1 (retokenizing all colors, DS-3) can change rendered contrast after UX-M3's axe suite is green — schedule an axe re-run as part of DS-M1's definition of done rather than discovering the flip at the next full review.",
     "OWNER DIRECTIVE (2026-07-07): Sage EHS is a safety-AGNOSTIC platform — great for construction crews but never positioned or biased construction-only. Applies to all user-facing copy, AI system prompts, marketing surfaces, and the ES glossary scope. Construction-specific seed data (equipment fleet, demo script) is fine as THIS org's data.",
-    "OWNER DIRECTIVE (2026-07-16): Run ES-M1..ES-M6 then LG-M3 via the /loop /goal next harness with DEEP gating: every milestone iteration must (1) run all standard gates (lint, tsc, vitest, build), (2) run the Playwright e2e suite, adding user-story-level specs as the milestone's surfaces come alive (es-leakage/en-pin specs per DESIGN.md are the minimum; prefer real user journeys — e.g. 'Spanish-preference worker completes a pre-trip inspection end-to-end'), and (3) verify criteria ONLY via the verify-criteria workflow (scriptPath invocation), with the 3-vote dimension panel at completion. Push every iteration; PRs to main batched at natural checkpoints (post-ES-M2 cluster-1 dark, post-ES-M6)."
+    "OWNER DIRECTIVE (2026-07-16): Run ES-M1..ES-M6 then LG-M3 via the /loop /goal next harness with DEEP gating: every milestone iteration must (1) run all standard gates (lint, tsc, vitest, build), (2) run the Playwright e2e suite, adding user-story-level specs as the milestone's surfaces come alive (es-leakage/en-pin specs per DESIGN.md are the minimum; prefer real user journeys — e.g. 'Spanish-preference worker completes a pre-trip inspection end-to-end'), and (3) verify criteria ONLY via the verify-criteria workflow (scriptPath invocation), with the 3-vote dimension panel at completion. Push every iteration; PRs to main batched at natural checkpoints (post-ES-M2 cluster-1 dark, post-ES-M6).",
+    "OWNER DIRECTIVE (2026-08-05): port to Kin ENGLISH-ONLY. ES-M4/M5/M6 and LG-M3 are status 'parked' — /goal next skips them (rail 3 picks the first pending milestone). The Spanish content (es.json, data lookasides, glossary, review evidence, 427 staged-unreviewed ES-M4 translations) stays in git on this branch; re-enabling is a content restore, not a code change. See docs/kin/MIGRATION-ASSESSMENT.md.",
+    "MODEL ROUTING (2026-08-05): encoded in .claude/skills/goal/SKILL.md 'Model routing' and implemented by verify-criteria.js + rescore.js. Session runs Opus 5; fable is reserved for roles with no downstream gate (panel judgment lenses, superficial-compliance-prone criteria DS-3/DS-4/DS-6/BE-8/EN-7, the rescorer, glossary authoring, the safety-drift lens, D1 migration pairs, the Worker identity boundary, rubric adjudication). Never pass a model ad hoc — rail 8."
   ],
   "backlog": [
     "Identity assurance / impersonation: src/lib/auth.ts (lines 74-85) lets anyone holding the single shared EMAIL_LOGIN_CODE sign in as ANY allowed-domain email — including an ADMIN_EMAILS address — with a freeform name. This undermines LG-7's 'server-verified submitter' claim on signed OSHA inspections and makes EN-9 RBAC spoofable (roles resolve from a self-asserted email). No criterion requires per-user credentials, email verification, or admin-login step-up. Absorb into ENTERPRISE (new criterion alongside EN-9/EN-10) with a LEGAL note on LG-7's wording.",
@@ -2342,6 +2712,12 @@
       "milestone": "ES-M4",
       "event": "spend-limit-pause",
       "details": "T1-T4 done (4-group delegated conversion, all gates green incl. 17/17 e2e; locale dates live; QR label bilingual; records render in their locale — vitest-proven). T5 blocked: es-translate-m4 workflow generators completed (427 keys) but 14/15 review lenses + sweep died on org spend limit. Raw translations staged in docs/i18n/review/m4.pending.json — NOT applied to es.json (converted surfaces render live; unreviewed safety copy never ships). ON RESUME: Workflow resumeFromRunId wf_1d90d108-c43 (generators cache-replay), apply verdicts + evidence + packet digests, extend es-leakage/en-pin to inspection/equipment/record routes, verify ES-7. Then ES-M5, ES-M6, LG-M3."
+    },
+    {
+      "iteration": 28,
+      "date": "2026-08-05",
+      "event": "kin-track-added",
+      "details": "Added the 'kin' dimension (KIN-1..KIN-10) and milestones KIN-M0, KIN-M1, KIN-M2, KIN-M3, KIN-M4, KIN-M5, designed by wf_c7cab86c-130. Scoped English-only per owner; ES-M4/M5/M6 + LG-M3 parked behind the Kin track. Model-routing policy encoded as rail 8 + a Model routing section; verify-criteria.js now routes panel judgment lenses and superficial-compliance-prone ids to fable, rescore.js runs entirely on fable. Fixed stale counts in SKILL.md (60->70 criteria, 'six dimensions'->every dimension) and rescore.js (hardcoded 6 -> DIMS.length)."
     }
   ],
   "sessionWindow": null
