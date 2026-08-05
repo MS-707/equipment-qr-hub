@@ -24,8 +24,13 @@ live = "sage-ehs.mkin.app"
 entry = "kin/worker/index.js"
 
 [assets]
-# Staged into kin/dist by kin/scripts/kin-build.mjs, hashed by kin-assets.mjs.
-source = "kin/public"
+# The SPA. kin/scripts/kin-build.mjs runs Vite (kin/vite.config.ts, root
+# kin/src) into kin/dist, then kin-assets.mjs hashes the result. JS and CSS land
+# under kin/dist/assets/ with content-hashed filenames, which the Worker serves
+# `immutable`. The scaffold shell that used to live in kin/public was replaced
+# by the real index.html in KIN-M0-T5; kin-build still stages a kin/public
+# directory if one reappears, without ever overwriting build output.
+source = "kin/src"
 dist = "kin/dist"
 manifest = "kin/dist/asset-manifest.json"
 

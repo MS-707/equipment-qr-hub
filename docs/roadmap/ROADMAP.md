@@ -276,7 +276,7 @@ over the reverted June attempt — implementation spec in `docs/i18n/DESIGN.md`.
   - *Acceptance:* `jq -e '.slug and .appId and .previewUrl and .liveUrl' kin/app.json`; `env_keys` covers all nine bindings with a non-null `manifest_ref`; preview hostname answers 302 (Kin edge, not NXDOMAIN).
 - [x] **KIN-M0-T3** First migration: `kin_create_migration` creating `equipment` (seeded from `src/data/equipment.ts`), `inspection_records`, `inspection_items` and `signatures`, committed as paired `kin/migrations/0001_slice.{up,down}.sql`.
 - [x] **KIN-M0-T4** Slice Worker handlers: `GET /api/equipment/:id`, `POST /api/inspections`, `GET /api/inspections/:id`, keyed on `x-kin-user-id` with 401 when absent; signature PNG to `env.STORAGE`, row stores the key only. **Validation is hand-rolled — zod cannot be imported (see RUNTIME-CONTRACT.md).**
-- [ ] **KIN-M0-T5** Slice SPA: `kin/src` (Vite + the existing `tailwind.config.ts`/`globals.css`) carrying `InspectLanding`, `PreTripInspection` and `SignaturePad` across unchanged, with `next/link` + `next/navigation` shims.
+- [x] **KIN-M0-T5** Slice SPA: `kin/src` (Vite + the existing `tailwind.config.ts`/`globals.css`) carrying `InspectLanding`, `PreTripInspection` and `SignaturePad` across unchanged, with `next/link` + `next/navigation` shims.
 - [x] **KIN-M0-T6** EHS email on submit: port `src/lib/email-notify.ts` to `kin/worker/email.ts` using an inline `await env.KIN.getSecret(env.KIN_APP_ID,'RESEND_API_KEY')` under `ctx.waitUntil`, returning `'sent' | 'not-configured' | 'failed'`.
 - [ ] **KIN-M0-T7** Slice e2e + `kin/evidence/slice-smoke.json`, plus `kin/__tests__/slice-pretrip.test.ts` driving the real worker `fetch` export against a stub env.
 

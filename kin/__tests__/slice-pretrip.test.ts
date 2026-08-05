@@ -405,6 +405,81 @@ describe('regression: enum validation happens before the DB', () => {
   })
 })
 
+describe('regression: /api/inspections/notify — the path the ported UI actually calls', () => {
+  // The carried-across screens POST here (src/lib/inspections.ts, and
+  // PreTripInspection's submit handler). Before this route existed the request
+  // fell through to the 501, and because 501 is neither 401 nor 400 the
+  // component took its "queued" branch and told the operator the EHS
+  // notification was on its way — while retrying against that 501 forever.
+  const notify = (payload: unknown, headers: Record<string, string> = IDENTITY) =>
+    new Request('https://preview-sage-ehs.mkin.app/api/inspections/notify', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: JSON.stringify(payload),
+    })
+
+  it('is routed — it must not fall through to 501', async () => {
+    const h = harness()
+    const res = await worker.fetch(notify(body()), h.env)
+    expect(res.status).not.toBe(501)
+    expect(res.status).toBeLessThan(300)
+  })
+
+  it('commits the record and answers with the emailed flag the client reads', async () => {
+    const h = harness()
+    const payload = body()
+    const res = await worker.fetch(notify(payload), h.env)
+
+    const json = (await res.json()) as { emailed: boolean; reason?: string }
+    // The client checks `data.emailed`; `notified` alone would read as failure.
+    expect(json.emailed).toBe(true)
+    expect(h.row('SELECT COUNT(*) AS n FROM inspection_records WHERE id = ?', payload.record.id)?.n).toBe(1)
+  })
+
+  it('unset webhook reports not-configured, so the UI says "skipped" and does NOT queue forever', async () => {
+    const h = harness({ secret: null })
+    const res = await worker.fetch(notify(body()), h.env)
+
+    expect(res.status).toBeLessThan(300)
+    const json = (await res.json()) as { emailed: boolean; reason?: string }
+    expect(json.emailed).toBe(false)
+    // This exact string is what routes the component to 'skipped' rather than
+    // its retry branch.
+    expect(json.reason).toBe('not-configured')
+  })
+
+  it('a replayed record drains the offline queue instead of retrying forever', async () => {
+    const h = harness()
+    const payload = body()
+    await worker.fetch(notify(payload), h.env)
+
+    // Same id again — what flushNotifyQueue does on reconnect.
+    const res = await worker.fetch(notify(payload), h.env)
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { emailed: boolean; reason?: string }
+    expect(json.emailed).toBe(true)
+    expect(json.reason).toBe('already-recorded')
+    // Still exactly one row — the replay did not duplicate the safety record.
+    expect(h.row('SELECT COUNT(*) AS n FROM inspection_records WHERE id = ?', payload.record.id)?.n).toBe(1)
+  })
+
+  it('still 401s without identity, and writes nothing', async () => {
+    const h = harness()
+    const res = await worker.fetch(notify(body(), {}), h.env)
+    expect(res.status).toBe(401)
+    expect(h.row('SELECT COUNT(*) AS n FROM inspection_records')?.n).toBe(0)
+  })
+
+  it('GET is rejected — "notify" must not be captured as a record id', async () => {
+    const h = harness()
+    const res = await worker.fetch(
+      new Request('https://preview-sage-ehs.mkin.app/api/inspections/notify', { headers: IDENTITY }),
+      h.env,
+    )
+    expect(res.status).toBe(405)
+  })
+})
+
 describe('slice read-back', () => {
   it('GET /api/inspections/:id returns the record, its items and the signature flag', async () => {
     const h = harness()

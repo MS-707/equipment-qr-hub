@@ -550,6 +550,48 @@ async function handleCreateInspection(request, env, caller) {
   );
 }
 
+/**
+ * Compatibility route for the ported client: POST /api/inspections/notify.
+ *
+ * The three slice screens are carried across from the Vercel app UNCHANGED, and
+ * src/lib/inspections.ts + PreTripInspection.tsx both POST to this path with the
+ * exact body handleCreateInspection already accepts. Without this adapter the
+ * request falls through to the 501, and because 501 is neither 401 nor 400 the
+ * component takes its "queued" branch and tells the operator
+ * "the EHS email is queued and will send automatically when your connection
+ * returns" — a safety app telling a worker their inspection is on its way when
+ * it will retry against that 501 forever. So this is a correctness fix, not
+ * sugar: the alternative is a silent, permanent loss of the notification.
+ *
+ * Only the response SHAPE differs from /api/inspections: the client reads
+ * `emailed`, from when this went out over Resend. The field name is kept for
+ * compatibility (the components must stay unchanged) even though delivery is
+ * Slack now — docs/kin/NOTIFICATIONS.md.
+ */
+async function handleNotifyCompat(request, env, caller) {
+  const res = await handleCreateInspection(request, env, caller);
+  const body = await res.json().catch(() => null);
+
+  // A replayed record id is the offline queue re-sending something the server
+  // already has. Report it as delivered so the queue DRAINS: the record is
+  // committed and EHS was notified on the first submission. Returning the raw
+  // 409 would put the client back on the retry-forever path this route exists
+  // to close.
+  if (res.status === 409 && body && body.error === 'duplicate_record') {
+    return Response.json(
+      { emailed: true, reason: 'already-recorded', id: body.id },
+      { status: 200, headers: { 'cache-control': 'no-store' } },
+    );
+  }
+
+  if (!res.ok || !body) return res;
+
+  return Response.json(
+    { ...body, emailed: !!body.notified },
+    { status: res.status, headers: { 'cache-control': 'no-store' } },
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Diagnostics
 // ---------------------------------------------------------------------------
@@ -630,7 +672,8 @@ const MCP_TOOLS = [
   },
 ];
 
-// A real 1x1 transparent PNG, so the smoke run exercises the actual decode to// R2 put to signatures-row path rather than skipping it.
+// A real 1x1 transparent PNG, so the smoke run exercises the actual
+// decode -> R2 put -> signatures-row path rather than skipping it.
 const SMOKE_SIGNATURE_PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
@@ -811,6 +854,13 @@ async function handleRequest(request, env) {
     if (url.pathname === '/api/inspections') {
       if (request.method !== 'POST') return jsonError(405, 'method_not_allowed');
       return handleCreateInspection(request, env, caller);
+    }
+
+    // Matched BEFORE the /:id regex below, which would otherwise capture
+    // "notify" as a record id and 405 the POST.
+    if (url.pathname === '/api/inspections/notify') {
+      if (request.method !== 'POST') return jsonError(405, 'method_not_allowed');
+      return handleNotifyCompat(request, env, caller);
     }
 
     const inspection = url.pathname.match(/^\/api\/inspections\/([^/]+)$/);

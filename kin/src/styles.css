@@ -1,0 +1,14 @@
+/*
+ * Kin SPA stylesheet.
+ *
+ * One line on purpose: the design system is src/app/globals.css, which opens
+ * with @tailwind base/components/utilities and then defines every CSS custom
+ * property token the ported screens read (--bg, --surface, --fg-*, --accent,
+ * the light-theme inversion under [data-theme="light"], the safe-area padding
+ * helpers and the keyframes). Vite inlines this @import before PostCSS runs, so
+ * Tailwind sees the directives and compiles against kin/tailwind.config.ts.
+ *
+ * Importing it rather than copying it is what keeps the Kin app and the Next
+ * app visually identical without a second copy of the tokens to drift.
+ */
+@import '../../src/app/globals.css';
