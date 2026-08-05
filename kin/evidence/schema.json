@@ -1,0 +1,33 @@
+{
+  "_recorded": {
+    "at": "2026-08-05",
+    "iteration": 23,
+    "milestone": "KIN-M0",
+    "task": "KIN-M0-T3",
+    "app": "sage-ehs",
+    "env": "preview",
+    "source": "kin_get_schema({slug:'sage-ehs'}) — sqlite_master of the PREVIEW D1",
+    "migrationsApplied": [
+      { "version": 1, "name": "0001_slice", "status": "applied", "executionMs": 4471, "reversible": true },
+      { "version": 2, "name": "0002_seed_equipment", "status": "applied", "executionMs": 3165, "reversible": true }
+    ],
+    "note": "This is the KIN-M0 SLICE schema, not the full data model. KIN-M1 adds the remaining record shapes (TrainingProgram, WorkOrder, PreTaskPlan, JobHazardAnalysis, HeightPermit, HotWorkPermit, ConfinedSpacePermit, IncidentReport, crew signatures, audit events) and regenerates this file. The authoritative DDL is kin/migrations/0001_slice.up.sql — this records what the platform actually reports back."
+  },
+  "tables": [
+    { "name": "equipment", "type": "table" },
+    { "name": "inspection_records", "type": "table" },
+    { "name": "inspection_items", "type": "table" },
+    { "name": "signatures", "type": "table" }
+  ],
+  "indexes": [
+    { "name": "idx_inspection_records_equipment_id", "type": "index" },
+    { "name": "idx_inspection_records_kin_user_id", "type": "index" },
+    { "name": "idx_inspection_records_created_at", "type": "index" },
+    {
+      "name": "idx_inspection_records_sheet_unsynced",
+      "type": "index",
+      "partial": "WHERE sheet_synced_at IS NULL",
+      "note": "Matches the KIN-M4 audit-mirror sweep predicate exactly (docs/kin/NOTIFICATIONS.md)."
+    }
+  ]
+}
