@@ -48,7 +48,7 @@ What disappears is mostly *toil we've been paying for*:
 | `@sentry/nextjs` | Drop for now; Kin logging lands in a later platform phase. |
 | `@upstash/redis` | `env.DB` (D1) for the review store and i18n kill switch; rate limiting per-app. |
 | `@anthropic-ai/sdk` | Plain `fetch` against the Anthropic API with the key from `env.KIN.getSecret(...)`. The codebase already wraps calls in `fetchWithTimeout`. |
-| `zod` | Pre-bundled into the Worker module (no unresolved import survives) — **verify with a probe deploy before relying on it.** |
+| `zod` | **SETTLED 2026-08-05 by probe deploy:** npm imports are NOT resolved at deploy time — a throwaway `import { z } from 'zod'` deploy failed with `CF 400 [10021] No such module "zod"`. The Worker stays dependency-free and server-side validation is hand-rolled; zod remains client-side only. (Pre-bundling would in principle leave no import to resolve, but the runner deliberately added no bundler — a simpler Worker was judged worth hand-written validators.) |
 | `react`, `react-dom`, `lucide-react`, `qrcode.react` | Fine — they live in the client asset bundle. |
 
 ---
