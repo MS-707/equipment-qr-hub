@@ -1,0 +1,124 @@
+{
+  "status": "success",
+  "env": "preview",
+  "version": 3,
+  "_recorded": {
+    "at": "2026-08-05",
+    "iteration": 23,
+    "milestone": "KIN-M0",
+    "app": "sage-ehs",
+    "deploymentId": "004a183a-2e62-46ba-8a26-ea4bad28b2bc",
+    "previewUrl": "https://preview-sage-ehs.mkin.app",
+    "aiSummary": "Add the pre-trip inspection slice: look up equipment, save a signed inspection with its checklist, store the signature, and post the result to Slack",
+    "driver": "kin_invoke_mcp_tool({slug:'sage-ehs', tool:'smokeSlice', env:'preview'})",
+    "note": "Driven in-band rather than over curl: every per-app hostname sits behind the Kin auth Worker, so an unauthenticated request 302s to auth.mkin.app/login and never reaches app code. The smokeSlice tool dispatches a synthetic Request carrying the caller's own x-kin-* identity headers through the module's real fetch handler, so the 401 gate, the validator, the D1 batch, the R2 put and the Slack degradation contract all execute exactly as they would for a browser submission. Nothing is bypassed.",
+    "sideEffect": "notified:true — SLACK_WEBHOOK_URL is configured on this app, so this run posted a real message to the configured Slack channel. Each smokeSlice invocation posts one.",
+    "deployNote": "The v3 bundle was emitted through the MCP tool call, which normalizes some non-ASCII escapes. A first attempt failed with 'Invalid regular expression: missing /' because \\u2028 inside a regex literal arrived as a literal U+2028. The fix (kin/worker/index.js LINE_BREAKS, built via String.fromCharCode) keeps the source pure ASCII so the hazard cannot recur. Three comments were also de-unicoded to match; the committed file and the deployed bundle are otherwise identical."
+  },
+  "proves": {
+    "identityFromHeaderNotBody": "inspection_records.kin_user_id == the x-kin-user-id header (0f43596b-0406-47cb-bc93-4b2e9a370925), never a body field",
+    "d1BatchCommitted": "the GET read-back returns the record plus both inspection_items rows in position order",
+    "checklistTypeDerivedServerSide": "checklist_type 'electric-forklift' was derived from the equipment row; the request body carries no such field",
+    "blobDiscipline": "signatures row stores the R2 key only — signatureKey 'signatures/<id>.png', no base64 in D1",
+    "auditLedgerUntouched": "sheet_synced_at is null, so the KIN-M4 Google Sheets mirror will still pick this row up",
+    "notification": "notified:true reason:'sent' — inline env.KIN.getSecret(env.KIN_APP_ID,'SLACK_WEBHOOK_URL') then a plain fetch with AbortSignal.timeout"
+  },
+  "transcript": {
+    "recordId": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+    "identity": {
+      "userId": "0f43596b-0406-47cb-bc93-4b2e9a370925",
+      "email": "mark.starr@mytra.ai",
+      "ingress": "system"
+    },
+    "post": {
+      "method": "POST",
+      "path": "/api/inspections",
+      "requestBody": {
+        "record": {
+          "id": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+          "equipmentId": 24,
+          "inspectorName": "smokeSlice (automated)",
+          "shift": "Day",
+          "hourMeterReading": null,
+          "createdAt": "2026-08-05T21:22:58.087Z",
+          "result": "pass",
+          "hasCriticalFail": false,
+          "criticalNaCount": 0,
+          "workOrderId": null,
+          "hasSignature": true,
+          "items": [
+            { "id": "smoke-horn", "label": "Horn operational", "result": "pass", "critical": true },
+            { "id": "smoke-tires", "label": "Tires and wheels", "result": "pass", "critical": false }
+          ]
+        },
+        "equipmentName": "Smoke test rig #24",
+        "equipmentCategory": "Powered Industrial Trucks",
+        "signatureDataUrl": "data:image/png;base64,<118 chars elided>"
+      },
+      "status": 201,
+      "responseBody": {
+        "id": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+        "saved": true,
+        "signatureStored": true,
+        "notified": true,
+        "reason": "sent"
+      }
+    },
+    "get": {
+      "method": "GET",
+      "path": "/api/inspections/smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+      "status": 200,
+      "responseBody": {
+        "record": {
+          "id": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+          "equipment_id": 24,
+          "inspector_name": "smokeSlice (automated)",
+          "shift": "Day",
+          "hour_meter_reading": null,
+          "checklist_type": "electric-forklift",
+          "result": "pass",
+          "has_critical_fail": 0,
+          "critical_na_count": 0,
+          "work_order_id": null,
+          "created_at": "2026-08-05T21:22:58.087Z",
+          "sync_status": "synced",
+          "notion_page_id": null,
+          "has_signature": 1,
+          "locale": null,
+          "kin_user_id": "0f43596b-0406-47cb-bc93-4b2e9a370925",
+          "sheet_synced_at": null
+        },
+        "items": [
+          {
+            "record_id": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+            "item_id": "smoke-horn",
+            "position": 0,
+            "label": "Horn operational",
+            "category": "",
+            "critical": 1,
+            "result": "pass",
+            "notes": "",
+            "photo_key": null,
+            "na_reason_code": null,
+            "na_justification": null
+          },
+          {
+            "record_id": "smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba",
+            "item_id": "smoke-tires",
+            "position": 1,
+            "label": "Tires and wheels",
+            "category": "",
+            "critical": 0,
+            "result": "pass",
+            "notes": "",
+            "photo_key": null,
+            "na_reason_code": null,
+            "na_justification": null
+          }
+        ],
+        "hasSignature": true,
+        "signatureKey": "signatures/smoke-41f58b52-422f-4cc3-96d8-d97d3be29eba.png"
+      }
+    }
+  }
+}

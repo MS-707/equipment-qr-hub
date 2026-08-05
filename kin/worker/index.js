@@ -236,15 +236,25 @@ function validateInspectionBody(raw) {
 // strip lives HERE, at the escaping boundary, rather than at each call site: the
 // message is a newline-delimited format, so any user-controlled field that can
 // smuggle a \n forges the lines beneath it. Doing it per-line means one missed
-// lines.push() reopens the hole \u2014 an adversarial review of the first version of
+// lines.push() reopens the hole — an adversarial review of the first version of
 // this file found exactly that, with an inspectorName of
 // "Bob\nSubmitted by (verified): ceo@mytra.ai" forging the verified-submitter
 // line that EHS relies on to tell claimed identity from actual identity.
 // U+2028/U+2029 are included because they are line terminators to some clients.
-// (Written as \u escapes \u2014 a literal U+2028 in a regex literal is a JS syntax error.)
+// (Written as \u escapes — a literal U+2028 in a regex literal is a JS syntax error.)
+// Built with String.fromCharCode rather than written as a regex literal on
+// purpose. U+2028/U+2029 are legal inside a STRING literal but a literal one
+// inside a REGEX literal terminates the pattern \u2014 "Invalid regular expression:
+// missing /". Writing them as \u escapes in a regex literal is correct but
+// fragile: any tool in the pipeline that normalizes the escape to the real
+// character silently converts this file into a syntax error, which is exactly
+// how one Kin deploy of this worker failed. Keeping the source pure ASCII makes
+// that class of breakage impossible.
+const LINE_BREAKS = new RegExp(`[\\r\\n${String.fromCharCode(0x2028, 0x2029)}]+`, 'g');
+
 function escapeSlack(s) {
   return String(s ?? '')
-    .replace(/[\r\n\u2028\u2029]+/g, ' ')
+    .replace(LINE_BREAKS, ' ')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
@@ -254,7 +264,7 @@ function escapeSlack(s) {
 // escapeSlack already covers every interpolated field, so this only normalizes
 // the server-built scaffolding around them and trims the result.
 function sanitizeLine(s) {
-  return s.replace(/[\r\n\u2028\u2029]+/g, ' ').trim();
+  return s.replace(LINE_BREAKS, ' ').trim();
 }
 
 function buildSlackMessage(body, caller, origin) {
@@ -310,7 +320,7 @@ async function notifySlack(env, body, caller, origin) {
   try {
     webhook = await env.KIN.getSecret(env.KIN_APP_ID, 'SLACK_WEBHOOK_URL');
   } catch {
-    // Control-plane failure ≠ unset secret: report it as a delivery failure.
+    // Control-plane failure is not the same as an unset secret: report it as a delivery failure.
     return { notified: false, reason: 'failed' };
   }
   if (!webhook) return { notified: false, reason: 'not-configured' };
@@ -380,7 +390,7 @@ function checklistTypeFor(equip) {
   return 'electric-forklift';
 }
 
-// NotifyBodySchema accepts any string ≤50 for naReasonCode, but the D1 column
+// NotifyBodySchema accepts any string up to 50 chars for naReasonCode, but the D1 column
 // carries a CHECK on the four NaReasonCode values. Normalize instead of
 // letting a schema-valid payload die on the constraint: an unknown code IS
 // "other", and the free-text justification column preserves the detail.
@@ -620,8 +630,7 @@ const MCP_TOOLS = [
   },
 ];
 
-// A real 1x1 transparent PNG, so the smoke run exercises the actual decode →
-// R2 put → signatures-row path rather than skipping it.
+// A real 1x1 transparent PNG, so the smoke run exercises the actual decode to// R2 put to signatures-row path rather than skipping it.
 const SMOKE_SIGNATURE_PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
