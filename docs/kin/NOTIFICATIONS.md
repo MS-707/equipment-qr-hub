@@ -84,13 +84,27 @@ route stalls on Google Cloud access.
 
 | Name | Purpose |
 | --- | --- |
-| `SLACK_WEBHOOK_URL` | Incoming webhook for the EHS channel. |
+| `SLACK_WEBHOOK_URL` | Incoming webhook for **`#sage-ehs-alerts`**. |
 | `GOOGLE_SA_EMAIL` | Service-account address the audit sheet is shared with. |
 | `GOOGLE_SA_PRIVATE_KEY` | PEM private key from the service-account JSON. |
 | `AUDIT_SHEET_ID` | Spreadsheet id from its URL. |
 
 Every one is read inline: `await env.KIN.getSecret(env.KIN_APP_ID, 'NAME')` —
 never a detached RPC method, never `process.env`.
+
+### The destination channel is purpose-built, so test traffic is fine
+
+`#sage-ehs-alerts` was created for this app specifically (owner, 2026-08-05) and
+the first live smoke run landed there successfully. It is **not** a shared human
+channel, which has a practical consequence worth stating so nobody has to
+re-litigate it: driving the real notification path in automated checks is
+expected, not noise.
+
+Concretely, the MCP `smokeSlice` tool posts one message per invocation, and
+`KIN-M0-T7`'s browser e2e will drive the same path repeatedly. Neither needs a
+stub webhook, a redirect to a scratch channel, or an opt-out flag — exercising
+the real path is the point, since a mocked webhook would prove nothing about the
+inline `getSecret` → `fetch` contract that `KIN-3` and `KIN-7` are built around.
 
 ## Degradation contract (unchanged, and still tested)
 
