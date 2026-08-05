@@ -248,13 +248,24 @@ describe('KIN-3 (d) notification uses an inline getSecret and a timed fetch', ()
     // argument is what proves it was not a detached/bound method.
     expect(h.calls.getSecret[0][0]).toBe('app-123')
     expect(typeof h.calls.getSecret[0][1]).toBe('string')
+    expect(h.calls.getSecret[0][1]).toBe('SLACK_WEBHOOK_URL')
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     // Shape, not a hardcoded hostname — the vendor is deliberately swappable.
     expect(String(url)).toMatch(/^https:\/\//)
+    // ...but it must be the value getSecret returned, not some other URL: that
+    // is what ties the credential lookup to the request actually sent.
+    expect(String(url)).toBe(SLACK_URL)
     expect(init.method).toBe('POST')
-    expect(init.signal).toBeDefined()
+    // A real, not-yet-fired AbortSignal. Asserting the 10s deadline actually
+    // elapses is deliberately NOT done here: AbortSignal.timeout is backed by a
+    // native timer that vitest's fake timers do not intercept, so such a test
+    // would either sleep 10s or assert nothing about our code. What matters
+    // behaviourally — that an aborted fetch degrades instead of 500ing — is
+    // covered by the "fetch throw (timeout)" case in the degradation block.
+    expect(init.signal).toBeInstanceOf(AbortSignal)
+    expect(init.signal?.aborted).toBe(false)
   })
 })
 

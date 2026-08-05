@@ -4,7 +4,7 @@
   "goal": "All seven dimensions verified at full score against the frozen rubrics",
   "createdAt": "2026-07-06",
   "branch": "claude/construction-safety-audits-HC6MA",
-  "iteration": 22,
+  "iteration": 23,
   "gates": [
     {
       "id": "lint",
@@ -696,7 +696,7 @@
     "kin": {
       "key": "kin",
       "name": "Kin Platform Migration",
-      "score": 0,
+      "score": 2,
       "initialScore": 0,
       "verifiedScore": null,
       "auditSummary": "Added 2026-08-05 by owner request. Re-create Sage EHS as a Kin app to inherit Mytra platform identity, D1, secrets, sharing and schedules. Criteria and milestones designed by a 3-agent workflow (wf_c7cab86c-130) grounded in docs/kin/MIGRATION-ASSESSMENT.md. Scoped English-only: the Spanish track is PARKED, not cancelled.",
@@ -706,8 +706,10 @@
           "id": "KIN-1",
           "criterion": "Platform scaffold proven, not assumed: kin/app.json records {slug, appId, previewUrl, liveUrl} for an app created with needs_database:true; the committed diagnostic probe (kin/worker/diag.js) and its recorded response kin/evidence/diag-env.json show env_keys containing DB, STORAGE, KIN, KIN_ASSETS, KIN_APP_ID, KIN_APP_SLUG, KIN_ENV and a non-null manifest_ref field; the /__diag/env route survives in the shipped bundle kin/worker/index.js gated on x-kin-is-manager; and the preview hostname answers from the Kin edge rather than NXDOMAIN.",
           "verify": "jq -e '.slug and .appId and .previewUrl and .liveUrl' kin/app.json; jq -e '.env_keys|index(\"DB\") and index(\"STORAGE\") and index(\"KIN\") and index(\"KIN_ASSETS\") and index(\"KIN_APP_ID\") and index(\"KIN_ENV\")' kin/evidence/diag-env.json; jq -e 'has(\"manifest_ref\")' kin/evidence/diag-env.json; grep -n \"__diag/env\" kin/worker/index.js and confirm the enclosing block checks request.headers.get('x-kin-is-manager'); curl -sS -o /dev/null -w '%{http_code}\\n' \"$(jq -r .previewUrl kin/app.json)/\" returns 200/302/401 (NOT 000 or 404). If kin_* MCP tools are reachable, kin_get_schema({slug}) must ANSWER (an empty table list is a pass) rather than erroring 'this app has no backend' — which is what a needs_database:false app returns; and once KIN-M0-T3 has landed it must additionally list the slice tables. That live result overrides the committed JSON on any disagreement.",
-          "met": false,
-          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+          "met": true,
+          "evidence": "kin/app.json has slug/appId/previewUrl/liveUrl; kin/evidence/diag-env.json env_keys covers all nine bindings incl. KIN_APP_SLUG with non-null manifest_ref; kin/worker/index.js:785-786 gates /__diag/env on x-kin-is-manager -> 403 manager_only; preview hostname returns 302 from the Kin edge (not 000/404); kin_get_schema ANSWERS and, post-T3, lists all four slice tables (equipment, inspection_records, inspection_items, signatures) + 4 indexes.",
+          "verifiedBy": "verify-criteria wf_4441c846-272 (1-vote adversarial, at HEAD 211b490)",
+          "verifiedAtIteration": 23
         },
         {
           "id": "KIN-2",
@@ -720,8 +722,10 @@
           "id": "KIN-3",
           "criterion": "The vertical slice runs end to end on Kin primitives: a pre-trip inspection POST handler in kin/worker/index.js returns 401 when x-kin-user-id/x-kin-user-email are absent, writes a row keyed on the header user id via env.DB.prepare(...).bind(...), stores the signature blob in env.STORAGE under a per-app key prefix, and NOTIFIES EHS over plain fetch to an external HTTP API whose credential comes from an inline await env.KIN.getSecret(env.KIN_APP_ID, <NAME>) — vendor-agnostic by design (Slack today; see docs/kin/NOTIFICATIONS.md) — returning a structured degraded result (not a 5xx) when that secret is unset; kin/evidence/slice-smoke.json records a successful preview deployment version plus the request/response transcript.",
           "verify": "npm test -- kin/__tests__/slice-pretrip.test.ts green; read that test to confirm it drives the real worker fetch export with a stub env and asserts all five facts: (a) no x-kin-user-id -> 401 and no DB write, (b) with headers -> 2xx and a row whose user column equals the header value, (c) STORAGE.put called with a key under the signature prefix, (d) getSecret called INLINE with env.KIN_APP_ID and the notification secret name, followed by a plain fetch to that vendor's HTTPS endpoint carrying an abort timeout — assert the inline-getSecret and fetch SHAPE, not a hardcoded hostname, (e) getSecret -> null yields a JSON body with notified:false and a 2xx, NOT a 500 and NOT a skipped D1 write; grep -n 'x-kin-user-id' kin/worker/index.js returns the identity read; grep -nE '(const|let|var)\\s+\\w+\\s*=\\s*env\\.KIN\\.|env\\.KIN\\.[A-Za-z]+\\.(bind|call|apply)' kin/worker returns nothing (no detached RPC); jq -e '.status==\"success\" and .env==\"preview\" and .version' kin/evidence/slice-smoke.json; cross-check that version against kin_list_deployments({slug, env:'preview'}) if MCP is reachable.",
-          "met": false,
-          "evidence": "Not started — plan in docs/kin/MIGRATION-ASSESSMENT.md"
+          "met": true,
+          "evidence": "kin/__tests__/slice-pretrip.test.ts (18 tests) drives the real worker fetch export against the real migrations in node:sqlite. All five facts asserted: (a) no identity -> 401 with zero DB/R2/secret touches; (b) 2xx with kin_user_id == the x-kin-user-id header, plus a pin that a body-supplied id is ignored; (c) STORAGE.put under signatures/<id>.png with no base64 in D1; (d) inline env.KIN.getSecret(env.KIN_APP_ID,'SLACK_WEBHOOK_URL') then a plain fetch to that exact URL with an AbortSignal; (e) unset secret -> 2xx notified:false reason:not-configured with the record still committed, plus webhook-500 / fetch-throw / getSecret-throw. kin/worker/index.js:89 reads x-kin-user-id; no detached env.KIN RPC. kin/evidence/slice-smoke.json records preview deployment v3 (004a183a-2e62-46ba-8a26-ea4bad28b2bc) with the full POST 201 / GET 200 transcript, cross-checked against kin_list_deployments.",
+          "verifiedBy": "verify-criteria wf_4441c846-272 (1-vote adversarial, at HEAD 211b490)",
+          "verifiedAtIteration": 23
         },
         {
           "id": "KIN-4",
@@ -1865,12 +1869,12 @@
         {
           "id": "KIN-M0-T3",
           "description": "First migration: kin_create_migration({slug:'sage-ehs', name:'0001_slice', sql_up, sql_down}) creating equipment (seeded from src/data/equipment.ts), inspection_records and inspection_items mirroring the InspectionRecord / InspectionItemResult shapes in src/lib/types.ts:151-186, plus a signatures table holding the R2 key. Paired down migration drops all four. Commit the SQL to kin/migrations/0001_slice.sql so the repo is the source of truth and kin_get_schema is the check. ALSO add a nullable sheet_synced_at TEXT column to inspection_records — the ledger the KIN-M4 Google Sheets audit mirror sweeps on. Adding it now avoids an ALTER against a table holding real records later (docs/kin/NOTIFICATIONS.md).",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "KIN-M0-T4",
           "description": "Slice Worker handlers in kin/worker/index.ts: GET /api/equipment/:id, POST /api/inspections, GET /api/inspections/:id. Add kin/worker/identity.ts (getCaller from x-kin-user-id / x-kin-user-email / x-kin-app-role / x-kin-is-manager, 401 when the id header is absent) replacing src/lib/api-auth.ts requireSession, and inline the zod body schema ported from src/lib/inspection-notify-schema.ts. Signature PNG goes to env.STORAGE at signatures/${recordId}.png; the row stores the key, never the base64.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "KIN-M0-T5",
@@ -1880,7 +1884,7 @@
         {
           "id": "KIN-M0-T6",
           "description": "EHS notification on submit via SLACK (not email — owner decision 2026-08-05, docs/kin/NOTIFICATIONS.md): port the shape of src/lib/slack-notify.ts to kin/worker/notify.ts — plain fetch to the incoming webhook, url from an inline await env.KIN.getSecret(env.KIN_APP_ID,'SLACK_WEBHOOK_URL'), AbortSignal.timeout, escapeSlack() on all interpolated user text, and the CR/LF guard from sanitizeSubject applied to the summary line. Unset secret => {notified:false, reason:'not-configured'} with a 2xx and the D1 write still committed. Message names the equipment, the verdict, any critical-fail items, and links to the record.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "KIN-M0-T7",
@@ -2746,6 +2750,12 @@
       "justification": "Rail 3 amendment on explicit owner instruction. NOT a weakening: every original guarantee survives (inline getSecret with env.KIN_APP_ID, no detached RPC, abort timeouts, unset-secret degrades to 2xx not 5xx, the D1 write still commits) and KIN-7 gains four obligations the Resend version never had — idempotency under at-least-once scheduling, no-throw on upstream 5xx, decoupling from the notification path, and a registered schedule with a recorded last run. The old text pinned a vendor rather than the behaviour, which is what made it brittle. Owner rationale: Resend is unused elsewhere at Mytra and adds third-party surface to a safety-critical path.",
       "scoreImpact": "NONE. KIN-3 and KIN-7 both remain met:false; per rail 2 only a fresh adversarial verifier can flip them.",
       "designNote": "The audit mirror reads D1, not the Slack call, so neither channel is a single point of failure for the other and an inspection is never blocked by either. On Vercel the emailed copy was frequently the only durable server-side artifact; on Kin D1 is, which is what makes dropping email safe."
+    },
+    {
+      "iteration": 23,
+      "date": "2026-08-05",
+      "event": "KIN-M0 (T3, T4, T6) — slice backend live on preview; KIN-1 and KIN-3 VERIFIED",
+      "details": "Shipped KIN-M0-T3/T4/T6. Migration pair 0001_slice (schema) + 0002_seed_equipment (generated by kin/scripts/gen-seed.mjs from src/data/equipment.ts) applied to preview D1; worker deployed as preview v3; slice driven end to end and recorded. MODEL ROUTING (rail 8): the D1 migration pair and the Worker identity/authorization boundary were authored on fable, with two fable adversarial reviewers. Migration verdict SOUND (up/down cycle executed against node:sqlite with FKs on, three variants, zero app tables remaining; enum CHECKs diffed member-by-member against the TS unions). Worker verdict DEFECTIVE -> both defects fixed before commit. DEFECT 1 (security): escapeSlack escaped only & < > while the newline strip was applied per-line to the headline alone, so an inspectorName of \"Bob\\nSubmitted by (verified): ceo@mytra.ai\" forged the verified-submitter line EHS uses to tell claimed identity from actual identity. Reviewer reproduced it (3 lines rendered as 5). Fixed at the escaping boundary rather than per call site, since per-line is exactly what let one missed lines.push() reopen it. Regression-pinned and the pin was verified to FAIL against the unfixed version. DEFECT 2: record.shift was length-checked but not enum-checked, so a schema-valid \"Morning\" died inside env.DB.batch as an opaque 500 instead of a clean 400. Now validated before the write. DEPLOY HAZARD FOUND AND CLOSED: the first v3 deploy failed with CF 400 \"Invalid regular expression: missing /\". The committed file was correct, but emitting the bundle through the MCP tool call normalized the \\u2028 escape inside a regex literal into a literal U+2028, which terminates the pattern. Fixed at the source — LINE_BREAKS is now built with String.fromCharCode so kin/worker/index.js stays pure ASCII and no transport can reintroduce it. Worth remembering for every future Kin deploy from this harness: the bundle must be inline, so any non-ASCII escape in a regex literal is a live hazard. SCOPE NARROWING (stated, not buried): 0002 seeds only the 7 pre-trip-REQUIRED units, not all 46. Those are the only units a QR scan can open an inspection for, which is the whole of the slice; kin_create_migration takes SQL inline, so seeding all 46 would mean hand-emitting ~80KB with transcription risk. The equipment TABLE carries the complete EquipmentItem column set, so KIN-M1 backfills with a plain INSERT and never needs an ALTER. SIDE EFFECT: SLACK_WEBHOOK_URL is already configured on the app, so the smoke run posted a real message to the configured Slack channel (notified:true, reason:sent). Each smokeSlice invocation posts one. Recorded in kin/evidence/slice-smoke.json. VERIFICATION (wf_4441c846-272, at HEAD 211b490): KIN-1 MET — all six clauses pass, including the amended live-database clause, which now takes its STRICTER post-T3 branch (kin_get_schema lists all four slice tables) rather than the lenient empty-list branch. KIN-3 MET — all five facts confirmed against the real worker export with no test-double substitution, and the recorded deployment version cross-checked against kin_list_deployments. The KIN-3 verifier noted three non-refuting soft spots in the test; all three were tightened afterwards (assert the literal secret name SLACK_WEBHOOK_URL; assert the fetch URL equals the value getSecret returned; assert an unfired AbortSignal instance). A fourth idea — proving the 10s deadline actually elapses — was tried and removed: AbortSignal.timeout is backed by a native timer vitest fake timers do not intercept, so the test asserted nothing about our code. The behaviour that matters (an aborted fetch degrades rather than 500ing) is already covered. CARRIED TO KIN-M1 (from the migration reviewer, non-blocking): KIN-2 says \"every record table carries a kin_user_id column\" and lists EquipmentItem among the ten record shapes, but equipment and inspection_items deliberately have none — equipment is reference data, inspection_items are child rows whose submitter is derivable via record_id. KIN-M1 must either add nullable columns or pin that interpretation in kin/__tests__/migrations.test.ts. Also noted: the up uses IF NOT EXISTS while the down uses unconditional DROP, so against a dirty database the down could drop a table the up did not create — unreachable under KIN-2's own \"fresh database\" terms. Gates: lint 0 errors, tsc clean, 893 tests / 83 files, build exit 0. kin dimension 0/10 -> 2/10."
     }
   ],
   "sessionWindow": null
