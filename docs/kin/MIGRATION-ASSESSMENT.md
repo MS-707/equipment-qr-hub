@@ -53,6 +53,47 @@ What disappears is mostly *toil we've been paying for*:
 
 ---
 
+## Scoping decision (2026-08-05): port English-only
+
+**The Kin port carries the i18n plumbing but NOT the Spanish content.** Getting
+the PWA/SPA standing on Kin is the priority; Spanish is mid-flight and would
+drag a half-reviewed translation set across a framework rewrite.
+
+This is nearly free, because the app is **already English-only by design** —
+"revive-and-gate" meant Spanish was built dark and never exposed:
+
+- There is **no language toggle** anywhere in the UI (`UserMenu.tsx` has no
+  `setLocale`; the `sw-i18n-invariants` vitest pins that it stays absent).
+- **816 converted call sites** carry their English literal inline as the
+  `defaultEn` argument — `t('dashboard.quickActions', undefined, 'Quick actions')`.
+  The English is anchored at the call site, not only in a catalog.
+
+**What travels:** `i18n-core.ts`, the `I18nProvider`, `en.json`,
+`i18n-keys.d.ts`, the keygen script, `i18n-data.ts`, and all 816 call sites
+(they live inside the components, so they come along for free).
+
+**What stays parked on the Vercel branch** (in git, retrievable any time):
+`es.json`, `src/messages/data/*.es.json`, the 117-term glossary, all review
+evidence, `blocked-keys.json`, `es-leakage.spec.ts` + its allowlist, the
+`/api/i18n/status` kill switch, and the 427 staged-but-unreviewed ES-M4
+translations in `docs/i18n/review/m4.pending.json`.
+
+**The mechanism:** ship the `es` bundle as an empty object. Then there is no
+Spanish payload in the client, and `t()` falls through to English even for a
+device that somehow has `sage-locale-v2 = 'es'` in storage. The half-finished
+state cannot leak because it is not present.
+
+**Re-enabling later is a content restore, not a code change:** repopulate
+`es.json` and the data lookasides from git. The 816 call sites never change.
+Everything expensive — the glossary, the adversarially-reviewed translations,
+the pipeline docs — is preserved.
+
+**Roadmap consequence:** the Spanish track (ES-M4/M5/M6) is **parked**, not
+cancelled. The earlier advice to "land the ES-M4 review before porting" is moot
+— it existed only because Spanish was going to cross the rewrite. It isn't.
+
+---
+
 ## The one decision that gates everything
 
 **How does the UI ship?** Two viable shapes:
