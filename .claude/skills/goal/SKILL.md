@@ -93,6 +93,14 @@ from the last log entry, and total iterations run. No side effects.
    branch per rail 5; `git pull origin <branch>` (tolerate no-upstream on first
    run). If `node_modules` is missing (fresh container/clone), run
    `npm ci --no-audit --no-fund` before anything else. Read goals.json.
+   **Capability check:** if the milestone you are about to pick belongs to the
+   `kin` dimension, confirm the Kin MCP tools (`kin_create_app`, `kin_deploy`,
+   …) are actually reachable. If they are not, **STOP immediately** — do not
+   start the milestone, do not scaffold around the gap, and under /loop do not
+   reschedule. Report exactly this to the user: register the Kin MCP with
+   `claude mcp add kin --transport http https://api.mkin.app/mcp` (or add it to
+   the project's `.mcp.json`), then re-run. A Kin milestone attempted without
+   its tools burns an iteration and leaves half-built scaffolding behind.
 2. **Terminal check.** If every dimension has `verifiedScore: 10` → run the
    *Completion protocol* below and END (under /loop: do not schedule another
    wakeup; state plainly that the loop is complete).
